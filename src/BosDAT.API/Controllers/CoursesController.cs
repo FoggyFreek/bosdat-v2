@@ -26,7 +26,7 @@ public class CoursesController : ControllerBase
         [FromQuery] DayOfWeek? dayOfWeek,
         CancellationToken cancellationToken)
     {
-        var query = _unitOfWork.Courses.Query()
+        IQueryable<Course> query = _unitOfWork.Courses.Query()
             .Include(c => c.Teacher)
             .Include(c => c.LessonType)
                 .ThenInclude(lt => lt.Instrument)

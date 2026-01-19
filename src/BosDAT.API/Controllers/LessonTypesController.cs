@@ -25,7 +25,7 @@ public class LessonTypesController : ControllerBase
         [FromQuery] int? instrumentId,
         CancellationToken cancellationToken)
     {
-        var query = _unitOfWork.Repository<LessonType>().Query()
+        IQueryable<LessonType> query = _unitOfWork.Repository<LessonType>().Query()
             .Include(lt => lt.Instrument);
 
         if (activeOnly == true)

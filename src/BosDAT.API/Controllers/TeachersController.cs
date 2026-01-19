@@ -28,7 +28,7 @@ public class TeachersController : ControllerBase
         [FromQuery] int? instrumentId,
         CancellationToken cancellationToken)
     {
-        var query = _unitOfWork.Teachers.Query()
+        IQueryable<Teacher> query = _unitOfWork.Teachers.Query()
             .Include(t => t.TeacherInstruments)
                 .ThenInclude(ti => ti.Instrument);
 
