@@ -34,8 +34,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: src/BosDAT.Web/Dockerfile
+      context: ./src/BosDAT.Web
+      dockerfile: Dockerfile
     container_name: bosdat-web
     ports:
       - "3000:80"

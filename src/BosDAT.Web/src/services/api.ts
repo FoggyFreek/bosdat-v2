@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import axios, { AxiosError } from 'axios'
 import type { AuthResponse, LoginDto, User } from '@/types'
 
