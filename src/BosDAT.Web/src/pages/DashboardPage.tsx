@@ -1,0 +1,141 @@
+import { useQuery } from '@tanstack/react-query'
+import { Users, GraduationCap, Music, Calendar } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { studentsApi, teachersApi, coursesApi } from '@/services/api'
+import type { StudentList, TeacherList, CourseList } from '@/types'
+
+export function DashboardPage() {
+  const { data: students = [] } = useQuery<StudentList[]>({
+    queryKey: ['students'],
+    queryFn: () => studentsApi.getAll(),
+  })
+
+  const { data: teachers = [] } = useQuery<TeacherList[]>({
+    queryKey: ['teachers'],
+    queryFn: () => teachersApi.getAll(),
+  })
+
+  const { data: courses = [] } = useQuery<CourseList[]>({
+    queryKey: ['courses'],
+    queryFn: () => coursesApi.getAll(),
+  })
+
+  const activeStudents = students.filter((s) => s.status === 'Active').length
+  const activeTeachers = teachers.filter((t) => t.isActive).length
+  const activeCourses = courses.filter((c) => c.status === 'Active').length
+  const totalEnrollments = courses.reduce((sum, c) => sum + c.enrollmentCount, 0)
+
+  const stats = [
+    {
+      name: 'Active Students',
+      value: activeStudents,
+      icon: Users,
+      description: `${students.length} total students`,
+    },
+    {
+      name: 'Active Teachers',
+      value: activeTeachers,
+      icon: GraduationCap,
+      description: `${teachers.length} total teachers`,
+    },
+    {
+      name: 'Active Courses',
+      value: activeCourses,
+      icon: Music,
+      description: `${courses.length} total courses`,
+    },
+    {
+      name: 'Enrollments',
+      value: totalEnrollments,
+      icon: Calendar,
+      description: 'Active enrollments',
+    },
+  ]
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground">Welcome to BosDAT Music School Management</p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.name}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">{stat.name}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Students</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {students.slice(0, 5).map((student) => (
+                <div key={student.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{student.fullName}</p>
+                    <p className="text-sm text-muted-foreground">{student.email}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      student.status === 'Active'
+                        ? 'bg-green-100 text-green-800'
+                        : student.status === 'Trial'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {student.status}
+                  </span>
+                </div>
+              ))}
+              {students.length === 0 && (
+                <p className="text-sm text-muted-foreground">No students yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Today's Schedule</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {courses
+                .filter((c) => c.dayOfWeek === new Date().getDay())
+                .slice(0, 5)
+                .map((course) => (
+                  <div key={course.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{course.instrumentName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {course.teacherName} - {course.roomName || 'No room'}
+                      </p>
+                    </div>
+                    <span className="text-sm">
+                      {course.startTime.substring(0, 5)} - {course.endTime.substring(0, 5)}
+                    </span>
+                  </div>
+                ))}
+              {courses.filter((c) => c.dayOfWeek === new Date().getDay()).length === 0 && (
+                <p className="text-sm text-muted-foreground">No lessons scheduled for today</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}

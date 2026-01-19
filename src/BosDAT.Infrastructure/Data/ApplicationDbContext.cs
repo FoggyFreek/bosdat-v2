@@ -1,0 +1,394 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using BosDAT.Core.Entities;
+
+namespace BosDAT.Infrastructure.Data;
+
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<Student> Students => Set<Student>();
+    public DbSet<Teacher> Teachers => Set<Teacher>();
+    public DbSet<Instrument> Instruments => Set<Instrument>();
+    public DbSet<TeacherInstrument> TeacherInstruments => Set<TeacherInstrument>();
+    public DbSet<LessonType> LessonTypes => Set<LessonType>();
+    public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<Course> Courses => Set<Course>();
+    public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+    public DbSet<Lesson> Lessons => Set<Lesson>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<TeacherPayment> TeacherPayments => Set<TeacherPayment>();
+    public DbSet<Cancellation> Cancellations => Set<Cancellation>();
+    public DbSet<Holiday> Holidays => Set<Holiday>();
+    public DbSet<Setting> Settings => Set<Setting>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configure table names with snake_case
+        modelBuilder.Entity<Student>().ToTable("students");
+        modelBuilder.Entity<Teacher>().ToTable("teachers");
+        modelBuilder.Entity<Instrument>().ToTable("instruments");
+        modelBuilder.Entity<TeacherInstrument>().ToTable("teacher_instruments");
+        modelBuilder.Entity<LessonType>().ToTable("lesson_types");
+        modelBuilder.Entity<Room>().ToTable("rooms");
+        modelBuilder.Entity<Course>().ToTable("courses");
+        modelBuilder.Entity<Enrollment>().ToTable("enrollments");
+        modelBuilder.Entity<Lesson>().ToTable("lessons");
+        modelBuilder.Entity<Invoice>().ToTable("invoices");
+        modelBuilder.Entity<InvoiceLine>().ToTable("invoice_lines");
+        modelBuilder.Entity<Payment>().ToTable("payments");
+        modelBuilder.Entity<TeacherPayment>().ToTable("teacher_payments");
+        modelBuilder.Entity<Cancellation>().ToTable("cancellations");
+        modelBuilder.Entity<Holiday>().ToTable("holidays");
+        modelBuilder.Entity<Setting>().ToTable("settings");
+
+        // Student configuration
+        modelBuilder.Entity<Student>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Prefix).HasMaxLength(20);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.PhoneAlt).HasMaxLength(20);
+            entity.Property(e => e.Address).HasMaxLength(255);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.BillingAddress).HasMaxLength(255);
+            entity.Property(e => e.BillingPostalCode).HasMaxLength(20);
+            entity.Property(e => e.BillingCity).HasMaxLength(100);
+        });
+
+        // Teacher configuration
+        modelBuilder.Entity<Teacher>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Prefix).HasMaxLength(20);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.Address).HasMaxLength(255);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.HourlyRate).HasPrecision(10, 2);
+        });
+
+        // Instrument configuration
+        modelBuilder.Entity<Instrument>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        });
+
+        // TeacherInstrument (many-to-many)
+        modelBuilder.Entity<TeacherInstrument>(entity =>
+        {
+            entity.HasKey(e => new { e.TeacherId, e.InstrumentId });
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.TeacherInstruments)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Instrument)
+                .WithMany(i => i.TeacherInstruments)
+                .HasForeignKey(e => e.InstrumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // LessonType configuration
+        modelBuilder.Entity<LessonType>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.PriceAdult).HasPrecision(10, 2);
+            entity.Property(e => e.PriceChild).HasPrecision(10, 2);
+
+            entity.HasOne(e => e.Instrument)
+                .WithMany(i => i.LessonTypes)
+                .HasForeignKey(e => e.InstrumentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Room configuration
+        modelBuilder.Entity<Room>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        });
+
+        // Course configuration
+        modelBuilder.Entity<Course>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.Courses)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.LessonType)
+                .WithMany(lt => lt.Courses)
+                .HasForeignKey(e => e.LessonTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Room)
+                .WithMany(r => r.Courses)
+                .HasForeignKey(e => e.RoomId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Enrollment configuration
+        modelBuilder.Entity<Enrollment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DiscountPercent).HasPrecision(5, 2);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Enrollments)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Course)
+                .WithMany(c => c.Enrollments)
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
+        });
+
+        // Lesson configuration
+        modelBuilder.Entity<Lesson>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.Course)
+                .WithMany(c => c.Lessons)
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Lessons)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.Lessons)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Room)
+                .WithMany(r => r.Lessons)
+                .HasForeignKey(e => e.RoomId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.ScheduledDate);
+            entity.HasIndex(e => new { e.TeacherId, e.ScheduledDate });
+        });
+
+        // Invoice configuration
+        modelBuilder.Entity<Invoice>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.Property(e => e.Subtotal).HasPrecision(10, 2);
+            entity.Property(e => e.VatAmount).HasPrecision(10, 2);
+            entity.Property(e => e.Total).HasPrecision(10, 2);
+            entity.Property(e => e.DiscountAmount).HasPrecision(10, 2);
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Invoices)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // InvoiceLine configuration
+        modelBuilder.Entity<InvoiceLine>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
+            entity.Property(e => e.VatRate).HasPrecision(5, 2);
+            entity.Property(e => e.LineTotal).HasPrecision(10, 2);
+
+            entity.HasOne(e => e.Invoice)
+                .WithMany(i => i.Lines)
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Lesson)
+                .WithMany(l => l.InvoiceLines)
+                .HasForeignKey(e => e.LessonId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Payment configuration
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).HasPrecision(10, 2);
+            entity.Property(e => e.Reference).HasMaxLength(100);
+
+            entity.HasOne(e => e.Invoice)
+                .WithMany(i => i.Payments)
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // TeacherPayment configuration
+        modelBuilder.Entity<TeacherPayment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.HourlyRate).HasPrecision(10, 2);
+            entity.Property(e => e.GrossAmount).HasPrecision(10, 2);
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.Payments)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.TeacherId, e.PeriodYear, e.PeriodMonth }).IsUnique();
+        });
+
+        // Cancellation configuration
+        modelBuilder.Entity<Cancellation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Cancellations)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Holiday configuration
+        modelBuilder.Entity<Holiday>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        });
+
+        // Setting configuration
+        modelBuilder.Entity<Setting>(entity =>
+        {
+            entity.HasKey(e => e.Key);
+            entity.Property(e => e.Key).HasMaxLength(100);
+            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Type).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+        });
+
+        // ApplicationUser configuration
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(e => e.FirstName).HasMaxLength(100);
+            entity.Property(e => e.LastName).HasMaxLength(100);
+
+            entity.HasOne(e => e.Teacher)
+                .WithOne()
+                .HasForeignKey<ApplicationUser>(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // RefreshToken configuration
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("refresh_tokens");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).IsRequired().HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.Token);
+        });
+
+        // Seed initial data
+        SeedData(modelBuilder);
+    }
+
+    private static void SeedData(ModelBuilder modelBuilder)
+    {
+        // Seed Instruments
+        modelBuilder.Entity<Instrument>().HasData(
+            new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard },
+            new Instrument { Id = 2, Name = "Guitar", Category = InstrumentCategory.String },
+            new Instrument { Id = 3, Name = "Bass Guitar", Category = InstrumentCategory.String },
+            new Instrument { Id = 4, Name = "Drums", Category = InstrumentCategory.Percussion },
+            new Instrument { Id = 5, Name = "Violin", Category = InstrumentCategory.String },
+            new Instrument { Id = 6, Name = "Vocals", Category = InstrumentCategory.Vocal },
+            new Instrument { Id = 7, Name = "Saxophone", Category = InstrumentCategory.Wind },
+            new Instrument { Id = 8, Name = "Flute", Category = InstrumentCategory.Wind },
+            new Instrument { Id = 9, Name = "Trumpet", Category = InstrumentCategory.Brass },
+            new Instrument { Id = 10, Name = "Keyboard", Category = InstrumentCategory.Keyboard }
+        );
+
+        // Seed default rooms
+        modelBuilder.Entity<Room>().HasData(
+            new Room { Id = 1, Name = "Room 1", Capacity = 2, HasPiano = true },
+            new Room { Id = 2, Name = "Room 2", Capacity = 2, HasPiano = true },
+            new Room { Id = 3, Name = "Room 3", Capacity = 4, HasDrums = true },
+            new Room { Id = 4, Name = "Room 4", Capacity = 6, HasAmplifier = true, HasMicrophone = true },
+            new Room { Id = 5, Name = "Group Room", Capacity = 10, HasPiano = true, HasWhiteboard = true }
+        );
+
+        // Seed default settings
+        modelBuilder.Entity<Setting>().HasData(
+            new Setting { Key = "vat_rate", Value = "21", Type = "decimal", Description = "VAT rate percentage" },
+            new Setting { Key = "child_age_limit", Value = "18", Type = "int", Description = "Age limit for child pricing" },
+            new Setting { Key = "registration_fee", Value = "25", Type = "decimal", Description = "One-time registration fee" },
+            new Setting { Key = "invoice_prefix", Value = "NMI", Type = "string", Description = "Prefix for invoice numbers" },
+            new Setting { Key = "payment_due_days", Value = "14", Type = "int", Description = "Days until payment is due" },
+            new Setting { Key = "school_name", Value = "Nieuwe Muziekschool Ittersum", Type = "string", Description = "School name" }
+        );
+    }
+
+    public override int SaveChanges()
+    {
+        UpdateTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        UpdateTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void UpdateTimestamps()
+    {
+        var entries = ChangeTracker.Entries<BaseEntity>();
+        var now = DateTime.UtcNow;
+
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = now;
+                entry.Entity.UpdatedAt = now;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = now;
+            }
+        }
+    }
+}

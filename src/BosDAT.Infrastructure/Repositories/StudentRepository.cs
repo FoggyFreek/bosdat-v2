@@ -1,0 +1,61 @@
+using Microsoft.EntityFrameworkCore;
+using BosDAT.Core.Entities;
+using BosDAT.Core.Interfaces;
+using BosDAT.Infrastructure.Data;
+
+namespace BosDAT.Infrastructure.Repositories;
+
+public class StudentRepository : Repository<Student>, IStudentRepository
+{
+    public StudentRepository(ApplicationDbContext context) : base(context)
+    {
+    }
+
+    public async Task<Student?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .FirstOrDefaultAsync(s => s.Email.ToLower() == email.ToLower(), cancellationToken);
+    }
+
+    public async Task<Student?> GetWithEnrollmentsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(s => s.Enrollments)
+                .ThenInclude(e => e.Course)
+                    .ThenInclude(c => c.LessonType)
+                        .ThenInclude(lt => lt.Instrument)
+            .Include(s => s.Enrollments)
+                .ThenInclude(e => e.Course)
+                    .ThenInclude(c => c.Teacher)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+    }
+
+    public async Task<Student?> GetWithInvoicesAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(s => s.Invoices)
+                .ThenInclude(i => i.Lines)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Student>> GetActiveStudentsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(s => s.Status == StudentStatus.Active)
+            .OrderBy(s => s.LastName)
+            .ThenBy(s => s.FirstName)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Student>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default)
+    {
+        var term = searchTerm.ToLower();
+        return await _dbSet
+            .Where(s => s.FirstName.ToLower().Contains(term) ||
+                        s.LastName.ToLower().Contains(term) ||
+                        s.Email.ToLower().Contains(term))
+            .OrderBy(s => s.LastName)
+            .ThenBy(s => s.FirstName)
+            .ToListAsync(cancellationToken);
+    }
+}

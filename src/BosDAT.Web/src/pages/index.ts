@@ -1,0 +1,8 @@
+export { LoginPage } from './LoginPage'
+export { DashboardPage } from './DashboardPage'
+export { StudentsPage } from './StudentsPage'
+export { StudentDetailPage } from './StudentDetailPage'
+export { TeachersPage } from './TeachersPage'
+export { TeacherDetailPage } from './TeacherDetailPage'
+export { CoursesPage } from './CoursesPage'
+export { SettingsPage } from './SettingsPage'
