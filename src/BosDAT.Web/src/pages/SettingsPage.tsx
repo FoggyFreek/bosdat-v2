@@ -163,7 +163,7 @@ function InstrumentsSection() {
                         size="icon"
                         onClick={() => {
                           setEditId(instrument.id)
-                          setFormData({ name: instrument.name, category: instrument.category })
+                          setFormData({ name: instrument.name, category: instrument.category as typeof formData.category })
                         }}
                       >
                         <Pencil className="h-4 w-4" />
