@@ -12,6 +12,7 @@ vi.mock('@/services/api', () => ({
     getById: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    checkDuplicates: vi.fn(),
   },
 }))
 
@@ -69,6 +70,11 @@ const renderWithProviders = ({ route = '/students/new', path = '/students/new' }
 describe('StudentFormPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: no duplicates found
+    vi.mocked(studentsApi.checkDuplicates).mockResolvedValue({
+      hasDuplicates: false,
+      duplicates: [],
+    })
   })
 
   describe('Create Mode', () => {

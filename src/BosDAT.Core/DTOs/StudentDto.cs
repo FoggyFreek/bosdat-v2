@@ -88,3 +88,30 @@ public record StudentListDto
     public StudentStatus Status { get; init; }
     public DateTime? EnrolledAt { get; init; }
 }
+
+public record CheckDuplicatesDto
+{
+    public required string FirstName { get; init; }
+    public required string LastName { get; init; }
+    public required string Email { get; init; }
+    public string? Phone { get; init; }
+    public DateOnly? DateOfBirth { get; init; }
+    public Guid? ExcludeId { get; init; }
+}
+
+public record DuplicateMatchDto
+{
+    public Guid Id { get; init; }
+    public string FullName { get; init; } = string.Empty;
+    public required string Email { get; init; }
+    public string? Phone { get; init; }
+    public StudentStatus Status { get; init; }
+    public int ConfidenceScore { get; init; }
+    public required string MatchReason { get; init; }
+}
+
+public record DuplicateCheckResultDto
+{
+    public bool HasDuplicates { get; init; }
+    public IReadOnlyList<DuplicateMatchDto> Duplicates { get; init; } = [];
+}

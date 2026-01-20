@@ -13,10 +13,12 @@ namespace BosDAT.API.Controllers;
 public class StudentsController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDuplicateDetectionService _duplicateDetectionService;
 
-    public StudentsController(IUnitOfWork unitOfWork)
+    public StudentsController(IUnitOfWork unitOfWork, IDuplicateDetectionService duplicateDetectionService)
     {
         _unitOfWork = unitOfWork;
+        _duplicateDetectionService = duplicateDetectionService;
     }
 
     [HttpGet]
@@ -97,6 +99,15 @@ public class StudentsController : ControllerBase
                 Notes = e.Notes
             })
         });
+    }
+
+    [HttpPost("check-duplicates")]
+    public async Task<ActionResult<DuplicateCheckResultDto>> CheckDuplicates(
+        [FromBody] CheckDuplicatesDto dto,
+        CancellationToken cancellationToken)
+    {
+        var result = await _duplicateDetectionService.CheckForDuplicatesAsync(dto, cancellationToken);
+        return Ok(result);
     }
 
     [HttpPost]

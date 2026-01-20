@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
 import type { Student, StudentStatus, Gender, CreateStudent } from '@/types'
 
 interface StudentFormProps {
@@ -80,6 +81,29 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
 
   const [errors, setErrors] = useState<FormErrors>({})
 
+  const {
+    duplicates,
+    hasDuplicates,
+    isChecking,
+    checkDuplicates,
+    acknowledgedDuplicates,
+    acknowledgeDuplicates,
+    resetAcknowledgement,
+  } = useDuplicateCheck({ excludeId: student?.id })
+
+  // Trigger duplicate check when key fields change
+  useEffect(() => {
+    if (formData.firstName && formData.lastName && formData.email) {
+      checkDuplicates({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        dateOfBirth: formData.dateOfBirth || undefined,
+      })
+    }
+  }, [formData.firstName, formData.lastName, formData.email, formData.phone, formData.dateOfBirth, checkDuplicates])
+
   useEffect(() => {
     if (student) {
       setFormData({
@@ -144,6 +168,11 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
       return
     }
 
+    // Block submission if duplicates exist and not acknowledged
+    if (hasDuplicates && !acknowledgedDuplicates) {
+      return
+    }
+
     const submitData: CreateStudent = {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -178,6 +207,10 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
     if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
+    // Reset acknowledgement when key fields change
+    if (['firstName', 'lastName', 'email', 'phone', 'dateOfBirth'].includes(field)) {
+      resetAcknowledgement()
+    }
   }
 
   return (
@@ -185,6 +218,123 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
       {error && (
         <div className="rounded-md bg-red-50 p-4">
           <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
+
+      {/* Duplicate Warning */}
+      {hasDuplicates && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-3">
+            <svg
+              className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-amber-800">
+                Potential duplicate students found
+              </h4>
+              <p className="mt-1 text-sm text-amber-700">
+                The following existing students may be duplicates. Please review before proceeding.
+              </p>
+              <ul className="mt-3 space-y-2">
+                {duplicates.map((duplicate) => (
+                  <li
+                    key={duplicate.id}
+                    className="flex items-center justify-between rounded-md bg-white p-3 shadow-sm"
+                  >
+                    <div>
+                      <Link
+                        to={`/students/${duplicate.id}`}
+                        className="font-medium text-amber-900 hover:underline"
+                      >
+                        {duplicate.fullName}
+                      </Link>
+                      <p className="text-sm text-amber-700">{duplicate.email}</p>
+                      <p className="text-xs text-amber-600 mt-1">
+                        {duplicate.matchReason} ({duplicate.confidenceScore}% match)
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                        duplicate.status === 'Active'
+                          ? 'bg-green-100 text-green-700'
+                          : duplicate.status === 'Trial'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {duplicate.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {!acknowledgedDuplicates && (
+                <div className="mt-4 flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={acknowledgeDuplicates}
+                    className="border-amber-300 text-amber-800 hover:bg-amber-100"
+                  >
+                    Not a duplicate, continue anyway
+                  </Button>
+                  <span className="text-xs text-amber-600">
+                    You must acknowledge to proceed with saving
+                  </span>
+                </div>
+              )}
+              {acknowledgedDuplicates && (
+                <p className="mt-3 text-sm text-green-700 flex items-center gap-1">
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  Acknowledged - you can now save this student
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Duplicate check loading indicator */}
+      {isChecking && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <svg
+            className="h-4 w-4 animate-spin"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+          Checking for duplicates...
         </div>
       )}
 
@@ -471,7 +621,10 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
       )}
 
       <div className="flex gap-4 pt-4">
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting || (hasDuplicates && !acknowledgedDuplicates)}
+        >
           {isSubmitting
             ? isEditMode
               ? 'Saving...'
@@ -483,6 +636,11 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
         <Button type="button" variant="outline" onClick={() => navigate(-1)}>
           Cancel
         </Button>
+        {hasDuplicates && !acknowledgedDuplicates && (
+          <span className="flex items-center text-sm text-amber-600">
+            Please review potential duplicates above
+          </span>
+        )}
       </div>
     </form>
   )

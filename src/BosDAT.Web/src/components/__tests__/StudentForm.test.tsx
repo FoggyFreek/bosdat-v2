@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { StudentForm } from '../StudentForm'
-import type { Student } from '@/types'
+import type { Student, DuplicateCheckResult } from '@/types'
+import { studentsApi } from '@/services/api'
 
 const mockNavigate = vi.fn()
 
@@ -14,11 +15,22 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
+vi.mock('@/services/api', () => ({
+  studentsApi: {
+    checkDuplicates: vi.fn(),
+  },
+}))
+
 describe('StudentForm', () => {
   const mockOnSubmit = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: no duplicates found
+    vi.mocked(studentsApi.checkDuplicates).mockResolvedValue({
+      hasDuplicates: false,
+      duplicates: [],
+    })
   })
 
   it('renders empty form in create mode', () => {
@@ -228,5 +240,184 @@ describe('StudentForm', () => {
     await user.click(screen.getByRole('button', { name: /cancel/i }))
 
     expect(mockNavigate).toHaveBeenCalledWith(-1)
+  })
+
+  describe('Duplicate Detection', () => {
+    const duplicateResult: DuplicateCheckResult = {
+      hasDuplicates: true,
+      duplicates: [
+        {
+          id: 'dup-1',
+          fullName: 'John Doe',
+          email: 'john@example.com',
+          phone: '123-456-7890',
+          status: 'Active',
+          confidenceScore: 80,
+          matchReason: 'Exact email match',
+        },
+      ],
+    }
+
+    it('shows duplicate warning when potential duplicates are found', async () => {
+      const user = userEvent.setup()
+      vi.mocked(studentsApi.checkDuplicates).mockResolvedValue(duplicateResult)
+
+      render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      await user.type(screen.getByLabelText(/first name/i), 'John')
+      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+
+      await waitFor(() => {
+        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+        expect(screen.getByText('John Doe')).toBeInTheDocument()
+        expect(screen.getByText('john@example.com')).toBeInTheDocument()
+        expect(screen.getByText(/exact email match/i)).toBeInTheDocument()
+      })
+    })
+
+    it('disables submit button when duplicates exist and not acknowledged', async () => {
+      const user = userEvent.setup()
+      vi.mocked(studentsApi.checkDuplicates).mockResolvedValue(duplicateResult)
+
+      render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      await user.type(screen.getByLabelText(/first name/i), 'John')
+      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+
+      await waitFor(() => {
+        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+      })
+
+      expect(screen.getByRole('button', { name: /create student/i })).toBeDisabled()
+    })
+
+    it('enables submit button after acknowledging duplicates', async () => {
+      const user = userEvent.setup()
+      vi.mocked(studentsApi.checkDuplicates).mockResolvedValue(duplicateResult)
+      mockOnSubmit.mockResolvedValue({ id: '123' })
+
+      render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      await user.type(screen.getByLabelText(/first name/i), 'John')
+      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+
+      await waitFor(() => {
+        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole('button', { name: /not a duplicate, continue anyway/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText(/acknowledged/i)).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /create student/i })).not.toBeDisabled()
+      })
+    })
+
+    it('allows form submission after acknowledging duplicates', async () => {
+      const user = userEvent.setup()
+      vi.mocked(studentsApi.checkDuplicates).mockResolvedValue(duplicateResult)
+      mockOnSubmit.mockResolvedValue({ id: '123' })
+
+      render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      await user.type(screen.getByLabelText(/first name/i), 'John')
+      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+
+      await waitFor(() => {
+        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole('button', { name: /not a duplicate, continue anyway/i }))
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /create student/i })).not.toBeDisabled()
+      })
+
+      await user.click(screen.getByRole('button', { name: /create student/i }))
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalled()
+      })
+    })
+
+    it('shows link to view potential duplicate student', async () => {
+      const user = userEvent.setup()
+      vi.mocked(studentsApi.checkDuplicates).mockResolvedValue(duplicateResult)
+
+      render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      await user.type(screen.getByLabelText(/first name/i), 'John')
+      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+
+      await waitFor(() => {
+        const link = screen.getByRole('link', { name: 'John Doe' })
+        expect(link).toHaveAttribute('href', '/students/dup-1')
+      })
+    })
+
+    it('shows checking indicator while checking for duplicates', async () => {
+      const user = userEvent.setup()
+      // Create a promise we can control
+      let resolveCheck: (value: DuplicateCheckResult) => void
+      const checkPromise = new Promise<DuplicateCheckResult>((resolve) => {
+        resolveCheck = resolve
+      })
+      vi.mocked(studentsApi.checkDuplicates).mockReturnValue(checkPromise)
+
+      render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      await user.type(screen.getByLabelText(/first name/i), 'John')
+      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+
+      // Wait for debounce and check
+      await waitFor(
+        () => {
+          expect(screen.getByText(/checking for duplicates/i)).toBeInTheDocument()
+        },
+        { timeout: 1000 }
+      )
+
+      // Resolve the check
+      resolveCheck!({ hasDuplicates: false, duplicates: [] })
+
+      await waitFor(() => {
+        expect(screen.queryByText(/checking for duplicates/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it('excludes current student when checking duplicates in edit mode', async () => {
+      const user = userEvent.setup()
+      const student: Student = {
+        id: 'student-123',
+        firstName: 'John',
+        lastName: 'Doe',
+        fullName: 'John Doe',
+        email: 'john@example.com',
+        status: 'Active',
+        autoDebit: false,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+      }
+
+      render(<StudentForm student={student} onSubmit={mockOnSubmit} isSubmitting={false} />)
+
+      // Trigger a change to invoke duplicate check
+      await user.clear(screen.getByLabelText(/first name/i))
+      await user.type(screen.getByLabelText(/first name/i), 'Johnny')
+
+      await waitFor(() => {
+        expect(studentsApi.checkDuplicates).toHaveBeenCalledWith(
+          expect.objectContaining({
+            excludeId: 'student-123',
+          })
+        )
+      })
+    })
   })
 })

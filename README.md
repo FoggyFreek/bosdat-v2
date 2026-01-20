@@ -251,6 +251,7 @@ audit_logs (new - automatic audit trail)
 ### Students
 - GET/POST /api/students
 - GET/PUT/DELETE /api/students/{id}
+- POST /api/students/check-duplicates
 - GET /api/students/{id}/enrollments
 - GET /api/students/{id}/invoices
 - GET /api/students/{id}/lessons
@@ -303,6 +304,13 @@ audit_logs (new - automatic audit trail)
   - Reusable `StudentForm` component for create/edit
   - Client-side validation (required fields, email format)
   - Routes: `/students/new`, `/students/:id/edit`
+- Duplicate detection ✓
+  - Real-time duplicate checking during student creation/editing
+  - Matches on: exact email (100%), exact name (60%), similar name (40%), phone (50%), DOB+name (40%)
+  - Uses Levenshtein distance for fuzzy name matching
+  - Warning UI with potential duplicates listed
+  - Acknowledgement required before creating potential duplicate
+  - API endpoint: `POST /api/students/check-duplicates`
 
 ### Teachers Module
 - Teacher list

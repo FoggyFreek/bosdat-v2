@@ -90,6 +90,31 @@ export interface CreateStudent {
   notes?: string
 }
 
+// Duplicate detection types
+export interface CheckDuplicatesDto {
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string
+  dateOfBirth?: string
+  excludeId?: string
+}
+
+export interface DuplicateMatch {
+  id: string
+  fullName: string
+  email: string
+  phone?: string
+  status: StudentStatus
+  confidenceScore: number
+  matchReason: string
+}
+
+export interface DuplicateCheckResult {
+  hasDuplicates: boolean
+  duplicates: DuplicateMatch[]
+}
+
 // Teacher types
 export type TeacherRole = 'Teacher' | 'Admin' | 'Staff'
 

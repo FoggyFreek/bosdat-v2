@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import axios, { AxiosError } from 'axios'
-import type { AuthResponse, LoginDto, User } from '@/types'
+import type { AuthResponse, LoginDto, User, CheckDuplicatesDto, DuplicateCheckResult } from '@/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
@@ -115,6 +115,11 @@ export const studentsApi = {
 
   delete: async (id: string) => {
     await api.delete(`/students/${id}`)
+  },
+
+  checkDuplicates: async (data: CheckDuplicatesDto): Promise<DuplicateCheckResult> => {
+    const response = await api.post<DuplicateCheckResult>('/students/check-duplicates', data)
+    return response.data
   },
 }
 
