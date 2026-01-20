@@ -3,6 +3,21 @@
 ## Overview
 A modern web-based replacement for the NMI Access database, built with .NET 8 backend, React frontend, and PostgreSQL database.
 
+## Current Implementation Status
+
+### Completed Features
+- **Authentication**: Login/logout with JWT tokens
+- **Students Module**: List, detail view, create/edit forms with validation
+- **Teachers Module**: List, detail view
+- **Courses Module**: List view, enrollments
+- **Schedule Module**: Weekly calendar view, lesson management
+- **Testing Infrastructure**: Vitest + React Testing Library setup
+
+### In Progress
+- Invoicing module
+- Teacher payments
+- Reports
+
 ## Technology Stack
 
 | Layer | Technology |
@@ -14,6 +29,7 @@ A modern web-based replacement for the NMI Access database, built with .NET 8 ba
 | Auth | ASP.NET Core Identity + JWT |
 | UI Components | Tailwind CSS + shadcn/ui |
 | API Docs | Swagger/OpenAPI |
+| Testing | Vitest + React Testing Library |
 | Containerization | Docker + Docker Compose |
 
 ## Project Structure
@@ -35,11 +51,20 @@ bosdat-v2/
 │   │   └── Services/
 │   └── BosDAT.Web/              # React frontend
 │       ├── src/
-│       │   ├── components/
-│       │   ├── pages/
-│       │   ├── hooks/
-│       │   ├── services/
-│       │   └── types/
+│       │   ├── components/       # Reusable UI components
+│       │   │   ├── __tests__/    # Component tests
+│       │   │   ├── ui/           # shadcn/ui components
+│       │   │   └── *.tsx
+│       │   ├── pages/            # Page components
+│       │   │   ├── __tests__/    # Page tests
+│       │   │   └── *.tsx
+│       │   ├── context/          # React context providers
+│       │   ├── services/         # API service layer
+│       │   ├── test/             # Test utilities & setup
+│       │   │   ├── setup.ts      # Global test setup
+│       │   │   └── utils.tsx     # Test helpers & providers
+│       │   ├── types/            # TypeScript type definitions
+│       │   └── lib/              # Utility functions
 │       ├── package.json
 │       └── vite.config.ts
 ├── tests/
@@ -257,9 +282,12 @@ settings (was: Konstanten)
 - Quick actions
 
 ### Students Module
-- Student list with search/filter
-- Student detail page (info, enrollments, invoices, lesson history)
-- Add/edit student form
+- Student list with search/filter ✓
+- Student detail page (info, enrollments, invoices, lesson history) ✓
+- Add/edit student form ✓
+  - Reusable `StudentForm` component for create/edit
+  - Client-side validation (required fields, email format)
+  - Routes: `/students/new`, `/students/:id/edit`
 
 ### Teachers Module
 - Teacher list
@@ -366,10 +394,27 @@ Frontend will be available at: http://localhost:5173
 # Backend tests
 dotnet test
 
-# Frontend tests
+# Frontend tests (watch mode)
 cd src/BosDAT.Web
 npm run test
+
+# Frontend tests (single run)
+npm run test:run
+
+# Frontend tests with coverage
+npm run test:coverage
 ```
+
+#### Frontend Testing Stack
+- **Vitest** - Fast unit test runner (Vite-native)
+- **React Testing Library** - Component testing utilities
+- **@testing-library/user-event** - User interaction simulation
+- **jsdom** - DOM environment for tests
+
+#### Test File Conventions
+- Tests are co-located with source code in `__tests__/` folders
+- Test files use the `.test.tsx` extension
+- Example: `src/components/__tests__/StudentForm.test.tsx`
 
 ### Production Build
 ```bash

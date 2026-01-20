@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { StudentsPage } from './pages/StudentsPage'
 import { StudentDetailPage } from './pages/StudentDetailPage'
+import { StudentFormPage } from './pages/StudentFormPage'
 import { TeachersPage } from './pages/TeachersPage'
 import { TeacherDetailPage } from './pages/TeacherDetailPage'
 import { CoursesPage } from './pages/CoursesPage'
@@ -41,7 +42,9 @@ function App() {
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/students" element={<StudentsPage />} />
+                <Route path="/students/new" element={<StudentFormPage />} />
                 <Route path="/students/:id" element={<StudentDetailPage />} />
+                <Route path="/students/:id/edit" element={<StudentFormPage />} />
                 <Route path="/teachers" element={<TeachersPage />} />
                 <Route path="/teachers/:id" element={<TeacherDetailPage />} />
                 <Route path="/courses" element={<CoursesPage />} />
