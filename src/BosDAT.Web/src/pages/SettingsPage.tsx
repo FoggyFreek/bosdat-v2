@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { instrumentsApi, roomsApi, lessonTypesApi, holidaysApi } from '@/services/api'
-import type { Instrument, Room, LessonType, Holiday } from '@/types'
+import type { Instrument, Room, LessonType, Holiday, InstrumentCategory } from '@/types'
 import { cn, formatDate, formatCurrency } from '@/lib/utils'
 
 export function SettingsPage() {
@@ -38,7 +38,7 @@ function InstrumentsSection() {
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
-  const [formData, setFormData] = useState({ name: '', category: 'Other' as const })
+  const [formData, setFormData] = useState<{ name: string; category: InstrumentCategory }>({ name: '', category: 'Other' })
 
   const { data: instruments = [], isLoading } = useQuery<Instrument[]>({
     queryKey: ['instruments'],
@@ -88,7 +88,7 @@ function InstrumentsSection() {
             />
             <Select
               value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value as typeof formData.category })}
+              onValueChange={(value) => setFormData({ ...formData, category: value as InstrumentCategory })}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
@@ -127,7 +127,7 @@ function InstrumentsSection() {
                     />
                     <Select
                       value={formData.category}
-                      onValueChange={(value) => setFormData({ ...formData, category: value as typeof formData.category })}
+                      onValueChange={(value) => setFormData({ ...formData, category: value as InstrumentCategory })}
                     >
                       <SelectTrigger className="w-[150px]">
                         <SelectValue />
@@ -163,7 +163,7 @@ function InstrumentsSection() {
                         size="icon"
                         onClick={() => {
                           setEditId(instrument.id)
-                          setFormData({ name: instrument.name, category: instrument.category as typeof formData.category })
+                          setFormData({ name: instrument.name, category: instrument.category })
                         }}
                       >
                         <Pencil className="h-4 w-4" />
