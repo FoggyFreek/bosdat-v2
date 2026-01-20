@@ -227,22 +227,173 @@ export const coursesApi = {
 // Lesson Types API
 export const lessonTypesApi = {
   getAll: async (params?: { activeOnly?: boolean; instrumentId?: number }) => {
-    const response = await api.get('/lesson-types', { params })
+    const response = await api.get('/lessontypes', { params })
     return response.data
   },
 
   getById: async (id: number) => {
-    const response = await api.get(`/lesson-types/${id}`)
+    const response = await api.get(`/lessontypes/${id}`)
     return response.data
   },
 
   create: async (data: unknown) => {
-    const response = await api.post('/lesson-types', data)
+    const response = await api.post('/lessontypes', data)
     return response.data
   },
 
   update: async (id: number, data: unknown) => {
-    const response = await api.put(`/lesson-types/${id}`, data)
+    const response = await api.put(`/lessontypes/${id}`, data)
     return response.data
+  },
+
+  delete: async (id: number) => {
+    await api.delete(`/lessontypes/${id}`)
+  },
+}
+
+// Enrollments API
+export const enrollmentsApi = {
+  getAll: async (params?: { studentId?: string; courseId?: string; status?: string }) => {
+    const response = await api.get('/enrollments', { params })
+    return response.data
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/enrollments/${id}`)
+    return response.data
+  },
+
+  getByStudent: async (studentId: string) => {
+    const response = await api.get(`/enrollments/student/${studentId}`)
+    return response.data
+  },
+
+  create: async (data: { studentId: string; courseId: string; discountPercent?: number; notes?: string }) => {
+    const response = await api.post('/enrollments', data)
+    return response.data
+  },
+
+  update: async (id: string, data: { discountPercent: number; status: string; notes?: string }) => {
+    const response = await api.put(`/enrollments/${id}`, data)
+    return response.data
+  },
+
+  delete: async (id: string) => {
+    await api.delete(`/enrollments/${id}`)
+  },
+}
+
+// Lessons API
+export const lessonsApi = {
+  getAll: async (params?: {
+    startDate?: string
+    endDate?: string
+    teacherId?: string
+    studentId?: string
+    roomId?: number
+    status?: string
+  }) => {
+    const response = await api.get('/lessons', { params })
+    return response.data
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/lessons/${id}`)
+    return response.data
+  },
+
+  getByStudent: async (studentId: string) => {
+    const response = await api.get(`/lessons/student/${studentId}`)
+    return response.data
+  },
+
+  create: async (data: unknown) => {
+    const response = await api.post('/lessons', data)
+    return response.data
+  },
+
+  update: async (id: string, data: unknown) => {
+    const response = await api.put(`/lessons/${id}`, data)
+    return response.data
+  },
+
+  updateStatus: async (id: string, data: { status: string; cancellationReason?: string }) => {
+    const response = await api.put(`/lessons/${id}/status`, data)
+    return response.data
+  },
+
+  delete: async (id: string) => {
+    await api.delete(`/lessons/${id}`)
+  },
+
+  generate: async (data: { courseId: string; startDate: string; endDate: string; skipHolidays?: boolean }) => {
+    const response = await api.post('/lessons/generate', data)
+    return response.data
+  },
+
+  generateBulk: async (data: { startDate: string; endDate: string; skipHolidays?: boolean }) => {
+    const response = await api.post('/lessons/generate-bulk', data)
+    return response.data
+  },
+}
+
+// Calendar API
+export const calendarApi = {
+  getWeek: async (params?: { date?: string; teacherId?: string; roomId?: number }) => {
+    const response = await api.get('/calendar/week', { params })
+    return response.data
+  },
+
+  getDay: async (params?: { date?: string; teacherId?: string; roomId?: number }) => {
+    const response = await api.get('/calendar/day', { params })
+    return response.data
+  },
+
+  getMonth: async (params?: { year?: number; month?: number; teacherId?: string; roomId?: number }) => {
+    const response = await api.get('/calendar/month', { params })
+    return response.data
+  },
+
+  getTeacherSchedule: async (teacherId: string, date?: string) => {
+    const response = await api.get(`/calendar/teacher/${teacherId}`, { params: { date } })
+    return response.data
+  },
+
+  getRoomSchedule: async (roomId: number, date?: string) => {
+    const response = await api.get(`/calendar/room/${roomId}`, { params: { date } })
+    return response.data
+  },
+
+  checkAvailability: async (params: {
+    date: string
+    startTime: string
+    endTime: string
+    teacherId?: string
+    roomId?: number
+  }) => {
+    const response = await api.get('/calendar/availability', { params })
+    return response.data
+  },
+}
+
+// Holidays API
+export const holidaysApi = {
+  getAll: async () => {
+    const response = await api.get('/holidays')
+    return response.data
+  },
+
+  create: async (data: { name: string; startDate: string; endDate: string }) => {
+    const response = await api.post('/holidays', data)
+    return response.data
+  },
+
+  update: async (id: number, data: { name: string; startDate: string; endDate: string }) => {
+    const response = await api.put(`/holidays/${id}`, data)
+    return response.data
+  },
+
+  delete: async (id: number) => {
+    await api.delete(`/holidays/${id}`)
   },
 }

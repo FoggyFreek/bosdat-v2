@@ -228,6 +228,173 @@ export interface Enrollment {
   notes?: string
 }
 
+// Lesson types
+export type LessonStatus = 'Scheduled' | 'Completed' | 'Cancelled' | 'NoShow'
+
+export interface Lesson {
+  id: string
+  courseId: string
+  studentId?: string
+  studentName?: string
+  teacherId: string
+  teacherName: string
+  roomId?: number
+  roomName?: string
+  lessonTypeName: string
+  instrumentName: string
+  scheduledDate: string
+  startTime: string
+  endTime: string
+  status: LessonStatus
+  cancellationReason?: string
+  isInvoiced: boolean
+  isPaidToTeacher: boolean
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateLesson {
+  courseId: string
+  studentId?: string
+  teacherId: string
+  roomId?: number
+  scheduledDate: string
+  startTime: string
+  endTime: string
+  notes?: string
+}
+
+export interface UpdateLesson {
+  studentId?: string
+  teacherId: string
+  roomId?: number
+  scheduledDate: string
+  startTime: string
+  endTime: string
+  status: LessonStatus
+  cancellationReason?: string
+  notes?: string
+}
+
+export interface GenerateLessons {
+  courseId: string
+  startDate: string
+  endDate: string
+  skipHolidays?: boolean
+}
+
+export interface GenerateLessonsResult {
+  courseId: string
+  startDate: string
+  endDate: string
+  lessonsCreated: number
+  lessonsSkipped: number
+}
+
+export interface BulkGenerateLessons {
+  startDate: string
+  endDate: string
+  skipHolidays?: boolean
+}
+
+export interface BulkGenerateLessonsResult {
+  startDate: string
+  endDate: string
+  totalCoursesProcessed: number
+  totalLessonsCreated: number
+  totalLessonsSkipped: number
+  courseResults: GenerateLessonsResult[]
+}
+
+// Calendar types
+export interface CalendarLesson {
+  id: string
+  title: string
+  date: string
+  startTime: string
+  endTime: string
+  studentName?: string
+  teacherName: string
+  roomName?: string
+  instrumentName: string
+  status: LessonStatus
+}
+
+export interface Holiday {
+  id: number
+  name: string
+  startDate: string
+  endDate: string
+}
+
+export interface WeekCalendar {
+  weekStart: string
+  weekEnd: string
+  lessons: CalendarLesson[]
+  holidays: Holiday[]
+}
+
+export interface DayCalendar {
+  date: string
+  dayOfWeek: number
+  lessons: CalendarLesson[]
+  isHoliday: boolean
+  holidayName?: string
+}
+
+export interface MonthCalendar {
+  year: number
+  month: number
+  monthStart: string
+  monthEnd: string
+  lessonsByDate: Record<string, CalendarLesson[]>
+  holidays: Holiday[]
+  totalLessons: number
+}
+
+export interface Availability {
+  date: string
+  startTime: string
+  endTime: string
+  isAvailable: boolean
+  conflicts: Conflict[]
+}
+
+export interface Conflict {
+  type: string
+  description: string
+}
+
+// Student Enrollment types for detail views
+export interface StudentEnrollment {
+  id: string
+  courseId: string
+  instrumentName: string
+  lessonTypeName: string
+  teacherName: string
+  roomName?: string
+  dayOfWeek: number
+  startTime: string
+  endTime: string
+  enrolledAt: string
+  discountPercent: number
+  status: EnrollmentStatus
+}
+
+export interface CreateEnrollment {
+  studentId: string
+  courseId: string
+  discountPercent?: number
+  notes?: string
+}
+
+export interface UpdateEnrollment {
+  discountPercent: number
+  status: EnrollmentStatus
+  notes?: string
+}
+
 // API response types
 export interface ApiError {
   message: string

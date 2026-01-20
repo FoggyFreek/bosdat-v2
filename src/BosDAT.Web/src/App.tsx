@@ -8,6 +8,7 @@ import { StudentDetailPage } from './pages/StudentDetailPage'
 import { TeachersPage } from './pages/TeachersPage'
 import { TeacherDetailPage } from './pages/TeacherDetailPage'
 import { CoursesPage } from './pages/CoursesPage'
+import { SchedulePage } from './pages/SchedulePage'
 import { SettingsPage } from './pages/SettingsPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/teachers" element={<TeachersPage />} />
                 <Route path="/teachers/:id" element={<TeacherDetailPage />} />
                 <Route path="/courses" element={<CoursesPage />} />
+                <Route path="/schedule" element={<SchedulePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Routes>
             </Layout>
