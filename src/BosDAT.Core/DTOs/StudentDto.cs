@@ -19,6 +19,9 @@ public record StudentDto
     public Gender? Gender { get; init; }
     public StudentStatus Status { get; init; }
     public DateTime? EnrolledAt { get; init; }
+    public string? BillingContactName { get; init; }
+    public string? BillingContactEmail { get; init; }
+    public string? BillingContactPhone { get; init; }
     public string? BillingAddress { get; init; }
     public string? BillingPostalCode { get; init; }
     public string? BillingCity { get; init; }
@@ -42,6 +45,9 @@ public record CreateStudentDto
     public DateOnly? DateOfBirth { get; init; }
     public Gender? Gender { get; init; }
     public StudentStatus Status { get; init; } = StudentStatus.Active;
+    public string? BillingContactName { get; init; }
+    public string? BillingContactEmail { get; init; }
+    public string? BillingContactPhone { get; init; }
     public string? BillingAddress { get; init; }
     public string? BillingPostalCode { get; init; }
     public string? BillingCity { get; init; }
@@ -63,6 +69,9 @@ public record UpdateStudentDto
     public DateOnly? DateOfBirth { get; init; }
     public Gender? Gender { get; init; }
     public StudentStatus Status { get; init; }
+    public string? BillingContactName { get; init; }
+    public string? BillingContactEmail { get; init; }
+    public string? BillingContactPhone { get; init; }
     public string? BillingAddress { get; init; }
     public string? BillingPostalCode { get; init; }
     public string? BillingCity { get; init; }

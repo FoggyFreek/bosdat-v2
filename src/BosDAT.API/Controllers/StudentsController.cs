@@ -125,6 +125,9 @@ public class StudentsController : ControllerBase
             Gender = dto.Gender,
             Status = dto.Status,
             EnrolledAt = DateTime.UtcNow,
+            BillingContactName = dto.BillingContactName,
+            BillingContactEmail = dto.BillingContactEmail,
+            BillingContactPhone = dto.BillingContactPhone,
             BillingAddress = dto.BillingAddress,
             BillingPostalCode = dto.BillingPostalCode,
             BillingCity = dto.BillingCity,
@@ -167,6 +170,9 @@ public class StudentsController : ControllerBase
         student.DateOfBirth = dto.DateOfBirth;
         student.Gender = dto.Gender;
         student.Status = dto.Status;
+        student.BillingContactName = dto.BillingContactName;
+        student.BillingContactEmail = dto.BillingContactEmail;
+        student.BillingContactPhone = dto.BillingContactPhone;
         student.BillingAddress = dto.BillingAddress;
         student.BillingPostalCode = dto.BillingPostalCode;
         student.BillingCity = dto.BillingCity;
@@ -215,6 +221,9 @@ public class StudentsController : ControllerBase
             Gender = student.Gender,
             Status = student.Status,
             EnrolledAt = student.EnrolledAt,
+            BillingContactName = student.BillingContactName,
+            BillingContactEmail = student.BillingContactEmail,
+            BillingContactPhone = student.BillingContactPhone,
             BillingAddress = student.BillingAddress,
             BillingPostalCode = student.BillingPostalCode,
             BillingCity = student.BillingCity,

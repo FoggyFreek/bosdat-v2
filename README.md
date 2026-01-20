@@ -12,6 +12,7 @@ A modern web-based replacement for the NMI Access database, built with .NET 8 ba
 - **Courses Module**: List view, enrollments
 - **Schedule Module**: Weekly calendar view, lesson management
 - **Testing Infrastructure**: Vitest + React Testing Library setup
+- **Audit Logging**: Automatic tracking of all entity CRUD operations with user context
 
 ### In Progress
 - Invoicing module
@@ -42,10 +43,12 @@ bosdat-v2/
 │   │   ├── Program.cs
 │   │   └── appsettings.json
 │   ├── BosDAT.Core/             # Domain models & interfaces
+│   │   ├── Attributes/          # Custom attributes (e.g., SensitiveData)
 │   │   ├── Entities/
 │   │   ├── Interfaces/
 │   │   └── DTOs/
 │   ├── BosDAT.Infrastructure/   # EF Core, repositories
+│   │   ├── Audit/               # Audit logging helpers
 │   │   ├── Data/
 │   │   ├── Repositories/
 │   │   └── Services/
@@ -223,6 +226,18 @@ holidays (was: Vakanties)
 settings (was: Konstanten)
 ├── key, value, type
 ├── Examples: vat_rate, child_age_limit, registration_fee, etc.
+
+audit_logs (new - automatic audit trail)
+├── id (UUID)
+├── entity_name (Student, Invoice, etc.)
+├── entity_id
+├── action (Created, Updated, Deleted)
+├── old_values (JSONB - previous state)
+├── new_values (JSONB - new state)
+├── changed_properties (JSONB - list of modified fields)
+├── user_id, user_email (who made the change)
+├── ip_address (client IP)
+├── timestamp
 ```
 
 ## API Endpoints (RESTful)

@@ -2,14 +2,26 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Interfaces;
+using BosDAT.Infrastructure.Audit;
 
 namespace BosDAT.Infrastructure.Data;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
+    private readonly ICurrentUserService? _currentUserService;
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
+    }
+
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentUserService currentUserService)
+        : base(options)
+    {
+        _currentUserService = currentUserService;
     }
 
     public DbSet<Student> Students => Set<Student>();
@@ -29,6 +41,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Holiday> Holidays => Set<Holiday>();
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +79,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.PostalCode).HasMaxLength(20);
             entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.BillingContactName).HasMaxLength(200);
+            entity.Property(e => e.BillingContactEmail).HasMaxLength(255);
+            entity.Property(e => e.BillingContactPhone).HasMaxLength(20);
             entity.Property(e => e.BillingAddress).HasMaxLength(255);
             entity.Property(e => e.BillingPostalCode).HasMaxLength(20);
             entity.Property(e => e.BillingCity).HasMaxLength(100);
@@ -321,6 +337,27 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasIndex(e => e.Token);
         });
 
+        // AuditLog configuration
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.ToTable("audit_logs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EntityName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.EntityId).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Action).IsRequired();
+            entity.Property(e => e.OldValues).HasColumnType("jsonb");
+            entity.Property(e => e.NewValues).HasColumnType("jsonb");
+            entity.Property(e => e.ChangedProperties).HasColumnType("jsonb");
+            entity.Property(e => e.UserEmail).HasMaxLength(255);
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+
+            entity.HasIndex(e => e.EntityName);
+            entity.HasIndex(e => e.EntityId);
+            entity.HasIndex(e => e.Timestamp);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.EntityName, e.EntityId });
+        });
+
         // Seed initial data
         SeedData(modelBuilder);
     }
@@ -364,13 +401,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public override int SaveChanges()
     {
         UpdateTimestamps();
-        return base.SaveChanges();
+        var auditEntries = OnBeforeSaveChanges();
+        var result = base.SaveChanges();
+        OnAfterSaveChanges(auditEntries);
+        return result;
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         UpdateTimestamps();
-        return base.SaveChangesAsync(cancellationToken);
+        var auditEntries = OnBeforeSaveChanges();
+        var result = await base.SaveChangesAsync(cancellationToken);
+        await OnAfterSaveChangesAsync(auditEntries, cancellationToken);
+        return result;
     }
 
     private void UpdateTimestamps()
@@ -390,5 +433,67 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 entry.Entity.UpdatedAt = now;
             }
         }
+    }
+
+    private List<AuditEntry> OnBeforeSaveChanges()
+    {
+        ChangeTracker.DetectChanges();
+        var auditEntries = new List<AuditEntry>();
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            // Skip audit logs themselves to prevent infinite loops
+            if (entry.Entity is AuditLog)
+                continue;
+
+            // Only audit entities that inherit from BaseEntity
+            if (entry.Entity is not BaseEntity)
+                continue;
+
+            // Skip unchanged entities
+            if (entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
+                continue;
+
+            var auditEntry = new AuditEntry(entry);
+            auditEntries.Add(auditEntry);
+        }
+
+        return auditEntries;
+    }
+
+    private void OnAfterSaveChanges(List<AuditEntry> auditEntries)
+    {
+        if (auditEntries.Count == 0)
+            return;
+
+        foreach (var auditEntry in auditEntries)
+        {
+            var auditLog = auditEntry.ToAuditLog(
+                _currentUserService?.UserId,
+                _currentUserService?.UserEmail,
+                _currentUserService?.IpAddress);
+
+            AuditLogs.Add(auditLog);
+        }
+
+        base.SaveChanges();
+    }
+
+    private async Task OnAfterSaveChangesAsync(List<AuditEntry> auditEntries, CancellationToken cancellationToken)
+    {
+        if (auditEntries.Count == 0)
+            return;
+
+        foreach (var auditEntry in auditEntries)
+        {
+            var auditLog = auditEntry.ToAuditLog(
+                _currentUserService?.UserId,
+                _currentUserService?.UserEmail,
+                _currentUserService?.IpAddress);
+
+            AuditLogs.Add(auditLog);
+        }
+
+        await base.SaveChangesAsync(cancellationToken);
     }
 }

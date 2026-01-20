@@ -46,6 +46,9 @@ export interface Student {
   gender?: Gender
   status: StudentStatus
   enrolledAt?: string
+  billingContactName?: string
+  billingContactEmail?: string
+  billingContactPhone?: string
   billingAddress?: string
   billingPostalCode?: string
   billingCity?: string
@@ -77,6 +80,9 @@ export interface CreateStudent {
   dateOfBirth?: string
   gender?: Gender
   status?: StudentStatus
+  billingContactName?: string
+  billingContactEmail?: string
+  billingContactPhone?: string
   billingAddress?: string
   billingPostalCode?: string
   billingCity?: string

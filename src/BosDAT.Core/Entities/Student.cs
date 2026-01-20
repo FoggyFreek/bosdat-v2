@@ -35,6 +35,11 @@ public class Student : BaseEntity
     public StudentStatus Status { get; set; } = StudentStatus.Active;
     public DateTime? EnrolledAt { get; set; }
 
+    // Billing contact (if different payer, e.g., parent)
+    public string? BillingContactName { get; set; }
+    public string? BillingContactEmail { get; set; }
+    public string? BillingContactPhone { get; set; }
+
     // Billing address (if different)
     public string? BillingAddress { get; set; }
     public string? BillingPostalCode { get; set; }

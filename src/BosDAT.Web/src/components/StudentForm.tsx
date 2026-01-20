@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -10,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Student, StudentStatus, CreateStudent } from '@/types'
+import type { Student, StudentStatus, Gender, CreateStudent } from '@/types'
 
 interface StudentFormProps {
   student?: Student
@@ -22,15 +24,31 @@ interface StudentFormProps {
 interface FormData {
   firstName: string
   lastName: string
+  prefix: string
   email: string
   phone: string
+  phoneAlt: string
+  address: string
+  postalCode: string
+  city: string
+  dateOfBirth: string
+  gender: Gender | ''
   status: StudentStatus
+  billingContactName: string
+  billingContactEmail: string
+  billingContactPhone: string
+  billingAddress: string
+  billingPostalCode: string
+  billingCity: string
+  autoDebit: boolean
+  notes: string
 }
 
 interface FormErrors {
   firstName?: string
   lastName?: string
   email?: string
+  billingContactEmail?: string
 }
 
 export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentFormProps) {
@@ -40,9 +58,24 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
+    prefix: '',
     email: '',
     phone: '',
+    phoneAlt: '',
+    address: '',
+    postalCode: '',
+    city: '',
+    dateOfBirth: '',
+    gender: '',
     status: 'Active',
+    billingContactName: '',
+    billingContactEmail: '',
+    billingContactPhone: '',
+    billingAddress: '',
+    billingPostalCode: '',
+    billingCity: '',
+    autoDebit: false,
+    notes: '',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -52,9 +85,24 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
       setFormData({
         firstName: student.firstName,
         lastName: student.lastName,
+        prefix: student.prefix || '',
         email: student.email,
         phone: student.phone || '',
+        phoneAlt: student.phoneAlt || '',
+        address: student.address || '',
+        postalCode: student.postalCode || '',
+        city: student.city || '',
+        dateOfBirth: student.dateOfBirth || '',
+        gender: student.gender || '',
         status: student.status,
+        billingContactName: student.billingContactName || '',
+        billingContactEmail: student.billingContactEmail || '',
+        billingContactPhone: student.billingContactPhone || '',
+        billingAddress: student.billingAddress || '',
+        billingPostalCode: student.billingPostalCode || '',
+        billingCity: student.billingCity || '',
+        autoDebit: student.autoDebit,
+        notes: student.notes || '',
       })
     }
   }, [student])
@@ -81,6 +129,10 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
       newErrors.email = 'Please enter a valid email address'
     }
 
+    if (formData.billingContactEmail.trim() && !validateEmail(formData.billingContactEmail)) {
+      newErrors.billingContactEmail = 'Please enter a valid email address'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -95,9 +147,24 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
     const submitData: CreateStudent = {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
+      prefix: formData.prefix.trim() || undefined,
       email: formData.email.trim(),
       phone: formData.phone.trim() || undefined,
+      phoneAlt: formData.phoneAlt.trim() || undefined,
+      address: formData.address.trim() || undefined,
+      postalCode: formData.postalCode.trim() || undefined,
+      city: formData.city.trim() || undefined,
+      dateOfBirth: formData.dateOfBirth || undefined,
+      gender: formData.gender || undefined,
       status: formData.status,
+      billingContactName: formData.billingContactName.trim() || undefined,
+      billingContactEmail: formData.billingContactEmail.trim() || undefined,
+      billingContactPhone: formData.billingContactPhone.trim() || undefined,
+      billingAddress: formData.billingAddress.trim() || undefined,
+      billingPostalCode: formData.billingPostalCode.trim() || undefined,
+      billingCity: formData.billingCity.trim() || undefined,
+      autoDebit: formData.autoDebit,
+      notes: formData.notes.trim() || undefined,
     }
 
     const result = await onSubmit(submitData)
@@ -106,7 +173,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
     }
   }
 
-  const handleChange = (field: keyof FormData, value: string) => {
+  const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
@@ -114,93 +181,294 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
       {error && (
         <div className="rounded-md bg-red-50 p-4">
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">
-            First Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="firstName"
-            value={formData.firstName}
-            onChange={(e) => handleChange('firstName', e.target.value)}
-            placeholder="Enter first name"
-            className={errors.firstName ? 'border-red-500' : ''}
-          />
-          {errors.firstName && (
-            <p className="text-sm text-red-500">{errors.firstName}</p>
+      {/* Basic Information Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Basic Information</h3>
+        <div className="grid gap-6 md:grid-cols-3">
+          {isEditMode && (
+            <div className="space-y-2">
+              <Label htmlFor="prefix">Prefix</Label>
+              <Input
+                id="prefix"
+                value={formData.prefix}
+                onChange={(e) => handleChange('prefix', e.target.value)}
+                placeholder="e.g., van, de"
+              />
+            </div>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="firstName">
+              First Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="firstName"
+              value={formData.firstName}
+              onChange={(e) => handleChange('firstName', e.target.value)}
+              placeholder="Enter first name"
+              className={errors.firstName ? 'border-red-500' : ''}
+            />
+            {errors.firstName && (
+              <p className="text-sm text-red-500">{errors.firstName}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="lastName">
+              Last Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="lastName"
+              value={formData.lastName}
+              onChange={(e) => handleChange('lastName', e.target.value)}
+              placeholder="Enter last name"
+              className={errors.lastName ? 'border-red-500' : ''}
+            />
+            {errors.lastName && (
+              <p className="text-sm text-red-500">{errors.lastName}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="email">
+              Email <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              placeholder="Enter email address"
+              className={errors.email ? 'border-red-500' : ''}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleChange('phone', e.target.value)}
+              placeholder="Enter phone number"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="lastName">
-            Last Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="lastName"
-            value={formData.lastName}
-            onChange={(e) => handleChange('lastName', e.target.value)}
-            placeholder="Enter last name"
-            className={errors.lastName ? 'border-red-500' : ''}
-          />
-          {errors.lastName && (
-            <p className="text-sm text-red-500">{errors.lastName}</p>
-          )}
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={formData.status}
+            onValueChange={(value) => handleChange('status', value)}
+          >
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Active">Active</SelectItem>
+              <SelectItem value="Inactive">Inactive</SelectItem>
+              <SelectItem value="Trial">Trial</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="email">
-            Email <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="Enter email address"
-            className={errors.email ? 'border-red-500' : ''}
-          />
-          {errors.email && (
-            <p className="text-sm text-red-500">{errors.email}</p>
-          )}
-        </div>
+      {/* Edit Mode: Additional Fields */}
+      {isEditMode && (
+        <>
+          {/* Contact Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Contact</h3>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="phoneAlt">Alternative Phone</Label>
+                <Input
+                  id="phoneAlt"
+                  type="tel"
+                  value={formData.phoneAlt}
+                  onChange={(e) => handleChange('phoneAlt', e.target.value)}
+                  placeholder="Enter alternative phone"
+                />
+              </div>
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
-          <Input
-            id="phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="Enter phone number"
-          />
-        </div>
-      </div>
+          {/* Address Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Address</h3>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => handleChange('address', e.target.value)}
+                placeholder="Street and number"
+              />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">Postal Code</Label>
+                <Input
+                  id="postalCode"
+                  value={formData.postalCode}
+                  onChange={(e) => handleChange('postalCode', e.target.value)}
+                  placeholder="e.g., 1234 AB"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="Enter city"
+                />
+              </div>
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) => handleChange('status', value)}
-        >
-          <SelectTrigger className="w-full md:w-[200px]">
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Inactive">Inactive</SelectItem>
-            <SelectItem value="Trial">Trial</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          {/* Personal Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Personal</h3>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={formData.gender}
+                  onValueChange={(value) => handleChange('gender', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="PreferNotToSay">Prefer not to say</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Billing / Payer Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Billing / Payer</h3>
+            <p className="text-sm text-muted-foreground">
+              Fill in these fields if someone else (e.g., a parent) should receive invoices.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="billingContactName">Contact Name</Label>
+              <Input
+                id="billingContactName"
+                value={formData.billingContactName}
+                onChange={(e) => handleChange('billingContactName', e.target.value)}
+                placeholder="Name of person receiving invoices"
+              />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="billingContactEmail">Contact Email</Label>
+                <Input
+                  id="billingContactEmail"
+                  type="email"
+                  value={formData.billingContactEmail}
+                  onChange={(e) => handleChange('billingContactEmail', e.target.value)}
+                  placeholder="Email for invoices"
+                  className={errors.billingContactEmail ? 'border-red-500' : ''}
+                />
+                {errors.billingContactEmail && (
+                  <p className="text-sm text-red-500">{errors.billingContactEmail}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="billingContactPhone">Contact Phone</Label>
+                <Input
+                  id="billingContactPhone"
+                  type="tel"
+                  value={formData.billingContactPhone}
+                  onChange={(e) => handleChange('billingContactPhone', e.target.value)}
+                  placeholder="Phone for billing inquiries"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="billingAddress">Billing Address</Label>
+              <Input
+                id="billingAddress"
+                value={formData.billingAddress}
+                onChange={(e) => handleChange('billingAddress', e.target.value)}
+                placeholder="Street and number"
+              />
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="billingPostalCode">Billing Postal Code</Label>
+                <Input
+                  id="billingPostalCode"
+                  value={formData.billingPostalCode}
+                  onChange={(e) => handleChange('billingPostalCode', e.target.value)}
+                  placeholder="e.g., 1234 AB"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="billingCity">Billing City</Label>
+                <Input
+                  id="billingCity"
+                  value={formData.billingCity}
+                  onChange={(e) => handleChange('billingCity', e.target.value)}
+                  placeholder="Enter city"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Other Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Other</h3>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="autoDebit"
+                checked={formData.autoDebit}
+                onCheckedChange={(checked) => handleChange('autoDebit', !!checked)}
+              />
+              <Label htmlFor="autoDebit" className="font-normal">
+                Enable automatic debit for this student
+              </Label>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => handleChange('notes', e.target.value)}
+                placeholder="Additional notes about this student"
+                rows={4}
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="flex gap-4 pt-4">
         <Button type="submit" disabled={isSubmitting}>

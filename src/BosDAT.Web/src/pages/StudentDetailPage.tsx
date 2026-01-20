@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Plus, Music, Trash2 } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, Plus, Music, Trash2, User, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -148,6 +148,15 @@ export function StudentDetailPage() {
                 </div>
               </div>
             )}
+            {student.phoneAlt && (
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Alternative Phone</p>
+                  <p>{student.phoneAlt}</p>
+                </div>
+              </div>
+            )}
             {student.address && (
               <div className="flex items-center gap-3">
                 <MapPin className="h-5 w-5 text-muted-foreground" />
@@ -161,6 +170,20 @@ export function StudentDetailPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Personal Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {student.prefix && (
+              <div>
+                <p className="text-sm text-muted-foreground">Prefix</p>
+                <p>{student.prefix}</p>
+              </div>
+            )}
             {student.dateOfBirth && (
               <div className="flex items-center gap-3">
                 <Calendar className="h-5 w-5 text-muted-foreground" />
@@ -170,12 +193,77 @@ export function StudentDetailPage() {
                 </div>
               </div>
             )}
+            {student.gender && (
+              <div>
+                <p className="text-sm text-muted-foreground">Gender</p>
+                <p>{student.gender === 'PreferNotToSay' ? 'Prefer not to say' : student.gender}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Billing / Payer
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!student.billingContactName && !student.billingAddress ? (
+              <p className="text-muted-foreground">Same as student</p>
+            ) : (
+              <>
+                {student.billingContactName && (
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact Name</p>
+                      <p>{student.billingContactName}</p>
+                    </div>
+                  </div>
+                )}
+                {student.billingContactEmail && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact Email</p>
+                      <p>{student.billingContactEmail}</p>
+                    </div>
+                  </div>
+                )}
+                {student.billingContactPhone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Contact Phone</p>
+                      <p>{student.billingContactPhone}</p>
+                    </div>
+                  </div>
+                )}
+                {student.billingAddress && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Billing Address</p>
+                      <p>
+                        {student.billingAddress}
+                        <br />
+                        {student.billingPostalCode} {student.billingCity}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Student Details</CardTitle>
+            <CardTitle>Account Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -189,7 +277,7 @@ export function StudentDetailPage() {
             {student.notes && (
               <div>
                 <p className="text-sm text-muted-foreground">Notes</p>
-                <p>{student.notes}</p>
+                <p className="whitespace-pre-wrap">{student.notes}</p>
               </div>
             )}
           </CardContent>
