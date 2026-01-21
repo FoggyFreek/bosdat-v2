@@ -232,27 +232,37 @@ export const coursesApi = {
 // Lesson Types API
 export const lessonTypesApi = {
   getAll: async (params?: { activeOnly?: boolean; instrumentId?: number }) => {
-    const response = await api.get('/lessontypes', { params })
+    const response = await api.get('/lesson-types', { params })
     return response.data
   },
 
   getById: async (id: number) => {
-    const response = await api.get(`/lessontypes/${id}`)
+    const response = await api.get(`/lesson-types/${id}`)
     return response.data
   },
 
   create: async (data: unknown) => {
-    const response = await api.post('/lessontypes', data)
+    const response = await api.post('/lesson-types', data)
     return response.data
   },
 
   update: async (id: number, data: unknown) => {
-    const response = await api.put(`/lessontypes/${id}`, data)
+    const response = await api.put(`/lesson-types/${id}`, data)
     return response.data
   },
 
   delete: async (id: number) => {
-    await api.delete(`/lessontypes/${id}`)
+    await api.delete(`/lesson-types/${id}`)
+  },
+
+  reactivate: async (id: number) => {
+    const response = await api.put(`/lesson-types/${id}/reactivate`)
+    return response.data
+  },
+
+  getTeachersForInstrument: async (instrumentId: number) => {
+    const response = await api.get(`/lesson-types/teachers-for-instrument/${instrumentId}`)
+    return response.data
   },
 }
 
@@ -400,5 +410,23 @@ export const holidaysApi = {
 
   delete: async (id: number) => {
     await api.delete(`/holidays/${id}`)
+  },
+}
+
+// Settings API
+export const settingsApi = {
+  getAll: async () => {
+    const response = await api.get('/settings')
+    return response.data
+  },
+
+  getByKey: async (key: string) => {
+    const response = await api.get(`/settings/${key}`)
+    return response.data
+  },
+
+  update: async (key: string, value: string) => {
+    const response = await api.put(`/settings/${key}`, { value })
+    return response.data
   },
 }

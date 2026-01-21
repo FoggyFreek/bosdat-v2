@@ -394,7 +394,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             new Setting { Key = "registration_fee", Value = "25", Type = "decimal", Description = "One-time registration fee" },
             new Setting { Key = "invoice_prefix", Value = "NMI", Type = "string", Description = "Prefix for invoice numbers" },
             new Setting { Key = "payment_due_days", Value = "14", Type = "int", Description = "Days until payment is due" },
-            new Setting { Key = "school_name", Value = "Nieuwe Muziekschool Ittersum", Type = "string", Description = "School name" }
+            new Setting { Key = "school_name", Value = "Nieuwe Muziekschool Ittersum", Type = "string", Description = "School name" },
+            new Setting { Key = "child_discount_percent", Value = "10", Type = "decimal", Description = "Default percentage discount for child pricing" },
+            new Setting { Key = "group_max_students", Value = "6", Type = "int", Description = "Default maximum students for group lessons" },
+            new Setting { Key = "workshop_max_students", Value = "12", Type = "int", Description = "Default maximum students for workshops" }
         );
     }
 

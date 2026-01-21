@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useState, createContext, useContext, ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, X, Check } from 'lucide-react'
+import {
+  Plus, Pencil, Trash2, X, Check,
+  User, SlidersHorizontal, Music, BookOpen,
+  DoorOpen, CalendarDays, Settings2
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,25 +16,326 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { instrumentsApi, roomsApi, lessonTypesApi, holidaysApi } from '@/services/api'
-import type { Instrument, Room, LessonType, Holiday, InstrumentCategory } from '@/types'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { instrumentsApi, roomsApi, lessonTypesApi, holidaysApi, settingsApi } from '@/services/api'
+import type { Instrument, Room, LessonType, Holiday, InstrumentCategory, LessonTypeCategory } from '@/types'
 import { cn, formatDate, formatCurrency } from '@/lib/utils'
 
-export function SettingsPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your music school settings</p>
-      </div>
+// Settings dirty state context
+interface SettingsDirtyContextType {
+  isDirty: boolean
+  setIsDirty: (dirty: boolean) => void
+}
 
-      <div className="grid gap-6">
-        <InstrumentsSection />
-        <LessonTypesSection />
-        <RoomsSection />
-        <HolidaysSection />
+const SettingsDirtyContext = createContext<SettingsDirtyContextType>({
+  isDirty: false,
+  setIsDirty: () => {},
+})
+
+export const useSettingsDirty = () => useContext(SettingsDirtyContext)
+
+// Navigation items configuration
+type SettingKey = 'profile' | 'preferences' | 'instruments' | 'lesson-types' | 'rooms' | 'holidays' | 'system'
+
+interface NavItem {
+  key: SettingKey
+  label: string
+  icon: ReactNode
+}
+
+interface NavGroup {
+  label: string
+  items: NavItem[]
+}
+
+const navigationGroups: NavGroup[] = [
+  {
+    label: 'ACCOUNT',
+    items: [
+      { key: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
+      { key: 'preferences', label: 'Preferences', icon: <SlidersHorizontal className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'LESSONS',
+    items: [
+      { key: 'instruments', label: 'Instruments', icon: <Music className="h-4 w-4" /> },
+      { key: 'lesson-types', label: 'Lesson types', icon: <BookOpen className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'SCHEDULING',
+    items: [
+      { key: 'rooms', label: 'Rooms', icon: <DoorOpen className="h-4 w-4" /> },
+      { key: 'holidays', label: 'Holidays', icon: <CalendarDays className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'GENERAL',
+    items: [
+      { key: 'system', label: 'System settings', icon: <Settings2 className="h-4 w-4" /> },
+    ],
+  },
+]
+
+export function SettingsPage() {
+  const [selectedSetting, setSelectedSetting] = useState<SettingKey>('instruments')
+  const [isDirty, setIsDirty] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<SettingKey | null>(null)
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+
+  const handleNavigation = (key: SettingKey) => {
+    if (isDirty && key !== selectedSetting) {
+      setPendingNavigation(key)
+      setShowUnsavedDialog(true)
+    } else {
+      setSelectedSetting(key)
+    }
+  }
+
+  const handleDiscardChanges = () => {
+    setIsDirty(false)
+    if (pendingNavigation) {
+      setSelectedSetting(pendingNavigation)
+      setPendingNavigation(null)
+    }
+    setShowUnsavedDialog(false)
+  }
+
+  const handleCancelNavigation = () => {
+    setPendingNavigation(null)
+    setShowUnsavedDialog(false)
+  }
+
+  const renderContent = () => {
+    switch (selectedSetting) {
+      case 'profile':
+        return <ProfileSection />
+      case 'preferences':
+        return <PreferencesSection />
+      case 'instruments':
+        return <InstrumentsSection />
+      case 'lesson-types':
+        return <LessonTypesSection />
+      case 'rooms':
+        return <RoomsSection />
+      case 'holidays':
+        return <HolidaysSection />
+      case 'system':
+        return <SystemSettingsSection />
+      default:
+        return null
+    }
+  }
+
+  return (
+    <SettingsDirtyContext.Provider value={{ isDirty, setIsDirty }}>
+      <div className="flex h-[calc(100vh-8rem)]">
+        {/* Navigation Sidebar */}
+        <nav className="w-auto min-w-[200px] border-r bg-muted/30 p-4 overflow-y-auto">
+          <h1 className="text-xl font-bold mb-6">Settings</h1>
+          <div className="space-y-6">
+            {navigationGroups.map((group) => (
+              <div key={group.label}>
+                <h2 className="text-xs font-medium text-muted-foreground tracking-wider mb-2">
+                  {group.label}
+                </h2>
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() => handleNavigation(item.key)}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors text-left',
+                        selectedSetting === item.key
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted'
+                      )}
+                    >
+                      {item.icon}
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </nav>
+
+        {/* Content Area */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          {renderContent()}
+        </main>
+
+        {/* Unsaved Changes Dialog */}
+        <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Unsaved changes</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have unsaved changes. Do you want to discard them and navigate away?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleCancelNavigation}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDiscardChanges}>Discard changes</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-    </div>
+    </SettingsDirtyContext.Provider>
+  )
+}
+
+// Placeholder sections
+function ProfileSection() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Profile</CardTitle>
+        <CardDescription>Manage your account profile</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-center py-12 text-muted-foreground">
+          <div className="text-center">
+            <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Profile settings coming soon</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function PreferencesSection() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Preferences</CardTitle>
+        <CardDescription>Customize your experience</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-center py-12 text-muted-foreground">
+          <div className="text-center">
+            <SlidersHorizontal className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Preference settings coming soon</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function SystemSettingsSection() {
+  const queryClient = useQueryClient()
+  const [editKey, setEditKey] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const { setIsDirty } = useSettingsDirty()
+
+  const { data: settings = [], isLoading } = useQuery<{ key: string; value: string; type?: string; description?: string }[]>({
+    queryKey: ['settings'],
+    queryFn: () => settingsApi.getAll(),
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string }) => settingsApi.update(key, value),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] })
+      setEditKey(null)
+      setEditValue('')
+      setIsDirty(false)
+    },
+  })
+
+  const startEdit = (key: string, value: string) => {
+    setEditKey(key)
+    setEditValue(value)
+    setIsDirty(true)
+  }
+
+  const cancelEdit = () => {
+    setEditKey(null)
+    setEditValue('')
+    setIsDirty(false)
+  }
+
+  const formatSettingName = (key: string) => {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>System Settings</CardTitle>
+        <CardDescription>Configure application-wide settings</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : settings.length === 0 ? (
+          <p className="text-muted-foreground">No settings configured</p>
+        ) : (
+          <div className="divide-y">
+            {settings.map((setting) => (
+              <div key={setting.key} className="flex items-center justify-between py-3">
+                {editKey === setting.key ? (
+                  <div className="flex gap-2 flex-1 items-center">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{formatSettingName(setting.key)}</p>
+                      <Input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      onClick={() => updateMutation.mutate({ key: setting.key, value: editValue })}
+                      disabled={updateMutation.isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={cancelEdit}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <p className="font-medium">{formatSettingName(setting.key)}</p>
+                      <p className="text-sm text-muted-foreground">{setting.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                        {setting.value}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => startEdit(setting.key, setting.value)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
@@ -39,6 +344,7 @@ function InstrumentsSection() {
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [formData, setFormData] = useState<{ name: string; category: InstrumentCategory }>({ name: '', category: 'Other' })
+  const { setIsDirty } = useSettingsDirty()
 
   const { data: instruments = [], isLoading } = useQuery<Instrument[]>({
     queryKey: ['instruments'],
@@ -51,6 +357,7 @@ function InstrumentsSection() {
       queryClient.invalidateQueries({ queryKey: ['instruments'] })
       setShowAdd(false)
       setFormData({ name: '', category: 'Other' })
+      setIsDirty(false)
     },
   })
 
@@ -60,10 +367,33 @@ function InstrumentsSection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instruments'] })
       setEditId(null)
+      setIsDirty(false)
     },
   })
 
   const categories = ['String', 'Percussion', 'Vocal', 'Keyboard', 'Wind', 'Brass', 'Electronic', 'Other']
+
+  const handleShowAdd = () => {
+    setShowAdd(true)
+    setIsDirty(true)
+  }
+
+  const handleCancelAdd = () => {
+    setShowAdd(false)
+    setFormData({ name: '', category: 'Other' })
+    setIsDirty(false)
+  }
+
+  const handleStartEdit = (instrument: Instrument) => {
+    setEditId(instrument.id)
+    setFormData({ name: instrument.name, category: instrument.category })
+    setIsDirty(true)
+  }
+
+  const handleCancelEdit = () => {
+    setEditId(null)
+    setIsDirty(false)
+  }
 
   return (
     <Card>
@@ -72,7 +402,7 @@ function InstrumentsSection() {
           <CardTitle>Instruments</CardTitle>
           <CardDescription>Manage available instruments for lessons</CardDescription>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(true)}>
+        <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
           Add
         </Button>
@@ -102,7 +432,7 @@ function InstrumentsSection() {
             <Button onClick={() => createMutation.mutate(formData)} disabled={!formData.name || createMutation.isPending}>
               <Check className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" onClick={() => { setShowAdd(false); setFormData({ name: '', category: 'Other' }) }}>
+            <Button variant="ghost" onClick={handleCancelAdd}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -141,7 +471,7 @@ function InstrumentsSection() {
                     <Button size="icon" onClick={() => updateMutation.mutate({ id: instrument.id, data: formData })}>
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => setEditId(null)}>
+                    <Button size="icon" variant="ghost" onClick={handleCancelEdit}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -161,10 +491,7 @@ function InstrumentsSection() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => {
-                          setEditId(instrument.id)
-                          setFormData({ name: instrument.name, category: instrument.category })
-                        }}
+                        onClick={() => handleStartEdit(instrument)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -183,15 +510,26 @@ function InstrumentsSection() {
 function LessonTypesSection() {
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
-  const [formData, setFormData] = useState({
+  const [editId, setEditId] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [teacherWarning, setTeacherWarning] = useState<string | null>(null)
+  const [useCustomDuration, setUseCustomDuration] = useState(false)
+  const { setIsDirty } = useSettingsDirty()
+
+  const defaultFormData = {
     name: '',
     instrumentId: '',
     durationMinutes: '30',
-    type: 'Individual' as const,
+    customDuration: '',
+    type: 'Individual' as LessonTypeCategory,
     priceAdult: '',
     priceChild: '',
     maxStudents: '1',
-  })
+    isActive: true,
+  }
+  const [formData, setFormData] = useState(defaultFormData)
+
+  const durationOptions = ['20', '30', '40', '45', '50', '60', '90', '120']
 
   const { data: lessonTypes = [], isLoading } = useQuery<LessonType[]>({
     queryKey: ['lessonTypes'],
@@ -203,12 +541,79 @@ function LessonTypesSection() {
     queryFn: () => instrumentsApi.getAll({ activeOnly: true }),
   })
 
+  const { data: settings = [] } = useQuery<{ key: string; value: string }[]>({
+    queryKey: ['settings'],
+    queryFn: () => settingsApi.getAll(),
+  })
+
+  const childDiscountPercent = parseFloat(settings.find(s => s.key === 'child_discount_percent')?.value || '10')
+  const groupMaxStudents = parseInt(settings.find(s => s.key === 'group_max_students')?.value || '6')
+  const workshopMaxStudents = parseInt(settings.find(s => s.key === 'workshop_max_students')?.value || '12')
+
+  const checkTeachersForInstrument = async (instrumentId: string) => {
+    if (!instrumentId) {
+      setTeacherWarning(null)
+      return
+    }
+    try {
+      const result = await lessonTypesApi.getTeachersForInstrument(parseInt(instrumentId))
+      if (!result.hasTeachers) {
+        setTeacherWarning(`No active teachers teach ${result.instrumentName}`)
+      } else {
+        setTeacherWarning(null)
+      }
+    } catch {
+      setTeacherWarning(null)
+    }
+  }
+
+  const handleInstrumentChange = (value: string) => {
+    setFormData({ ...formData, instrumentId: value })
+    checkTeachersForInstrument(value)
+  }
+
+  const handleTypeChange = (value: string) => {
+    let maxStudents = '1'
+    if (value === 'Group') maxStudents = groupMaxStudents.toString()
+    if (value === 'Workshop') maxStudents = workshopMaxStudents.toString()
+    setFormData({ ...formData, type: value as typeof formData.type, maxStudents })
+  }
+
+  const handleAdultPriceChange = (value: string) => {
+    const adultPrice = parseFloat(value) || 0
+    const childPrice = (adultPrice * (1 - childDiscountPercent / 100)).toFixed(2)
+    setFormData({ ...formData, priceAdult: value, priceChild: childPrice })
+  }
+
+  const handleChildPriceChange = (value: string) => {
+    setFormData({ ...formData, priceChild: value })
+    if (parseFloat(value) > parseFloat(formData.priceAdult)) {
+      setError('Child price cannot be higher than adult price')
+    } else {
+      setError(null)
+    }
+  }
+
+  const getDuration = () => {
+    return useCustomDuration ? formData.customDuration : formData.durationMinutes
+  }
+
+  const resetForm = () => {
+    setFormData(defaultFormData)
+    setShowAdd(false)
+    setEditId(null)
+    setError(null)
+    setTeacherWarning(null)
+    setUseCustomDuration(false)
+    setIsDirty(false)
+  }
+
   const createMutation = useMutation({
     mutationFn: (data: typeof formData) =>
       lessonTypesApi.create({
         name: data.name,
         instrumentId: parseInt(data.instrumentId),
-        durationMinutes: parseInt(data.durationMinutes),
+        durationMinutes: parseInt(getDuration()),
         type: data.type,
         priceAdult: parseFloat(data.priceAdult),
         priceChild: parseFloat(data.priceChild),
@@ -216,18 +621,78 @@ function LessonTypesSection() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
-      setShowAdd(false)
-      setFormData({
-        name: '',
-        instrumentId: '',
-        durationMinutes: '30',
-        type: 'Individual',
-        priceAdult: '',
-        priceChild: '',
-        maxStudents: '1',
-      })
+      resetForm()
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      setError(err.response?.data?.message || 'Failed to create lesson type')
     },
   })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: typeof formData }) =>
+      lessonTypesApi.update(id, {
+        name: data.name,
+        instrumentId: parseInt(data.instrumentId),
+        durationMinutes: parseInt(getDuration()),
+        type: data.type,
+        priceAdult: parseFloat(data.priceAdult),
+        priceChild: parseFloat(data.priceChild),
+        maxStudents: parseInt(data.maxStudents),
+        isActive: data.isActive,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+      resetForm()
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      setError(err.response?.data?.message || 'Failed to update lesson type')
+    },
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: (id: number) => lessonTypesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+    },
+    onError: (err: { response?: { data?: { message?: string } } }) => {
+      setError(err.response?.data?.message || 'Failed to archive lesson type')
+    },
+  })
+
+  const reactivateMutation = useMutation({
+    mutationFn: (id: number) => lessonTypesApi.reactivate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+    },
+  })
+
+  const startEdit = (lt: LessonType) => {
+    const isCustom = !durationOptions.includes(lt.durationMinutes.toString())
+    setFormData({
+      name: lt.name,
+      instrumentId: lt.instrumentId.toString(),
+      durationMinutes: isCustom ? '30' : lt.durationMinutes.toString(),
+      customDuration: isCustom ? lt.durationMinutes.toString() : '',
+      type: lt.type,
+      priceAdult: lt.priceAdult.toFixed(2),
+      priceChild: lt.priceChild.toFixed(2),
+      maxStudents: lt.maxStudents.toString(),
+      isActive: lt.isActive,
+    })
+    setUseCustomDuration(isCustom)
+    setEditId(lt.id)
+    setShowAdd(false)
+    setIsDirty(true)
+    checkTeachersForInstrument(lt.instrumentId.toString())
+  }
+
+  const handleShowAdd = () => {
+    resetForm()
+    setShowAdd(true)
+    setIsDirty(true)
+  }
+
+  const isFormValid = formData.name && formData.instrumentId && formData.priceAdult && !error
 
   return (
     <Card>
@@ -236,17 +701,30 @@ function LessonTypesSection() {
           <CardTitle>Lesson Types</CardTitle>
           <CardDescription>Configure types of lessons and pricing</CardDescription>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(true)}>
+        <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
           Add
         </Button>
       </CardHeader>
       <CardContent>
-        {showAdd && (
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            {error}
+            <button className="ml-2 text-red-900" onClick={() => setError(null)}>×</button>
+          </div>
+        )}
+
+        {(showAdd || editId !== null) && (
           <div className="mb-4 p-4 bg-muted/50 rounded-lg space-y-3">
+            <h4 className="font-medium">{editId ? 'Edit Lesson Type' : 'New Lesson Type'}</h4>
+            {teacherWarning && (
+              <div className="p-2 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded text-sm">
+                {teacherWarning}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Name</Label>
+                <Label>Name *</Label>
                 <Input
                   placeholder="e.g., Piano 30 min"
                   value={formData.name}
@@ -254,8 +732,8 @@ function LessonTypesSection() {
                 />
               </div>
               <div>
-                <Label>Instrument</Label>
-                <Select value={formData.instrumentId} onValueChange={(v) => setFormData({ ...formData, instrumentId: v })}>
+                <Label>Instrument *</Label>
+                <Select value={formData.instrumentId} onValueChange={handleInstrumentChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select instrument" />
                   </SelectTrigger>
@@ -268,20 +746,41 @@ function LessonTypesSection() {
               </div>
               <div>
                 <Label>Duration (min)</Label>
-                <Select value={formData.durationMinutes} onValueChange={(v) => setFormData({ ...formData, durationMinutes: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['15', '30', '40', '45', '60', '90'].map((d) => (
-                      <SelectItem key={d} value={d}>{d} minutes</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  {!useCustomDuration ? (
+                    <Select value={formData.durationMinutes} onValueChange={(v) => setFormData({ ...formData, durationMinutes: v })}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {durationOptions.map((d) => (
+                          <SelectItem key={d} value={d}>{d} min</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Custom"
+                      value={formData.customDuration}
+                      onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
+                      className="flex-1"
+                    />
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setUseCustomDuration(!useCustomDuration)}
+                  >
+                    {useCustomDuration ? 'Preset' : 'Custom'}
+                  </Button>
+                </div>
               </div>
               <div>
                 <Label>Type</Label>
-                <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v as typeof formData.type })}>
+                <Select value={formData.type} onValueChange={handleTypeChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -293,33 +792,56 @@ function LessonTypesSection() {
                 </Select>
               </div>
               <div>
-                <Label>Price Adult</Label>
+                <Label>Price Adult (€) *</Label>
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   placeholder="0.00"
                   value={formData.priceAdult}
-                  onChange={(e) => setFormData({ ...formData, priceAdult: e.target.value })}
+                  onChange={(e) => handleAdultPriceChange(e.target.value)}
                 />
               </div>
               <div>
-                <Label>Price Child</Label>
+                <Label>Price Child (€)</Label>
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   placeholder="0.00"
                   value={formData.priceChild}
-                  onChange={(e) => setFormData({ ...formData, priceChild: e.target.value })}
+                  onChange={(e) => handleChildPriceChange(e.target.value)}
+                  className={parseFloat(formData.priceChild) > parseFloat(formData.priceAdult) ? 'border-red-500' : ''}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Default: {childDiscountPercent}% discount from adult price
+                </p>
               </div>
+              {formData.type !== 'Individual' && (
+                <div>
+                  <Label>Max Students</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={formData.maxStudents}
+                    onChange={(e) => setFormData({ ...formData, maxStudents: e.target.value })}
+                  />
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+              <Button variant="outline" onClick={resetForm}>Cancel</Button>
               <Button
-                onClick={() => createMutation.mutate(formData)}
-                disabled={!formData.name || !formData.instrumentId || createMutation.isPending}
+                onClick={() => {
+                  if (editId) {
+                    updateMutation.mutate({ id: editId, data: formData })
+                  } else {
+                    createMutation.mutate(formData)
+                  }
+                }}
+                disabled={!isFormValid || createMutation.isPending || updateMutation.isPending}
               >
-                Create
+                {editId ? 'Save' : 'Create'}
               </Button>
             </div>
           </div>
@@ -335,15 +857,62 @@ function LessonTypesSection() {
           <div className="divide-y">
             {lessonTypes.map((lt) => (
               <div key={lt.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="font-medium">{lt.name}</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{lt.name}</p>
+                    <span className={cn(
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
+                      lt.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    )}>
+                      {lt.isActive ? 'Active' : 'Archived'}
+                    </span>
+                    {!lt.hasTeachersForInstrument && (
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800">
+                        No teachers
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     {lt.instrumentName} - {lt.durationMinutes} min - {lt.type}
+                    {lt.type !== 'Individual' && ` (max ${lt.maxStudents})`}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-right mr-4">
                   <p className="text-sm">Adult: {formatCurrency(lt.priceAdult)}</p>
                   <p className="text-sm text-muted-foreground">Child: {formatCurrency(lt.priceChild)}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => startEdit(lt)}
+                    title="Edit"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  {lt.isActive ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => archiveMutation.mutate(lt.id)}
+                      disabled={archiveMutation.isPending}
+                      title={lt.activeCourseCount > 0 ? `Cannot archive: ${lt.activeCourseCount} active courses` : 'Archive'}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                      onClick={() => reactivateMutation.mutate(lt.id)}
+                      disabled={reactivateMutation.isPending}
+                      title="Reactivate"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -366,6 +935,7 @@ function RoomsSection() {
     hasMicrophone: false,
     hasWhiteboard: false,
   })
+  const { setIsDirty } = useSettingsDirty()
 
   const { data: rooms = [], isLoading } = useQuery<Room[]>({
     queryKey: ['rooms'],
@@ -390,8 +960,28 @@ function RoomsSection() {
         hasMicrophone: false,
         hasWhiteboard: false,
       })
+      setIsDirty(false)
     },
   })
+
+  const handleShowAdd = () => {
+    setShowAdd(true)
+    setIsDirty(true)
+  }
+
+  const handleCancelAdd = () => {
+    setShowAdd(false)
+    setFormData({
+      name: '',
+      capacity: '1',
+      hasPiano: false,
+      hasDrums: false,
+      hasAmplifier: false,
+      hasMicrophone: false,
+      hasWhiteboard: false,
+    })
+    setIsDirty(false)
+  }
 
   return (
     <Card>
@@ -400,7 +990,7 @@ function RoomsSection() {
           <CardTitle>Rooms</CardTitle>
           <CardDescription>Manage lesson rooms and equipment</CardDescription>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(true)}>
+        <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
           Add
         </Button>
@@ -444,7 +1034,7 @@ function RoomsSection() {
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+              <Button variant="outline" onClick={handleCancelAdd}>Cancel</Button>
               <Button onClick={() => createMutation.mutate(formData)} disabled={!formData.name || createMutation.isPending}>
                 Create
               </Button>
@@ -496,6 +1086,7 @@ function HolidaysSection() {
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [formData, setFormData] = useState({ name: '', startDate: '', endDate: '' })
+  const { setIsDirty } = useSettingsDirty()
 
   const { data: holidays = [], isLoading } = useQuery<Holiday[]>({
     queryKey: ['holidays'],
@@ -508,6 +1099,7 @@ function HolidaysSection() {
       queryClient.invalidateQueries({ queryKey: ['holidays'] })
       setShowAdd(false)
       setFormData({ name: '', startDate: '', endDate: '' })
+      setIsDirty(false)
     },
   })
 
@@ -518,6 +1110,17 @@ function HolidaysSection() {
     },
   })
 
+  const handleShowAdd = () => {
+    setShowAdd(true)
+    setIsDirty(true)
+  }
+
+  const handleCancelAdd = () => {
+    setShowAdd(false)
+    setFormData({ name: '', startDate: '', endDate: '' })
+    setIsDirty(false)
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -525,7 +1128,7 @@ function HolidaysSection() {
           <CardTitle>Holidays</CardTitle>
           <CardDescription>Set school holidays and closures</CardDescription>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(true)}>
+        <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
           Add
         </Button>
@@ -560,7 +1163,7 @@ function HolidaysSection() {
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+              <Button variant="outline" onClick={handleCancelAdd}>Cancel</Button>
               <Button
                 onClick={() => createMutation.mutate(formData)}
                 disabled={!formData.name || !formData.startDate || !formData.endDate || createMutation.isPending}

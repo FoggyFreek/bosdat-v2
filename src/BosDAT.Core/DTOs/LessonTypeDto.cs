@@ -14,6 +14,8 @@ public record LessonTypeDto
     public decimal PriceChild { get; init; }
     public int MaxStudents { get; init; }
     public bool IsActive { get; init; }
+    public int ActiveCourseCount { get; init; }
+    public bool HasTeachersForInstrument { get; init; }
 }
 
 public record CreateLessonTypeDto

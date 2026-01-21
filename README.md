@@ -13,6 +13,8 @@ A modern web-based replacement for the NMI Access database, built with .NET 8 ba
 - **Schedule Module**: Weekly calendar view, lesson management
 - **Testing Infrastructure**: Vitest + React Testing Library setup
 - **Audit Logging**: Automatic tracking of all entity CRUD operations with user context
+- **Settings Module**: Application settings, instruments, lesson types, rooms, holidays management
+- **Lesson Types Management**: Full CRUD with pricing, duration options, type-based defaults, and archive/reactivate functionality
 
 ### In Progress
 - Invoicing module
@@ -224,8 +226,10 @@ holidays (was: Vakanties)
 ├── start_date, end_date
 
 settings (was: Konstanten)
-├── key, value, type
-├── Examples: vat_rate, child_age_limit, registration_fee, etc.
+├── key, value, type, description
+├── Examples: vat_rate, child_age_limit, registration_fee, invoice_prefix,
+│   payment_due_days, school_name, child_discount_percent, group_max_students,
+│   workshop_max_students
 
 audit_logs (new - automatic audit trail)
 ├── id (UUID)
@@ -333,13 +337,45 @@ audit_logs (new - automatic audit trail)
 - Batch invoice generation
 - Payment recording
 
-### Settings
-- Business info
-- Pricing configuration
-- Lesson types management
-- Rooms management
-- Holidays management
-- User management
+### Settings ✓
+Modern 2-column layout with navigation sidebar and content area.
+
+**Navigation Groups:**
+- **ACCOUNT**: Profile (placeholder), Preferences (placeholder)
+- **LESSONS**: Instruments, Lesson types
+- **SCHEDULING**: Rooms, Holidays
+- **GENERAL**: System settings
+
+**Features:**
+- Unsaved changes detection with confirmation dialog
+- Context-based dirty state tracking across sections
+- Icons for each navigation item (lucide-react)
+
+**Implemented Sections:**
+- **Instruments management** ✓
+  - Create/edit instruments with category selection
+  - Categories: String, Percussion, Vocal, Keyboard, Wind, Brass, Electronic, Other
+  - Active/inactive status display
+- **Lesson types management** ✓
+  - Create/edit/archive/reactivate lesson types
+  - Duration options: 20, 30, 40, 45, 50, 60, 90, 120 minutes + custom
+  - Type selection: Individual, Group, Workshop with default max students
+  - Adult/child pricing with auto-calculated discount from settings
+  - Validation: child price cannot exceed adult price
+  - Archive protection: cannot archive if used in active courses
+  - Teacher availability warning when no teachers teach the instrument
+- **Rooms management** ✓
+  - Create rooms with capacity and equipment flags
+  - Equipment: Piano, Drums, Amplifier, Microphone, Whiteboard
+- **Holidays management** ✓
+  - Create/delete school holidays with date ranges
+- **System settings** ✓
+  - View and edit application-wide key-value settings
+  - Settings: VAT rate, child discount %, group/workshop max students, etc.
+
+**Placeholder Sections (coming soon):**
+- Profile - User account settings
+- Preferences - User experience customization
 
 ## Implementation Phases
 

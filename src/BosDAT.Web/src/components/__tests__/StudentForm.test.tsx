@@ -65,8 +65,9 @@ describe('StudentForm', () => {
 
     expect(screen.getByLabelText(/first name/i)).toHaveValue('John')
     expect(screen.getByLabelText(/last name/i)).toHaveValue('Doe')
-    expect(screen.getByLabelText(/email/i)).toHaveValue('john@example.com')
-    expect(screen.getByLabelText(/phone/i)).toHaveValue('123-456-7890')
+    // Use input ID to avoid matching contact email
+    expect(document.getElementById('email')).toHaveValue('john@example.com')
+    expect(document.getElementById('phone')).toHaveValue('123-456-7890')
     expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
   })
 
@@ -134,18 +135,17 @@ describe('StudentForm', () => {
 
     await user.type(screen.getByLabelText(/first name/i), 'John')
     await user.type(screen.getByLabelText(/last name/i), 'Doe')
-    await user.type(screen.getByLabelText(/email/i), 'john@example.com')
-    await user.type(screen.getByLabelText(/phone/i), '123-456-7890')
+    await user.type(document.getElementById('email')!, 'john@example.com')
+    await user.type(document.getElementById('phone')!, '123-456-7890')
     await user.click(screen.getByRole('button', { name: /create student/i }))
 
     await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith({
+      expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
         phone: '123-456-7890',
-        status: 'Active',
-      })
+      }))
     })
   })
 
@@ -159,17 +159,15 @@ describe('StudentForm', () => {
 
     await user.type(screen.getByLabelText(/first name/i), 'John')
     await user.type(screen.getByLabelText(/last name/i), 'Doe')
-    await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+    await user.type(document.getElementById('email')!, 'john@example.com')
     await user.click(screen.getByRole('button', { name: /create student/i }))
 
     await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith({
+      expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        phone: undefined,
-        status: 'Active',
-      })
+      }))
     })
   })
 

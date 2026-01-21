@@ -201,6 +201,36 @@ export interface LessonType {
   priceChild: number
   maxStudents: number
   isActive: boolean
+  activeCourseCount: number
+  hasTeachersForInstrument: boolean
+}
+
+export interface CreateLessonType {
+  instrumentId: number
+  name: string
+  durationMinutes: number
+  type: LessonTypeCategory
+  priceAdult: number
+  priceChild: number
+  maxStudents: number
+}
+
+export interface UpdateLessonType {
+  instrumentId: number
+  name: string
+  durationMinutes: number
+  type: LessonTypeCategory
+  priceAdult: number
+  priceChild: number
+  maxStudents: number
+  isActive: boolean
+}
+
+export interface TeacherAvailabilityForInstrument {
+  instrumentId: number
+  instrumentName: string
+  teacherCount: number
+  hasTeachers: boolean
 }
 
 // Course types

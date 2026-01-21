@@ -38,6 +38,9 @@ public class LessonTypesController : ControllerBase
             query = query.Where(lt => lt.InstrumentId == instrumentId.Value);
         }
 
+        var courseRepo = _unitOfWork.Repository<Course>();
+        var teacherInstrumentRepo = _unitOfWork.Repository<TeacherInstrument>();
+
         var lessonTypes = await query
             .OrderBy(lt => lt.Instrument.Name)
             .ThenBy(lt => lt.Name)
@@ -52,7 +55,9 @@ public class LessonTypesController : ControllerBase
                 PriceAdult = lt.PriceAdult,
                 PriceChild = lt.PriceChild,
                 MaxStudents = lt.MaxStudents,
-                IsActive = lt.IsActive
+                IsActive = lt.IsActive,
+                ActiveCourseCount = courseRepo.Query().Count(c => c.LessonTypeId == lt.Id && c.Status == CourseStatus.Active),
+                HasTeachersForInstrument = teacherInstrumentRepo.Query().Any(ti => ti.InstrumentId == lt.InstrumentId && ti.Teacher.IsActive)
             })
             .ToListAsync(cancellationToken);
 
@@ -71,7 +76,7 @@ public class LessonTypesController : ControllerBase
             return NotFound();
         }
 
-        return Ok(MapToDto(lessonType));
+        return Ok(await MapToDtoAsync(lessonType, cancellationToken));
     }
 
     [HttpPost]
@@ -82,6 +87,12 @@ public class LessonTypesController : ControllerBase
         if (instrument == null)
         {
             return BadRequest(new { message = "Instrument not found" });
+        }
+
+        // Validate child price cannot exceed adult price
+        if (dto.PriceChild > dto.PriceAdult)
+        {
+            return BadRequest(new { message = "Child price cannot be higher than adult price" });
         }
 
         var lessonType = new LessonType
@@ -100,7 +111,7 @@ public class LessonTypesController : ControllerBase
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         lessonType.Instrument = instrument;
-        return CreatedAtAction(nameof(GetById), new { id = lessonType.Id }, MapToDto(lessonType));
+        return CreatedAtAction(nameof(GetById), new { id = lessonType.Id }, await MapToDtoAsync(lessonType, cancellationToken));
     }
 
     [HttpPut("{id:int}")]
@@ -122,6 +133,24 @@ public class LessonTypesController : ControllerBase
             return BadRequest(new { message = "Instrument not found" });
         }
 
+        // Validate child price cannot exceed adult price
+        if (dto.PriceChild > dto.PriceAdult)
+        {
+            return BadRequest(new { message = "Child price cannot be higher than adult price" });
+        }
+
+        // Validate archiving: cannot archive if part of an active course
+        if (lessonType.IsActive && !dto.IsActive)
+        {
+            var activeCourseCount = await _unitOfWork.Repository<Course>().Query()
+                .CountAsync(c => c.LessonTypeId == id && c.Status == CourseStatus.Active, cancellationToken);
+
+            if (activeCourseCount > 0)
+            {
+                return BadRequest(new { message = $"Cannot archive lesson type: {activeCourseCount} active course(s) are using it" });
+            }
+        }
+
         lessonType.InstrumentId = dto.InstrumentId;
         lessonType.Name = dto.Name;
         lessonType.DurationMinutes = dto.DurationMinutes;
@@ -134,7 +163,7 @@ public class LessonTypesController : ControllerBase
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Ok(MapToDto(lessonType));
+        return Ok(await MapToDtoAsync(lessonType, cancellationToken));
     }
 
     [HttpDelete("{id:int}")]
@@ -148,14 +177,63 @@ public class LessonTypesController : ControllerBase
             return NotFound();
         }
 
+        // Validate: cannot archive if part of an active course
+        var activeCourseCount = await _unitOfWork.Repository<Course>().Query()
+            .CountAsync(c => c.LessonTypeId == id && c.Status == CourseStatus.Active, cancellationToken);
+
+        if (activeCourseCount > 0)
+        {
+            return BadRequest(new { message = $"Cannot archive lesson type: {activeCourseCount} active course(s) are using it" });
+        }
+
         lessonType.IsActive = false;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return NoContent();
     }
 
-    private static LessonTypeDto MapToDto(LessonType lessonType)
+    [HttpPut("{id:int}/reactivate")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<LessonTypeDto>> Reactivate(int id, CancellationToken cancellationToken)
     {
+        var lessonType = await _unitOfWork.Repository<LessonType>().Query()
+            .Include(lt => lt.Instrument)
+            .FirstOrDefaultAsync(lt => lt.Id == id, cancellationToken);
+
+        if (lessonType == null)
+        {
+            return NotFound();
+        }
+
+        lessonType.IsActive = true;
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Ok(await MapToDtoAsync(lessonType, cancellationToken));
+    }
+
+    [HttpGet("teachers-for-instrument/{instrumentId:int}")]
+    public async Task<ActionResult<object>> GetTeachersForInstrument(int instrumentId, CancellationToken cancellationToken)
+    {
+        var instrument = await _unitOfWork.Repository<Instrument>().GetByIdAsync(instrumentId, cancellationToken);
+        if (instrument == null)
+        {
+            return NotFound(new { message = "Instrument not found" });
+        }
+
+        var teacherCount = await _unitOfWork.Repository<TeacherInstrument>().Query()
+            .CountAsync(ti => ti.InstrumentId == instrumentId && ti.Teacher.IsActive, cancellationToken);
+
+        return Ok(new { instrumentId, instrumentName = instrument.Name, teacherCount, hasTeachers = teacherCount > 0 });
+    }
+
+    private async Task<LessonTypeDto> MapToDtoAsync(LessonType lessonType, CancellationToken cancellationToken)
+    {
+        var activeCourseCount = await _unitOfWork.Repository<Course>().Query()
+            .CountAsync(c => c.LessonTypeId == lessonType.Id && c.Status == CourseStatus.Active, cancellationToken);
+
+        var hasTeachers = await _unitOfWork.Repository<TeacherInstrument>().Query()
+            .AnyAsync(ti => ti.InstrumentId == lessonType.InstrumentId && ti.Teacher.IsActive, cancellationToken);
+
         return new LessonTypeDto
         {
             Id = lessonType.Id,
@@ -167,7 +245,9 @@ public class LessonTypesController : ControllerBase
             PriceAdult = lessonType.PriceAdult,
             PriceChild = lessonType.PriceChild,
             MaxStudents = lessonType.MaxStudents,
-            IsActive = lessonType.IsActive
+            IsActive = lessonType.IsActive,
+            ActiveCourseCount = activeCourseCount,
+            HasTeachersForInstrument = hasTeachers
         };
     }
 }
