@@ -8,7 +8,7 @@ A modern web-based replacement for the NMI Access database, built with .NET 8 ba
 ### Completed Features
 - **Authentication**: Login/logout with JWT tokens
 - **Students Module**: List, detail view, create/edit forms with validation
-- **Teachers Module**: List, detail view
+- **Teachers Module**: List, detail view, create/edit forms with validation, role-based hourly rate visibility
 - **Courses Module**: List view, enrollments
 - **Schedule Module**: Weekly calendar view, lesson management
 - **Testing Infrastructure**: Vitest + React Testing Library setup
@@ -321,9 +321,18 @@ audit_logs (new - automatic audit trail)
   - API endpoint: `POST /api/students/check-duplicates`
 
 ### Teachers Module
-- Teacher list
-- Teacher detail (info, courses, availability, payments)
-- Availability calendar editor
+- Teacher list with search/filter ✓
+- Teacher detail page (info, instruments, courses) ✓
+- Add/edit teacher form ✓
+  - Reusable `TeacherForm` component for create/edit
+  - Client-side validation (required fields, email format, hourly rate)
+  - Multi-select instrument assignment
+  - Role selection (Teacher, Admin, Staff)
+  - Active/inactive status management
+  - Routes: `/teachers/new`, `/teachers/:id/edit`
+- Role-based field visibility ✓
+  - Hourly rate only visible to users with 'FinancialAdmin' or 'Admin' roles
+- Availability calendar editor (coming soon)
 
 ### Schedule Module
 - Weekly calendar view (by room, by teacher)

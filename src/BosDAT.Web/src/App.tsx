@@ -8,6 +8,7 @@ import { StudentDetailPage } from './pages/StudentDetailPage'
 import { StudentFormPage } from './pages/StudentFormPage'
 import { TeachersPage } from './pages/TeachersPage'
 import { TeacherDetailPage } from './pages/TeacherDetailPage'
+import { TeacherFormPage } from './pages/TeacherFormPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { SchedulePage } from './pages/SchedulePage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -46,7 +47,9 @@ function App() {
                 <Route path="/students/:id" element={<StudentDetailPage />} />
                 <Route path="/students/:id/edit" element={<StudentFormPage />} />
                 <Route path="/teachers" element={<TeachersPage />} />
+                <Route path="/teachers/new" element={<TeacherFormPage />} />
                 <Route path="/teachers/:id" element={<TeacherDetailPage />} />
+                <Route path="/teachers/:id/edit" element={<TeacherFormPage />} />
                 <Route path="/courses" element={<CoursesPage />} />
                 <Route path="/schedule" element={<SchedulePage />} />
                 <Route path="/settings" element={<SettingsPage />} />

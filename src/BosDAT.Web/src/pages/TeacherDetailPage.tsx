@@ -4,11 +4,17 @@ import { ArrowLeft, Mail, Phone, MapPin, Music } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { teachersApi } from '@/services/api'
+import { useAuth } from '@/context/AuthContext'
 import type { Teacher } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 
+const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'
+
 export function TeacherDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
+
+  const canViewHourlyRate = user?.roles.includes(FINANCIAL_ADMIN_ROLE) || user?.roles.includes('Admin')
 
   const { data: teacher, isLoading } = useQuery<Teacher>({
     queryKey: ['teacher', id],
@@ -105,10 +111,12 @@ export function TeacherDetailPage() {
               <p className="text-sm text-muted-foreground">Role</p>
               <p>{teacher.role}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Hourly Rate</p>
-              <p>{formatCurrency(teacher.hourlyRate)}</p>
-            </div>
+            {canViewHourlyRate && (
+              <div>
+                <p className="text-sm text-muted-foreground">Hourly Rate</p>
+                <p>{formatCurrency(teacher.hourlyRate)}</p>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <Music className="h-5 w-5 text-muted-foreground" />
               <div>
