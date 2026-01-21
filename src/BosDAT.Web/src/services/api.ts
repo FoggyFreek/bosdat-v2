@@ -199,6 +199,20 @@ export const roomsApi = {
     const response = await api.put(`/rooms/${id}`, data)
     return response.data
   },
+
+  delete: async (id: number) => {
+    await api.delete(`/rooms/${id}`)
+  },
+
+  archive: async (id: number) => {
+    const response = await api.put(`/rooms/${id}/archive`)
+    return response.data
+  },
+
+  reactivate: async (id: number) => {
+    const response = await api.put(`/rooms/${id}/reactivate`)
+    return response.data
+  },
 }
 
 // Courses API

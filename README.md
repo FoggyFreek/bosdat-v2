@@ -132,8 +132,12 @@ teacher_instruments (was: DocentLessoort)
 rooms (was: Lokalen)
 ├── id
 ├── name
-├── capacity
-├── has_piano, has_drums, etc. (equipment flags)
+├── floor_level (optional)
+├── capacity (default: 2)
+├── has_piano, has_drums, has_amplifier, has_microphone,
+│   has_whiteboard, has_stereo, has_guitar (equipment flags)
+├── is_active
+├── notes
 
 courses (was: Cursussen)
 ├── id
@@ -365,8 +369,13 @@ Modern 2-column layout with navigation sidebar and content area.
   - Archive protection: cannot archive if used in active courses
   - Teacher availability warning when no teachers teach the instrument
 - **Rooms management** ✓
-  - Create rooms with capacity and equipment flags
-  - Equipment: Piano, Drums, Amplifier, Microphone, Whiteboard
+  - Create/edit/archive/reactivate/delete rooms
+  - Floor level assignment for multi-story buildings
+  - Capacity setting (default: 2)
+  - Equipment flags: Piano, Drums, Amplifier, Microphone, Whiteboard, Stereo, Guitar
+  - Archive protection: cannot archive if room has active courses or scheduled lessons
+  - Delete protection: cannot hard delete if room has any linked courses or lessons (use archive instead)
+  - Shows linked data count warnings in UI
 - **Holidays management** ✓
   - Create/delete school holidays with date ranges
 - **System settings** ✓

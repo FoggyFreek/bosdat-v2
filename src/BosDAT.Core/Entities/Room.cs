@@ -4,7 +4,8 @@ public class Room
 {
     public int Id { get; set; }
     public required string Name { get; set; }
-    public int Capacity { get; set; } = 1;
+    public int? FloorLevel { get; set; }
+    public int Capacity { get; set; } = 2;
 
     // Equipment flags
     public bool HasPiano { get; set; }
@@ -12,6 +13,8 @@ public class Room
     public bool HasAmplifier { get; set; }
     public bool HasMicrophone { get; set; }
     public bool HasWhiteboard { get; set; }
+    public bool HasStereo { get; set; }
+    public bool HasGuitar { get; set; }
 
     public bool IsActive { get; set; } = true;
     public string? Notes { get; set; }
