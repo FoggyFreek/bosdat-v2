@@ -25,6 +25,17 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
+    public async Task<Teacher?> GetWithInstrumentsAndLessonTypesAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(t => t.TeacherInstruments)
+                .ThenInclude(ti => ti.Instrument)
+            .Include(t => t.TeacherLessonTypes)
+                .ThenInclude(tlt => tlt.LessonType)
+                    .ThenInclude(lt => lt.Instrument)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
     public async Task<Teacher?> GetWithCoursesAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
@@ -54,6 +65,19 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
             .Where(t => t.IsActive && t.TeacherInstruments.Any(ti => ti.InstrumentId == instrumentId))
             .Include(t => t.TeacherInstruments)
                 .ThenInclude(ti => ti.Instrument)
+            .OrderBy(t => t.LastName)
+            .ThenBy(t => t.FirstName)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Teacher>> GetTeachersByLessonTypeAsync(int lessonTypeId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(t => t.IsActive && t.TeacherLessonTypes.Any(tlt => tlt.LessonTypeId == lessonTypeId))
+            .Include(t => t.TeacherInstruments)
+                .ThenInclude(ti => ti.Instrument)
+            .Include(t => t.TeacherLessonTypes)
+                .ThenInclude(tlt => tlt.LessonType)
             .OrderBy(t => t.LastName)
             .ThenBy(t => t.FirstName)
             .ToListAsync(cancellationToken);

@@ -120,6 +120,7 @@ describe('TeacherForm', () => {
       role: 'Teacher',
       isActive: true,
       instruments: [{ id: 1, name: 'Piano', category: 'String', isActive: true }],
+      lessonTypes: [],
       createdAt: '2024-01-01',
       updatedAt: '2024-01-01',
     }
@@ -323,6 +324,7 @@ describe('TeacherForm', () => {
         role: 'Teacher',
         isActive: true,
         instruments: [{ id: 1, name: 'Piano', category: 'String', isActive: true }],
+        lessonTypes: [],
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
       }
@@ -415,6 +417,7 @@ describe('TeacherForm', () => {
         role: 'Teacher',
         isActive: true,
         instruments: [],
+        lessonTypes: [],
         createdAt: '2024-01-01',
         updatedAt: '2024-01-01',
       }

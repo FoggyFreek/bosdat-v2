@@ -39,7 +39,7 @@ public class LessonTypesController : ControllerBase
         }
 
         var courseRepo = _unitOfWork.Repository<Course>();
-        var teacherInstrumentRepo = _unitOfWork.Repository<TeacherInstrument>();
+        var teacherLessonTypeRepo = _unitOfWork.Repository<TeacherLessonType>();
 
         var lessonTypes = await query
             .OrderBy(lt => lt.Instrument.Name)
@@ -57,7 +57,7 @@ public class LessonTypesController : ControllerBase
                 MaxStudents = lt.MaxStudents,
                 IsActive = lt.IsActive,
                 ActiveCourseCount = courseRepo.Query().Count(c => c.LessonTypeId == lt.Id && c.Status == CourseStatus.Active),
-                HasTeachersForInstrument = teacherInstrumentRepo.Query().Any(ti => ti.InstrumentId == lt.InstrumentId && ti.Teacher.IsActive)
+                HasTeachersForLessonType = teacherLessonTypeRepo.Query().Any(tlt => tlt.LessonTypeId == lt.Id && tlt.Teacher.IsActive)
             })
             .ToListAsync(cancellationToken);
 
@@ -231,8 +231,8 @@ public class LessonTypesController : ControllerBase
         var activeCourseCount = await _unitOfWork.Repository<Course>().Query()
             .CountAsync(c => c.LessonTypeId == lessonType.Id && c.Status == CourseStatus.Active, cancellationToken);
 
-        var hasTeachers = await _unitOfWork.Repository<TeacherInstrument>().Query()
-            .AnyAsync(ti => ti.InstrumentId == lessonType.InstrumentId && ti.Teacher.IsActive, cancellationToken);
+        var hasTeachers = await _unitOfWork.Repository<TeacherLessonType>().Query()
+            .AnyAsync(tlt => tlt.LessonTypeId == lessonType.Id && tlt.Teacher.IsActive, cancellationToken);
 
         return new LessonTypeDto
         {
@@ -247,7 +247,7 @@ public class LessonTypesController : ControllerBase
             MaxStudents = lessonType.MaxStudents,
             IsActive = lessonType.IsActive,
             ActiveCourseCount = activeCourseCount,
-            HasTeachersForInstrument = hasTeachers
+            HasTeachersForLessonType = hasTeachers
         };
     }
 }

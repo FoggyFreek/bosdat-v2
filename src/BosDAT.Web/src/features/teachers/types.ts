@@ -1,6 +1,7 @@
 // Teacher Domain Types
 
 import type { Instrument } from '@/features/instruments/types'
+import type { LessonTypeSimple } from '@/features/lesson-types/types'
 
 export type TeacherRole = 'Teacher' | 'Admin' | 'Staff'
 
@@ -20,6 +21,7 @@ export interface Teacher {
   role: TeacherRole
   notes?: string
   instruments: Instrument[]
+  lessonTypes: LessonTypeSimple[]
   createdAt: string
   updatedAt: string
 }
@@ -32,6 +34,7 @@ export interface TeacherList {
   isActive: boolean
   role: TeacherRole
   instruments: string[]
+  lessonTypes: string[]
 }
 
 export interface CreateTeacher {
@@ -47,4 +50,5 @@ export interface CreateTeacher {
   role?: TeacherRole
   notes?: string
   instrumentIds: number[]
+  lessonTypeIds: number[]
 }

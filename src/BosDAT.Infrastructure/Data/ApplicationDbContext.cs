@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
     public DbSet<TeacherInstrument> TeacherInstruments => Set<TeacherInstrument>();
+    public DbSet<TeacherLessonType> TeacherLessonTypes => Set<TeacherLessonType>();
     public DbSet<LessonType> LessonTypes => Set<LessonType>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Course> Courses => Set<Course>();
@@ -52,6 +53,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<Teacher>().ToTable("teachers");
         modelBuilder.Entity<Instrument>().ToTable("instruments");
         modelBuilder.Entity<TeacherInstrument>().ToTable("teacher_instruments");
+        modelBuilder.Entity<TeacherLessonType>().ToTable("teacher_lesson_types");
         modelBuilder.Entity<LessonType>().ToTable("lesson_types");
         modelBuilder.Entity<Room>().ToTable("rooms");
         modelBuilder.Entity<Course>().ToTable("courses");
@@ -123,6 +125,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasOne(e => e.Instrument)
                 .WithMany(i => i.TeacherInstruments)
                 .HasForeignKey(e => e.InstrumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // TeacherLessonType (many-to-many)
+        modelBuilder.Entity<TeacherLessonType>(entity =>
+        {
+            entity.HasKey(e => new { e.TeacherId, e.LessonTypeId });
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.TeacherLessonTypes)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.LessonType)
+                .WithMany(lt => lt.TeacherLessonTypes)
+                .HasForeignKey(e => e.LessonTypeId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

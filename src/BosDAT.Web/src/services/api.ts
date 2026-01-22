@@ -126,7 +126,7 @@ export const studentsApi = {
 
 // Teachers API
 export const teachersApi = {
-  getAll: async (params?: { activeOnly?: boolean; instrumentId?: number }) => {
+  getAll: async (params?: { activeOnly?: boolean; instrumentId?: number; lessonTypeId?: number }) => {
     const response = await api.get('/teachers', { params })
     return response.data
   },
@@ -153,6 +153,12 @@ export const teachersApi = {
 
   delete: async (id: string) => {
     await api.delete(`/teachers/${id}`)
+  },
+
+  getAvailableLessonTypes: async (id: string, instrumentIds: number[]) => {
+    const params = instrumentIds.length > 0 ? { instrumentIds: instrumentIds.join(',') } : {}
+    const response = await api.get(`/teachers/${id}/available-lesson-types`, { params })
+    return response.data
   },
 }
 

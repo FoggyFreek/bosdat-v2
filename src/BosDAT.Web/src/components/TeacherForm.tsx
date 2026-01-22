@@ -13,10 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { instrumentsApi } from '@/services/api'
+import { instrumentsApi, lessonTypesApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import type { Teacher, TeacherRole, CreateTeacher } from '@/features/teachers/types'
-import type {  Instrument } from '@/features/instruments/types'
+import type { Instrument } from '@/features/instruments/types'
+import type { LessonTypeSimple } from '@/features/lesson-types/types'
 
 interface TeacherFormProps {
   teacher?: Teacher
@@ -39,6 +40,7 @@ interface FormData {
   notes: string
   isActive: boolean
   instrumentIds: number[]
+  lessonTypeIds: number[]
 }
 
 interface FormErrors {
@@ -76,7 +78,19 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     notes: '',
     isActive: true,
     instrumentIds: [],
+    lessonTypeIds: [],
   })
+
+  // Query all active lesson types, filter by selected instruments client-side
+  const { data: allLessonTypes = [] } = useQuery<LessonTypeSimple[]>({
+    queryKey: ['lessonTypes', 'active'],
+    queryFn: () => lessonTypesApi.getAll({ activeOnly: true }),
+  })
+
+  // Filter available lesson types by selected instruments
+  const availableLessonTypes = allLessonTypes.filter(
+    (lt) => formData.instrumentIds.includes(lt.instrumentId)
+  )
 
   const [errors, setErrors] = useState<FormErrors>({})
 
@@ -96,9 +110,23 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
         notes: teacher.notes || '',
         isActive: teacher.isActive,
         instrumentIds: teacher.instruments?.map((i) => i.id) || [],
+        lessonTypeIds: teacher.lessonTypes?.map((lt) => lt.id) || [],
       })
     }
   }, [teacher])
+
+  // Remove lesson types when their instrument is removed
+  useEffect(() => {
+    if (allLessonTypes.length > 0 && formData.lessonTypeIds.length > 0) {
+      const validLessonTypeIds = formData.lessonTypeIds.filter((ltId) => {
+        const lessonType = allLessonTypes.find((lt) => lt.id === ltId)
+        return lessonType && formData.instrumentIds.includes(lessonType.instrumentId)
+      })
+      if (validLessonTypeIds.length !== formData.lessonTypeIds.length) {
+        setFormData((prev) => ({ ...prev, lessonTypeIds: validLessonTypeIds }))
+      }
+    }
+  }, [formData.instrumentIds, formData.lessonTypeIds, allLessonTypes])
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -155,6 +183,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       role: formData.role,
       notes: formData.notes.trim() || undefined,
       instrumentIds: formData.instrumentIds,
+      lessonTypeIds: formData.lessonTypeIds,
     }
 
     const result = await onSubmit(submitData)
@@ -176,6 +205,25 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       : formData.instrumentIds.filter((id) => id !== instrumentId)
     handleChange('instrumentIds', newIds)
   }
+
+  const handleLessonTypeToggle = (lessonTypeId: number, checked: boolean) => {
+    const newIds = checked
+      ? [...formData.lessonTypeIds, lessonTypeId]
+      : formData.lessonTypeIds.filter((id) => id !== lessonTypeId)
+    handleChange('lessonTypeIds', newIds)
+  }
+
+  // Group available lesson types by instrument
+  const lessonTypesByInstrument = availableLessonTypes.reduce(
+    (acc, lt) => {
+      if (!acc[lt.instrumentName]) {
+        acc[lt.instrumentName] = []
+      }
+      acc[lt.instrumentName].push(lt)
+      return acc
+    },
+    {} as Record<string, LessonTypeSimple[]>
+  )
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8" noValidate>
@@ -354,6 +402,47 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
                 <Label htmlFor={`instrument-${instrument.id}`} className="font-normal">
                   {instrument.name}
                 </Label>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Lesson Types Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Lesson Types</h3>
+        <p className="text-sm text-muted-foreground">
+          Select the lesson types this teacher can teach
+        </p>
+        {formData.instrumentIds.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Please select at least one instrument to see available lesson types
+          </p>
+        ) : availableLessonTypes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No lesson types available for the selected instruments
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(lessonTypesByInstrument).map(([instrumentName, lessonTypes]) => (
+              <div key={instrumentName}>
+                <h4 className="text-sm font-medium mb-2">{instrumentName}</h4>
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {lessonTypes.map((lessonType) => (
+                    <div key={lessonType.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`lessonType-${lessonType.id}`}
+                        checked={formData.lessonTypeIds.includes(lessonType.id)}
+                        onCheckedChange={(checked) =>
+                          handleLessonTypeToggle(lessonType.id, !!checked)
+                        }
+                      />
+                      <Label htmlFor={`lessonType-${lessonType.id}`} className="font-normal">
+                        {lessonType.name} ({lessonType.durationMinutes} min)
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

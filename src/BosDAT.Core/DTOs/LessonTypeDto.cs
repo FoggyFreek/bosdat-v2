@@ -2,6 +2,16 @@ using BosDAT.Core.Entities;
 
 namespace BosDAT.Core.DTOs;
 
+public record LessonTypeSimpleDto
+{
+    public int Id { get; init; }
+    public required string Name { get; init; }
+    public int InstrumentId { get; init; }
+    public string InstrumentName { get; init; } = string.Empty;
+    public int DurationMinutes { get; init; }
+    public LessonTypeCategory Type { get; init; }
+}
+
 public record LessonTypeDto
 {
     public int Id { get; init; }
@@ -15,7 +25,7 @@ public record LessonTypeDto
     public int MaxStudents { get; init; }
     public bool IsActive { get; init; }
     public int ActiveCourseCount { get; init; }
-    public bool HasTeachersForInstrument { get; init; }
+    public bool HasTeachersForLessonType { get; init; }
 }
 
 public record CreateLessonTypeDto

@@ -2,6 +2,15 @@
 
 export type LessonTypeCategory = 'Individual' | 'Group' | 'Workshop'
 
+export interface LessonTypeSimple {
+  id: number
+  name: string
+  instrumentId: number
+  instrumentName: string
+  durationMinutes: number
+  type: LessonTypeCategory
+}
+
 export interface LessonType {
   id: number
   instrumentId: number
@@ -14,7 +23,7 @@ export interface LessonType {
   maxStudents: number
   isActive: boolean
   activeCourseCount: number
-  hasTeachersForInstrument: boolean
+  hasTeachersForLessonType: boolean
 }
 
 export interface CreateLessonType {
