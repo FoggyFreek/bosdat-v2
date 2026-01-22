@@ -15,7 +15,8 @@ import {
 } from '@/components/ui/select'
 import { instrumentsApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
-import type { Teacher, TeacherRole, CreateTeacher, Instrument } from '@/types'
+import type { Teacher, TeacherRole, CreateTeacher } from '@/features/teachers/types'
+import type {  Instrument } from '@/features/instruments/types'
 
 interface TeacherFormProps {
   teacher?: Teacher

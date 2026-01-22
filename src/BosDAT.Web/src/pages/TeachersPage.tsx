@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { teachersApi } from '@/services/api'
-import type { TeacherList } from '@/types'
+import type { TeacherList } from '@/features/teachers/types'
 import { cn } from '@/lib/utils'
 
 export function TeachersPage() {

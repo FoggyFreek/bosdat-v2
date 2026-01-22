@@ -27,7 +27,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { instrumentsApi, roomsApi, lessonTypesApi, holidaysApi, settingsApi } from '@/services/api'
-import type { Instrument, Room, LessonType, Holiday, InstrumentCategory, LessonTypeCategory } from '@/types'
+import type { Holiday} from '@/features/schedule/types'
+import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
+import type { Room } from '@/features/rooms/types'
+import type { LessonType, LessonTypeCategory} from '@/features/lesson-types/types'
+
 import { cn, formatDate, formatCurrency } from '@/lib/utils'
 
 // Settings dirty state context

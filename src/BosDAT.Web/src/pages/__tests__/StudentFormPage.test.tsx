@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StudentFormPage } from '../StudentFormPage'
 import { studentsApi } from '@/services/api'
-import type { Student } from '@/types'
+import type { Student } from '@/features/students/types'
 
 vi.mock('@/services/api', () => ({
   studentsApi: {

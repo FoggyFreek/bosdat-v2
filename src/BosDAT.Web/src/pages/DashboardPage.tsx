@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Users, GraduationCap, Music, Calendar } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { studentsApi, teachersApi, coursesApi } from '@/services/api'
-import type { StudentList, TeacherList, CourseList } from '@/types'
+import type { CourseList } from '@/features/courses/types'
+import type { StudentList } from '@/features/students/types'
+import type { TeacherList } from '@/features/teachers/types'
 
 export function DashboardPage() {
   const { data: students = [] } = useQuery<StudentList[]>({

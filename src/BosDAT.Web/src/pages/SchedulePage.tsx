@@ -11,7 +11,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { calendarApi, teachersApi, roomsApi } from '@/services/api'
-import type { CalendarLesson, WeekCalendar, TeacherList, Room } from '@/types'
+import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
+import type { TeacherList } from '@/features/teachers/types'
+import type { Room } from '@/features/rooms/types'
+
 import { cn, formatTime, getDayName } from '@/lib/utils'
 
 function getWeekStart(date: Date): Date {

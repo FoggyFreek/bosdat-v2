@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TeacherForm } from '@/components/TeacherForm'
 import { teachersApi } from '@/services/api'
-import type { Teacher, CreateTeacher } from '@/types'
+import type { Teacher, CreateTeacher } from '@/features/teachers/types'
 import { AxiosError } from 'axios'
 
 interface ApiErrorResponse {

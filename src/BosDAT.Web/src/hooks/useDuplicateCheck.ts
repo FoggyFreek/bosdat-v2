@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { studentsApi } from '@/services/api'
-import type { CheckDuplicatesDto, DuplicateCheckResult, DuplicateMatch } from '@/types'
+import type { CheckDuplicatesDto, DuplicateCheckResult, DuplicateMatch } from '@/features/students/types'
 
 interface UseDuplicateCheckOptions {
   debounceMs?: number

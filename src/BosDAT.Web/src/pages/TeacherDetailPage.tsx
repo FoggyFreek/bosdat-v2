@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { teachersApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
-import type { Teacher } from '@/types'
+import type { Teacher } from '@/features/teachers/types'
 import { formatCurrency } from '@/lib/utils'
 
 const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'

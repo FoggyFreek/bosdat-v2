@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { coursesApi } from '@/services/api'
-import type { CourseList } from '@/types'
+import type { CourseList } from '@/features/courses/types'
 import { cn, getDayName } from '@/lib/utils'
 
 export function CoursesPage() {

@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
-import type { Student, StudentStatus, Gender, CreateStudent } from '@/types'
+import type { Student, StudentStatus, Gender, CreateStudent } from '@/features/students/types'
 
 interface StudentFormProps {
   student?: Student

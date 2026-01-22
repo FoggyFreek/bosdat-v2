@@ -12,7 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { studentsApi, enrollmentsApi, lessonsApi, coursesApi } from '@/services/api'
-import type { Student, StudentEnrollment, Lesson, CourseList } from '@/types'
+import type { Student, StudentEnrollment  } from '@/features/students/types'
+import type { CourseList } from '@/features/courses/types'
+import type { Lesson } from '@/features/lessons/types'
+
 import { formatDate, formatTime, getDayName, cn } from '@/lib/utils'
 
 export function StudentDetailPage() {

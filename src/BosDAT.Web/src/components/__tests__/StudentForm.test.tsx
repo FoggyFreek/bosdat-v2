@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { StudentForm } from '../StudentForm'
-import type { Student, DuplicateCheckResult } from '@/types'
+import type { Student, DuplicateCheckResult } from '@/features/students/types'
 import { studentsApi } from '@/services/api'
 
 const mockNavigate = vi.fn()

@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 import axios, { AxiosError } from 'axios'
-import type { AuthResponse, LoginDto, User, CheckDuplicatesDto, DuplicateCheckResult } from '@/types'
+import type { AuthResponse, LoginDto, User } from '@/features/auth/types'
+import type { CheckDuplicatesDto, DuplicateCheckResult } from '@/features/students/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 

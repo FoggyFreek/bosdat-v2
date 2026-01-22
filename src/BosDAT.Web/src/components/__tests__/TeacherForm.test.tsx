@@ -4,7 +4,10 @@ import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TeacherForm } from '../TeacherForm'
-import type { Teacher, User, Instrument } from '@/types'
+import type { Teacher } from '@/features/teachers/types'
+import type { Instrument } from '@/features/instruments/types'
+import type { User } from '@/features/auth/types'
+
 import { instrumentsApi } from '@/services/api'
 
 const mockNavigate = vi.fn()
