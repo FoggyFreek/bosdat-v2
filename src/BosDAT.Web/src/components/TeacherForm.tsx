@@ -180,6 +180,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       hourlyRate: canViewHourlyRate && formData.hourlyRate
         ? parseFloat(formData.hourlyRate)
         : teacher?.hourlyRate || 0,
+      isActive: formData.isActive,  
       role: formData.role,
       notes: formData.notes.trim() || undefined,
       instrumentIds: formData.instrumentIds,

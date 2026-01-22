@@ -49,6 +49,7 @@ export interface CreateTeacher {
   hourlyRate: number
   role?: TeacherRole
   notes?: string
+  isActive: boolean
   instrumentIds: number[]
   lessonTypeIds: number[]
 }
