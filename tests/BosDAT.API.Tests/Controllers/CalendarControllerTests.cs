@@ -88,10 +88,10 @@ public class CalendarControllerTests
         var weekStart = new DateOnly(2024, 3, 11);
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType { Id = 1, Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
+        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
         var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
         var student = new Student { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var course = new Course { Id = Guid.NewGuid(), LessonType = lessonType, Teacher = teacher };
+        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
 
         var lessons = new List<Lesson>
         {
@@ -191,8 +191,8 @@ public class CalendarControllerTests
         var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType { Id = 1, Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
-        var course = new Course { Id = Guid.NewGuid(), LessonType = lessonType, Teacher = teacher };
+        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
+        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
 
         var lessons = new List<Lesson>
         {

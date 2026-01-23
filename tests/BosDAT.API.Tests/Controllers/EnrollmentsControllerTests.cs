@@ -38,9 +38,9 @@ public class EnrollmentsControllerTests
         };
 
         var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             InstrumentId = instrumentId,
             Name = "Piano 30 min",
             Instrument = instrument
@@ -60,13 +60,13 @@ public class EnrollmentsControllerTests
         {
             Id = courseId,
             TeacherId = teacherId,
-            LessonTypeId = 1,
+            CourseTypeId = courseType.Id,
             RoomId = 1,
             DayOfWeek = DayOfWeek.Monday,
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
             Teacher = teacher,
-            LessonType = lessonType,
+            CourseType = courseType,
             Room = room
         };
 
@@ -139,7 +139,7 @@ public class EnrollmentsControllerTests
         {
             Id = courseId,
             TeacherId = Guid.NewGuid(),
-            LessonTypeId = 1,
+            CourseTypeId = Guid.NewGuid(),
             Status = CourseStatus.Active
         };
 
@@ -222,7 +222,7 @@ public class EnrollmentsControllerTests
         {
             Id = courseId,
             TeacherId = Guid.NewGuid(),
-            LessonTypeId = 1
+            CourseTypeId = Guid.NewGuid()
         };
 
         var existingEnrollment = new Enrollment

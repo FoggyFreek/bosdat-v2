@@ -29,9 +29,9 @@ public class LessonsControllerTests
         var courseId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             Name = "Piano 30 min",
             InstrumentId = 1,
             Instrument = instrument
@@ -42,7 +42,7 @@ public class LessonsControllerTests
         var course = new Course
         {
             Id = courseId,
-            LessonType = lessonType,
+            CourseType = courseType,
             Teacher = teacher,
             Room = room
         };
@@ -91,7 +91,7 @@ public class LessonsControllerTests
         var studentId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType { Id = 1, Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
+        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
         var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
         var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
         var room = new Room { Id = 1, Name = "Room A" };
@@ -100,8 +100,8 @@ public class LessonsControllerTests
         {
             Id = courseId,
             TeacherId = teacherId,
-            LessonTypeId = 1,
-            LessonType = lessonType,
+            CourseTypeId = courseType.Id,
+            CourseType = courseType,
             Teacher = teacher,
             Room = room
         };
@@ -201,9 +201,9 @@ public class LessonsControllerTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType { Id = 1, Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
+        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
         var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var course = new Course { Id = Guid.NewGuid(), LessonType = lessonType, Teacher = teacher };
+        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
 
         var lesson = new Lesson
         {
@@ -247,9 +247,9 @@ public class LessonsControllerTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType { Id = 1, Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
+        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
         var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var course = new Course { Id = Guid.NewGuid(), LessonType = lessonType, Teacher = teacher };
+        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
 
         var lesson = new Lesson
         {

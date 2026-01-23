@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, within } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { SettingsPage } from '../SettingsPage'
-import { instrumentsApi, roomsApi, lessonTypesApi, holidaysApi, settingsApi } from '@/services/api'
+import { instrumentsApi, roomsApi, courseTypesApi, holidaysApi, settingsApi } from '@/services/api'
 
 // Mock all API modules
 vi.mock('@/services/api', () => ({
@@ -16,13 +16,13 @@ vi.mock('@/services/api', () => ({
     create: vi.fn(),
     update: vi.fn(),
   },
-  lessonTypesApi: {
+  courseTypesApi: {
     getAll: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
     reactivate: vi.fn(),
-    getTeachersForInstrument: vi.fn(),
+    getTeacherCountForInstrument: vi.fn(),
   },
   holidaysApi: {
     getAll: vi.fn(),
@@ -42,7 +42,7 @@ describe('SettingsPage', () => {
     // Default mock responses
     vi.mocked(instrumentsApi.getAll).mockResolvedValue([])
     vi.mocked(roomsApi.getAll).mockResolvedValue([])
-    vi.mocked(lessonTypesApi.getAll).mockResolvedValue([])
+    vi.mocked(courseTypesApi.getAll).mockResolvedValue([])
     vi.mocked(holidaysApi.getAll).mockResolvedValue([])
     vi.mocked(settingsApi.getAll).mockResolvedValue([])
   })

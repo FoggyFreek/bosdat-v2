@@ -18,7 +18,7 @@ public enum CourseFrequency
 public class Course : BaseEntity
 {
     public Guid TeacherId { get; set; }
-    public int LessonTypeId { get; set; }
+    public Guid CourseTypeId { get; set; }
     public int? RoomId { get; set; }
 
     public DayOfWeek DayOfWeek { get; set; }
@@ -37,7 +37,7 @@ public class Course : BaseEntity
 
     // Navigation properties
     public virtual Teacher Teacher { get; set; } = null!;
-    public virtual LessonType LessonType { get; set; } = null!;
+    public virtual CourseType CourseType { get; set; } = null!;
     public virtual Room? Room { get; set; }
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();

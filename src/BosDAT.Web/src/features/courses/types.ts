@@ -9,8 +9,8 @@ export interface Course {
   id: string
   teacherId: string
   teacherName: string
-  lessonTypeId: number
-  lessonTypeName: string
+  courseTypeId: number
+  courseTypeName: string
   instrumentName: string
   roomId?: number
   roomName?: string
@@ -33,7 +33,7 @@ export interface Course {
 export interface CourseList {
   id: string
   teacherName: string
-  lessonTypeName: string
+  courseTypeName: string
   instrumentName: string
   roomName?: string
   dayOfWeek: number

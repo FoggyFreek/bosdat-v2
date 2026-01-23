@@ -31,7 +31,7 @@ public class LessonsController : ControllerBase
     {
         IQueryable<Lesson> query = _unitOfWork.Lessons.Query()
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(l => l.Student)
             .Include(l => l.Teacher)
@@ -82,7 +82,7 @@ public class LessonsController : ControllerBase
         var lesson = await _unitOfWork.Lessons.Query()
             .Where(l => l.Id == id)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(l => l.Student)
             .Include(l => l.Teacher)
@@ -112,8 +112,8 @@ public class LessonsController : ControllerBase
             TeacherName = l.Teacher.FullName,
             RoomId = l.RoomId,
             RoomName = l.Room?.Name,
-            LessonTypeName = l.Course.LessonType.Name,
-            InstrumentName = l.Course.LessonType.Instrument.Name,
+            CourseTypeName = l.Course.CourseType.Name,
+            InstrumentName = l.Course.CourseType.Instrument.Name,
             ScheduledDate = l.ScheduledDate,
             StartTime = l.StartTime,
             EndTime = l.EndTime,
@@ -245,7 +245,7 @@ public class LessonsController : ControllerBase
     {
         var course = await _unitOfWork.Courses.Query()
             .Where(c => c.Id == dto.CourseId)
-            .Include(c => c.LessonType)
+            .Include(c => c.CourseType)
             .Include(c => c.Enrollments.Where(e => e.Status == EnrollmentStatus.Active))
                 .ThenInclude(e => e.Student)
             .FirstOrDefaultAsync(cancellationToken);
@@ -319,7 +319,7 @@ public class LessonsController : ControllerBase
                     await _unitOfWork.Lessons.AddAsync(lesson, cancellationToken);
                     lessonsCreated++;
                 }
-                else if (course.LessonType?.Type == LessonTypeCategory.Individual)
+                else if (course.CourseType?.Type == CourseTypeCategory.Individual)
                 {
                     // For individual lessons, create separate lessons for each student
                     foreach (var enrollment in enrolledStudents)
@@ -389,7 +389,7 @@ public class LessonsController : ControllerBase
         var activeCourses = await _unitOfWork.Courses.Query()
             .Where(c => c.Status == CourseStatus.Active)
             .Include(c => c.Enrollments.Where(e => e.Status == EnrollmentStatus.Active))
-            .Include(c => c.LessonType)
+            .Include(c => c.CourseType)
             .ToListAsync(cancellationToken);
 
         var holidays = new List<Holiday>();
@@ -490,7 +490,7 @@ public class LessonsController : ControllerBase
         var lesson = await _unitOfWork.Lessons.Query()
             .Where(l => l.Id == id)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(l => l.Student)
             .Include(l => l.Teacher)
@@ -512,8 +512,8 @@ public class LessonsController : ControllerBase
             TeacherName = l.Teacher.FullName,
             RoomId = l.RoomId,
             RoomName = l.Room?.Name,
-            LessonTypeName = l.Course.LessonType.Name,
-            InstrumentName = l.Course.LessonType.Instrument.Name,
+            CourseTypeName = l.Course.CourseType.Name,
+            InstrumentName = l.Course.CourseType.Instrument.Name,
             ScheduledDate = l.ScheduledDate,
             StartTime = l.StartTime,
             EndTime = l.EndTime,

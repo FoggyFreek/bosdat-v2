@@ -22,7 +22,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
         return await _dbSet
             .Include(s => s.Enrollments)
                 .ThenInclude(e => e.Course)
-                    .ThenInclude(c => c.LessonType)
+                    .ThenInclude(c => c.CourseType)
                         .ThenInclude(lt => lt.Instrument)
             .Include(s => s.Enrollments)
                 .ThenInclude(e => e.Course)

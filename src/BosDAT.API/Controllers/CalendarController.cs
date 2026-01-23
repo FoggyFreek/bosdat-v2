@@ -246,7 +246,7 @@ public class CalendarController : ControllerBase
         IQueryable<Lesson> query = _unitOfWork.Lessons.Query()
             .Where(l => l.ScheduledDate >= startDate && l.ScheduledDate <= endDate)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(l => l.Student)
             .Include(l => l.Teacher)
@@ -268,14 +268,14 @@ public class CalendarController : ControllerBase
             .Select(l => new CalendarLessonDto
             {
                 Id = l.Id,
-                Title = l.Course.LessonType.Instrument.Name + " - " + (l.Student != null ? l.Student.FirstName + " " + l.Student.LastName : "Group"),
+                Title = l.Course.CourseType.Instrument.Name + " - " + (l.Student != null ? l.Student.FirstName + " " + l.Student.LastName : "Group"),
                 Date = l.ScheduledDate,
                 StartTime = l.StartTime,
                 EndTime = l.EndTime,
                 StudentName = l.Student != null ? l.Student.FirstName + " " + l.Student.LastName : null,
                 TeacherName = l.Teacher.FirstName + " " + l.Teacher.LastName,
                 RoomName = l.Room != null ? l.Room.Name : null,
-                InstrumentName = l.Course.LessonType.Instrument.Name,
+                InstrumentName = l.Course.CourseType.Instrument.Name,
                 Status = l.Status
             })
             .ToListAsync(cancellationToken);

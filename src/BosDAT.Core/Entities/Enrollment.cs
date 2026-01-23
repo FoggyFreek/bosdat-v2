@@ -2,6 +2,7 @@ namespace BosDAT.Core.Entities;
 
 public enum EnrollmentStatus
 {
+    Trail,
     Active,
     Withdrawn,
     Completed,

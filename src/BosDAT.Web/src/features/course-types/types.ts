@@ -1,46 +1,46 @@
-// LessonType Domain Types
+// CourseType Domain Types
 
-export type LessonTypeCategory = 'Individual' | 'Group' | 'Workshop'
+export type CourseTypeCategory = 'Individual' | 'Group' | 'Workshop'
 
-export interface LessonTypeSimple {
+export interface CourseTypeSimple {
   id: number
   name: string
   instrumentId: number
   instrumentName: string
   durationMinutes: number
-  type: LessonTypeCategory
+  type: CourseTypeCategory
 }
 
-export interface LessonType {
+export interface CourseType {
   id: number
   instrumentId: number
   instrumentName: string
   name: string
   durationMinutes: number
-  type: LessonTypeCategory
+  type: CourseTypeCategory
   priceAdult: number
   priceChild: number
   maxStudents: number
   isActive: boolean
   activeCourseCount: number
-  hasTeachersForLessonType: boolean
+  hasTeachersForCourseType: boolean
 }
 
-export interface CreateLessonType {
+export interface CreateCourseType {
   instrumentId: number
   name: string
   durationMinutes: number
-  type: LessonTypeCategory
+  type: CourseTypeCategory
   priceAdult: number
   priceChild: number
   maxStudents: number
 }
 
-export interface UpdateLessonType {
+export interface UpdateCourseType {
   instrumentId: number
   name: string
   durationMinutes: number
-  type: LessonTypeCategory
+  type: CourseTypeCategory
   priceAdult: number
   priceChild: number
   maxStudents: number

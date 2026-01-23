@@ -126,7 +126,7 @@ export const studentsApi = {
 
 // Teachers API
 export const teachersApi = {
-  getAll: async (params?: { activeOnly?: boolean; instrumentId?: number; lessonTypeId?: number }) => {
+  getAll: async (params?: { activeOnly?: boolean; instrumentId?: number; courseTypeId?: number }) => {
     const response = await api.get('/teachers', { params })
     return response.data
   },
@@ -155,9 +155,9 @@ export const teachersApi = {
     await api.delete(`/teachers/${id}`)
   },
 
-  getAvailableLessonTypes: async (id: string, instrumentIds: number[]) => {
+  getAvailableCourseTypes: async (id: string, instrumentIds: number[]) => {
     const params = instrumentIds.length > 0 ? { instrumentIds: instrumentIds.join(',') } : {}
-    const response = await api.get(`/teachers/${id}/available-lesson-types`, { params })
+    const response = await api.get(`/teachers/${id}/available-course-types`, { params })
     return response.data
   },
 }
@@ -251,38 +251,38 @@ export const coursesApi = {
 }
 
 // Lesson Types API
-export const lessonTypesApi = {
+export const courseTypesApi = {
   getAll: async (params?: { activeOnly?: boolean; instrumentId?: number }) => {
-    const response = await api.get('/lesson-types', { params })
+    const response = await api.get('/course-types', { params })
     return response.data
   },
 
   getById: async (id: number) => {
-    const response = await api.get(`/lesson-types/${id}`)
+    const response = await api.get(`/course-types/${id}`)
     return response.data
   },
 
   create: async (data: unknown) => {
-    const response = await api.post('/lesson-types', data)
+    const response = await api.post('/course-types', data)
     return response.data
   },
 
   update: async (id: number, data: unknown) => {
-    const response = await api.put(`/lesson-types/${id}`, data)
+    const response = await api.put(`/course-types/${id}`, data)
     return response.data
   },
 
   delete: async (id: number) => {
-    await api.delete(`/lesson-types/${id}`)
+    await api.delete(`/course-types/${id}`)
   },
 
   reactivate: async (id: number) => {
-    const response = await api.put(`/lesson-types/${id}/reactivate`)
+    const response = await api.put(`/course-types/${id}/reactivate`)
     return response.data
   },
 
-  getTeachersForInstrument: async (instrumentId: number) => {
-    const response = await api.get(`/lesson-types/teachers-for-instrument/${instrumentId}`)
+  getTeacherCountForInstrument: async (instrumentId: number) => {
+    const response = await api.get(`/course-types/teachers-for-instrument/${instrumentId}`)
     return response.data
   },
 }

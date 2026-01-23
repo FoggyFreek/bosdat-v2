@@ -1,19 +1,18 @@
 namespace BosDAT.Core.Entities;
 
-public enum LessonTypeCategory
+public enum CourseTypeCategory
 {
     Individual,
     Group,
     Workshop
 }
 
-public class LessonType
+public class CourseType : BaseEntity
 {
-    public int Id { get; set; }
     public int InstrumentId { get; set; }
     public required string Name { get; set; }
     public int DurationMinutes { get; set; } = 30;
-    public LessonTypeCategory Type { get; set; } = LessonTypeCategory.Individual;
+    public CourseTypeCategory Type { get; set; } = CourseTypeCategory.Individual;
     public decimal PriceAdult { get; set; }
     public decimal PriceChild { get; set; }
     public int MaxStudents { get; set; } = 1;
@@ -22,5 +21,5 @@ public class LessonType
     // Navigation properties
     public virtual Instrument Instrument { get; set; } = null!;
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
-    public virtual ICollection<TeacherLessonType> TeacherLessonTypes { get; set; } = new List<TeacherLessonType>();
+    public virtual ICollection<TeacherCourseType> TeacherCourseTypes { get; set; } = new List<TeacherCourseType>();
 }

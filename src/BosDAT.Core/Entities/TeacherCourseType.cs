@@ -1,11 +1,11 @@
 namespace BosDAT.Core.Entities;
 
-public class TeacherLessonType
+public class TeacherCourseType
 {
     public Guid TeacherId { get; set; }
-    public int LessonTypeId { get; set; }
+    public Guid CourseTypeId { get; set; }
 
     // Navigation properties
     public virtual Teacher Teacher { get; set; } = null!;
-    public virtual LessonType LessonType { get; set; } = null!;
+    public virtual CourseType CourseType { get; set; } = null!;
 }

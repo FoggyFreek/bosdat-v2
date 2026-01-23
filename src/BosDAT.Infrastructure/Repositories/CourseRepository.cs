@@ -15,8 +15,8 @@ public class CourseRepository : Repository<Course>, ICourseRepository
     {
         return await _dbSet
             .Include(c => c.Teacher)
-            .Include(c => c.LessonType)
-                .ThenInclude(lt => lt.Instrument)
+            .Include(c => c.CourseType)
+                .ThenInclude(ct => ct.Instrument)
             .Include(c => c.Room)
             .Include(c => c.Enrollments)
                 .ThenInclude(e => e.Student)
@@ -27,8 +27,8 @@ public class CourseRepository : Repository<Course>, ICourseRepository
     {
         return await _dbSet
             .Where(c => c.TeacherId == teacherId)
-            .Include(c => c.LessonType)
-                .ThenInclude(lt => lt.Instrument)
+            .Include(c => c.CourseType)
+                .ThenInclude(ct => ct.Instrument)
             .Include(c => c.Room)
             .Include(c => c.Enrollments)
                 .ThenInclude(e => e.Student)
@@ -42,8 +42,8 @@ public class CourseRepository : Repository<Course>, ICourseRepository
         return await _dbSet
             .Where(c => c.Status == CourseStatus.Active)
             .Include(c => c.Teacher)
-            .Include(c => c.LessonType)
-                .ThenInclude(lt => lt.Instrument)
+            .Include(c => c.CourseType)
+                .ThenInclude(ct => ct.Instrument)
             .Include(c => c.Room)
             .OrderBy(c => c.DayOfWeek)
             .ThenBy(c => c.StartTime)
@@ -55,8 +55,8 @@ public class CourseRepository : Repository<Course>, ICourseRepository
         return await _dbSet
             .Where(c => c.DayOfWeek == day && c.Status == CourseStatus.Active)
             .Include(c => c.Teacher)
-            .Include(c => c.LessonType)
-                .ThenInclude(lt => lt.Instrument)
+            .Include(c => c.CourseType)
+                .ThenInclude(ct => ct.Instrument)
             .Include(c => c.Room)
             .Include(c => c.Enrollments)
                 .ThenInclude(e => e.Student)

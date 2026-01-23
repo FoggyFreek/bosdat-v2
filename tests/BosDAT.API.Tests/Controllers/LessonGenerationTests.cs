@@ -28,13 +28,13 @@ public class LessonGenerationTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             Name = "Piano Individual",
             InstrumentId = 1,
             Instrument = instrument,
-            Type = LessonTypeCategory.Individual
+            Type = CourseTypeCategory.Individual
         };
 
         var studentId = Guid.NewGuid();
@@ -52,14 +52,14 @@ public class LessonGenerationTests
         {
             Id = courseId,
             TeacherId = teacherId,
-            LessonTypeId = 1,
+            CourseTypeId = courseType.Id,
             RoomId = 1,
             DayOfWeek = DayOfWeek.Monday, // Monday
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
             Frequency = CourseFrequency.Weekly,
             Status = CourseStatus.Active,
-            LessonType = lessonType,
+            CourseType = courseType,
             Enrollments = new List<Enrollment> { enrollment }
         };
 
@@ -114,27 +114,27 @@ public class LessonGenerationTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             Name = "Piano Group",
             InstrumentId = 1,
             Instrument = instrument,
-            Type = LessonTypeCategory.Group
+            Type = CourseTypeCategory.Group
         };
 
         var course = new Course
         {
             Id = courseId,
             TeacherId = teacherId,
-            LessonTypeId = 1,
+            CourseTypeId = courseType.Id,
             RoomId = 1,
             DayOfWeek = DayOfWeek.Wednesday,
             StartTime = new TimeOnly(14, 0),
             EndTime = new TimeOnly(15, 0),
             Frequency = CourseFrequency.Biweekly,
             Status = CourseStatus.Active,
-            LessonType = lessonType,
+            CourseType = courseType,
             Enrollments = new List<Enrollment>()
         };
 
@@ -188,27 +188,27 @@ public class LessonGenerationTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             Name = "Piano Group",
             InstrumentId = 1,
             Instrument = instrument,
-            Type = LessonTypeCategory.Group
+            Type = CourseTypeCategory.Group
         };
 
         var course = new Course
         {
             Id = courseId,
             TeacherId = teacherId,
-            LessonTypeId = 1,
+            CourseTypeId = courseType.Id,
             RoomId = 1,
             DayOfWeek = DayOfWeek.Monday,
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
             Frequency = CourseFrequency.Weekly,
             Status = CourseStatus.Active,
-            LessonType = lessonType,
+            CourseType = courseType,
             Enrollments = new List<Enrollment>()
         };
 
@@ -274,27 +274,27 @@ public class LessonGenerationTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             Name = "Piano Group",
             InstrumentId = 1,
             Instrument = instrument,
-            Type = LessonTypeCategory.Group
+            Type = CourseTypeCategory.Group
         };
 
         var course = new Course
         {
             Id = courseId,
             TeacherId = teacherId,
-            LessonTypeId = 1,
+            CourseTypeId = courseType.Id,
             RoomId = 1,
             DayOfWeek = DayOfWeek.Monday,
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
             Frequency = CourseFrequency.Weekly,
             Status = CourseStatus.Active,
-            LessonType = lessonType,
+            CourseType = courseType,
             Enrollments = new List<Enrollment>()
         };
 
@@ -386,13 +386,13 @@ public class LessonGenerationTests
         var teacherId = Guid.NewGuid();
 
         var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var lessonType = new LessonType
+        var courseType = new CourseType
         {
-            Id = 1,
+            Id = Guid.NewGuid(),
             Name = "Piano Group",
             InstrumentId = 1,
             Instrument = instrument,
-            Type = LessonTypeCategory.Group
+            Type = CourseTypeCategory.Group
         };
 
         var courses = new List<Course>
@@ -401,39 +401,39 @@ public class LessonGenerationTests
             {
                 Id = Guid.NewGuid(),
                 TeacherId = teacherId,
-                LessonTypeId = 1,
+                CourseTypeId = courseType.Id,
                 DayOfWeek = DayOfWeek.Monday,
                 StartTime = new TimeOnly(10, 0),
                 EndTime = new TimeOnly(10, 30),
                 Frequency = CourseFrequency.Weekly,
                 Status = CourseStatus.Active,
-                LessonType = lessonType,
+                CourseType = courseType,
                 Enrollments = new List<Enrollment>()
             },
             new Course
             {
                 Id = Guid.NewGuid(),
                 TeacherId = teacherId,
-                LessonTypeId = 1,
+                CourseTypeId = courseType.Id,
                 DayOfWeek = DayOfWeek.Wednesday,
                 StartTime = new TimeOnly(14, 0),
                 EndTime = new TimeOnly(14, 30),
                 Frequency = CourseFrequency.Weekly,
                 Status = CourseStatus.Active,
-                LessonType = lessonType,
+                CourseType = courseType,
                 Enrollments = new List<Enrollment>()
             },
             new Course
             {
                 Id = Guid.NewGuid(),
                 TeacherId = teacherId,
-                LessonTypeId = 1,
+                CourseTypeId = courseType.Id,
                 DayOfWeek = DayOfWeek.Friday,
                 StartTime = new TimeOnly(9, 0),
                 EndTime = new TimeOnly(9, 30),
                 Frequency = CourseFrequency.Weekly,
                 Status = CourseStatus.Paused, // Not active, should be excluded
-                LessonType = lessonType,
+                CourseType = courseType,
                 Enrollments = new List<Enrollment>()
             }
         };

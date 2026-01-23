@@ -21,5 +21,5 @@ public class Instrument
 
     // Navigation properties
     public virtual ICollection<TeacherInstrument> TeacherInstruments { get; set; } = new List<TeacherInstrument>();
-    public virtual ICollection<LessonType> LessonTypes { get; set; } = new List<LessonType>();
+    public virtual ICollection<CourseType> CourseTypes { get; set; } = new List<CourseType>();
 }

@@ -11,7 +11,7 @@ export interface Lesson {
   teacherName: string
   roomId?: number
   roomName?: string
-  lessonTypeName: string
+  courseTypeName: string
   instrumentName: string
   scheduledDate: string
   startTime: string

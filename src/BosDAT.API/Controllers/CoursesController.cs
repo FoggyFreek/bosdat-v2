@@ -28,8 +28,8 @@ public class CoursesController : ControllerBase
     {
         IQueryable<Course> query = _unitOfWork.Courses.Query()
             .Include(c => c.Teacher)
-            .Include(c => c.LessonType)
-                .ThenInclude(lt => lt.Instrument)
+            .Include(c => c.CourseType)
+                .ThenInclude(ct => ct.Instrument)
             .Include(c => c.Room)
             .Include(c => c.Enrollments);
 
@@ -55,8 +55,8 @@ public class CoursesController : ControllerBase
             {
                 Id = c.Id,
                 TeacherName = c.Teacher.FirstName + " " + c.Teacher.LastName,
-                LessonTypeName = c.LessonType.Name,
-                InstrumentName = c.LessonType.Instrument.Name,
+                CourseTypeName = c.CourseType.Name,
+                InstrumentName = c.CourseType.Instrument.Name,
                 RoomName = c.Room != null ? c.Room.Name : null,
                 DayOfWeek = c.DayOfWeek,
                 StartTime = c.StartTime,
@@ -92,17 +92,17 @@ public class CoursesController : ControllerBase
             return BadRequest(new { message = "Teacher not found" });
         }
 
-        var lessonType = await _unitOfWork.Repository<LessonType>().GetByIdAsync(dto.LessonTypeId, cancellationToken);
+        var lessonType = await _unitOfWork.Repository<CourseType>().GetByIdAsync(dto.CourseTypeId, cancellationToken);
         if (lessonType == null)
         {
-            return BadRequest(new { message = "Lesson type not found" });
+            return BadRequest(new { message = "Course type not found" });
         }
 
         var course = new Course
         {
             Id = Guid.NewGuid(),
             TeacherId = dto.TeacherId,
-            LessonTypeId = dto.LessonTypeId,
+            CourseTypeId = dto.CourseTypeId,
             RoomId = dto.RoomId,
             DayOfWeek = dto.DayOfWeek,
             StartTime = dto.StartTime,
@@ -135,7 +135,7 @@ public class CoursesController : ControllerBase
         }
 
         course.TeacherId = dto.TeacherId;
-        course.LessonTypeId = dto.LessonTypeId;
+        course.CourseTypeId = dto.CourseTypeId;
         course.RoomId = dto.RoomId;
         course.DayOfWeek = dto.DayOfWeek;
         course.StartTime = dto.StartTime;
@@ -229,9 +229,9 @@ public class CoursesController : ControllerBase
             Id = course.Id,
             TeacherId = course.TeacherId,
             TeacherName = course.Teacher.FullName,
-            LessonTypeId = course.LessonTypeId,
-            LessonTypeName = course.LessonType.Name,
-            InstrumentName = course.LessonType.Instrument.Name,
+            CourseTypeId = course.CourseTypeId,
+            CourseTypeName = course.CourseType.Name,
+            InstrumentName = course.CourseType.Instrument.Name,
             RoomId = course.RoomId,
             RoomName = course.Room?.Name,
             DayOfWeek = course.DayOfWeek,

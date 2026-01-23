@@ -184,7 +184,7 @@ public class RoomsControllerTests
                     RoomId = 1,
                     Status = CourseStatus.Active,
                     TeacherId = Guid.NewGuid(),
-                    LessonTypeId = 1,
+                    CourseTypeId = Guid.NewGuid(),
                     DayOfWeek = DayOfWeek.Monday,
                     StartTime = new TimeOnly(10, 0),
                     EndTime = new TimeOnly(11, 0),
@@ -288,7 +288,7 @@ public class RoomsControllerTests
                     RoomId = 1,
                     Status = CourseStatus.Completed, // Even completed courses block deletion
                     TeacherId = Guid.NewGuid(),
-                    LessonTypeId = 1,
+                    CourseTypeId = Guid.NewGuid(),
                     DayOfWeek = DayOfWeek.Monday,
                     StartTime = new TimeOnly(10, 0),
                     EndTime = new TimeOnly(11, 0),

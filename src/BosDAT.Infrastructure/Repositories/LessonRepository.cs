@@ -16,8 +16,8 @@ public class LessonRepository : Repository<Lesson>, ILessonRepository
         return await _dbSet
             .Where(l => l.ScheduledDate >= startDate && l.ScheduledDate <= endDate)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
-                    .ThenInclude(lt => lt.Instrument)
+                .ThenInclude(c => c.CourseType)
+                    .ThenInclude(ct => ct.Instrument)
             .Include(l => l.Student)
             .Include(l => l.Teacher)
             .Include(l => l.Room)
@@ -31,7 +31,7 @@ public class LessonRepository : Repository<Lesson>, ILessonRepository
         return await _dbSet
             .Where(l => l.TeacherId == teacherId && l.ScheduledDate >= startDate && l.ScheduledDate <= endDate)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
             .Include(l => l.Student)
             .Include(l => l.Room)
             .OrderBy(l => l.ScheduledDate)
@@ -44,8 +44,8 @@ public class LessonRepository : Repository<Lesson>, ILessonRepository
         return await _dbSet
             .Where(l => l.StudentId == studentId)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
-                    .ThenInclude(lt => lt.Instrument)
+                .ThenInclude(c => c.CourseType)
+                    .ThenInclude(ct => ct.Instrument)
             .Include(l => l.Teacher)
             .Include(l => l.Room)
             .OrderByDescending(l => l.ScheduledDate)
@@ -58,7 +58,7 @@ public class LessonRepository : Repository<Lesson>, ILessonRepository
         return await _dbSet
             .Where(l => l.StudentId == studentId && !l.IsInvoiced && l.Status == LessonStatus.Completed)
             .Include(l => l.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
             .OrderBy(l => l.ScheduledDate)
             .ThenBy(l => l.StartTime)
             .ToListAsync(cancellationToken);

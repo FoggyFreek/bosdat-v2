@@ -7,8 +7,8 @@ public record CourseDto
     public Guid Id { get; init; }
     public Guid TeacherId { get; init; }
     public string TeacherName { get; init; } = string.Empty;
-    public int LessonTypeId { get; init; }
-    public string LessonTypeName { get; init; } = string.Empty;
+    public Guid CourseTypeId { get; init; }
+    public string CourseTypeName { get; init; } = string.Empty;
     public string InstrumentName { get; init; } = string.Empty;
     public int? RoomId { get; init; }
     public string? RoomName { get; init; }
@@ -31,7 +31,7 @@ public record CourseDto
 public record CreateCourseDto
 {
     public Guid TeacherId { get; init; }
-    public int LessonTypeId { get; init; }
+    public Guid CourseTypeId { get; init; }
     public int? RoomId { get; init; }
     public DayOfWeek DayOfWeek { get; init; }
     public TimeOnly StartTime { get; init; }
@@ -47,7 +47,7 @@ public record CreateCourseDto
 public record UpdateCourseDto
 {
     public Guid TeacherId { get; init; }
-    public int LessonTypeId { get; init; }
+    public Guid CourseTypeId { get; init; }
     public int? RoomId { get; init; }
     public DayOfWeek DayOfWeek { get; init; }
     public TimeOnly StartTime { get; init; }
@@ -65,7 +65,7 @@ public record CourseListDto
 {
     public Guid Id { get; init; }
     public string TeacherName { get; init; } = string.Empty;
-    public string LessonTypeName { get; init; } = string.Empty;
+    public string CourseTypeName { get; init; } = string.Empty;
     public string InstrumentName { get; init; } = string.Empty;
     public string? RoomName { get; init; }
     public DayOfWeek DayOfWeek { get; init; }

@@ -12,7 +12,7 @@ public record LessonDto
     public string TeacherName { get; init; } = string.Empty;
     public int? RoomId { get; init; }
     public string? RoomName { get; init; }
-    public string LessonTypeName { get; init; } = string.Empty;
+    public string CourseTypeName { get; init; } = string.Empty;
     public string InstrumentName { get; init; } = string.Empty;
     public DateOnly ScheduledDate { get; init; }
     public TimeOnly StartTime { get; init; }

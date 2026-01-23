@@ -28,8 +28,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<Instrument> Instruments => Set<Instrument>();
     public DbSet<TeacherInstrument> TeacherInstruments => Set<TeacherInstrument>();
-    public DbSet<TeacherLessonType> TeacherLessonTypes => Set<TeacherLessonType>();
-    public DbSet<LessonType> LessonTypes => Set<LessonType>();
+    public DbSet<TeacherCourseType> TeacherCourseTypes => Set<TeacherCourseType>();
+    public DbSet<CourseType> CourseTypes => Set<CourseType>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
@@ -53,8 +53,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<Teacher>().ToTable("teachers");
         modelBuilder.Entity<Instrument>().ToTable("instruments");
         modelBuilder.Entity<TeacherInstrument>().ToTable("teacher_instruments");
-        modelBuilder.Entity<TeacherLessonType>().ToTable("teacher_lesson_types");
-        modelBuilder.Entity<LessonType>().ToTable("lesson_types");
+        modelBuilder.Entity<TeacherCourseType>().ToTable("teacher_course_types");
+        modelBuilder.Entity<CourseType>().ToTable("course_types");
         modelBuilder.Entity<Room>().ToTable("rooms");
         modelBuilder.Entity<Course>().ToTable("courses");
         modelBuilder.Entity<Enrollment>().ToTable("enrollments");
@@ -128,24 +128,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // TeacherLessonType (many-to-many)
-        modelBuilder.Entity<TeacherLessonType>(entity =>
+        // TeacherCourseType (many-to-many)
+        modelBuilder.Entity<TeacherCourseType>(entity =>
         {
-            entity.HasKey(e => new { e.TeacherId, e.LessonTypeId });
+            entity.HasKey(e => new { e.TeacherId, e.CourseTypeId });
 
             entity.HasOne(e => e.Teacher)
-                .WithMany(t => t.TeacherLessonTypes)
+                .WithMany(t => t.TeacherCourseTypes)
                 .HasForeignKey(e => e.TeacherId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(e => e.LessonType)
-                .WithMany(lt => lt.TeacherLessonTypes)
-                .HasForeignKey(e => e.LessonTypeId)
+            entity.HasOne(e => e.CourseType)
+                .WithMany(ct => ct.TeacherCourseTypes)
+                .HasForeignKey(e => e.CourseTypeId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // LessonType configuration
-        modelBuilder.Entity<LessonType>(entity =>
+        // CourseType configuration
+        modelBuilder.Entity<CourseType>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
@@ -153,7 +153,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.PriceChild).HasPrecision(10, 2);
 
             entity.HasOne(e => e.Instrument)
-                .WithMany(i => i.LessonTypes)
+                .WithMany(i => i.CourseTypes)
                 .HasForeignKey(e => e.InstrumentId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
@@ -175,9 +175,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasForeignKey(e => e.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(e => e.LessonType)
-                .WithMany(lt => lt.Courses)
-                .HasForeignKey(e => e.LessonTypeId)
+            entity.HasOne(e => e.CourseType)
+                .WithMany(ct => ct.Courses)
+                .HasForeignKey(e => e.CourseTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(e => e.Room)

@@ -25,14 +25,14 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    public async Task<Teacher?> GetWithInstrumentsAndLessonTypesAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Teacher?> GetWithInstrumentsAndCourseTypesAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Include(t => t.TeacherInstruments)
                 .ThenInclude(ti => ti.Instrument)
-            .Include(t => t.TeacherLessonTypes)
-                .ThenInclude(tlt => tlt.LessonType)
-                    .ThenInclude(lt => lt.Instrument)
+            .Include(t => t.TeacherCourseTypes)
+                .ThenInclude(tct => tct.CourseType)
+                    .ThenInclude(ct => ct.Instrument)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
@@ -40,8 +40,8 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
     {
         return await _dbSet
             .Include(t => t.Courses)
-                .ThenInclude(c => c.LessonType)
-                    .ThenInclude(lt => lt.Instrument)
+                .ThenInclude(c => c.CourseType)
+                    .ThenInclude(ct => ct.Instrument)
             .Include(t => t.Courses)
                 .ThenInclude(c => c.Room)
             .Include(t => t.Courses)
@@ -70,14 +70,14 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Teacher>> GetTeachersByLessonTypeAsync(int lessonTypeId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Teacher>> GetTeachersByCourseTypeAsync(Guid courseTypeId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(t => t.IsActive && t.TeacherLessonTypes.Any(tlt => tlt.LessonTypeId == lessonTypeId))
+            .Where(t => t.IsActive && t.TeacherCourseTypes.Any(tct => tct.CourseTypeId == courseTypeId))
             .Include(t => t.TeacherInstruments)
                 .ThenInclude(ti => ti.Instrument)
-            .Include(t => t.TeacherLessonTypes)
-                .ThenInclude(tlt => tlt.LessonType)
+            .Include(t => t.TeacherCourseTypes)
+                .ThenInclude(tct => tct.CourseType)
             .OrderBy(t => t.LastName)
             .ThenBy(t => t.FirstName)
             .ToListAsync(cancellationToken);

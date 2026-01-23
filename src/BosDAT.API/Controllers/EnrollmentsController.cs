@@ -29,7 +29,7 @@ public class EnrollmentsController : ControllerBase
         IQueryable<Enrollment> query = _unitOfWork.Repository<Enrollment>().Query()
             .Include(e => e.Student)
             .Include(e => e.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(e => e.Course.Teacher);
 
@@ -73,7 +73,7 @@ public class EnrollmentsController : ControllerBase
             .Where(e => e.Id == id)
             .Include(e => e.Student)
             .Include(e => e.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(e => e.Course.Teacher)
             .Include(e => e.Course.Room)
@@ -90,8 +90,8 @@ public class EnrollmentsController : ControllerBase
             StudentId = enrollment.StudentId,
             StudentName = enrollment.Student.FullName,
             CourseId = enrollment.CourseId,
-            CourseName = $"{enrollment.Course.LessonType.Name} - {enrollment.Course.Teacher.FullName}",
-            InstrumentName = enrollment.Course.LessonType.Instrument.Name,
+            CourseName = $"{enrollment.Course.CourseType.Name} - {enrollment.Course.Teacher.FullName}",
+            InstrumentName = enrollment.Course.CourseType.Instrument.Name,
             TeacherName = enrollment.Course.Teacher.FullName,
             RoomName = enrollment.Course.Room?.Name,
             DayOfWeek = enrollment.Course.DayOfWeek,
@@ -116,7 +116,7 @@ public class EnrollmentsController : ControllerBase
         var enrollments = await _unitOfWork.Repository<Enrollment>().Query()
             .Where(e => e.StudentId == studentId)
             .Include(e => e.Course)
-                .ThenInclude(c => c.LessonType)
+                .ThenInclude(c => c.CourseType)
                     .ThenInclude(lt => lt.Instrument)
             .Include(e => e.Course.Teacher)
             .Include(e => e.Course.Room)
@@ -125,8 +125,8 @@ public class EnrollmentsController : ControllerBase
             {
                 Id = e.Id,
                 CourseId = e.CourseId,
-                InstrumentName = e.Course.LessonType.Instrument.Name,
-                LessonTypeName = e.Course.LessonType.Name,
+                InstrumentName = e.Course.CourseType.Instrument.Name,
+                CourseTypeName = e.Course.CourseType.Name,
                 TeacherName = e.Course.Teacher.FirstName + " " + e.Course.Teacher.LastName,
                 RoomName = e.Course.Room != null ? e.Course.Room.Name : null,
                 DayOfWeek = e.Course.DayOfWeek,
@@ -267,7 +267,7 @@ public record StudentEnrollmentDto
     public Guid Id { get; init; }
     public Guid CourseId { get; init; }
     public string InstrumentName { get; init; } = string.Empty;
-    public string LessonTypeName { get; init; } = string.Empty;
+    public string CourseTypeName { get; init; } = string.Empty;
     public string TeacherName { get; init; } = string.Empty;
     public string? RoomName { get; init; }
     public DayOfWeek DayOfWeek { get; init; }

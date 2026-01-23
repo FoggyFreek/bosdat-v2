@@ -13,11 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { instrumentsApi, lessonTypesApi } from '@/services/api'
+import { instrumentsApi, courseTypesApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import type { Teacher, TeacherRole, CreateTeacher } from '@/features/teachers/types'
 import type { Instrument } from '@/features/instruments/types'
-import type { LessonTypeSimple } from '@/features/lesson-types/types'
+import type { CourseTypeSimple } from '@/features/course-types/types'
 
 interface TeacherFormProps {
   teacher?: Teacher
@@ -40,7 +40,7 @@ interface FormData {
   notes: string
   isActive: boolean
   instrumentIds: number[]
-  lessonTypeIds: number[]
+  courseTypeIds: number[]
 }
 
 interface FormErrors {
@@ -78,17 +78,17 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     notes: '',
     isActive: true,
     instrumentIds: [],
-    lessonTypeIds: [],
+    courseTypeIds: [],
   })
 
   // Query all active lesson types, filter by selected instruments client-side
-  const { data: allLessonTypes = [] } = useQuery<LessonTypeSimple[]>({
-    queryKey: ['lessonTypes', 'active'],
-    queryFn: () => lessonTypesApi.getAll({ activeOnly: true }),
+  const { data: allCourseTypes = [] } = useQuery<CourseTypeSimple[]>({
+    queryKey: ['courseTypes', 'active'],
+    queryFn: () => courseTypesApi.getAll({ activeOnly: true }),
   })
 
   // Filter available lesson types by selected instruments
-  const availableLessonTypes = allLessonTypes.filter(
+  const availableCourseTypes = allCourseTypes.filter(
     (lt) => formData.instrumentIds.includes(lt.instrumentId)
   )
 
@@ -110,23 +110,23 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
         notes: teacher.notes || '',
         isActive: teacher.isActive,
         instrumentIds: teacher.instruments?.map((i) => i.id) || [],
-        lessonTypeIds: teacher.lessonTypes?.map((lt) => lt.id) || [],
+        courseTypeIds: teacher.courseTypes?.map((lt) => lt.id) || [],
       })
     }
   }, [teacher])
 
   // Remove lesson types when their instrument is removed
   useEffect(() => {
-    if (allLessonTypes.length > 0 && formData.lessonTypeIds.length > 0) {
-      const validLessonTypeIds = formData.lessonTypeIds.filter((ltId) => {
-        const lessonType = allLessonTypes.find((lt) => lt.id === ltId)
-        return lessonType && formData.instrumentIds.includes(lessonType.instrumentId)
+    if (allCourseTypes.length > 0 && formData.courseTypeIds.length > 0) {
+      const validCourseTypeIds = formData.courseTypeIds.filter((ltId) => {
+        const courseType = allCourseTypes.find((lt) => lt.id === ltId)
+        return courseType && formData.instrumentIds.includes(courseType.instrumentId)
       })
-      if (validLessonTypeIds.length !== formData.lessonTypeIds.length) {
-        setFormData((prev) => ({ ...prev, lessonTypeIds: validLessonTypeIds }))
+      if (validCourseTypeIds.length !== formData.courseTypeIds.length) {
+        setFormData((prev) => ({ ...prev, courseTypeIds: validCourseTypeIds }))
       }
     }
-  }, [formData.instrumentIds, formData.lessonTypeIds, allLessonTypes])
+  }, [formData.instrumentIds, formData.courseTypeIds, allCourseTypes])
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -184,7 +184,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       role: formData.role,
       notes: formData.notes.trim() || undefined,
       instrumentIds: formData.instrumentIds,
-      lessonTypeIds: formData.lessonTypeIds,
+      courseTypeIds: formData.courseTypeIds,
     }
 
     const result = await onSubmit(submitData)
@@ -207,15 +207,15 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     handleChange('instrumentIds', newIds)
   }
 
-  const handleLessonTypeToggle = (lessonTypeId: number, checked: boolean) => {
+  const handleCourseTypeToggle = (courseTypeId: number, checked: boolean) => {
     const newIds = checked
-      ? [...formData.lessonTypeIds, lessonTypeId]
-      : formData.lessonTypeIds.filter((id) => id !== lessonTypeId)
-    handleChange('lessonTypeIds', newIds)
+      ? [...formData.courseTypeIds, courseTypeId]
+      : formData.courseTypeIds.filter((id) => id !== courseTypeId)
+    handleChange('courseTypeIds', newIds)
   }
 
   // Group available lesson types by instrument
-  const lessonTypesByInstrument = availableLessonTypes.reduce(
+  const courseTypesByInstrument = availableCourseTypes.reduce(
     (acc, lt) => {
       if (!acc[lt.instrumentName]) {
         acc[lt.instrumentName] = []
@@ -223,7 +223,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       acc[lt.instrumentName].push(lt)
       return acc
     },
-    {} as Record<string, LessonTypeSimple[]>
+    {} as Record<string, CourseTypeSimple[]>
   )
 
   return (
@@ -419,27 +419,27 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
           <p className="text-sm text-muted-foreground">
             Please select at least one instrument to see available lesson types
           </p>
-        ) : availableLessonTypes.length === 0 ? (
+        ) : availableCourseTypes.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No lesson types available for the selected instruments
           </p>
         ) : (
           <div className="space-y-4">
-            {Object.entries(lessonTypesByInstrument).map(([instrumentName, lessonTypes]) => (
+            {Object.entries(courseTypesByInstrument).map(([instrumentName, courseTypes]) => (
               <div key={instrumentName}>
                 <h4 className="text-sm font-medium mb-2">{instrumentName}</h4>
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {lessonTypes.map((lessonType) => (
-                    <div key={lessonType.id} className="flex items-center space-x-2">
+                  {courseTypes.map((courseType) => (
+                    <div key={courseType.id} className="flex items-center space-x-2">
                       <Checkbox
-                        id={`lessonType-${lessonType.id}`}
-                        checked={formData.lessonTypeIds.includes(lessonType.id)}
+                        id={`courseType-${courseType.id}`}
+                        checked={formData.courseTypeIds.includes(courseType.id)}
                         onCheckedChange={(checked) =>
-                          handleLessonTypeToggle(lessonType.id, !!checked)
+                          handleCourseTypeToggle(courseType.id, !!checked)
                         }
                       />
-                      <Label htmlFor={`lessonType-${lessonType.id}`} className="font-normal">
-                        {lessonType.name} ({lessonType.durationMinutes} min)
+                      <Label htmlFor={`courseType-${courseType.id}`} className="font-normal">
+                        {courseType.name} ({courseType.durationMinutes} min)
                       </Label>
                     </div>
                   ))}

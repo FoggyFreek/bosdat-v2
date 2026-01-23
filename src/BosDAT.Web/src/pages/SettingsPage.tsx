@@ -26,11 +26,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { instrumentsApi, roomsApi, lessonTypesApi, holidaysApi, settingsApi } from '@/services/api'
+import { instrumentsApi, roomsApi, courseTypesApi, holidaysApi, settingsApi } from '@/services/api'
 import type { Holiday} from '@/features/schedule/types'
 import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
 import type { Room } from '@/features/rooms/types'
-import type { LessonType, LessonTypeCategory} from '@/features/lesson-types/types'
+import type { CourseType, CourseTypeCategory} from '@/features/course-types/types'
 
 import { cn, formatDate, formatCurrency } from '@/lib/utils'
 
@@ -48,7 +48,7 @@ const SettingsDirtyContext = createContext<SettingsDirtyContextType>({
 export const useSettingsDirty = () => useContext(SettingsDirtyContext)
 
 // Navigation items configuration
-type SettingKey = 'profile' | 'preferences' | 'instruments' | 'lesson-types' | 'rooms' | 'holidays' | 'system'
+type SettingKey = 'profile' | 'preferences' | 'instruments' | 'course-types' | 'rooms' | 'holidays' | 'system'
 
 interface NavItem {
   key: SettingKey
@@ -73,7 +73,7 @@ const navigationGroups: NavGroup[] = [
     label: 'LESSONS',
     items: [
       { key: 'instruments', label: 'Instruments', icon: <Music className="h-4 w-4" /> },
-      { key: 'lesson-types', label: 'Lesson types', icon: <BookOpen className="h-4 w-4" /> },
+      { key: 'course-types', label: 'Course types', icon: <BookOpen className="h-4 w-4" /> },
     ],
   },
   {
@@ -128,8 +128,8 @@ export function SettingsPage() {
         return <PreferencesSection />
       case 'instruments':
         return <InstrumentsSection />
-      case 'lesson-types':
-        return <LessonTypesSection />
+      case 'course-types':
+        return <CourseTypesSection />
       case 'rooms':
         return <RoomsSection />
       case 'holidays':
@@ -511,7 +511,7 @@ function InstrumentsSection() {
   )
 }
 
-function LessonTypesSection() {
+function CourseTypesSection() {
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
@@ -525,7 +525,7 @@ function LessonTypesSection() {
     instrumentId: '',
     durationMinutes: '30',
     customDuration: '',
-    type: 'Individual' as LessonTypeCategory,
+    type: 'Individual' as CourseTypeCategory,
     priceAdult: '',
     priceChild: '',
     maxStudents: '1',
@@ -535,9 +535,9 @@ function LessonTypesSection() {
 
   const durationOptions = ['20', '30', '40', '45', '50', '60', '90', '120']
 
-  const { data: lessonTypes = [], isLoading } = useQuery<LessonType[]>({
-    queryKey: ['lessonTypes'],
-    queryFn: () => lessonTypesApi.getAll(),
+  const { data: courseTypes = [], isLoading } = useQuery<CourseType[]>({
+    queryKey: ['courseTypes'],
+    queryFn: () => courseTypesApi.getAll(),
   })
 
   const { data: instruments = [] } = useQuery<Instrument[]>({
@@ -560,8 +560,8 @@ function LessonTypesSection() {
       return
     }
     try {
-      const result = await lessonTypesApi.getTeachersForInstrument(parseInt(instrumentId))
-      if (!result.hasTeachers) {
+      const result = await courseTypesApi.getTeacherCountForInstrument(parseInt(instrumentId))
+      if (result === 0) {
         setTeacherWarning(`No active teachers teach ${result.instrumentName}`)
       } else {
         setTeacherWarning(null)
@@ -614,7 +614,7 @@ function LessonTypesSection() {
 
   const createMutation = useMutation({
     mutationFn: (data: typeof formData) =>
-      lessonTypesApi.create({
+      courseTypesApi.create({
         name: data.name,
         instrumentId: parseInt(data.instrumentId),
         durationMinutes: parseInt(getDuration()),
@@ -624,17 +624,17 @@ function LessonTypesSection() {
         maxStudents: parseInt(data.maxStudents),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+      queryClient.invalidateQueries({ queryKey: ['courseTypes'] })
       resetForm()
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
-      setError(err.response?.data?.message || 'Failed to create lesson type')
+      setError(err.response?.data?.message || 'Failed to create course type')
     },
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: typeof formData }) =>
-      lessonTypesApi.update(id, {
+      courseTypesApi.update(id, {
         name: data.name,
         instrumentId: parseInt(data.instrumentId),
         durationMinutes: parseInt(getDuration()),
@@ -645,32 +645,32 @@ function LessonTypesSection() {
         isActive: data.isActive,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+      queryClient.invalidateQueries({ queryKey: ['courseTypes'] })
       resetForm()
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
-      setError(err.response?.data?.message || 'Failed to update lesson type')
+      setError(err.response?.data?.message || 'Failed to update course type')
     },
   })
 
   const archiveMutation = useMutation({
-    mutationFn: (id: number) => lessonTypesApi.delete(id),
+    mutationFn: (id: number) => courseTypesApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+      queryClient.invalidateQueries({ queryKey: ['courseTypes'] })
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
-      setError(err.response?.data?.message || 'Failed to archive lesson type')
+      setError(err.response?.data?.message || 'Failed to archive course type')
     },
   })
 
   const reactivateMutation = useMutation({
-    mutationFn: (id: number) => lessonTypesApi.reactivate(id),
+    mutationFn: (id: number) => courseTypesApi.reactivate(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lessonTypes'] })
+      queryClient.invalidateQueries({ queryKey: ['courseTypes'] })
     },
   })
 
-  const startEdit = (lt: LessonType) => {
+  const startEdit = (lt: CourseType) => {
     const isCustom = !durationOptions.includes(lt.durationMinutes.toString())
     setFormData({
       name: lt.name,
@@ -702,8 +702,8 @@ function LessonTypesSection() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Lesson Types</CardTitle>
-          <CardDescription>Configure types of lessons and pricing</CardDescription>
+          <CardTitle>Course Types</CardTitle>
+          <CardDescription>Configure types of courses and pricing</CardDescription>
         </div>
         <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
@@ -720,7 +720,7 @@ function LessonTypesSection() {
 
         {(showAdd || editId !== null) && (
           <div className="mb-4 p-4 bg-muted/50 rounded-lg space-y-3">
-            <h4 className="font-medium">{editId ? 'Edit Lesson Type' : 'New Lesson Type'}</h4>
+            <h4 className="font-medium">{editId ? 'Edit Lesson Type' : 'New Course Type'}</h4>
             {teacherWarning && (
               <div className="p-2 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded text-sm">
                 {teacherWarning}
@@ -855,11 +855,11 @@ function LessonTypesSection() {
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : lessonTypes.length === 0 ? (
-          <p className="text-muted-foreground">No lesson types configured</p>
+        ) : courseTypes.length === 0 ? (
+          <p className="text-muted-foreground">No course types configured</p>
         ) : (
           <div className="divide-y">
-            {lessonTypes.map((lt) => (
+            {courseTypes.map((lt) => (
               <div key={lt.id} className="flex items-center justify-between py-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -870,7 +870,7 @@ function LessonTypesSection() {
                     )}>
                       {lt.isActive ? 'Active' : 'Archived'}
                     </span>
-                    {!lt.hasTeachersForLessonType && (
+                    {!lt.hasTeachersForCourseType && (
                       <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800">
                         No teachers
                       </span>

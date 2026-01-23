@@ -94,7 +94,7 @@ export function CoursesPage() {
                             <div>
                               <p className="font-medium">{course.instrumentName}</p>
                               <p className="text-sm text-muted-foreground">
-                                {course.teacherName} - {course.lessonTypeName}
+                                {course.teacherName} - {course.courseTypeName}
                               </p>
                               {course.roomName && (
                                 <p className="text-xs text-muted-foreground">{course.roomName}</p>

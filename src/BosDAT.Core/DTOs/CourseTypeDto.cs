@@ -2,49 +2,49 @@ using BosDAT.Core.Entities;
 
 namespace BosDAT.Core.DTOs;
 
-public record LessonTypeSimpleDto
+public record CourseTypeSimpleDto
 {
-    public int Id { get; init; }
+    public Guid Id { get; init; }
     public required string Name { get; init; }
     public int InstrumentId { get; init; }
     public string InstrumentName { get; init; } = string.Empty;
     public int DurationMinutes { get; init; }
-    public LessonTypeCategory Type { get; init; }
+    public CourseTypeCategory Type { get; init; }
 }
 
-public record LessonTypeDto
+public record CourseTypeDto
 {
-    public int Id { get; init; }
+    public Guid Id { get; init; }
     public int InstrumentId { get; init; }
     public string InstrumentName { get; init; } = string.Empty;
     public required string Name { get; init; }
     public int DurationMinutes { get; init; }
-    public LessonTypeCategory Type { get; init; }
+    public CourseTypeCategory Type { get; init; }
     public decimal PriceAdult { get; init; }
     public decimal PriceChild { get; init; }
     public int MaxStudents { get; init; }
     public bool IsActive { get; init; }
     public int ActiveCourseCount { get; init; }
-    public bool HasTeachersForLessonType { get; init; }
+    public bool HasTeachersForCourseType { get; init; }
 }
 
-public record CreateLessonTypeDto
+public record CreateCourseTypeDto
 {
     public int InstrumentId { get; init; }
     public required string Name { get; init; }
     public int DurationMinutes { get; init; } = 30;
-    public LessonTypeCategory Type { get; init; } = LessonTypeCategory.Individual;
+    public CourseTypeCategory Type { get; init; } = CourseTypeCategory.Individual;
     public decimal PriceAdult { get; init; }
     public decimal PriceChild { get; init; }
     public int MaxStudents { get; init; } = 1;
 }
 
-public record UpdateLessonTypeDto
+public record UpdateCourseTypeDto
 {
     public int InstrumentId { get; init; }
     public required string Name { get; init; }
     public int DurationMinutes { get; init; }
-    public LessonTypeCategory Type { get; init; }
+    public CourseTypeCategory Type { get; init; }
     public decimal PriceAdult { get; init; }
     public decimal PriceChild { get; init; }
     public int MaxStudents { get; init; }
