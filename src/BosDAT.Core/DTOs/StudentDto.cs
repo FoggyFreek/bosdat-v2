@@ -27,6 +27,7 @@ public record StudentDto
     public string? BillingCity { get; init; }
     public bool AutoDebit { get; init; }
     public string? Notes { get; init; }
+    public DateTime? RegistrationFeePaidAt { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

@@ -1,6 +1,6 @@
 // Enrollment Domain Types
 
-export type EnrollmentStatus = 'Active' | 'Withdrawn' | 'Completed' | 'Suspended'
+export type EnrollmentStatus = 'Trail' | 'Active' | 'Withdrawn' | 'Completed' | 'Suspended'
 
 export interface Enrollment {
   id: string

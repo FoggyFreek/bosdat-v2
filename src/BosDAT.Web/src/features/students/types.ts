@@ -27,6 +27,7 @@ export interface Student {
   billingCity?: string
   autoDebit: boolean
   notes?: string
+  registrationFeePaidAt?: string
   createdAt: string
   updatedAt: string
 }
@@ -61,6 +62,14 @@ export interface CreateStudent {
   billingCity?: string
   autoDebit?: boolean
   notes?: string
+}
+
+// Registration Fee Types
+export interface RegistrationFeeStatus {
+  hasPaid: boolean
+  paidAt?: string
+  amount?: number
+  invoiceId?: string
 }
 
 // Duplicate Detection Types

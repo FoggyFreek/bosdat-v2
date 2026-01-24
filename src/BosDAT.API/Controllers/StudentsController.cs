@@ -10,16 +10,14 @@ namespace BosDAT.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class StudentsController : ControllerBase
+public class StudentsController(
+    IUnitOfWork unitOfWork,
+    IDuplicateDetectionService duplicateDetectionService,
+    IRegistrationFeeService registrationFeeService) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IDuplicateDetectionService _duplicateDetectionService;
-
-    public StudentsController(IUnitOfWork unitOfWork, IDuplicateDetectionService duplicateDetectionService)
-    {
-        _unitOfWork = unitOfWork;
-        _duplicateDetectionService = duplicateDetectionService;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IDuplicateDetectionService _duplicateDetectionService = duplicateDetectionService;
+    private readonly IRegistrationFeeService _registrationFeeService = registrationFeeService;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StudentListDto>>> GetAll(
@@ -213,6 +211,20 @@ public class StudentsController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:guid}/registration-fee")]
+    public async Task<ActionResult<RegistrationFeeStatusDto>> GetRegistrationFeeStatus(Guid id, CancellationToken cancellationToken)
+    {
+        var student = await _unitOfWork.Students.GetByIdAsync(id, cancellationToken);
+
+        if (student == null)
+        {
+            return NotFound();
+        }
+
+        var feeStatus = await _registrationFeeService.GetFeeStatusAsync(id, cancellationToken);
+        return Ok(feeStatus);
+    }
+
     private static StudentDto MapToDto(Student student)
     {
         return new StudentDto
@@ -240,6 +252,7 @@ public class StudentsController : ControllerBase
             BillingCity = student.BillingCity,
             AutoDebit = student.AutoDebit,
             Notes = student.Notes,
+            RegistrationFeePaidAt = student.RegistrationFeePaidAt,
             CreatedAt = student.CreatedAt,
             UpdatedAt = student.UpdatedAt
         };

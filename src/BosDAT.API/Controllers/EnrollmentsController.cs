@@ -10,14 +10,12 @@ namespace BosDAT.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class EnrollmentsController : ControllerBase
+public class EnrollmentsController(
+    IUnitOfWork unitOfWork,
+    IRegistrationFeeService registrationFeeService) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public EnrollmentsController(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IRegistrationFeeService _registrationFeeService = registrationFeeService;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetAll(
@@ -166,6 +164,9 @@ public class EnrollmentsController : ControllerBase
             return BadRequest(new { message = "Student is already enrolled in this course" });
         }
 
+        // Auto-set enrollment status based on course type
+        var enrollmentStatus = course.IsTrial ? EnrollmentStatus.Trail : EnrollmentStatus.Active;
+
         var enrollment = new Enrollment
         {
             Id = Guid.NewGuid(),
@@ -173,11 +174,17 @@ public class EnrollmentsController : ControllerBase
             CourseId = dto.CourseId,
             DiscountPercent = dto.DiscountPercent,
             Notes = dto.Notes,
-            Status = EnrollmentStatus.Active
+            Status = enrollmentStatus
         };
 
         await _unitOfWork.Repository<Enrollment>().AddAsync(enrollment, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Apply registration fee for non-trial courses if student is eligible
+        if (!course.IsTrial && await _registrationFeeService.IsStudentEligibleForFeeAsync(dto.StudentId, cancellationToken))
+        {
+            await _registrationFeeService.ApplyRegistrationFeeAsync(dto.StudentId, cancellationToken);
+        }
 
         return CreatedAtAction(nameof(GetById), new { id = enrollment.Id }, new EnrollmentDto
         {
@@ -211,6 +218,47 @@ public class EnrollmentsController : ControllerBase
         enrollment.Notes = dto.Notes;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Ok(new EnrollmentDto
+        {
+            Id = enrollment.Id,
+            StudentId = enrollment.StudentId,
+            StudentName = enrollment.Student.FullName,
+            CourseId = enrollment.CourseId,
+            EnrolledAt = enrollment.EnrolledAt,
+            DiscountPercent = enrollment.DiscountPercent,
+            Status = enrollment.Status,
+            Notes = enrollment.Notes
+        });
+    }
+
+    [HttpPut("{id:guid}/promote")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<EnrollmentDto>> PromoteFromTrail(Guid id, CancellationToken cancellationToken)
+    {
+        var enrollment = await _unitOfWork.Repository<Enrollment>().Query()
+            .Where(e => e.Id == id)
+            .Include(e => e.Student)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (enrollment == null)
+        {
+            return NotFound();
+        }
+
+        if (enrollment.Status != EnrollmentStatus.Trail)
+        {
+            return BadRequest(new { message = "Only trial enrollments can be promoted" });
+        }
+
+        enrollment.Status = EnrollmentStatus.Active;
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Apply registration fee if student is eligible
+        if (await _registrationFeeService.IsStudentEligibleForFeeAsync(enrollment.StudentId, cancellationToken))
+        {
+            await _registrationFeeService.ApplyRegistrationFeeAsync(enrollment.StudentId, cancellationToken);
+        }
 
         return Ok(new EnrollmentDto
         {

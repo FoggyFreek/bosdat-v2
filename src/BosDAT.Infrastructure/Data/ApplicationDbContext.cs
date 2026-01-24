@@ -436,7 +436,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             new Setting { Key = "school_name", Value = "Nieuwe Muziekschool Ittersum", Type = "string", Description = "School name" },
             new Setting { Key = "child_discount_percent", Value = "10", Type = "decimal", Description = "Default percentage discount for child pricing" },
             new Setting { Key = "group_max_students", Value = "6", Type = "int", Description = "Default maximum students for group lessons" },
-            new Setting { Key = "workshop_max_students", Value = "12", Type = "int", Description = "Default maximum students for workshops" }
+            new Setting { Key = "workshop_max_students", Value = "12", Type = "int", Description = "Default maximum students for workshops" },
+            new Setting { Key = "registration_fee_description", Value = "Eenmalig inschrijfgeld", Type = "string", Description = "Invoice description for registration fee" }
         );
     }
 

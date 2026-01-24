@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios'
 import type { AuthResponse, LoginDto, User } from '@/features/auth/types'
-import type { CheckDuplicatesDto, DuplicateCheckResult } from '@/features/students/types'
+import type { CheckDuplicatesDto, DuplicateCheckResult, RegistrationFeeStatus } from '@/features/students/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
@@ -120,6 +120,11 @@ export const studentsApi = {
 
   checkDuplicates: async (data: CheckDuplicatesDto): Promise<DuplicateCheckResult> => {
     const response = await api.post<DuplicateCheckResult>('/students/check-duplicates', data)
+    return response.data
+  },
+
+  getRegistrationFeeStatus: async (id: string): Promise<RegistrationFeeStatus> => {
+    const response = await api.get<RegistrationFeeStatus>(`/students/${id}/registration-fee`)
     return response.data
   },
 }
@@ -337,6 +342,11 @@ export const enrollmentsApi = {
 
   delete: async (id: string) => {
     await api.delete(`/enrollments/${id}`)
+  },
+
+  promoteFromTrail: async (id: string) => {
+    const response = await api.put(`/enrollments/${id}/promote`)
+    return response.data
   },
 }
 

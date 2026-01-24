@@ -12,12 +12,14 @@ namespace BosDAT.API.Tests.Controllers;
 public class EnrollmentsControllerTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<IRegistrationFeeService> _mockRegistrationFeeService;
     private readonly EnrollmentsController _controller;
 
     public EnrollmentsControllerTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new EnrollmentsController(_mockUnitOfWork.Object);
+        _mockRegistrationFeeService = new Mock<IRegistrationFeeService>();
+        _controller = new EnrollmentsController(_mockUnitOfWork.Object, _mockRegistrationFeeService.Object);
     }
 
     [Fact]

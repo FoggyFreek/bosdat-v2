@@ -48,6 +48,9 @@ public class Student : BaseEntity
     public bool AutoDebit { get; set; }
     public string? Notes { get; set; }
 
+    // Registration fee tracking
+    public DateTime? RegistrationFeePaidAt { get; set; }
+
     // Navigation properties
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();

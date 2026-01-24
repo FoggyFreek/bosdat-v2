@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Plus, Music, Trash2, User, CreditCard } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, Plus, Music, Trash2, User, CreditCard, CheckCircle, XCircle, ArrowUpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { studentsApi, enrollmentsApi, lessonsApi, coursesApi } from '@/services/api'
-import type { Student, StudentEnrollment  } from '@/features/students/types'
+import type { Student, StudentEnrollment, RegistrationFeeStatus } from '@/features/students/types'
 import type { CourseList } from '@/features/courses/types'
 import type { Lesson } from '@/features/lessons/types'
 
@@ -48,6 +48,12 @@ export function StudentDetailPage() {
     enabled: showEnrollForm,
   })
 
+  const { data: feeStatus } = useQuery<RegistrationFeeStatus>({
+    queryKey: ['student', id, 'registration-fee'],
+    queryFn: () => studentsApi.getRegistrationFeeStatus(id!),
+    enabled: !!id,
+  })
+
   const enrollMutation = useMutation({
     mutationFn: (courseId: string) =>
       enrollmentsApi.create({ studentId: id!, courseId }),
@@ -62,6 +68,14 @@ export function StudentDetailPage() {
     mutationFn: (enrollmentId: string) => enrollmentsApi.delete(enrollmentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrollments', 'student', id] })
+    },
+  })
+
+  const promoteMutation = useMutation({
+    mutationFn: (enrollmentId: string) => enrollmentsApi.promoteFromTrail(enrollmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrollments', 'student', id] })
+      queryClient.invalidateQueries({ queryKey: ['student', id, 'registration-fee'] })
     },
   })
 
@@ -277,6 +291,31 @@ export function StudentDetailPage() {
               <p className="text-sm text-muted-foreground">Auto Debit</p>
               <p>{student.autoDebit ? 'Yes' : 'No'}</p>
             </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Registration Fee</p>
+              {feeStatus ? (
+                <div className="flex items-center gap-2">
+                  {feeStatus.hasPaid ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-green-700">
+                        Paid {feeStatus.paidAt && formatDate(feeStatus.paidAt)}
+                        {feeStatus.amount && ` - €${feeStatus.amount.toFixed(2)}`}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 text-orange-500" />
+                      <span className="text-orange-600">
+                        Not paid yet {feeStatus.amount && `(€${feeStatus.amount.toFixed(2)})`}
+                      </span>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <span className="text-muted-foreground">Loading...</span>
+              )}
+            </div>
             {student.notes && (
               <div>
                 <p className="text-sm text-muted-foreground">Notes</p>
@@ -347,14 +386,26 @@ export function StudentDetailPage() {
                     <span
                       className={cn(
                         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                        enrollment.status === 'Active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                        enrollment.status === 'Active' && 'bg-green-100 text-green-800',
+                        enrollment.status === 'Trail' && 'bg-yellow-100 text-yellow-800',
+                        enrollment.status !== 'Active' && enrollment.status !== 'Trail' && 'bg-gray-100 text-gray-800'
                       )}
                     >
                       {enrollment.status}
                     </span>
-                    {enrollment.status === 'Active' && (
+                    {enrollment.status === 'Trail' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => promoteMutation.mutate(enrollment.id)}
+                        disabled={promoteMutation.isPending}
+                      >
+                        <ArrowUpCircle className="h-4 w-4 mr-1" />
+                        Promote
+                      </Button>
+                    )}
+                    {(enrollment.status === 'Active' || enrollment.status === 'Trail') && (
                       <Button
                         variant="ghost"
                         size="icon"
