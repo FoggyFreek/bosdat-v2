@@ -2,8 +2,25 @@
 
 export type CourseTypeCategory = 'Individual' | 'Group' | 'Workshop'
 
+export interface CourseTypePricingVersion {
+  id: string
+  courseTypeId: string
+  priceAdult: number
+  priceChild: number
+  validFrom: string
+  validUntil: string | null
+  isCurrent: boolean
+  createdAt: string
+}
+
+export interface PricingEditability {
+  canEditDirectly: boolean
+  isInvoiced: boolean
+  reason?: string
+}
+
 export interface CourseTypeSimple {
-  id: number
+  id: string
   name: string
   instrumentId: number
   instrumentName: string
@@ -12,18 +29,19 @@ export interface CourseTypeSimple {
 }
 
 export interface CourseType {
-  id: number
+  id: string
   instrumentId: number
   instrumentName: string
   name: string
   durationMinutes: number
   type: CourseTypeCategory
-  priceAdult: number
-  priceChild: number
   maxStudents: number
   isActive: boolean
   activeCourseCount: number
   hasTeachersForCourseType: boolean
+  currentPricing: CourseTypePricingVersion | null
+  pricingHistory: CourseTypePricingVersion[]
+  canEditPricingDirectly: boolean
 }
 
 export interface CreateCourseType {
@@ -41,10 +59,19 @@ export interface UpdateCourseType {
   name: string
   durationMinutes: number
   type: CourseTypeCategory
-  priceAdult: number
-  priceChild: number
   maxStudents: number
   isActive: boolean
+}
+
+export interface UpdateCourseTypePricing {
+  priceAdult: number
+  priceChild: number
+}
+
+export interface CreateCourseTypePricingVersion {
+  priceAdult: number
+  priceChild: number
+  validFrom: string
 }
 
 export interface TeacherAvailabilityForInstrument {

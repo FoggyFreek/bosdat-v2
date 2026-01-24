@@ -250,14 +250,14 @@ export const coursesApi = {
   },
 }
 
-// Lesson Types API
+// Course Types API
 export const courseTypesApi = {
   getAll: async (params?: { activeOnly?: boolean; instrumentId?: number }) => {
     const response = await api.get('/course-types', { params })
     return response.data
   },
 
-  getById: async (id: number) => {
+  getById: async (id: string) => {
     const response = await api.get(`/course-types/${id}`)
     return response.data
   },
@@ -267,22 +267,43 @@ export const courseTypesApi = {
     return response.data
   },
 
-  update: async (id: number, data: unknown) => {
+  update: async (id: string, data: unknown) => {
     const response = await api.put(`/course-types/${id}`, data)
     return response.data
   },
 
-  delete: async (id: number) => {
+  delete: async (id: string) => {
     await api.delete(`/course-types/${id}`)
   },
 
-  reactivate: async (id: number) => {
+  reactivate: async (id: string) => {
     const response = await api.put(`/course-types/${id}/reactivate`)
     return response.data
   },
 
   getTeacherCountForInstrument: async (instrumentId: number) => {
     const response = await api.get(`/course-types/teachers-for-instrument/${instrumentId}`)
+    return response.data
+  },
+
+  // Pricing endpoints
+  getPricingHistory: async (id: string) => {
+    const response = await api.get(`/course-types/${id}/pricing/history`)
+    return response.data
+  },
+
+  checkPricingEditability: async (id: string) => {
+    const response = await api.get(`/course-types/${id}/pricing/can-edit`)
+    return response.data
+  },
+
+  updatePricing: async (id: string, data: { priceAdult: number; priceChild: number }) => {
+    const response = await api.put(`/course-types/${id}/pricing`, data)
+    return response.data
+  },
+
+  createPricingVersion: async (id: string, data: { priceAdult: number; priceChild: number; validFrom: string }) => {
+    const response = await api.post(`/course-types/${id}/pricing/versions`, data)
     return response.data
   },
 }

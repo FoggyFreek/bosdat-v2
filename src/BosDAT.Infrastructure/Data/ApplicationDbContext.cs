@@ -30,6 +30,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<TeacherInstrument> TeacherInstruments => Set<TeacherInstrument>();
     public DbSet<TeacherCourseType> TeacherCourseTypes => Set<TeacherCourseType>();
     public DbSet<CourseType> CourseTypes => Set<CourseType>();
+    public DbSet<CourseTypePricingVersion> CourseTypePricingVersions => Set<CourseTypePricingVersion>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
@@ -55,6 +56,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<TeacherInstrument>().ToTable("teacher_instruments");
         modelBuilder.Entity<TeacherCourseType>().ToTable("teacher_course_types");
         modelBuilder.Entity<CourseType>().ToTable("course_types");
+        modelBuilder.Entity<CourseTypePricingVersion>().ToTable("course_type_pricing_versions");
         modelBuilder.Entity<Room>().ToTable("rooms");
         modelBuilder.Entity<Course>().ToTable("courses");
         modelBuilder.Entity<Enrollment>().ToTable("enrollments");
@@ -149,13 +151,27 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.PriceAdult).HasPrecision(10, 2);
-            entity.Property(e => e.PriceChild).HasPrecision(10, 2);
 
             entity.HasOne(e => e.Instrument)
                 .WithMany(i => i.CourseTypes)
                 .HasForeignKey(e => e.InstrumentId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // CourseTypePricingVersion configuration
+        modelBuilder.Entity<CourseTypePricingVersion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PriceAdult).HasPrecision(10, 2);
+            entity.Property(e => e.PriceChild).HasPrecision(10, 2);
+
+            entity.HasOne(e => e.CourseType)
+                .WithMany(ct => ct.PricingVersions)
+                .HasForeignKey(e => e.CourseTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.CourseTypeId, e.IsCurrent });
+            entity.HasIndex(e => new { e.CourseTypeId, e.ValidFrom });
         });
 
         // Room configuration
@@ -269,6 +285,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasOne(e => e.Lesson)
                 .WithMany(l => l.InvoiceLines)
                 .HasForeignKey(e => e.LessonId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.PricingVersion)
+                .WithMany(pv => pv.InvoiceLines)
+                .HasForeignKey(e => e.PricingVersionId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 

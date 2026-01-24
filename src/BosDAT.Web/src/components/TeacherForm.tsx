@@ -40,7 +40,7 @@ interface FormData {
   notes: string
   isActive: boolean
   instrumentIds: number[]
-  courseTypeIds: number[]
+  courseTypeIds: string[]
 }
 
 interface FormErrors {
@@ -193,7 +193,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     }
   }
 
-  const handleChange = (field: keyof FormData, value: string | boolean | number[]) => {
+  const handleChange = (field: keyof FormData, value: string | boolean | number[] | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
@@ -207,7 +207,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     handleChange('instrumentIds', newIds)
   }
 
-  const handleCourseTypeToggle = (courseTypeId: number, checked: boolean) => {
+  const handleCourseTypeToggle = (courseTypeId: string, checked: boolean) => {
     const newIds = checked
       ? [...formData.courseTypeIds, courseTypeId]
       : formData.courseTypeIds.filter((id) => id !== courseTypeId)

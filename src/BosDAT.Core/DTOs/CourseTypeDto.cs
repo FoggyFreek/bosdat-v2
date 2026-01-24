@@ -20,12 +20,13 @@ public record CourseTypeDto
     public required string Name { get; init; }
     public int DurationMinutes { get; init; }
     public CourseTypeCategory Type { get; init; }
-    public decimal PriceAdult { get; init; }
-    public decimal PriceChild { get; init; }
     public int MaxStudents { get; init; }
     public bool IsActive { get; init; }
     public int ActiveCourseCount { get; init; }
     public bool HasTeachersForCourseType { get; init; }
+    public CourseTypePricingVersionDto? CurrentPricing { get; init; }
+    public List<CourseTypePricingVersionDto> PricingHistory { get; init; } = new();
+    public bool CanEditPricingDirectly { get; init; }
 }
 
 public record CreateCourseTypeDto
@@ -45,8 +46,6 @@ public record UpdateCourseTypeDto
     public required string Name { get; init; }
     public int DurationMinutes { get; init; }
     public CourseTypeCategory Type { get; init; }
-    public decimal PriceAdult { get; init; }
-    public decimal PriceChild { get; init; }
     public int MaxStudents { get; init; }
     public bool IsActive { get; init; }
 }

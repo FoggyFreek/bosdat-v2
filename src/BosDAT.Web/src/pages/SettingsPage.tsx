@@ -23,7 +23,7 @@ import {
 import type { SettingKey } from '@/features/settings/types'
 
 function SettingsContent() {
-  const [selectedSetting, setSelectedSetting] = useState<SettingKey>('instruments')
+  const [selectedSetting, setSelectedSetting] = useState<SettingKey>('profile')
   const [pendingNavigation, setPendingNavigation] = useState<SettingKey | null>(null)
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
   const { isDirty, setIsDirty } = useSettingsDirty()

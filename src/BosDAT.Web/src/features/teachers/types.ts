@@ -51,5 +51,5 @@ export interface CreateTeacher {
   notes?: string
   isActive: boolean
   instrumentIds: number[]
-  courseTypeIds: number[]
+  courseTypeIds: string[]
 }
