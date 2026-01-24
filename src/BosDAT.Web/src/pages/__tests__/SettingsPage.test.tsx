@@ -69,7 +69,7 @@ describe('SettingsPage', () => {
       expect(screen.getByRole('button', { name: /profile/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /preferences/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /instruments/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /lesson types/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /course types/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /rooms/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /holidays/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /system settings/i })).toBeInTheDocument()
@@ -219,15 +219,19 @@ describe('SettingsPage', () => {
       // Fill form
       await user.type(screen.getByPlaceholderText(/instrument name/i), 'Violin')
 
-      // Submit (click the check button)
+      // Submit (click the check button - second button in form after the Select combobox)
       const addForm = screen.getByPlaceholderText(/instrument name/i).closest('div.mb-4')!
-      const submitButton = within(addForm as HTMLElement).getAllByRole('button')[0]
-      await user.click(submitButton)
+      const buttons = within(addForm as HTMLElement).getAllByRole('button')
+      // Find the submit button (has check icon, not the combobox or cancel button)
+      const submitButton = buttons.find(btn => btn.querySelector('svg.lucide-check'))
+      expect(submitButton).toBeDefined()
+      await user.click(submitButton!)
 
       await waitFor(() => {
         expect(instrumentsApi.create).toHaveBeenCalledWith({
           name: 'Violin',
           category: 'Other',
+          isActive: true,
         })
       })
     })
