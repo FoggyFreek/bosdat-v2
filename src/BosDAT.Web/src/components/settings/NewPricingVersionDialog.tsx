@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -35,6 +36,7 @@ interface NewPricingVersionDialogProps {
   onSubmit: (data: CreateCourseTypePricingVersion) => Promise<void>
   isLoading?: boolean
   error?: string | null
+  childDiscountPercent?: number
 }
 
 export const NewPricingVersionDialog = ({
@@ -45,6 +47,7 @@ export const NewPricingVersionDialog = ({
   onSubmit,
   isLoading = false,
   error = null,
+  childDiscountPercent,
 }: NewPricingVersionDialogProps) => {
   const today = new Date().toISOString().split('T')[0]
 
@@ -52,6 +55,8 @@ export const NewPricingVersionDialog = ({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<PricingVersionFormData>({
     resolver: zodResolver(pricingVersionSchema),
@@ -61,6 +66,23 @@ export const NewPricingVersionDialog = ({
       validFrom: today,
     },
   })
+
+  const priceAdult = watch('priceAdult')
+  const prevPriceAdultRef = useRef<number | undefined>(currentPricing?.priceAdult ?? 0)
+
+  useEffect(() => {
+    // Only auto-calculate when adult price changes from user input (not on initial mount)
+    if (
+      priceAdult !== undefined &&
+      priceAdult >= 0 &&
+      priceAdult !== prevPriceAdultRef.current
+    ) {
+      const discountRate = 1 - (childDiscountPercent ?? 10) / 100
+      const calculatedChildPrice = parseFloat((priceAdult * discountRate).toFixed(2))
+      setValue('priceChild', calculatedChildPrice)
+    }
+    prevPriceAdultRef.current = priceAdult
+  }, [priceAdult, childDiscountPercent, setValue])
 
   const handleFormSubmit = async (data: PricingVersionFormData) => {
     await onSubmit({
@@ -123,6 +145,9 @@ export const NewPricingVersionDialog = ({
               {errors.priceChild && (
                 <p className="text-sm text-destructive">{errors.priceChild.message}</p>
               )}
+              <p className="text-xs text-muted-foreground">
+                Default: {childDiscountPercent ?? 10}% discount from adult price
+              </p>
             </div>
           </div>
 

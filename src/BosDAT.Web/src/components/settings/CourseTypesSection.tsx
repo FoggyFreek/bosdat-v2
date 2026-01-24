@@ -552,6 +552,7 @@ export function CourseTypesSection() {
         }}
         courseTypeName={pricingDialogCourseType?.name ?? ''}
         currentPricing={pricingDialogCourseType?.currentPricing ?? null}
+        childDiscountPercent={childDiscountPercent}
         onSubmit={handlePricingVersionSubmit}
         isLoading={createPricingVersionMutation.isPending}
         error={pricingDialogError}
