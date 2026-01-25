@@ -21,6 +21,11 @@ public class CourseTypePricingServiceTests : IDisposable
         _context = new ApplicationDbContext(options, null!);
         _service = new CourseTypePricingService(_context);
 
+        SeedTestData();
+    }
+
+    private void SeedTestData()
+    {
         // Set up a test course type
         var instrument = new Instrument
         {

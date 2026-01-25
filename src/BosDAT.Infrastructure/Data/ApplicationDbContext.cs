@@ -44,6 +44,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<StudentLedgerEntry> StudentLedgerEntries => Set<StudentLedgerEntry>();
+    public DbSet<StudentLedgerApplication> StudentLedgerApplications => Set<StudentLedgerApplication>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +70,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<Cancellation>().ToTable("cancellations");
         modelBuilder.Entity<Holiday>().ToTable("holidays");
         modelBuilder.Entity<Setting>().ToTable("settings");
+        modelBuilder.Entity<StudentLedgerEntry>().ToTable("student_ledger_entries");
+        modelBuilder.Entity<StudentLedgerApplication>().ToTable("student_ledger_applications");
 
         // Student configuration
         modelBuilder.Entity<Student>(entity =>
@@ -395,6 +399,61 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasIndex(e => e.Timestamp);
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => new { e.EntityName, e.EntityId });
+        });
+
+        // StudentLedgerEntry configuration
+        modelBuilder.Entity<StudentLedgerEntry>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CorrectionRefName).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.CorrectionRefName).IsUnique();
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Amount).HasPrecision(10, 2);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.LedgerEntries)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Course)
+                .WithMany()
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.StudentId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.EntryType);
+            entity.HasIndex(e => new { e.StudentId, e.Status });
+        });
+
+        // StudentLedgerApplication configuration
+        modelBuilder.Entity<StudentLedgerApplication>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AppliedAmount).HasPrecision(10, 2);
+
+            entity.HasOne(e => e.LedgerEntry)
+                .WithMany(le => le.Applications)
+                .HasForeignKey(e => e.LedgerEntryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Invoice)
+                .WithMany(i => i.LedgerApplications)
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.AppliedBy)
+                .WithMany()
+                .HasForeignKey(e => e.AppliedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.LedgerEntryId);
+            entity.HasIndex(e => e.InvoiceId);
         });
 
         // Seed initial data

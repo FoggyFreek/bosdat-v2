@@ -32,4 +32,5 @@ public class Invoice : BaseEntity
     public virtual Student Student { get; set; } = null!;
     public virtual ICollection<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public virtual ICollection<StudentLedgerApplication> LedgerApplications { get; set; } = new List<StudentLedgerApplication>();
 }

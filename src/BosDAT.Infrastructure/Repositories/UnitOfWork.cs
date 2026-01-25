@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
     private ICourseRepository? _courses;
     private ILessonRepository? _lessons;
     private IInvoiceRepository? _invoices;
+    private IStudentLedgerRepository? _studentLedgerEntries;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -35,6 +36,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IInvoiceRepository Invoices =>
         _invoices ??= new InvoiceRepository(_context);
+
+    public IStudentLedgerRepository StudentLedgerEntries =>
+        _studentLedgerEntries ??= new StudentLedgerRepository(_context);
 
     public IRepository<T> Repository<T>() where T : class
     {
