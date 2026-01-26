@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { roomsApi } from '@/services/api'
-import { useSettingsDirty } from '@/context/SettingsDirtyContext'
+import { useFormDirty } from '@/context/FormDirtyContext'
 import { cn } from '@/lib/utils'
 import type { Room } from '@/features/rooms/types'
 
@@ -45,7 +45,7 @@ export function RoomsSection() {
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const { setIsDirty } = useSettingsDirty()
+  const { setIsDirty } = useFormDirty()
   const [formData, setFormData] = useState<FormData>(defaultFormData)
 
   const { data: rooms = [], isLoading } = useQuery<Room[]>({

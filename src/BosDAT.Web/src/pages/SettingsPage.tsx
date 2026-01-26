@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { SettingsDirtyProvider, useSettingsDirty } from '@/context/SettingsDirtyContext'
+import { FormDirtyProvider, useFormDirty } from '@/context/FormDirtyContext'
 import {
   SettingsNavigation,
   ProfileSection,
@@ -19,14 +19,14 @@ import {
   CourseTypesSection,
   RoomsSection,
   HolidaysSection,
-} from '@/components/settings'
+} from '@/features/settings/components'
 import type { SettingKey } from '@/features/settings/types'
 
 function SettingsContent() {
   const [selectedSetting, setSelectedSetting] = useState<SettingKey>('profile')
   const [pendingNavigation, setPendingNavigation] = useState<SettingKey | null>(null)
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
-  const { isDirty, setIsDirty } = useSettingsDirty()
+  const { isDirty, setIsDirty } = useFormDirty()
 
   const handleNavigation = (key: SettingKey) => {
     if (isDirty && key !== selectedSetting) {
@@ -103,8 +103,8 @@ function SettingsContent() {
 
 export function SettingsPage() {
   return (
-    <SettingsDirtyProvider>
+    <FormDirtyProvider>
       <SettingsContent />
-    </SettingsDirtyProvider>
+    </FormDirtyProvider>
   )
 }

@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { settingsApi } from '@/services/api'
-import { useSettingsDirty } from '@/context/SettingsDirtyContext'
+import { useFormDirty } from '@/context/FormDirtyContext'
 import type { SystemSetting } from '@/features/settings/types'
 
 export function SystemSettingsSection() {
   const queryClient = useQueryClient()
   const [editKey, setEditKey] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
-  const { setIsDirty } = useSettingsDirty()
+  const { setIsDirty } = useFormDirty()
 
   const { data: settings = [], isLoading } = useQuery<SystemSetting[]>({
     queryKey: ['settings'],

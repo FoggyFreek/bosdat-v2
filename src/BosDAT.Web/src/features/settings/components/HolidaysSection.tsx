@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { holidaysApi } from '@/services/api'
-import { useSettingsDirty } from '@/context/SettingsDirtyContext'
+import { useFormDirty } from '@/context/FormDirtyContext'
 import { formatDate } from '@/lib/utils'
 import type { Holiday } from '@/features/schedule/types'
 
@@ -20,7 +20,7 @@ export function HolidaysSection() {
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [formData, setFormData] = useState<FormData>({ name: '', startDate: '', endDate: '' })
-  const { setIsDirty } = useSettingsDirty()
+  const { setIsDirty } = useFormDirty()
 
   const { data: holidays = [], isLoading } = useQuery<Holiday[]>({
     queryKey: ['holidays'],

@@ -1,6 +1,29 @@
 // Student Domain Types
+import type { ReactNode } from 'react'
 
 export type StudentStatus = 'Active' | 'Inactive' | 'Trial'
+
+// Student Detail Navigation Types
+export type StudentSectionKey =
+  | 'profile'
+  | 'preferences'
+  | 'enrollments'
+  | 'lessons'
+  | 'absence'
+  | 'invoices'
+  | 'corrections'
+  | 'balance'
+
+export interface StudentNavItem {
+  key: StudentSectionKey
+  label: string
+  icon: ReactNode
+}
+
+export interface StudentNavGroup {
+  label: string
+  items: StudentNavItem[]
+}
 export type Gender = 'Male' | 'Female' | 'Other' | 'PreferNotToSay'
 
 export interface Student {
@@ -113,4 +136,52 @@ export interface StudentEnrollment {
   enrolledAt: string
   discountPercent: number
   status: EnrollmentStatus
+}
+
+// Student Ledger Types
+export type LedgerEntryType = 'Credit' | 'Debit'
+export type LedgerEntryStatus = 'Open' | 'Applied' | 'PartiallyApplied' | 'Reversed'
+
+export interface LedgerApplication {
+  id: string
+  invoiceId: string
+  invoiceNumber: string
+  appliedAmount: number
+  appliedAt: string
+  appliedByName: string
+}
+
+export interface StudentLedgerEntry {
+  id: string
+  correctionRefName: string
+  description: string
+  studentId: string
+  studentName: string
+  courseId?: string
+  courseName?: string
+  amount: number
+  entryType: LedgerEntryType
+  status: LedgerEntryStatus
+  appliedAmount: number
+  remainingAmount: number
+  createdAt: string
+  createdByName: string
+  applications: LedgerApplication[]
+}
+
+export interface StudentLedgerSummary {
+  studentId: string
+  studentName: string
+  totalCredits: number
+  totalDebits: number
+  availableCredit: number
+  openEntryCount: number
+}
+
+export interface CreateStudentLedgerEntry {
+  description: string
+  studentId: string
+  courseId?: string
+  amount: number
+  entryType: LedgerEntryType
 }

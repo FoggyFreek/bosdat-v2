@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { instrumentsApi } from '@/services/api'
-import { useSettingsDirty } from '@/context/SettingsDirtyContext'
+import { useFormDirty } from '@/context/FormDirtyContext'
 import { cn } from '@/lib/utils'
 import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
 
@@ -24,7 +24,7 @@ export function InstrumentsSection() {
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
   const [formData, setFormData] = useState<{ name: string; category: InstrumentCategory; isActive: boolean }>({ name: '', category: 'Other', isActive: true })
-  const { setIsDirty } = useSettingsDirty()
+  const { setIsDirty } = useFormDirty()
 
   const { data: instruments = [], isLoading } = useQuery<Instrument[]>({
     queryKey: ['instruments'],

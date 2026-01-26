@@ -42,7 +42,7 @@ export function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div
         className={cn(
@@ -54,7 +54,7 @@ export function Layout({ children }: LayoutProps) {
 
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl transition-transform lg:translate-x-0 lg:static lg:shadow-none',
+          'fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-white shadow-xl transition-transform lg:translate-x-0 lg:static lg:shadow-none',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -68,7 +68,7 @@ export function Layout({ children }: LayoutProps) {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 p-4">
+        <nav className="flex flex-1 flex-col gap-1 p-4 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href
             return (
@@ -89,7 +89,7 @@ export function Layout({ children }: LayoutProps) {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+        <div className="shrink-0 p-4 border-t">
           <div className="flex items-center gap-3 mb-3">
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-sm font-medium text-primary">
@@ -112,7 +112,7 @@ export function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-72">
+      <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-white px-6 lg:px-8">
           <button className="lg:hidden" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-6 w-6" />

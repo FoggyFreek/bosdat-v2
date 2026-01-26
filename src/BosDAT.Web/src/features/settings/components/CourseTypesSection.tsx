@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { instrumentsApi, courseTypesApi, settingsApi } from '@/services/api'
-import { useSettingsDirty } from '@/context/SettingsDirtyContext'
+import { useFormDirty } from '@/context/FormDirtyContext'
 import { cn, formatCurrency } from '@/lib/utils'
 import { PricingHistoryCollapsible } from './PricingHistoryCollapsible'
 import { NewPricingVersionDialog } from './NewPricingVersionDialog'
@@ -54,7 +54,7 @@ export function CourseTypesSection() {
   const [error, setError] = useState<string | null>(null)
   const [teacherWarning, setTeacherWarning] = useState<string | null>(null)
   const [useCustomDuration, setUseCustomDuration] = useState(false)
-  const { setIsDirty } = useSettingsDirty()
+  const { setIsDirty } = useFormDirty()
   const [formData, setFormData] = useState<FormData>(defaultFormData)
 
   // State for pricing version dialog

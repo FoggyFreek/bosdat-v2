@@ -2,7 +2,14 @@
 
 import axios, { AxiosError } from 'axios'
 import type { AuthResponse, LoginDto, User } from '@/features/auth/types'
-import type { CheckDuplicatesDto, DuplicateCheckResult, RegistrationFeeStatus } from '@/features/students/types'
+import type {
+  CheckDuplicatesDto,
+  DuplicateCheckResult,
+  RegistrationFeeStatus,
+  StudentLedgerEntry,
+  StudentLedgerSummary,
+  CreateStudentLedgerEntry,
+} from '@/features/students/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
@@ -479,6 +486,39 @@ export const settingsApi = {
 
   update: async (key: string, value: string) => {
     const response = await api.put(`/settings/${key}`, { value })
+    return response.data
+  },
+}
+
+// Student Ledger API
+export const studentLedgerApi = {
+  getByStudent: async (studentId: string): Promise<StudentLedgerEntry[]> => {
+    const response = await api.get<StudentLedgerEntry[]>(`/studentledger/student/${studentId}`)
+    return response.data
+  },
+
+  getSummary: async (studentId: string): Promise<StudentLedgerSummary> => {
+    const response = await api.get<StudentLedgerSummary>(`/studentledger/student/${studentId}/summary`)
+    return response.data
+  },
+
+  getById: async (id: string): Promise<StudentLedgerEntry> => {
+    const response = await api.get<StudentLedgerEntry>(`/studentledger/${id}`)
+    return response.data
+  },
+
+  create: async (data: CreateStudentLedgerEntry): Promise<StudentLedgerEntry> => {
+    const response = await api.post<StudentLedgerEntry>('/studentledger', data)
+    return response.data
+  },
+
+  reverse: async (id: string, reason: string): Promise<StudentLedgerEntry> => {
+    const response = await api.post<StudentLedgerEntry>(`/studentledger/${id}/reverse`, { reason })
+    return response.data
+  },
+
+  getAvailableCredit: async (studentId: string): Promise<{ availableCredit: number }> => {
+    const response = await api.get<{ availableCredit: number }>(`/studentledger/student/${studentId}/available-credit`)
     return response.data
   },
 }
