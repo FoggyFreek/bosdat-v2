@@ -170,47 +170,25 @@ public class CalendarController : ControllerBase
     {
         var conflicts = new List<ConflictDto>();
 
-        if (teacherId.HasValue)
+        if (teacherId.HasValue) conflicts.AddRange(await GetConflictsForTeacher(date, startTime, endTime, teacherId.Value, roomId, cancellationToken));
+        if (roomId.HasValue) conflicts.AddRange(await GetConflictsForRoom(date, startTime, endTime, teacherId.Value, roomId, cancellationToken));
+        conflicts.AddRange(await GetConflictsForHoliday(date, cancellationToken));
+
+        return Ok(new AvailabilityDto
         {
-            var teacherLessons = await _unitOfWork.Lessons.Query()
-                .Where(l => l.TeacherId == teacherId.Value &&
-                           l.ScheduledDate == date &&
-                           l.Status != LessonStatus.Cancelled)
-                .ToListAsync(cancellationToken);
+            Date = date,
+            StartTime = startTime,
+            EndTime = endTime,
+            IsAvailable = conflicts.Count == 0,
+            Conflicts = conflicts
+        });
+    }
 
-            foreach (var lesson in teacherLessons)
-            {
-                if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
-                {
-                    conflicts.Add(new ConflictDto
-                    {
-                        Type = "Teacher",
-                        Description = $"Teacher has another lesson from {lesson.StartTime} to {lesson.EndTime}"
-                    });
-                }
-            }
-        }
-
-        if (roomId.HasValue)
-        {
-            var roomLessons = await _unitOfWork.Lessons.Query()
-                .Where(l => l.RoomId == roomId.Value &&
-                           l.ScheduledDate == date &&
-                           l.Status != LessonStatus.Cancelled)
-                .ToListAsync(cancellationToken);
-
-            foreach (var lesson in roomLessons)
-            {
-                if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
-                {
-                    conflicts.Add(new ConflictDto
-                    {
-                        Type = "Room",
-                        Description = $"Room is occupied from {lesson.StartTime} to {lesson.EndTime}"
-                    });
-                }
-            }
-        }
+    private async Task<List<ConflictDto>> GetConflictsForHoliday(
+        [FromQuery] DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        var conflicts = new List<ConflictDto>();
 
         // Check for holidays
         var holidays = await _unitOfWork.Repository<Holiday>().Query()
@@ -226,14 +204,68 @@ public class CalendarController : ControllerBase
             });
         }
 
-        return Ok(new AvailabilityDto
+        return conflicts;
+    }
+
+    private async Task<List<ConflictDto>> GetConflictsForRoom(
+        [FromQuery] DateOnly date,
+        [FromQuery] TimeOnly startTime,
+        [FromQuery] TimeOnly endTime,
+        [FromQuery] Guid teacherId,
+        [FromQuery] int? roomId,
+        CancellationToken cancellationToken)
+    {
+        var conflicts = new List<ConflictDto>();
+
+        var roomLessons = await _unitOfWork.Lessons.Query()
+                .Where(l => l.RoomId == roomId.Value &&
+                           l.ScheduledDate == date &&
+                           l.Status != LessonStatus.Cancelled)
+                .ToListAsync(cancellationToken);
+
+        foreach (var lesson in roomLessons)
         {
-            Date = date,
-            StartTime = startTime,
-            EndTime = endTime,
-            IsAvailable = conflicts.Count == 0,
-            Conflicts = conflicts
-        });
+            if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
+            {
+                conflicts.Add(new ConflictDto
+                {
+                    Type = "Room",
+                    Description = $"Room is occupied from {lesson.StartTime} to {lesson.EndTime}"
+                });
+            }
+        }
+        return conflicts;
+    }
+
+    private async Task<List<ConflictDto>> GetConflictsForTeacher(
+        [FromQuery] DateOnly date,
+        [FromQuery] TimeOnly startTime,
+        [FromQuery] TimeOnly endTime,
+        [FromQuery] Guid? teacherId,
+        [FromQuery] int? roomId,
+        CancellationToken cancellationToken)
+    {
+        var conflicts = new List<ConflictDto>();
+
+        var teacherLessons = await _unitOfWork.Lessons.Query()
+            .Where(l => l.TeacherId == teacherId.Value &&
+                       l.ScheduledDate == date &&
+                       l.Status != LessonStatus.Cancelled)
+            .ToListAsync(cancellationToken);
+
+        foreach (var lesson in teacherLessons)
+        {
+            if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
+            {
+                conflicts.Add(new ConflictDto
+                {
+                    Type = "Teacher",
+                    Description = $"Teacher has another lesson from {lesson.StartTime} to {lesson.EndTime}"
+                });
+            }
+        }
+
+        return conflicts;
     }
 
     private async Task<List<CalendarLessonDto>> GetLessonsForRange(
