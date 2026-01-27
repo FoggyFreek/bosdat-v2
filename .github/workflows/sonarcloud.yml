@@ -1,0 +1,83 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bosdat-v2
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for blame info
+
+      # Setup environments
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: bosdat-v2/src/BosDAT.Web/package-lock.json
+
+      # Install SonarScanner
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      # Frontend dependencies & tests
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: bosdat-v2/src/BosDAT.Web
+
+      - name: Run frontend tests with coverage
+        run: npm run test:coverage
+        working-directory: bosdat-v2/src/BosDAT.Web
+        continue-on-error: true
+
+      # Backend restore
+      - name: Restore .NET dependencies
+        run: dotnet restore BosDAT.sln
+
+      # SonarCloud analysis (wraps build)
+      - name: Begin SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"FoggyFreek_bosdat-v2" \
+            /o:"foggyfreek" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.javascript.lcov.reportPaths="src/BosDAT.Web/coverage/lcov.info"
+
+      - name: Build solution
+        run: dotnet build BosDAT.sln --no-restore
+
+      - name: Run backend tests with coverage
+        run: dotnet test --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+        continue-on-error: true
+
+      - name: End SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
