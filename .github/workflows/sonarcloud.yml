@@ -11,9 +11,6 @@ on:
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: bosdat-v2
 
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +34,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: bosdat-v2/src/BosDAT.Web/package-lock.json
+          cache-dependency-path: src/BosDAT.Web/package-lock.json
 
       # Install SonarScanner
       - name: Install SonarScanner
@@ -46,11 +43,11 @@ jobs:
       # Frontend dependencies & tests
       - name: Install frontend dependencies
         run: npm ci
-        working-directory: bosdat-v2/src/BosDAT.Web
+        working-directory: src/BosDAT.Web
 
       - name: Run frontend tests with coverage
         run: npm run test:coverage
-        working-directory: bosdat-v2/src/BosDAT.Web
+        working-directory: src/BosDAT.Web
         continue-on-error: true
 
       # Backend restore
