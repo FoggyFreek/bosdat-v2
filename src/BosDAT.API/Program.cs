@@ -78,6 +78,7 @@ builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IDuplicateDetectionService, DuplicateDetectionService>();
 builder.Services.AddScoped<ICourseTypePricingService, CourseTypePricingService>();
 builder.Services.AddScoped<IRegistrationFeeService, RegistrationFeeService>();
+builder.Services.AddScoped<IEnrollmentPricingService, EnrollmentPricingService>();
 builder.Services.AddScoped<IStudentLedgerRepository, StudentLedgerRepository>();
 builder.Services.AddScoped<IStudentLedgerService, StudentLedgerService>();
 

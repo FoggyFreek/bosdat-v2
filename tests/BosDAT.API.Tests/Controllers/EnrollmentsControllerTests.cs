@@ -13,13 +13,15 @@ public class EnrollmentsControllerTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IRegistrationFeeService> _mockRegistrationFeeService;
+    private readonly Mock<IEnrollmentPricingService> _mockEnrollmentPricingService;
     private readonly EnrollmentsController _controller;
 
     public EnrollmentsControllerTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
         _mockRegistrationFeeService = new Mock<IRegistrationFeeService>();
-        _controller = new EnrollmentsController(_mockUnitOfWork.Object, _mockRegistrationFeeService.Object);
+        _mockEnrollmentPricingService = new Mock<IEnrollmentPricingService>();
+        _controller = new EnrollmentsController(_mockUnitOfWork.Object, _mockRegistrationFeeService.Object, _mockEnrollmentPricingService.Object);
     }
 
     [Fact]

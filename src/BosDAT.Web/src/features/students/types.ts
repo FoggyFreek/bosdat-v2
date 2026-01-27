@@ -127,7 +127,7 @@ export interface StudentEnrollment {
   id: string
   courseId: string
   instrumentName: string
-  lessonTypeName: string
+  courseTypeName: string
   teacherName: string
   roomName?: string
   dayOfWeek: number
@@ -184,4 +184,18 @@ export interface CreateStudentLedgerEntry {
   courseId?: string
   amount: number
   entryType: LedgerEntryType
+}
+
+// Enrollment Pricing Types
+export interface EnrollmentPricing {
+  enrollmentId: string
+  courseId: string
+  courseName: string
+  basePriceAdult: number
+  basePriceChild: number
+  isChildPricing: boolean
+  applicableBasePrice: number
+  discountPercent: number
+  discountAmount: number
+  pricePerLesson: number
 }

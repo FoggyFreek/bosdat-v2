@@ -9,6 +9,7 @@ import type {
   StudentLedgerEntry,
   StudentLedgerSummary,
   CreateStudentLedgerEntry,
+  EnrollmentPricing,
 } from '@/features/students/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
@@ -353,6 +354,13 @@ export const enrollmentsApi = {
 
   promoteFromTrail: async (id: string) => {
     const response = await api.put(`/enrollments/${id}/promote`)
+    return response.data
+  },
+
+  getEnrollmentPricing: async (studentId: string, courseId: string): Promise<EnrollmentPricing> => {
+    const response = await api.get<EnrollmentPricing>(
+      `/enrollments/student/${studentId}/course/${courseId}/pricing`
+    )
     return response.data
   },
 }

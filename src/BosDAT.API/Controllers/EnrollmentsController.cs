@@ -12,10 +12,12 @@ namespace BosDAT.API.Controllers;
 [Authorize]
 public class EnrollmentsController(
     IUnitOfWork unitOfWork,
-    IRegistrationFeeService registrationFeeService) : ControllerBase
+    IRegistrationFeeService registrationFeeService,
+    IEnrollmentPricingService enrollmentPricingService) : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IRegistrationFeeService _registrationFeeService = registrationFeeService;
+    private readonly IEnrollmentPricingService _enrollmentPricingService = enrollmentPricingService;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetAll(
@@ -137,6 +139,24 @@ public class EnrollmentsController(
             .ToListAsync(cancellationToken);
 
         return Ok(enrollments);
+    }
+
+    [HttpGet("student/{studentId:guid}/course/{courseId:guid}/pricing")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<EnrollmentPricingDto>> GetEnrollmentPricing(
+        Guid studentId,
+        Guid courseId,
+        CancellationToken cancellationToken)
+    {
+        var pricing = await _enrollmentPricingService.GetEnrollmentPricingAsync(
+            studentId, courseId, cancellationToken);
+
+        if (pricing == null)
+        {
+            return NotFound(new { message = "Enrollment or pricing not found" });
+        }
+
+        return Ok(pricing);
     }
 
     [HttpPost]
