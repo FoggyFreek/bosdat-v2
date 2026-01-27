@@ -56,6 +56,7 @@ bosdat-v2/
 │   │   └── Services/
 │   └── BosDAT.Web/              # React frontend
 │       ├── src/
+│       │   ├── api/              # api types
 │       │   ├── components/       # Reusable UI components
 │       │   │   ├── __tests__/    # Component tests
 │       │   │   ├── ui/           # shadcn/ui components
@@ -64,11 +65,13 @@ bosdat-v2/
 │       │   │   ├── __tests__/    # Page tests
 │       │   │   └── *.tsx
 │       │   ├── context/          # React context providers
+│       │   ├── hooks/            # React hooks
+│       │   ├── features/         # Feature domains that hold components and types
 │       │   ├── services/         # API service layer
 │       │   ├── test/             # Test utilities & setup
 │       │   │   ├── setup.ts      # Global test setup
 │       │   │   └── utils.tsx     # Test helpers & providers
-│       │   ├── types/            # TypeScript type definitions
+│       │   ├── types/            # TypeScript generic/ global type definitions
 │       │   └── lib/              # Utility functions
 │       ├── package.json
 │       └── vite.config.ts

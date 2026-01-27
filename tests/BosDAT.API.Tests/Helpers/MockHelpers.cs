@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Moq;
+using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 
@@ -14,6 +15,98 @@ public static class MockHelpers
         var mock = new Mock<IUnitOfWork>();
         mock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
+        return mock;
+    }
+
+    public static Mock<IAuthService> CreateMockAuthService()
+    {
+        return new Mock<IAuthService>();
+    }
+
+    public static Mock<IDuplicateDetectionService> CreateMockDuplicateDetectionService()
+    {
+        return new Mock<IDuplicateDetectionService>();
+    }
+
+    public static Mock<IRegistrationFeeService> CreateMockRegistrationFeeService()
+    {
+        return new Mock<IRegistrationFeeService>();
+    }
+
+    public static Mock<IStudentRepository> CreateMockStudentRepository(List<Student> data)
+    {
+        var mock = new Mock<IStudentRepository>();
+
+        mock.Setup(r => r.Query())
+            .Returns(data.AsQueryable().BuildMockDbSet().Object);
+
+        mock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(data);
+
+        mock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(s => s.Id == id));
+
+        mock.Setup(r => r.GetByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string email, CancellationToken _) =>
+                data.FirstOrDefault(s => s.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
+
+        mock.Setup(r => r.GetWithEnrollmentsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(s => s.Id == id));
+
+        mock.Setup(r => r.AddAsync(It.IsAny<Student>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Student entity, CancellationToken _) => entity);
+
+        return mock;
+    }
+
+    public static Mock<ITeacherRepository> CreateMockTeacherRepository(List<Teacher> data)
+    {
+        var mock = new Mock<ITeacherRepository>();
+
+        mock.Setup(r => r.Query())
+            .Returns(data.AsQueryable().BuildMockDbSet().Object);
+
+        mock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(data);
+
+        mock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(t => t.Id == id));
+
+        mock.Setup(r => r.GetByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string email, CancellationToken _) =>
+                data.FirstOrDefault(t => t.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
+
+        mock.Setup(r => r.GetWithInstrumentsAndCourseTypesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(t => t.Id == id));
+
+        mock.Setup(r => r.GetWithCoursesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(t => t.Id == id));
+
+        mock.Setup(r => r.AddAsync(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Teacher entity, CancellationToken _) => entity);
+
+        return mock;
+    }
+
+    public static Mock<ICourseRepository> CreateMockCourseRepository(List<Course> data)
+    {
+        var mock = new Mock<ICourseRepository>();
+
+        mock.Setup(r => r.Query())
+            .Returns(data.AsQueryable().BuildMockDbSet().Object);
+
+        mock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(data);
+
+        mock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(c => c.Id == id));
+
+        mock.Setup(r => r.GetWithEnrollmentsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(c => c.Id == id));
+
+        mock.Setup(r => r.AddAsync(It.IsAny<Course>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Course entity, CancellationToken _) => entity);
+
         return mock;
     }
 
