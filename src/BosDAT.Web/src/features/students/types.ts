@@ -92,7 +92,7 @@ export interface RegistrationFeeStatus {
   hasPaid: boolean
   paidAt?: string
   amount?: number
-  invoiceId?: string
+  ledgerEntryId?: string
 }
 
 // Duplicate Detection Types

@@ -8,8 +8,12 @@ namespace BosDAT.Infrastructure.Services;
 
 public class RegistrationFeeService(
     ApplicationDbContext context,
-    IInvoiceRepository invoiceRepository) : IRegistrationFeeService
+    IStudentLedgerRepository ledgerRepository,
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUserService) : IRegistrationFeeService
 {
+    private const int MaxRetries = 3;
+
     public async Task<bool> IsStudentEligibleForFeeAsync(Guid studentId, CancellationToken ct = default)
     {
         var student = await context.Students
@@ -38,6 +42,9 @@ public class RegistrationFeeService(
 
     public async Task<Guid> ApplyRegistrationFeeAsync(Guid studentId, CancellationToken ct = default)
     {
+        var userId = currentUserService.UserId
+            ?? throw new InvalidOperationException("No authenticated user found. Cannot apply registration fee.");
+
         var student = await context.Students
             .FirstOrDefaultAsync(s => s.Id == studentId, ct);
 
@@ -53,33 +60,44 @@ public class RegistrationFeeService(
 
         var feeAmount = await GetFeeAmountAsync(ct);
         var feeDescription = await GetFeeDescriptionAsync(ct);
-        var vatRate = await GetVatRateAsync(ct);
 
-        var invoice = await GetOrCreateDraftInvoiceAsync(student, ct);
-
-        var invoiceLine = new InvoiceLine
+        return await ExecuteWithRetryAsync(async () =>
         {
-            InvoiceId = invoice.Id,
-            LessonId = null,
-            PricingVersionId = null,
-            Description = feeDescription,
-            Quantity = 1,
-            UnitPrice = feeAmount,
-            VatRate = vatRate,
-            LineTotal = feeAmount
-        };
+            await unitOfWork.BeginTransactionAsync(ct);
+            try
+            {
+                var correctionRefName = await ledgerRepository.GenerateCorrectionRefNameAsync(ct);
 
-        context.InvoiceLines.Add(invoiceLine);
+                var ledgerEntry = new StudentLedgerEntry
+                {
+                    Id = Guid.NewGuid(),
+                    CorrectionRefName = correctionRefName,
+                    Description = feeDescription,
+                    StudentId = studentId,
+                    CourseId = null,
+                    Amount = feeAmount,
+                    EntryType = LedgerEntryType.Debit,
+                    Status = LedgerEntryStatus.Open,
+                    CreatedById = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-        invoice.Subtotal += feeAmount;
-        invoice.VatAmount += feeAmount * (vatRate / 100m);
-        invoice.Total = invoice.Subtotal + invoice.VatAmount;
+                context.StudentLedgerEntries.Add(ledgerEntry);
 
-        student.RegistrationFeePaidAt = DateTime.UtcNow;
+                student.RegistrationFeePaidAt = DateTime.UtcNow;
 
-        await context.SaveChangesAsync(ct);
+                await context.SaveChangesAsync(ct);
+                await unitOfWork.CommitTransactionAsync(ct);
 
-        return invoice.Id;
+                return ledgerEntry.Id;
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync(ct);
+                throw;
+            }
+        }, ct);
     }
 
     public async Task<RegistrationFeeStatusDto> GetFeeStatusAsync(Guid studentId, CancellationToken ct = default)
@@ -100,23 +118,24 @@ public class RegistrationFeeService(
                 HasPaid = false,
                 PaidAt = null,
                 Amount = feeAmount,
-                InvoiceId = null
+                LedgerEntryId = null
             };
         }
 
         var feeDescription = await GetFeeDescriptionAsync(ct);
-        var invoiceLine = await context.InvoiceLines
-            .Include(il => il.Invoice)
-            .Where(il => il.Invoice.StudentId == studentId && il.Description == feeDescription && il.LessonId == null)
-            .OrderByDescending(il => il.Invoice.CreatedAt)
+        var ledgerEntry = await context.StudentLedgerEntries
+            .Where(e => e.StudentId == studentId &&
+                        e.Description == feeDescription &&
+                        e.EntryType == LedgerEntryType.Debit)
+            .OrderByDescending(e => e.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
         return new RegistrationFeeStatusDto
         {
             HasPaid = true,
             PaidAt = student.RegistrationFeePaidAt,
-            Amount = invoiceLine?.UnitPrice,
-            InvoiceId = invoiceLine?.InvoiceId
+            Amount = ledgerEntry?.Amount,
+            LedgerEntryId = ledgerEntry?.Id
         };
     }
 
@@ -141,64 +160,26 @@ public class RegistrationFeeService(
         return setting?.Value ?? "Eenmalig inschrijfgeld";
     }
 
-    private async Task<decimal> GetVatRateAsync(CancellationToken ct)
+    private static async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> operation, CancellationToken ct)
     {
-        var setting = await context.Settings
-            .FirstOrDefaultAsync(s => s.Key == "vat_rate", ct);
-
-        if (setting == null || !decimal.TryParse(setting.Value, out var rate))
+        for (int attempt = 1; attempt <= MaxRetries; attempt++)
         {
-            return 21m;
+            try
+            {
+                return await operation();
+            }
+            catch (DbUpdateException ex) when (attempt < MaxRetries && IsDuplicateKeyException(ex))
+            {
+                await Task.Delay(50 * attempt, ct);
+            }
         }
 
-        return rate;
+        return await operation();
     }
 
-    private async Task<Invoice> GetOrCreateDraftInvoiceAsync(Student student, CancellationToken ct)
+    private static bool IsDuplicateKeyException(DbUpdateException ex)
     {
-        var existingDraft = await context.Invoices
-            .Include(i => i.Lines)
-            .FirstOrDefaultAsync(i => i.StudentId == student.Id && i.Status == InvoiceStatus.Draft, ct);
-
-        if (existingDraft != null)
-        {
-            return existingDraft;
-        }
-
-        var paymentDueDays = await GetPaymentDueDaysAsync(ct);
-        var invoiceNumber = await invoiceRepository.GenerateInvoiceNumberAsync(ct);
-
-        var invoice = new Invoice
-        {
-            Id = Guid.NewGuid(),
-            InvoiceNumber = invoiceNumber,
-            StudentId = student.Id,
-            IssueDate = DateOnly.FromDateTime(DateTime.UtcNow),
-            DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(paymentDueDays)),
-            Subtotal = 0,
-            VatAmount = 0,
-            Total = 0,
-            DiscountAmount = 0,
-            Status = InvoiceStatus.Draft,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        context.Invoices.Add(invoice);
-
-        return invoice;
-    }
-
-    private async Task<int> GetPaymentDueDaysAsync(CancellationToken ct)
-    {
-        var setting = await context.Settings
-            .FirstOrDefaultAsync(s => s.Key == "payment_due_days", ct);
-
-        if (setting == null || !int.TryParse(setting.Value, out var days))
-        {
-            return 14;
-        }
-
-        return days;
+        return ex.InnerException?.Message.Contains("duplicate key") == true ||
+               ex.InnerException?.Message.Contains("unique constraint") == true;
     }
 }

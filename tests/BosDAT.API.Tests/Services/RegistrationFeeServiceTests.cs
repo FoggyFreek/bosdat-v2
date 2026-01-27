@@ -11,11 +11,14 @@ namespace BosDAT.API.Tests.Services;
 public class RegistrationFeeServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
-    private readonly Mock<IInvoiceRepository> _mockInvoiceRepository;
+    private readonly Mock<IStudentLedgerRepository> _mockLedgerRepository;
+    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<ICurrentUserService> _mockCurrentUserService;
     private readonly RegistrationFeeService _service;
     private readonly Guid _testStudentId = Guid.NewGuid();
     private readonly Guid _testCourseId = Guid.NewGuid();
     private readonly Guid _testTrialCourseId = Guid.NewGuid();
+    private readonly Guid _testUserId = Guid.NewGuid();
 
     public RegistrationFeeServiceTests()
     {
@@ -24,8 +27,30 @@ public class RegistrationFeeServiceTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options, null!);
-        _mockInvoiceRepository = new Mock<IInvoiceRepository>();
-        _service = new RegistrationFeeService(_context, _mockInvoiceRepository.Object);
+        _mockLedgerRepository = new Mock<IStudentLedgerRepository>();
+        _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _mockCurrentUserService = new Mock<ICurrentUserService>();
+
+        // Setup default mocks
+        _mockCurrentUserService.Setup(s => s.UserId).Returns(_testUserId);
+        _mockLedgerRepository
+            .Setup(r => r.GenerateCorrectionRefNameAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync("CORR-2024-00001");
+        _mockUnitOfWork
+            .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockUnitOfWork
+            .Setup(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _mockUnitOfWork
+            .Setup(u => u.RollbackTransactionAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        _service = new RegistrationFeeService(
+            _context,
+            _mockLedgerRepository.Object,
+            _mockUnitOfWork.Object,
+            _mockCurrentUserService.Object);
 
         SeedTestData();
     }
@@ -40,6 +65,16 @@ public class RegistrationFeeServiceTests : IDisposable
             new Setting { Key = "payment_due_days", Value = "14", Type = "int", Description = "Payment due days" },
             new Setting { Key = "invoice_prefix", Value = "NMI", Type = "string", Description = "Invoice prefix" }
         );
+
+        // Add test user
+        _context.Users.Add(new ApplicationUser
+        {
+            Id = _testUserId,
+            UserName = "testuser@example.com",
+            Email = "testuser@example.com",
+            FirstName = "Test",
+            LastName = "User"
+        });
 
         // Add test student
         var student = new Student
@@ -182,42 +217,43 @@ public class RegistrationFeeServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ApplyRegistrationFeeAsync_CreatesInvoiceAndInvoiceLine()
+    public async Task ApplyRegistrationFeeAsync_CreatesLedgerEntry()
     {
-        // Arrange
-        _mockInvoiceRepository
-            .Setup(r => r.GenerateInvoiceNumberAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync("NMI-2024-00001");
-
         // Act
-        var invoiceId = await _service.ApplyRegistrationFeeAsync(_testStudentId);
+        var ledgerEntryId = await _service.ApplyRegistrationFeeAsync(_testStudentId);
 
         // Assert
-        Assert.NotEqual(Guid.Empty, invoiceId);
+        Assert.NotEqual(Guid.Empty, ledgerEntryId);
 
-        var invoice = await _context.Invoices
-            .Include(i => i.Lines)
-            .FirstOrDefaultAsync(i => i.Id == invoiceId);
+        var ledgerEntry = await _context.StudentLedgerEntries
+            .FirstOrDefaultAsync(e => e.Id == ledgerEntryId);
 
-        Assert.NotNull(invoice);
-        Assert.Equal(_testStudentId, invoice.StudentId);
-        Assert.Equal(InvoiceStatus.Draft, invoice.Status);
-        Assert.Single(invoice.Lines);
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal(_testStudentId, ledgerEntry.StudentId);
+        Assert.Equal("Eenmalig inschrijfgeld", ledgerEntry.Description);
+        Assert.Equal(25m, ledgerEntry.Amount);
+        Assert.Equal(LedgerEntryType.Debit, ledgerEntry.EntryType);
+        Assert.Equal(LedgerEntryStatus.Open, ledgerEntry.Status);
+        Assert.Equal(_testUserId, ledgerEntry.CreatedById);
+    }
 
-        var line = invoice.Lines.First();
-        Assert.Equal("Eenmalig inschrijfgeld", line.Description);
-        Assert.Equal(25m, line.UnitPrice);
-        Assert.Null(line.LessonId);
+    [Fact]
+    public async Task ApplyRegistrationFeeAsync_SetsCorrectLedgerEntryType()
+    {
+        // Act
+        var ledgerEntryId = await _service.ApplyRegistrationFeeAsync(_testStudentId);
+
+        // Assert
+        var ledgerEntry = await _context.StudentLedgerEntries
+            .FirstOrDefaultAsync(e => e.Id == ledgerEntryId);
+
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal(LedgerEntryType.Debit, ledgerEntry.EntryType);
     }
 
     [Fact]
     public async Task ApplyRegistrationFeeAsync_SetsRegistrationFeePaidAt()
     {
-        // Arrange
-        _mockInvoiceRepository
-            .Setup(r => r.GenerateInvoiceNumberAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync("NMI-2024-00001");
-
         // Act
         await _service.ApplyRegistrationFeeAsync(_testStudentId);
 
@@ -227,36 +263,29 @@ public class RegistrationFeeServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ApplyRegistrationFeeAsync_AddsToExistingDraftInvoice()
+    public async Task ApplyRegistrationFeeAsync_GeneratesCorrectionRefName()
     {
-        // Arrange
-        var existingInvoice = new Invoice
-        {
-            Id = Guid.NewGuid(),
-            InvoiceNumber = "NMI-2024-00001",
-            StudentId = _testStudentId,
-            Status = InvoiceStatus.Draft,
-            IssueDate = DateOnly.FromDateTime(DateTime.Today),
-            DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(14)),
-            Subtotal = 50m,
-            VatAmount = 10.5m,
-            Total = 60.5m
-        };
-        _context.Invoices.Add(existingInvoice);
-        await _context.SaveChangesAsync();
-
         // Act
-        var invoiceId = await _service.ApplyRegistrationFeeAsync(_testStudentId);
+        var ledgerEntryId = await _service.ApplyRegistrationFeeAsync(_testStudentId);
 
         // Assert
-        Assert.Equal(existingInvoice.Id, invoiceId);
+        var ledgerEntry = await _context.StudentLedgerEntries
+            .FirstOrDefaultAsync(e => e.Id == ledgerEntryId);
 
-        var invoice = await _context.Invoices
-            .Include(i => i.Lines)
-            .FirstOrDefaultAsync(i => i.Id == invoiceId);
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal("CORR-2024-00001", ledgerEntry.CorrectionRefName);
+        _mockLedgerRepository.Verify(r => r.GenerateCorrectionRefNameAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 
-        Assert.Equal(75m, invoice!.Subtotal); // 50 + 25
-        Assert.Single(invoice.Lines);
+    [Fact]
+    public async Task ApplyRegistrationFeeAsync_UsesTransaction()
+    {
+        // Act
+        await _service.ApplyRegistrationFeeAsync(_testStudentId);
+
+        // Assert
+        _mockUnitOfWork.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockUnitOfWork.Verify(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -275,6 +304,19 @@ public class RegistrationFeeServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ApplyRegistrationFeeAsync_WhenNoCurrentUser_ThrowsException()
+    {
+        // Arrange
+        _mockCurrentUserService.Setup(s => s.UserId).Returns((Guid?)null);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.ApplyRegistrationFeeAsync(_testStudentId));
+
+        Assert.Contains("user", exception.Message.ToLower());
+    }
+
+    [Fact]
     public async Task GetFeeStatusAsync_WhenNotPaid_ReturnsCorrectStatus()
     {
         // Act
@@ -284,7 +326,7 @@ public class RegistrationFeeServiceTests : IDisposable
         Assert.False(result.HasPaid);
         Assert.Null(result.PaidAt);
         Assert.Equal(25m, result.Amount);
-        Assert.Null(result.InvoiceId);
+        Assert.Null(result.LedgerEntryId);
     }
 
     [Fact]
@@ -295,31 +337,19 @@ public class RegistrationFeeServiceTests : IDisposable
         var student = await _context.Students.FindAsync(_testStudentId);
         student!.RegistrationFeePaidAt = paidAt;
 
-        var invoice = new Invoice
+        var ledgerEntry = new StudentLedgerEntry
         {
             Id = Guid.NewGuid(),
-            InvoiceNumber = "NMI-2024-00001",
-            StudentId = _testStudentId,
-            Status = InvoiceStatus.Paid,
-            IssueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-5)),
-            DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(9)),
-            Subtotal = 25m,
-            VatAmount = 5.25m,
-            Total = 30.25m
-        };
-        _context.Invoices.Add(invoice);
-
-        var line = new InvoiceLine
-        {
-            InvoiceId = invoice.Id,
+            CorrectionRefName = "CORR-2024-00001",
             Description = "Eenmalig inschrijfgeld",
-            Quantity = 1,
-            UnitPrice = 25m,
-            VatRate = 21m,
-            LineTotal = 25m,
-            LessonId = null
+            StudentId = _testStudentId,
+            Amount = 25m,
+            EntryType = LedgerEntryType.Debit,
+            Status = LedgerEntryStatus.Open,
+            CreatedById = _testUserId,
+            CreatedAt = paidAt
         };
-        _context.InvoiceLines.Add(line);
+        _context.StudentLedgerEntries.Add(ledgerEntry);
         await _context.SaveChangesAsync();
 
         // Act
@@ -329,7 +359,7 @@ public class RegistrationFeeServiceTests : IDisposable
         Assert.True(result.HasPaid);
         Assert.NotNull(result.PaidAt);
         Assert.Equal(25m, result.Amount);
-        Assert.Equal(invoice.Id, result.InvoiceId);
+        Assert.Equal(ledgerEntry.Id, result.LedgerEntryId);
     }
 
     [Fact]
@@ -350,10 +380,6 @@ public class RegistrationFeeServiceTests : IDisposable
         _context.Settings.RemoveRange(settings);
         await _context.SaveChangesAsync();
 
-        _mockInvoiceRepository
-            .Setup(r => r.GenerateInvoiceNumberAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync("NMI-2024-00001");
-
         // Add a new student for this test
         var newStudentId = Guid.NewGuid();
         _context.Students.Add(new Student
@@ -367,16 +393,28 @@ public class RegistrationFeeServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         // Act
-        var invoiceId = await _service.ApplyRegistrationFeeAsync(newStudentId);
+        var ledgerEntryId = await _service.ApplyRegistrationFeeAsync(newStudentId);
 
         // Assert
-        var invoice = await _context.Invoices
-            .Include(i => i.Lines)
-            .FirstOrDefaultAsync(i => i.Id == invoiceId);
+        var ledgerEntry = await _context.StudentLedgerEntries
+            .FirstOrDefaultAsync(e => e.Id == ledgerEntryId);
 
-        var line = invoice!.Lines.First();
-        Assert.Equal("Eenmalig inschrijfgeld", line.Description);
-        Assert.Equal(25m, line.UnitPrice); // Default value
-        Assert.Equal(21m, line.VatRate); // Default value
+        Assert.NotNull(ledgerEntry);
+        Assert.Equal("Eenmalig inschrijfgeld", ledgerEntry.Description);
+        Assert.Equal(25m, ledgerEntry.Amount); // Default value
+    }
+
+    [Fact]
+    public async Task ApplyRegistrationFeeAsync_DoesNotCreateInvoice()
+    {
+        // Act
+        await _service.ApplyRegistrationFeeAsync(_testStudentId);
+
+        // Assert - No invoice should be created
+        var invoices = await _context.Invoices
+            .Where(i => i.StudentId == _testStudentId)
+            .ToListAsync();
+
+        Assert.Empty(invoices);
     }
 }

@@ -15,8 +15,9 @@ public interface IRegistrationFeeService
     Task<bool> ShouldApplyFeeForCourseAsync(Guid courseId, CancellationToken ct = default);
 
     /// <summary>
-    /// Applies the registration fee to the student by creating an invoice line.
-    /// Returns the invoice ID.
+    /// Applies the registration fee to the student by creating a ledger entry (Debit).
+    /// The fee will be invoiced during the next invoice calculation run.
+    /// Returns the ledger entry ID.
     /// </summary>
     Task<Guid> ApplyRegistrationFeeAsync(Guid studentId, CancellationToken ct = default);
 
