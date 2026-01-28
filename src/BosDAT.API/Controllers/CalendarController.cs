@@ -62,7 +62,7 @@ public class CalendarController : ControllerBase
             Date = targetDate,
             DayOfWeek = targetDate.DayOfWeek,
             Lessons = lessons,
-            IsHoliday = holidays.Any(),
+            IsHoliday = holidays.Count != 0,
             HolidayName = holidays.FirstOrDefault()?.Name
         });
     }
@@ -170,8 +170,8 @@ public class CalendarController : ControllerBase
     {
         var conflicts = new List<ConflictDto>();
 
-        if (teacherId.HasValue) conflicts.AddRange(await GetConflictsForTeacher(date, startTime, endTime, teacherId.Value, roomId, cancellationToken));
-        if (roomId.HasValue) conflicts.AddRange(await GetConflictsForRoom(date, startTime, endTime, teacherId.Value, roomId, cancellationToken));
+        if (teacherId.HasValue) conflicts.AddRange(await GetConflictsForTeacher(date, startTime, endTime, teacherId.Value, cancellationToken));
+        if (roomId.HasValue) conflicts.AddRange(await GetConflictsForRoom(date, startTime, endTime, roomId, cancellationToken));
         conflicts.AddRange(await GetConflictsForHoliday(date, cancellationToken));
 
         return Ok(new AvailabilityDto
@@ -211,7 +211,6 @@ public class CalendarController : ControllerBase
         DateOnly date,
         TimeOnly startTime,
         TimeOnly endTime,
-        Guid? teacherId,
         int? roomId,
         CancellationToken cancellationToken)
     {
@@ -245,7 +244,6 @@ public class CalendarController : ControllerBase
         TimeOnly startTime,
         TimeOnly endTime,
         Guid? teacherId,
-        int? roomId,
         CancellationToken cancellationToken)
     {
         var conflicts = new List<ConflictDto>();

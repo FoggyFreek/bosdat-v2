@@ -67,68 +67,85 @@ public class DuplicateDetectionService : IDuplicateDetectionService
         var score = 0;
         var reasons = new List<string>();
 
-        // Exact email match - very high confidence
+        score += CheckEmailMatch(dto, student, reasons);
+        score += CheckNameMatch(dto, student, reasons);
+        score += CheckPhoneMatch(dto, student, reasons);
+        score += CheckDateOfBirthMatch(dto, student, reasons);
+
+        return (Math.Min(score, 100), reasons);
+    }
+
+    private static int CheckEmailMatch(CheckDuplicatesDto dto, Student student, List<string> reasons)
+    {
         if (string.Equals(dto.Email, student.Email, StringComparison.OrdinalIgnoreCase))
         {
-            score += 100;
             reasons.Add("Exact email match");
+            return 100;
         }
+        return 0;
+    }
 
-        // Exact name match (first + last)
+    private static int CheckNameMatch(CheckDuplicatesDto dto, Student student, List<string> reasons)
+    {
         var inputFullName = $"{dto.FirstName} {dto.LastName}".ToLowerInvariant();
         var studentFullName = $"{student.FirstName} {student.LastName}".ToLowerInvariant();
 
         if (inputFullName == studentFullName)
         {
-            score += 60;
             reasons.Add("Exact name match");
+            return 60;
         }
-        else
+
+        var nameSimilarity = CalculateNameSimilarity(dto.FirstName, dto.LastName, student.FirstName, student.LastName);
+        if (nameSimilarity >= 0.8)
         {
-            // Fuzzy name matching
-            var nameSimilarity = CalculateNameSimilarity(dto.FirstName, dto.LastName, student.FirstName, student.LastName);
-            if (nameSimilarity >= 0.8)
-            {
-                score += 40;
-                reasons.Add("Similar name");
-            }
-            else if (nameSimilarity >= 0.6)
-            {
-                score += 20;
-                reasons.Add("Partially similar name");
-            }
+            reasons.Add("Similar name");
+            return 40;
         }
 
-        // Phone number match
-        if (!string.IsNullOrWhiteSpace(dto.Phone) && !string.IsNullOrWhiteSpace(student.Phone))
+        if (nameSimilarity >= 0.6)
         {
-            var normalizedInputPhone = NormalizePhoneNumber(dto.Phone);
-            var normalizedStudentPhone = NormalizePhoneNumber(student.Phone);
-            var normalizedStudentPhoneAlt = student.PhoneAlt != null ? NormalizePhoneNumber(student.PhoneAlt) : null;
-
-            if (normalizedInputPhone == normalizedStudentPhone ||
-                normalizedInputPhone == normalizedStudentPhoneAlt)
-            {
-                score += 50;
-                reasons.Add("Phone number match");
-            }
+            reasons.Add("Partially similar name");
+            return 20;
         }
 
-        // Date of birth match with similar name
-        if (dto.DateOfBirth.HasValue && student.DateOfBirth.HasValue)
+        return 0;
+    }
+
+    private static int CheckPhoneMatch(CheckDuplicatesDto dto, Student student, List<string> reasons)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Phone) || string.IsNullOrWhiteSpace(student.Phone))
+            return 0;
+
+        var normalizedInputPhone = NormalizePhoneNumber(dto.Phone);
+        var normalizedStudentPhone = NormalizePhoneNumber(student.Phone);
+        var normalizedStudentPhoneAlt = student.PhoneAlt != null ? NormalizePhoneNumber(student.PhoneAlt) : null;
+
+        if (normalizedInputPhone == normalizedStudentPhone || normalizedInputPhone == normalizedStudentPhoneAlt)
         {
-            if (dto.DateOfBirth.Value == student.DateOfBirth.Value)
-            {
-                var nameSimilarity = CalculateNameSimilarity(dto.FirstName, dto.LastName, student.FirstName, student.LastName);
-                if (nameSimilarity >= 0.5)
-                {
-                    score += 40;
-                    reasons.Add("Same date of birth with similar name");
-                }
-            }
+            reasons.Add("Phone number match");
+            return 50;
         }
 
-        return (Math.Min(score, 100), reasons);
+        return 0;
+    }
+
+    private static int CheckDateOfBirthMatch(CheckDuplicatesDto dto, Student student, List<string> reasons)
+    {
+        if (!dto.DateOfBirth.HasValue || !student.DateOfBirth.HasValue)
+            return 0;
+
+        if (dto.DateOfBirth.Value != student.DateOfBirth.Value)
+            return 0;
+
+        var nameSimilarity = CalculateNameSimilarity(dto.FirstName, dto.LastName, student.FirstName, student.LastName);
+        if (nameSimilarity >= 0.5)
+        {
+            reasons.Add("Same date of birth with similar name");
+            return 40;
+        }
+
+        return 0;
     }
 
     private static double CalculateNameSimilarity(string firstName1, string lastName1, string firstName2, string lastName2)
