@@ -65,8 +65,8 @@ export function RoomsSection() {
     mutationFn: (data: FormData) =>
       roomsApi.create({
         name: data.name,
-        floorLevel: data.floorLevel ? parseInt(data.floorLevel) : undefined,
-        capacity: parseInt(data.capacity),
+        floorLevel: data.floorLevel ? Number.parseInt(data.floorLevel) : undefined,
+        capacity: Number.parseInt(data.capacity),
         hasPiano: data.hasPiano,
         hasDrums: data.hasDrums,
         hasAmplifier: data.hasAmplifier,
@@ -89,8 +89,8 @@ export function RoomsSection() {
     mutationFn: ({ id, data }: { id: number; data: FormData }) =>
       roomsApi.update(id, {
         name: data.name,
-        floorLevel: data.floorLevel ? parseInt(data.floorLevel) : undefined,
-        capacity: parseInt(data.capacity),
+        floorLevel: data.floorLevel ? Number.parseInt(data.floorLevel) : undefined,
+        capacity: Number.parseInt(data.capacity),
         hasPiano: data.hasPiano,
         hasDrums: data.hasDrums,
         hasAmplifier: data.hasAmplifier,

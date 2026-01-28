@@ -34,6 +34,7 @@ public class EnrollmentPricingServiceTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void SeedTestData(DateOnly? studentDateOfBirth = null, decimal discountPercent = 0)

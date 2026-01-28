@@ -12,7 +12,7 @@ export function PricingBreakdown({
   numberOfOccurrences,
   calculatedAmount,
 }: PricingBreakdownProps) {
-  const occurrences = parseInt(numberOfOccurrences, 10)
+  const occurrences = Number.parseInt(numberOfOccurrences, 10)
   const hasValidOccurrences = numberOfOccurrences && occurrences > 0
 
   return (

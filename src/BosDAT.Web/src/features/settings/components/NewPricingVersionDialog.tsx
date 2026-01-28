@@ -78,7 +78,7 @@ export const NewPricingVersionDialog = ({
       priceAdult !== prevPriceAdultRef.current
     ) {
       const discountRate = 1 - (childDiscountPercent ?? 10) / 100
-      const calculatedChildPrice = parseFloat((priceAdult * discountRate).toFixed(2))
+      const calculatedChildPrice = Number.parseFloat((priceAdult * discountRate).toFixed(2))
       setValue('priceChild', calculatedChildPrice)
     }
     prevPriceAdultRef.current = priceAdult

@@ -149,6 +149,7 @@ public class RegistrationFeeServiceTests : IDisposable
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

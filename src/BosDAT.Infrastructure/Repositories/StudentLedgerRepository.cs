@@ -80,7 +80,7 @@ public class StudentLedgerRepository : Repository<StudentLedgerEntry>, IStudentL
             .Include(e => e.Applications)
             .ToListAsync(cancellationToken);
 
-            return entries.Sum(e => e.Amount - e.Applications.Sum(a => a.AppliedAmount));
+            return entries.Sum<StudentLedgerEntry>(e => e.Amount - e.Applications.Sum(a => a.AppliedAmount));
     }
 
     public async Task<string> GenerateCorrectionRefNameAsync(CancellationToken cancellationToken = default)

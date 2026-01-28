@@ -56,7 +56,7 @@ export function SchedulePage() {
       calendarApi.getWeek({
         date: formatDateForApi(currentDate),
         teacherId: filterTeacher || undefined,
-        roomId: filterRoom ? parseInt(filterRoom) : undefined,
+        roomId: filterRoom ? Number.parseInt(filterRoom) : undefined,
       }),
   })
 
@@ -257,7 +257,7 @@ export function SchedulePage() {
                     {weekDays.map((date) => {
                       const dateStr = formatDateForApi(date)
                       const dayLessons = (lessonsByDay[dateStr] || []).filter((lesson) => {
-                        const lessonHour = parseInt(lesson.startTime.split(':')[0])
+                        const lessonHour = Number.parseInt(lesson.startTime.split(':')[0])
                         return lessonHour === hour
                       })
 

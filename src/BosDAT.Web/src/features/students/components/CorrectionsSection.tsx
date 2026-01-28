@@ -69,8 +69,8 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
     if (calculationMethod !== 'course-based' || !enrollmentPricing || !numberOfOccurrences) {
       return 0
     }
-    const occurrences = parseInt(numberOfOccurrences, 10)
-    return !isNaN(occurrences) && occurrences > 0 ? enrollmentPricing.pricePerLesson * occurrences : 0
+    const occurrences = Number.parseInt(numberOfOccurrences, 10)
+    return !Number.isNaN(occurrences) && occurrences > 0 ? enrollmentPricing.pricePerLesson * occurrences : 0
   }, [calculationMethod, enrollmentPricing, numberOfOccurrences])
 
   const activeEnrollments = useMemo(() => {
@@ -80,7 +80,7 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
   const createMutation = useMutation({
     mutationFn: () => {
       const finalAmount =
-        calculationMethod === 'course-based' ? calculatedAmount : parseFloat(amount)
+        calculationMethod === 'course-based' ? calculatedAmount : Number.parseFloat(amount)
       return studentLedgerApi.create({
         studentId,
         description,
@@ -120,7 +120,7 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const finalAmount =
-      calculationMethod === 'course-based' ? calculatedAmount : parseFloat(amount)
+      calculationMethod === 'course-based' ? calculatedAmount : Number.parseFloat(amount)
     if (description && finalAmount > 0) {
       createMutation.mutate()
     }
@@ -145,9 +145,9 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
   const isFormValid = (): boolean => {
     if (!description) return false
     if (calculationMethod === 'manual') {
-      return !!amount && parseFloat(amount) > 0
+      return !!amount && Number.parseFloat(amount) > 0
     }
-    return !!selectedCourseId && !!numberOfOccurrences && parseInt(numberOfOccurrences, 10) > 0
+    return !!selectedCourseId && !!numberOfOccurrences && Number.parseInt(numberOfOccurrences, 10) > 0
   }
 
   if (isLoading) {

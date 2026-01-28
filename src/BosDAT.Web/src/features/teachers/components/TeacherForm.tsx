@@ -156,8 +156,8 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     }
 
     if (canViewHourlyRate && formData.hourlyRate) {
-      const rate = parseFloat(formData.hourlyRate)
-      if (isNaN(rate) || rate < 0) {
+      const rate = Number.parseFloat(formData.hourlyRate)
+      if (Number.isNaN(rate) || rate < 0) {
         newErrors.hourlyRate = 'Please enter a valid hourly rate'
       }
     }
@@ -183,7 +183,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       postalCode: formData.postalCode.trim() || undefined,
       city: formData.city.trim() || undefined,
       hourlyRate: canViewHourlyRate && formData.hourlyRate
-        ? parseFloat(formData.hourlyRate)
+        ? Number.parseFloat(formData.hourlyRate)
         : teacher?.hourlyRate || 0,
       isActive: formData.isActive,  
       role: formData.role,

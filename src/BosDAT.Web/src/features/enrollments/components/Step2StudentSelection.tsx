@@ -38,8 +38,8 @@ export const Step2StudentSelection = () => {
     queryFn: () => settingsApi.getByKey('course_discount_percent'),
   })
 
-  const familyDiscountPercent = parseFloat(familyDiscountSetting?.value || '10')
-  const courseDiscountPercent = parseFloat(courseDiscountSetting?.value || '10')
+  const familyDiscountPercent = Number.parseFloat(familyDiscountSetting?.value || '10')
+  const courseDiscountPercent = Number.parseFloat(courseDiscountSetting?.value || '10')
 
   const courseStartDate = step1.startDate || ''
   const maxStudents = selectedCourseType?.maxStudents || 1

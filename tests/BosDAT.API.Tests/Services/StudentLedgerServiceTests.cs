@@ -153,6 +153,7 @@ public class StudentLedgerServiceTests : IDisposable
         _context.Database.EnsureDeleted();
         _unitOfWork.Dispose();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     #region CreateEntryAsync Tests
@@ -975,7 +976,7 @@ public class StudentLedgerServiceTests : IDisposable
         // Assert
         Assert.NotNull(entry);
         Assert.NotEmpty(entry.Applications);
-        Assert.Equal(_testInvoiceId, entry.Applications.First().InvoiceId);
+        Assert.Equal(_testInvoiceId, entry.Applications[0].InvoiceId);
     }
 
     #endregion

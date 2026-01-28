@@ -70,7 +70,7 @@ public class InstrumentsController : ControllerBase
     {
         // Check for duplicate name
         var existing = await _unitOfWork.Repository<Instrument>()
-            .FirstOrDefaultAsync(i => i.Name.ToLower() == dto.Name.ToLower(), cancellationToken);
+            .FirstOrDefaultAsync(i => string.Equals(i.Name, dto.Name, StringComparison.OrdinalIgnoreCase), cancellationToken);
 
         if (existing != null)
         {
@@ -109,7 +109,7 @@ public class InstrumentsController : ControllerBase
 
         // Check for duplicate name (excluding current)
         var existing = await _unitOfWork.Repository<Instrument>()
-            .FirstOrDefaultAsync(i => i.Name.ToLower() == dto.Name.ToLower() && i.Id != id, cancellationToken);
+            .FirstOrDefaultAsync(i => string.Equals(i.Name, dto.Name, StringComparison.OrdinalIgnoreCase) && i.Id != id, cancellationToken);
 
         if (existing != null)
         {

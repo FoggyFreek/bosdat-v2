@@ -267,6 +267,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useEnrollmentForm = (): EnrollmentFormContextType => {
   const context = useContext(EnrollmentFormContext)
   if (context === undefined) {
