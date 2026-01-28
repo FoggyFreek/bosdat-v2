@@ -9,4 +9,5 @@ public interface IStudentRepository : IRepository<Student>
     Task<Student?> GetWithInvoicesAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Student>> GetActiveStudentsAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Student>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default);
+    Task<bool> HasActiveEnrollmentsAsync(Guid id, CancellationToken cancellationToken = default);
 }

@@ -79,9 +79,9 @@ export function CourseTypesSection() {
     queryFn: () => settingsApi.getAll(),
   })
 
-  const childDiscountPercent = parseFloat(settings.find(s => s.key === 'child_discount_percent')?.value || '10')
-  const groupMaxStudents = parseInt(settings.find(s => s.key === 'group_max_students')?.value || '6')
-  const workshopMaxStudents = parseInt(settings.find(s => s.key === 'workshop_max_students')?.value || '12')
+  const childDiscountPercent = Number.parseFloat(settings.find(s => s.key === 'child_discount_percent')?.value || '10')
+  const groupMaxStudents = Number.parseInt(settings.find(s => s.key === 'group_max_students')?.value || '6', 10)
+  const workshopMaxStudents = Number.parseInt(settings.find(s => s.key === 'workshop_max_students')?.value || '12', 10)
 
   const checkTeachersForInstrument = async (instrumentId: string) => {
     if (!instrumentId) {
@@ -89,7 +89,7 @@ export function CourseTypesSection() {
       return
     }
     try {
-      const result = await courseTypesApi.getTeacherCountForInstrument(parseInt(instrumentId))
+      const result = await courseTypesApi.getTeacherCountForInstrument(Number.parseInt(instrumentId, 10))
       if (result === 0) {
         setTeacherWarning(`No active teachers teach this instrument`)
       } else {
@@ -113,14 +113,14 @@ export function CourseTypesSection() {
   }
 
   const handleAdultPriceChange = (value: string) => {
-    const adultPrice = parseFloat(value) || 0
+    const adultPrice = Number.parseFloat(value) || 0
     const childPrice = (adultPrice * (1 - childDiscountPercent / 100)).toFixed(2)
     setFormData({ ...formData, priceAdult: value, priceChild: childPrice })
   }
 
   const handleChildPriceChange = (value: string) => {
     setFormData({ ...formData, priceChild: value })
-    if (parseFloat(value) > parseFloat(formData.priceAdult)) {
+    if (Number.parseFloat(value) > Number.parseFloat(formData.priceAdult)) {
       setError('Child price cannot be higher than adult price')
     } else {
       setError(null)
@@ -146,12 +146,12 @@ export function CourseTypesSection() {
     mutationFn: (data: FormData) =>
       courseTypesApi.create({
         name: data.name,
-        instrumentId: parseInt(data.instrumentId),
-        durationMinutes: parseInt(getDuration()),
+        instrumentId: Number.parseInt(data.instrumentId, 10),
+        durationMinutes: Number.parseInt(getDuration(), 10),
         type: data.type,
-        priceAdult: parseFloat(data.priceAdult),
-        priceChild: parseFloat(data.priceChild),
-        maxStudents: parseInt(data.maxStudents),
+        priceAdult: Number.parseFloat(data.priceAdult),
+        priceChild: Number.parseFloat(data.priceChild),
+        maxStudents: Number.parseInt(data.maxStudents, 10),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courseTypes'] })
@@ -166,10 +166,10 @@ export function CourseTypesSection() {
     mutationFn: ({ id, data }: { id: string; data: FormData }) =>
       courseTypesApi.update(id, {
         name: data.name,
-        instrumentId: parseInt(data.instrumentId),
-        durationMinutes: parseInt(getDuration()),
+        instrumentId: Number.parseInt(data.instrumentId, 10),
+        durationMinutes: Number.parseInt(getDuration(), 10),
         type: data.type,
-        maxStudents: parseInt(data.maxStudents),
+        maxStudents: Number.parseInt(data.maxStudents, 10),
         isActive: data.isActive,
       }),
     onSuccess: () => {
@@ -258,8 +258,8 @@ export function CourseTypesSection() {
 
       // Check if pricing changed and handle accordingly
       const currentPricing = editingCourseType.currentPricing
-      const newPriceAdult = parseFloat(formData.priceAdult)
-      const newPriceChild = parseFloat(formData.priceChild)
+      const newPriceAdult = Number.parseFloat(formData.priceAdult)
+      const newPriceChild = Number.parseFloat(formData.priceChild)
 
       const pricingChanged =
         currentPricing &&
@@ -296,6 +296,97 @@ export function CourseTypesSection() {
   }
 
   const isFormValid = formData.name && formData.instrumentId && formData.priceAdult && !error
+
+  const renderCourseTypesList = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )
+    }
+
+    if (courseTypes.length === 0) {
+      return <p className="text-muted-foreground">No course types configured</p>
+    }
+
+    return (
+      <div className="divide-y">
+        {courseTypes.map((lt) => (
+          <div key={lt.id} className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{lt.name}</p>
+                  <span className={cn(
+                    'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
+                    lt.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  )}>
+                    {lt.isActive ? 'Active' : 'Archived'}
+                  </span>
+                  {!lt.hasTeachersForCourseType && (
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800">
+                      No teachers
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {lt.instrumentName} - {lt.durationMinutes} min - {lt.type}
+                  {lt.type !== 'Individual' && ` (max ${lt.maxStudents})`}
+                </p>
+              </div>
+              <div className="text-right mr-4">
+                {lt.currentPricing ? (
+                  <>
+                    <p className="text-sm">Adult: {formatCurrency(lt.currentPricing.priceAdult)}</p>
+                    <p className="text-sm text-muted-foreground">Child: {formatCurrency(lt.currentPricing.priceChild)}</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No pricing</p>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => startEdit(lt)}
+                  title="Edit"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                {lt.isActive ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => archiveMutation.mutate(lt.id)}
+                    disabled={archiveMutation.isPending}
+                    title={lt.activeCourseCount > 0 ? `Cannot archive: ${lt.activeCourseCount} active courses` : 'Archive'}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                    onClick={() => reactivateMutation.mutate(lt.id)}
+                    disabled={reactivateMutation.isPending}
+                    title="Reactivate"
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            {lt.pricingHistory && lt.pricingHistory.length > 1 && (
+              <PricingHistoryCollapsible pricingHistory={lt.pricingHistory} />
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <Card>
@@ -362,7 +453,16 @@ export function CourseTypesSection() {
               <div>
                 <Label>Duration (min)</Label>
                 <div className="flex gap-2">
-                  {!useCustomDuration ? (
+                  {useCustomDuration ? (
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Custom"
+                      value={formData.customDuration}
+                      onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
+                      className="flex-1"
+                    />
+                  ) : (
                     <Select value={formData.durationMinutes} onValueChange={(v) => setFormData({ ...formData, durationMinutes: v })}>
                       <SelectTrigger className="flex-1">
                         <SelectValue />
@@ -373,15 +473,6 @@ export function CourseTypesSection() {
                         ))}
                       </SelectContent>
                     </Select>
-                  ) : (
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="Custom"
-                      value={formData.customDuration}
-                      onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
-                      className="flex-1"
-                    />
                   )}
                   <Button
                     type="button"
@@ -426,7 +517,7 @@ export function CourseTypesSection() {
                   placeholder="0.00"
                   value={formData.priceChild}
                   onChange={(e) => handleChildPriceChange(e.target.value)}
-                  className={parseFloat(formData.priceChild) > parseFloat(formData.priceAdult) ? 'border-red-500' : ''}
+                  className={Number.parseFloat(formData.priceChild) > Number.parseFloat(formData.priceAdult) ? 'border-red-500' : ''}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Default: {childDiscountPercent}% discount from adult price
@@ -456,88 +547,7 @@ export function CourseTypesSection() {
           </div>
         )}
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        ) : courseTypes.length === 0 ? (
-          <p className="text-muted-foreground">No course types configured</p>
-        ) : (
-          <div className="divide-y">
-            {courseTypes.map((lt) => (
-              <div key={lt.id} className="py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{lt.name}</p>
-                      <span className={cn(
-                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
-                        lt.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      )}>
-                        {lt.isActive ? 'Active' : 'Archived'}
-                      </span>
-                      {!lt.hasTeachersForCourseType && (
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800">
-                          No teachers
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {lt.instrumentName} - {lt.durationMinutes} min - {lt.type}
-                      {lt.type !== 'Individual' && ` (max ${lt.maxStudents})`}
-                    </p>
-                  </div>
-                  <div className="text-right mr-4">
-                    {lt.currentPricing ? (
-                      <>
-                        <p className="text-sm">Adult: {formatCurrency(lt.currentPricing.priceAdult)}</p>
-                        <p className="text-sm text-muted-foreground">Child: {formatCurrency(lt.currentPricing.priceChild)}</p>
-                      </>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No pricing</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => startEdit(lt)}
-                      title="Edit"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    {lt.isActive ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => archiveMutation.mutate(lt.id)}
-                        disabled={archiveMutation.isPending}
-                        title={lt.activeCourseCount > 0 ? `Cannot archive: ${lt.activeCourseCount} active courses` : 'Archive'}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => reactivateMutation.mutate(lt.id)}
-                        disabled={reactivateMutation.isPending}
-                        title="Reactivate"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                {lt.pricingHistory && lt.pricingHistory.length > 1 && (
-                  <PricingHistoryCollapsible pricingHistory={lt.pricingHistory} />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        {renderCourseTypesList()}
       </CardContent>
 
       {/* New Pricing Version Dialog */}

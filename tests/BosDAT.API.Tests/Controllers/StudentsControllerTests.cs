@@ -600,4 +600,63 @@ public class StudentsControllerTests
     }
 
     #endregion
+
+    #region HasActiveEnrollments Tests
+
+    [Fact]
+    public async Task HasActiveEnrollments_WithValidIdAndActiveEnrollments_ReturnsTrue()
+    {
+        // Arrange
+        var student = CreateStudent();
+        var students = new List<Student> { student };
+        var mockStudentRepo = MockHelpers.CreateMockStudentRepository(students);
+        mockStudentRepo.Setup(r => r.HasActiveEnrollmentsAsync(student.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
+
+        // Act
+        var result = await _controller.HasActiveEnrollments(student.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var hasEnrollments = Assert.IsType<bool>(okResult.Value);
+        Assert.True(hasEnrollments);
+    }
+
+    [Fact]
+    public async Task HasActiveEnrollments_WithValidIdAndNoActiveEnrollments_ReturnsFalse()
+    {
+        // Arrange
+        var student = CreateStudent();
+        var students = new List<Student> { student };
+        var mockStudentRepo = MockHelpers.CreateMockStudentRepository(students);
+        mockStudentRepo.Setup(r => r.HasActiveEnrollmentsAsync(student.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
+
+        // Act
+        var result = await _controller.HasActiveEnrollments(student.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var hasEnrollments = Assert.IsType<bool>(okResult.Value);
+        Assert.False(hasEnrollments);
+    }
+
+    [Fact]
+    public async Task HasActiveEnrollments_WithInvalidId_ReturnsNotFound()
+    {
+        // Arrange
+        var students = new List<Student>();
+        var mockStudentRepo = MockHelpers.CreateMockStudentRepository(students);
+        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
+
+        // Act
+        var result = await _controller.HasActiveEnrollments(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    #endregion
 }

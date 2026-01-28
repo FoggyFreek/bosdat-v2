@@ -20,6 +20,7 @@ interface StudentFormProps {
   onSubmit: (data: CreateStudent) => Promise<{ id: string }>
   isSubmitting: boolean
   error?: string
+  onSuccess?: (student: Student) => void
 }
 
 interface FormData {
@@ -52,7 +53,7 @@ interface FormErrors {
   billingContactEmail?: string
 }
 
-export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentFormProps) {
+export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess }: StudentFormProps) {
   const navigate = useNavigate()
   const isEditMode = !!student
 
@@ -198,7 +199,12 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
 
     const result = await onSubmit(submitData)
     if (result?.id) {
-      navigate(`/students/${result.id}`)
+      // If onSuccess callback is provided, use it instead of navigating
+      if (onSuccess) {
+        onSuccess(result as unknown as Student)
+      } else {
+        navigate(`/students/${result.id}`)
+      }
     }
   }
 
@@ -633,9 +639,11 @@ export function StudentForm({ student, onSubmit, isSubmitting, error }: StudentF
               ? 'Save Changes'
               : 'Create Student'}
         </Button>
-        <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-          Cancel
-        </Button>
+        {!onSuccess && (
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
+        )}
         {hasDuplicates && !acknowledgedDuplicates && (
           <span className="flex items-center text-sm text-amber-600">
             Please review potential duplicates above

@@ -135,11 +135,16 @@ export const studentsApi = {
     const response = await api.get<RegistrationFeeStatus>(`/students/${id}/registration-fee`)
     return response.data
   },
+
+  hasActiveEnrollments: async (id: string): Promise<boolean> => {
+    const response = await api.get<boolean>(`/students/${id}/has-active-enrollments`)
+    return response.data
+  },
 }
 
 // Teachers API
 export const teachersApi = {
-  getAll: async (params?: { activeOnly?: boolean; instrumentId?: number; courseTypeId?: number }) => {
+  getAll: async (params?: { activeOnly?: boolean; instrumentId?: number; courseTypeId?: string }) => {
     const response = await api.get('/teachers', { params })
     return response.data
   },
@@ -481,19 +486,26 @@ export const holidaysApi = {
 }
 
 // Settings API
+export interface Setting {
+  key: string
+  value: string
+  type?: string
+  description?: string
+}
+
 export const settingsApi = {
-  getAll: async () => {
-    const response = await api.get('/settings')
+  getAll: async (): Promise<Setting[]> => {
+    const response = await api.get<Setting[]>('/settings')
     return response.data
   },
 
-  getByKey: async (key: string) => {
-    const response = await api.get(`/settings/${key}`)
+  getByKey: async (key: string): Promise<Setting> => {
+    const response = await api.get<Setting>(`/settings/${key}`)
     return response.data
   },
 
-  update: async (key: string, value: string) => {
-    const response = await api.put(`/settings/${key}`, { value })
+  update: async (key: string, value: string): Promise<Setting> => {
+    const response = await api.put<Setting>(`/settings/${key}`, { value })
     return response.data
   },
 }

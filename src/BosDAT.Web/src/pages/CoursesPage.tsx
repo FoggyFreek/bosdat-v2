@@ -44,7 +44,7 @@ export function CoursesPage() {
           <p className="text-muted-foreground">Manage your recurring courses</p>
         </div>
         <Button asChild>
-          <Link to="/courses/new">
+          <Link to="/enrollments/new">
             <Plus className="h-4 w-4 mr-2" />
             Add Course
           </Link>

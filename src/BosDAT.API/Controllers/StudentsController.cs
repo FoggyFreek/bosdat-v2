@@ -93,6 +93,7 @@ public class StudentsController(
                 CourseId = e.CourseId,
                 EnrolledAt = e.EnrolledAt,
                 DiscountPercent = e.DiscountPercent,
+                DiscountType = e.DiscountType,
                 Status = e.Status,
                 Notes = e.Notes
             })
@@ -223,6 +224,20 @@ public class StudentsController(
 
         var feeStatus = await _registrationFeeService.GetFeeStatusAsync(id, cancellationToken);
         return Ok(feeStatus);
+    }
+
+    [HttpGet("{id:guid}/has-active-enrollments")]
+    public async Task<ActionResult<bool>> HasActiveEnrollments(Guid id, CancellationToken cancellationToken)
+    {
+        var student = await _unitOfWork.Students.GetByIdAsync(id, cancellationToken);
+
+        if (student == null)
+        {
+            return NotFound();
+        }
+
+        var hasActiveEnrollments = await _unitOfWork.Students.HasActiveEnrollmentsAsync(id, cancellationToken);
+        return Ok(hasActiveEnrollments);
     }
 
     private static StudentDto MapToDto(Student student)

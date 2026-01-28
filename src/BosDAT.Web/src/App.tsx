@@ -12,6 +12,7 @@ import { TeacherFormPage } from './pages/TeacherFormPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { SchedulePage } from './pages/SchedulePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { EnrollmentPage } from './pages/EnrollmentPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/courses" element={<CoursesPage />} />
                 <Route path="/schedule" element={<SchedulePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/enrollments/new" element={<EnrollmentPage />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

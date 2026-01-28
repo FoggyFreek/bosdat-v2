@@ -185,7 +185,7 @@ public class CalendarController : ControllerBase
     }
 
     private async Task<List<ConflictDto>> GetConflictsForHoliday(
-        [FromQuery] DateOnly date,
+        DateOnly date,
         CancellationToken cancellationToken)
     {
         var conflicts = new List<ConflictDto>();
@@ -208,60 +208,66 @@ public class CalendarController : ControllerBase
     }
 
     private async Task<List<ConflictDto>> GetConflictsForRoom(
-        [FromQuery] DateOnly date,
-        [FromQuery] TimeOnly startTime,
-        [FromQuery] TimeOnly endTime,
-        [FromQuery] Guid teacherId,
-        [FromQuery] int? roomId,
+        DateOnly date,
+        TimeOnly startTime,
+        TimeOnly endTime,
+        Guid? teacherId,
+        int? roomId,
         CancellationToken cancellationToken)
     {
         var conflicts = new List<ConflictDto>();
 
-        var roomLessons = await _unitOfWork.Lessons.Query()
-                .Where(l => l.RoomId == roomId.Value &&
-                           l.ScheduledDate == date &&
-                           l.Status != LessonStatus.Cancelled)
-                .ToListAsync(cancellationToken);
-
-        foreach (var lesson in roomLessons)
+        if (roomId.HasValue)
         {
-            if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
+            var roomLessons = await _unitOfWork.Lessons.Query()
+                    .Where(l => l.RoomId == roomId.Value &&
+                               l.ScheduledDate == date &&
+                               l.Status != LessonStatus.Cancelled)
+                    .ToListAsync(cancellationToken);
+
+            foreach (var lesson in roomLessons)
             {
-                conflicts.Add(new ConflictDto
+                if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
                 {
-                    Type = "Room",
-                    Description = $"Room is occupied from {lesson.StartTime} to {lesson.EndTime}"
-                });
+                    conflicts.Add(new ConflictDto
+                    {
+                        Type = "Room",
+                        Description = $"Room is occupied from {lesson.StartTime} to {lesson.EndTime}"
+                    });
+                }
             }
         }
         return conflicts;
     }
 
     private async Task<List<ConflictDto>> GetConflictsForTeacher(
-        [FromQuery] DateOnly date,
-        [FromQuery] TimeOnly startTime,
-        [FromQuery] TimeOnly endTime,
-        [FromQuery] Guid? teacherId,
-        [FromQuery] int? roomId,
+        DateOnly date,
+        TimeOnly startTime,
+        TimeOnly endTime,
+        Guid? teacherId,
+        int? roomId,
         CancellationToken cancellationToken)
     {
         var conflicts = new List<ConflictDto>();
 
-        var teacherLessons = await _unitOfWork.Lessons.Query()
-            .Where(l => l.TeacherId == teacherId.Value &&
-                       l.ScheduledDate == date &&
-                       l.Status != LessonStatus.Cancelled)
-            .ToListAsync(cancellationToken);
-
-        foreach (var lesson in teacherLessons)
+        if (teacherId.HasValue)
         {
-            if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
+            var teacherLessons = await _unitOfWork.Lessons.Query()
+                .Where(l => l.TeacherId == teacherId.Value &&
+                           l.ScheduledDate == date &&
+                           l.Status != LessonStatus.Cancelled)
+                .ToListAsync(cancellationToken);
+
+            foreach (var lesson in teacherLessons)
             {
-                conflicts.Add(new ConflictDto
+                if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
                 {
-                    Type = "Teacher",
-                    Description = $"Teacher has another lesson from {lesson.StartTime} to {lesson.EndTime}"
-                });
+                    conflicts.Add(new ConflictDto
+                    {
+                        Type = "Teacher",
+                        Description = $"Teacher has another lesson from {lesson.StartTime} to {lesson.EndTime}"
+                    });
+                }
             }
         }
 

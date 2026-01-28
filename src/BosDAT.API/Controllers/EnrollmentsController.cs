@@ -58,6 +58,7 @@ public class EnrollmentsController(
                 CourseId = e.CourseId,
                 EnrolledAt = e.EnrolledAt,
                 DiscountPercent = e.DiscountPercent,
+                DiscountType = e.DiscountType,
                 Status = e.Status,
                 Notes = e.Notes
             })
@@ -193,6 +194,7 @@ public class EnrollmentsController(
             StudentId = dto.StudentId,
             CourseId = dto.CourseId,
             DiscountPercent = dto.DiscountPercent,
+            DiscountType = dto.DiscountType,
             Notes = dto.Notes,
             Status = enrollmentStatus
         };
@@ -214,6 +216,7 @@ public class EnrollmentsController(
             CourseId = enrollment.CourseId,
             EnrolledAt = enrollment.EnrolledAt,
             DiscountPercent = enrollment.DiscountPercent,
+            DiscountType = enrollment.DiscountType,
             Status = enrollment.Status,
             Notes = enrollment.Notes
         });
@@ -247,6 +250,7 @@ public class EnrollmentsController(
             CourseId = enrollment.CourseId,
             EnrolledAt = enrollment.EnrolledAt,
             DiscountPercent = enrollment.DiscountPercent,
+            DiscountType = enrollment.DiscountType,
             Status = enrollment.Status,
             Notes = enrollment.Notes
         });
@@ -288,6 +292,7 @@ public class EnrollmentsController(
             CourseId = enrollment.CourseId,
             EnrolledAt = enrollment.EnrolledAt,
             DiscountPercent = enrollment.DiscountPercent,
+            DiscountType = enrollment.DiscountType,
             Status = enrollment.Status,
             Notes = enrollment.Notes
         });

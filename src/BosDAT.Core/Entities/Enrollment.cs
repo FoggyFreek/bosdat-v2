@@ -9,6 +9,13 @@ public enum EnrollmentStatus
     Suspended
 }
 
+public enum DiscountType
+{
+    None,
+    Family,
+    Course
+}
+
 public class Enrollment : BaseEntity
 {
     public Guid StudentId { get; set; }
@@ -16,6 +23,7 @@ public class Enrollment : BaseEntity
 
     public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
     public decimal DiscountPercent { get; set; }
+    public DiscountType DiscountType { get; set; } = DiscountType.None;
     public EnrollmentStatus Status { get; set; } = EnrollmentStatus.Active;
 
     public string? Notes { get; set; }

@@ -10,6 +10,7 @@ public record EnrollmentDto
     public Guid CourseId { get; init; }
     public DateTime EnrolledAt { get; init; }
     public decimal DiscountPercent { get; init; }
+    public DiscountType DiscountType { get; init; }
     public EnrollmentStatus Status { get; init; }
     public string? Notes { get; init; }
 }
@@ -19,6 +20,7 @@ public record CreateEnrollmentDto
     public Guid StudentId { get; init; }
     public Guid CourseId { get; init; }
     public decimal DiscountPercent { get; init; }
+    public DiscountType DiscountType { get; init; }
     public string? Notes { get; init; }
 }
 

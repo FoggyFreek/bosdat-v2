@@ -359,6 +359,9 @@ namespace BosDAT.Infrastructure.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)");
 
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -973,6 +976,20 @@ namespace BosDAT.Infrastructure.Migrations
                             Description = "Invoice description for registration fee",
                             Type = "string",
                             Value = "Eenmalig inschrijfgeld"
+                        },
+                        new
+                        {
+                            Key = "course_discount_percent",
+                            Description = "Discount percentage for students with multiple courses",
+                            Type = "decimal",
+                            Value = "10"
+                        },
+                        new
+                        {
+                            Key = "family_discount_percent",
+                            Description = "Discount percentage for family members",
+                            Type = "decimal",
+                            Value = "10"
                         });
                 });
 

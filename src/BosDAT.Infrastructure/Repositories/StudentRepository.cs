@@ -58,4 +58,12 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .ThenBy(s => s.FirstName)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<bool> HasActiveEnrollmentsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Enrollment>()
+            .AnyAsync(e => e.StudentId == id &&
+                          (e.Status == EnrollmentStatus.Active || e.Status == EnrollmentStatus.Trail),
+                      cancellationToken);
+    }
 }
