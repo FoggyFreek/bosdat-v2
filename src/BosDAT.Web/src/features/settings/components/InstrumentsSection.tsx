@@ -116,13 +116,17 @@ export function InstrumentsSection() {
           </div>
         )}
 
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : instruments.length === 0 ? (
+        )}
+
+        {!isLoading && instruments.length === 0 && (
           <p className="text-muted-foreground">No instruments configured</p>
-        ) : (
+        )}
+
+        {!isLoading && instruments.length > 0 && (
           <div className="divide-y">
             {instruments.map((instrument) => (
               <div key={instrument.id} className="flex items-center justify-between py-2">

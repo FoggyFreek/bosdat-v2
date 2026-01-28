@@ -21,7 +21,7 @@ export const Stepper = ({ steps, currentStep, onStepChange }: StepperProps) => {
 
   return (
     <nav aria-label="Progress" className="w-full">
-      <ol role="list" className="flex items-center justify-between">
+      <ol className="flex items-center justify-between">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep
           const isCurrent = index === currentStep

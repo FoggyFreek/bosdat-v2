@@ -71,7 +71,7 @@ public class StudentLedgerService(
                 await context.SaveChangesAsync(ct);
                 await unitOfWork.CommitTransactionAsync(ct);
 
-                return await MapToDto(entry, ct);
+                return await LoadEntryAndMapToDtoAsync(entry.Id, ct);
             }
             catch
             {
@@ -146,7 +146,7 @@ public class StudentLedgerService(
                 await context.SaveChangesAsync(ct);
                 await unitOfWork.CommitTransactionAsync(ct);
 
-                return await MapToDto(reversalEntry, ct);
+                return await LoadEntryAndMapToDtoAsync(reversalEntry.Id, ct);
             }
             catch
             {
@@ -377,6 +377,32 @@ public class StudentLedgerService(
         // PostgreSQL duplicate key violation
         return ex.InnerException?.Message.Contains("duplicate key") == true ||
                ex.InnerException?.Message.Contains("unique constraint") == true;
+    }
+
+    private async Task<StudentLedgerEntryDto> LoadEntryAndMapToDtoAsync(Guid entryId, CancellationToken ct)
+    {
+        var savedEntry = await context.StudentLedgerEntries
+            .Include(e => e.Course)
+            .Include(e => e.Student)
+            .Include(e => e.CreatedBy)
+            .Include(e => e.Applications)
+                .ThenInclude(a => a.Invoice)
+            .Include(e => e.Applications)
+                .ThenInclude(a => a.AppliedBy)
+            .FirstAsync(e => e.Id == entryId, ct);
+
+        var courseTypes = new Dictionary<Guid, string>();
+        if (savedEntry.Course != null)
+        {
+            var courseType = await context.CourseTypes
+                .FirstOrDefaultAsync(c => c.Id == savedEntry.Course.CourseTypeId, ct);
+            if (courseType != null)
+            {
+                courseTypes[savedEntry.Course.CourseTypeId] = courseType.Name;
+            }
+        }
+
+        return MapToDtoSync(savedEntry, courseTypes);
     }
 
     private static StudentLedgerEntryDto MapToDtoSync(StudentLedgerEntry entry, Dictionary<Guid, string> courseTypes)

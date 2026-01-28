@@ -201,7 +201,7 @@ public class HolidaysControllerTests
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        mockHolidayRepo.Verify(r => r.Delete(holiday), Times.Once);
+        mockHolidayRepo.Verify(r => r.DeleteAsync(holiday, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

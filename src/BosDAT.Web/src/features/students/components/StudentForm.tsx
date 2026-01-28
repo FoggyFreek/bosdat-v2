@@ -15,6 +15,12 @@ import {
 import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
 import type { Student, StudentStatus, Gender, CreateStudent } from '@/features/students/types'
 
+const getStatusBadgeClass = (status: string) => {
+  if (status === 'Active') return 'bg-green-100 text-green-700'
+  if (status === 'Trial') return 'bg-yellow-100 text-yellow-700'
+  return 'bg-gray-100 text-gray-700'
+}
+
 interface StudentFormProps {
   student?: Student
   onSubmit: (data: CreateStudent) => Promise<{ id: string }>
@@ -91,6 +97,13 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
     acknowledgeDuplicates,
     resetAcknowledgement,
   } = useDuplicateCheck({ excludeId: student?.id })
+
+  const getSubmitButtonText = () => {
+    if (isSubmitting) {
+      return isEditMode ? 'Saving...' : 'Creating...'
+    }
+    return isEditMode ? 'Save Changes' : 'Create Student'
+  }
 
   // Trigger duplicate check when key fields change
   useEffect(() => {
@@ -270,13 +283,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                       </p>
                     </div>
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                        duplicate.status === 'Active'
-                          ? 'bg-green-100 text-green-700'
-                          : duplicate.status === 'Trial'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
+                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusBadgeClass(duplicate.status)}`}
                     >
                       {duplicate.status}
                     </span>
@@ -631,13 +638,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
           type="submit"
           disabled={isSubmitting || (hasDuplicates && !acknowledgedDuplicates)}
         >
-          {isSubmitting
-            ? isEditMode
-              ? 'Saving...'
-              : 'Creating...'
-            : isEditMode
-              ? 'Save Changes'
-              : 'Create Student'}
+          {getSubmitButtonText()}
         </Button>
         {!onSuccess && (
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>

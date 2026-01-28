@@ -233,7 +233,7 @@ public class LessonsController : ControllerBase
             return BadRequest(new { message = "Cannot delete an invoiced lesson" });
         }
 
-        _unitOfWork.Lessons.Delete(lesson);
+        await _unitOfWork.Lessons.DeleteAsync(lesson, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return NoContent();
@@ -493,7 +493,7 @@ public class LessonsController : ControllerBase
 
 public record UpdateLessonStatusDto
 {
-    public LessonStatus Status { get; init; }
+    public required LessonStatus Status { get; init; }
     public string? CancellationReason { get; init; }
 }
 
@@ -508,8 +508,8 @@ public record GenerateLessonsResultDto
 
 public record BulkGenerateLessonsDto
 {
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
+    public required DateOnly StartDate { get; init; }
+    public required DateOnly EndDate { get; init; }
     public bool SkipHolidays { get; init; } = true;
 }
 

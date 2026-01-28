@@ -114,7 +114,7 @@ public class HolidaysController : ControllerBase
             return NotFound();
         }
 
-        _unitOfWork.Repository<Holiday>().Delete(holiday);
+        await _unitOfWork.Repository<Holiday>().DeleteAsync(holiday, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return NoContent();
@@ -132,13 +132,13 @@ public record HolidayDto
 public record CreateHolidayDto
 {
     public required string Name { get; init; }
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
+    public required DateOnly StartDate { get; init; }
+    public required DateOnly EndDate { get; init; }
 }
 
 public record UpdateHolidayDto
 {
     public required string Name { get; init; }
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
+    public required DateOnly StartDate { get; init; }
+    public required DateOnly EndDate { get; init; }
 }

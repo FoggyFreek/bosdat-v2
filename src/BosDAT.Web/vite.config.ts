@@ -19,6 +19,18 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['lucide-react', 'class-variance-authority', 'clsx', 'tailwind-merge'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'vendor-data': ['@tanstack/react-query', 'axios'],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

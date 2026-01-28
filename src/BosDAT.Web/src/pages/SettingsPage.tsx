@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,17 +11,25 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { FormDirtyProvider, useFormDirty } from '@/context/FormDirtyContext'
-import {
-  SettingsNavigation,
-  ProfileSection,
-  PreferencesSection,
-  SystemSettingsSection,
-  InstrumentsSection,
-  CourseTypesSection,
-  RoomsSection,
-  HolidaysSection,
-} from '@/features/settings/components'
+import { SettingsNavigation } from '@/features/settings/components'
 import type { SettingKey } from '@/features/settings/types'
+
+// Lazy load settings sections from individual files for actual code splitting
+const ProfileSection = lazy(() => import('@/features/settings/components/ProfileSection').then(m => ({ default: m.ProfileSection })))
+const PreferencesSection = lazy(() => import('@/features/settings/components/PreferencesSection').then(m => ({ default: m.PreferencesSection })))
+const SystemSettingsSection = lazy(() => import('@/features/settings/components/SystemSettingsSection').then(m => ({ default: m.SystemSettingsSection })))
+const InstrumentsSection = lazy(() => import('@/features/settings/components/InstrumentsSection').then(m => ({ default: m.InstrumentsSection })))
+const CourseTypesSection = lazy(() => import('@/features/settings/components/CourseTypesSection').then(m => ({ default: m.CourseTypesSection })))
+const RoomsSection = lazy(() => import('@/features/settings/components/RoomsSection').then(m => ({ default: m.RoomsSection })))
+const HolidaysSection = lazy(() => import('@/features/settings/components/HolidaysSection').then(m => ({ default: m.HolidaysSection })))
+
+function SettingsLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  )
+}
 
 function SettingsContent() {
   const [selectedSetting, setSelectedSetting] = useState<SettingKey>('profile')
@@ -54,19 +63,19 @@ function SettingsContent() {
   const renderContent = () => {
     switch (selectedSetting) {
       case 'profile':
-        return <ProfileSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><ProfileSection /></Suspense>
       case 'preferences':
-        return <PreferencesSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><PreferencesSection /></Suspense>
       case 'instruments':
-        return <InstrumentsSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><InstrumentsSection /></Suspense>
       case 'course-types':
-        return <CourseTypesSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><CourseTypesSection /></Suspense>
       case 'rooms':
-        return <RoomsSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><RoomsSection /></Suspense>
       case 'holidays':
-        return <HolidaysSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><HolidaysSection /></Suspense>
       case 'system':
-        return <SystemSettingsSection />
+        return <Suspense fallback={<SettingsLoadingFallback />}><SystemSettingsSection /></Suspense>
       default:
         return null
     }

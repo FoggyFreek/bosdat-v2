@@ -345,6 +345,6 @@ public class LessonsControllerTests
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        mockLessonRepo.Verify(r => r.Delete(lesson), Times.Once);
+        mockLessonRepo.Verify(r => r.DeleteAsync(lesson, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

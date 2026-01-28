@@ -51,17 +51,21 @@ export function CoursesPage() {
         </Button>
       </div>
 
-      {isLoading ? (
+      {isLoading && (
         <div className="flex items-center justify-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
-      ) : courses.length === 0 ? (
+      )}
+
+      {!isLoading && courses.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">No courses found</p>
           </CardContent>
         </Card>
-      ) : (
+      )}
+
+      {!isLoading && courses.length > 0 && (
         <div className="grid gap-6">
           {[1, 2, 3, 4, 5, 6, 0].map((day) => {
             const dayCourses = coursesByDay[day] || []
@@ -75,7 +79,7 @@ export function CoursesPage() {
                 <CardContent>
                   <div className="divide-y">
                     {dayCourses
-                      .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                      .toSorted((a, b) => a.startTime.localeCompare(b.startTime))
                       .map((course) => (
                         <Link
                           key={course.id}

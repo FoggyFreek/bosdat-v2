@@ -6,6 +6,16 @@ import type { CourseList } from '@/features/courses/types'
 import type { StudentList } from '@/features/students/types'
 import type { TeacherList } from '@/features/teachers/types'
 
+const getStatusBadgeClass = (status: string) => {
+  if (status === 'Active') {
+    return 'bg-green-100 text-green-800'
+  }
+  if (status === 'Trial') {
+    return 'bg-yellow-100 text-yellow-800'
+  }
+  return 'bg-gray-100 text-gray-800'
+}
+
 export function DashboardPage() {
   const { data: students = [] } = useQuery<StudentList[]>({
     queryKey: ['students'],
@@ -90,13 +100,7 @@ export function DashboardPage() {
                     <p className="text-sm text-muted-foreground">{student.email}</p>
                   </div>
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      student.status === 'Active'
-                        ? 'bg-green-100 text-green-800'
-                        : student.status === 'Trial'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(student.status)}`}
                   >
                     {student.status}
                   </span>

@@ -108,13 +108,17 @@ export function HolidaysSection() {
           </div>
         )}
 
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : holidays.length === 0 ? (
+        )}
+
+        {!isLoading && holidays.length === 0 && (
           <p className="text-muted-foreground">No holidays configured</p>
-        ) : (
+        )}
+
+        {!isLoading && holidays.length > 0 && (
           <div className="divide-y">
             {holidays.map((holiday) => (
               <div key={holiday.id} className="flex items-center justify-between py-3">

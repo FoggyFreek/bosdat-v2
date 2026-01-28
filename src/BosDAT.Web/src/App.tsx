@@ -1,18 +1,22 @@
+import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { Layout } from './components/Layout'
+import { LoadingFallback } from './components/LoadingFallback'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
-import { StudentsPage } from './pages/StudentsPage'
-import { StudentDetailPage } from './pages/StudentDetailPage'
-import { StudentFormPage } from './pages/StudentFormPage'
-import { TeachersPage } from './pages/TeachersPage'
-import { TeacherDetailPage } from './pages/TeacherDetailPage'
-import { TeacherFormPage } from './pages/TeacherFormPage'
-import { CoursesPage } from './pages/CoursesPage'
-import { SchedulePage } from './pages/SchedulePage'
-import { SettingsPage } from './pages/SettingsPage'
-import { EnrollmentPage } from './pages/EnrollmentPage'
+
+// Lazy load route components
+const StudentsPage = lazy(() => import('./pages/StudentsPage').then(m => ({ default: m.StudentsPage })))
+const StudentDetailPage = lazy(() => import('./pages/StudentDetailPage').then(m => ({ default: m.StudentDetailPage })))
+const StudentFormPage = lazy(() => import('./pages/StudentFormPage').then(m => ({ default: m.StudentFormPage })))
+const TeachersPage = lazy(() => import('./pages/TeachersPage').then(m => ({ default: m.TeachersPage })))
+const TeacherDetailPage = lazy(() => import('./pages/TeacherDetailPage').then(m => ({ default: m.TeacherDetailPage })))
+const TeacherFormPage = lazy(() => import('./pages/TeacherFormPage').then(m => ({ default: m.TeacherFormPage })))
+const CoursesPage = lazy(() => import('./pages/CoursesPage').then(m => ({ default: m.CoursesPage })))
+const SchedulePage = lazy(() => import('./pages/SchedulePage').then(m => ({ default: m.SchedulePage })))
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const EnrollmentPage = lazy(() => import('./pages/EnrollmentPage').then(m => ({ default: m.EnrollmentPage })))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -43,18 +47,18 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
-                <Route path="/students" element={<StudentsPage />} />
-                <Route path="/students/new" element={<StudentFormPage />} />
-                <Route path="/students/:id" element={<StudentDetailPage />} />
-                <Route path="/students/:id/edit" element={<StudentFormPage />} />
-                <Route path="/teachers" element={<TeachersPage />} />
-                <Route path="/teachers/new" element={<TeacherFormPage />} />
-                <Route path="/teachers/:id" element={<TeacherDetailPage />} />
-                <Route path="/teachers/:id/edit" element={<TeacherFormPage />} />
-                <Route path="/courses" element={<CoursesPage />} />
-                <Route path="/schedule" element={<SchedulePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/enrollments/new" element={<EnrollmentPage />} />
+                <Route path="/students" element={<Suspense fallback={<LoadingFallback />}><StudentsPage /></Suspense>} />
+                <Route path="/students/new" element={<Suspense fallback={<LoadingFallback />}><StudentFormPage /></Suspense>} />
+                <Route path="/students/:id" element={<Suspense fallback={<LoadingFallback />}><StudentDetailPage /></Suspense>} />
+                <Route path="/students/:id/edit" element={<Suspense fallback={<LoadingFallback />}><StudentFormPage /></Suspense>} />
+                <Route path="/teachers" element={<Suspense fallback={<LoadingFallback />}><TeachersPage /></Suspense>} />
+                <Route path="/teachers/new" element={<Suspense fallback={<LoadingFallback />}><TeacherFormPage /></Suspense>} />
+                <Route path="/teachers/:id" element={<Suspense fallback={<LoadingFallback />}><TeacherDetailPage /></Suspense>} />
+                <Route path="/teachers/:id/edit" element={<Suspense fallback={<LoadingFallback />}><TeacherFormPage /></Suspense>} />
+                <Route path="/courses" element={<Suspense fallback={<LoadingFallback />}><CoursesPage /></Suspense>} />
+                <Route path="/schedule" element={<Suspense fallback={<LoadingFallback />}><SchedulePage /></Suspense>} />
+                <Route path="/settings" element={<Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense>} />
+                <Route path="/enrollments/new" element={<Suspense fallback={<LoadingFallback />}><EnrollmentPage /></Suspense>} />
               </Routes>
             </Layout>
           </ProtectedRoute>

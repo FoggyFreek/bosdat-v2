@@ -265,13 +265,17 @@ export function RoomsSection() {
           </div>
         )}
 
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : rooms.length === 0 ? (
+        )}
+
+        {!isLoading && rooms.length === 0 && (
           <p className="text-muted-foreground">No rooms configured</p>
-        ) : (
+        )}
+
+        {!isLoading && rooms.length > 0 && (
           <div className="divide-y">
             {rooms.map((room) => (
               <div key={room.id} className="flex items-center justify-between py-3">

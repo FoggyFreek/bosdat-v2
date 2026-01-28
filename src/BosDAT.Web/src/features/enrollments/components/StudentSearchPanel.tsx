@@ -8,6 +8,12 @@ import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import type { StudentList } from '@/features/students/types'
 import type { EnrollmentGroupMember } from '../types'
 
+const getStatusBadgeVariant = (status: string) => {
+  if (status === 'Active') return 'default'
+  if (status === 'Trial') return 'secondary'
+  return 'outline'
+}
+
 interface StudentSearchPanelProps {
   courseStartDate: string
   maxStudents: number
@@ -116,7 +122,7 @@ export const StudentSearchPanel = ({
 
       {showResults && (
         <div className="space-y-2 max-h-[300px] overflow-y-auto">
-          {isLoading ? (
+          {isLoading && (
             <div className="flex items-center justify-center py-8">
               <svg
                 className="h-5 w-5 animate-spin text-muted-foreground"
@@ -138,7 +144,9 @@ export const StudentSearchPanel = ({
                 />
               </svg>
             </div>
-          ) : filteredStudents.length === 0 ? (
+          )}
+
+          {!isLoading && filteredStudents.length === 0 && (
             <div className="text-center py-8 text-muted-foreground text-sm">
               <p>No students found</p>
               <Button
@@ -150,36 +158,32 @@ export const StudentSearchPanel = ({
                 Create a new student
               </Button>
             </div>
-          ) : (
-            filteredStudents.map((student) => (
-              <button
-                key={student.id}
-                type="button"
-                className="w-full text-left p-3 rounded-md border hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => handleSelectStudent(student)}
-                disabled={!canAddMore}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium truncate">{student.fullName}</p>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {student.email}
-                    </p>
+          )}
+
+          {!isLoading && filteredStudents.length > 0 && (
+            <>
+              {filteredStudents.map((student) => (
+                <button
+                  key={student.id}
+                  type="button"
+                  className="w-full text-left p-3 rounded-md border hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => handleSelectStudent(student)}
+                  disabled={!canAddMore}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{student.fullName}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {student.email}
+                      </p>
+                    </div>
+                    <Badge variant={getStatusBadgeVariant(student.status)}>
+                      {student.status}
+                    </Badge>
                   </div>
-                  <Badge
-                    variant={
-                      student.status === 'Active'
-                        ? 'default'
-                        : student.status === 'Trial'
-                          ? 'secondary'
-                          : 'outline'
-                    }
-                  >
-                    {student.status}
-                  </Badge>
-                </div>
-              </button>
-            ))
+                </button>
+              ))}
+            </>
           )}
         </div>
       )}

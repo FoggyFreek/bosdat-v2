@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react'
 import type { User, LoginDto, AuthResponse } from '@/features/auth/types'
 import { authApi } from '@/services/api'
 
@@ -34,28 +34,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth()
   }, [])
 
-  const login = async (data: LoginDto) => {
+  const login = useCallback(async (data: LoginDto) => {
     const response: AuthResponse = await authApi.login(data)
     localStorage.setItem('token', response.token)
     localStorage.setItem('refreshToken', response.refreshToken)
     setUser(response.user)
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authApi.logout()
     setUser(null)
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      login,
+      logout,
+    }),
+    [user, isLoading, login, logout]
+  )
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

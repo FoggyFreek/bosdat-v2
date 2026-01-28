@@ -52,13 +52,17 @@ export function SystemSettingsSection() {
         <CardDescription>Configure application-wide settings</CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : settings.length === 0 ? (
+        )}
+
+        {!isLoading && settings.length === 0 && (
           <p className="text-muted-foreground">No settings configured</p>
-        ) : (
+        )}
+
+        {!isLoading && settings.length > 0 && (
           <div className="divide-y">
             {settings.map((setting) => (
               <div key={setting.key} className="flex items-center justify-between py-3">

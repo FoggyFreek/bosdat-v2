@@ -59,6 +59,11 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
 
   const canViewHourlyRate = user?.roles.includes(FINANCIAL_ADMIN_ROLE) || user?.roles.includes('Admin')
 
+  const getSubmitButtonText = () => {
+    if (isSubmitting) return 'Saving...'
+    return isEditMode ? 'Update Teacher' : 'Create Teacher'
+  }
+
   const { data: instruments = [] } = useQuery<Instrument[]>({
     queryKey: ['instruments'],
     queryFn: () => instrumentsApi.getAll({ activeOnly: true }),
@@ -415,15 +420,19 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
         <p className="text-sm text-muted-foreground">
           Select the lesson types this teacher can teach
         </p>
-        {formData.instrumentIds.length === 0 ? (
+        {formData.instrumentIds.length === 0 && (
           <p className="text-sm text-muted-foreground">
             Please select at least one instrument to see available lesson types
           </p>
-        ) : availableCourseTypes.length === 0 ? (
+        )}
+
+        {formData.instrumentIds.length > 0 && availableCourseTypes.length === 0 && (
           <p className="text-sm text-muted-foreground">
             No lesson types available for the selected instruments
           </p>
-        ) : (
+        )}
+
+        {formData.instrumentIds.length > 0 && availableCourseTypes.length > 0 && (
           <div className="space-y-4">
             {Object.entries(courseTypesByInstrument).map(([instrumentName, courseTypes]) => (
               <div key={instrumentName}>
@@ -493,7 +502,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       {/* Form Actions */}
       <div className="flex items-center gap-4">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : isEditMode ? 'Update Teacher' : 'Create Teacher'}
+          {getSubmitButtonText()}
         </Button>
         <Button
           type="button"

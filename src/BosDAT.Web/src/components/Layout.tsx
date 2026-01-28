@@ -45,11 +45,20 @@ export function Layout({ children }: LayoutProps) {
     <div className="flex min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div
+        role="button"
+        tabIndex={0}
         className={cn(
           'fixed inset-0 z-50 bg-gray-900/80 lg:hidden',
           sidebarOpen ? 'block' : 'hidden'
         )}
         onClick={() => setSidebarOpen(false)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setSidebarOpen(false)
+          }
+        }}
+        aria-label="Close sidebar"
       />
 
       <div

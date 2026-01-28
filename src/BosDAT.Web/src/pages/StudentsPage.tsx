@@ -57,15 +57,19 @@ export function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading && (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
-          ) : students.length === 0 ? (
+          )}
+
+          {!isLoading && students.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No students found</p>
             </div>
-          ) : (
+          )}
+
+          {!isLoading && students.length > 0 && (
             <div className="divide-y">
               {students.map((student) => (
                 <Link

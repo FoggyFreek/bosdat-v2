@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useReducer, ReactNode, useCallback, useMemo } from 'react'
 import type {
   EnrollmentFormData,
   Step1LessonDetailsData,
@@ -231,22 +231,37 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
     [state.formData]
   )
 
+  const value = useMemo(
+    () => ({
+      formData: state.formData,
+      currentStep: state.currentStep,
+      updateStep1,
+      updateStep2,
+      addStudent,
+      removeStudent,
+      updateStudent,
+      setCurrentStep,
+      resetForm,
+      isStep1Valid,
+      isStep2Valid,
+    }),
+    [
+      state.formData,
+      state.currentStep,
+      updateStep1,
+      updateStep2,
+      addStudent,
+      removeStudent,
+      updateStudent,
+      setCurrentStep,
+      resetForm,
+      isStep1Valid,
+      isStep2Valid,
+    ]
+  )
+
   return (
-    <EnrollmentFormContext.Provider
-      value={{
-        formData: state.formData,
-        currentStep: state.currentStep,
-        updateStep1,
-        updateStep2,
-        addStudent,
-        removeStudent,
-        updateStudent,
-        setCurrentStep,
-        resetForm,
-        isStep1Valid,
-        isStep2Valid,
-      }}
-    >
+    <EnrollmentFormContext.Provider value={value}>
       {children}
     </EnrollmentFormContext.Provider>
   )

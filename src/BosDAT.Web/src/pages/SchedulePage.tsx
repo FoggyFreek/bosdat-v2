@@ -34,6 +34,14 @@ function formatDateDisplay(date: Date): string {
 
 const hours = Array.from({ length: 14 }, (_, i) => i + 8) // 8:00 - 21:00
 
+function getLessonTooltip(lesson: CalendarLesson): string {
+  const parts = [lesson.title, lesson.teacherName]
+  if (lesson.roomName) {
+    parts.push(lesson.roomName)
+  }
+  return parts.join('\n')
+}
+
 export function SchedulePage() {
   const [currentDate, setCurrentDate] = useState(() => getWeekStart(new Date()))
   const [filterTeacher, setFilterTeacher] = useState<string>('')
@@ -211,9 +219,9 @@ export function SchedulePage() {
                   <div className="p-2 text-center text-sm font-medium text-muted-foreground border-r">
                     Time
                   </div>
-                  {weekDays.map((date, index) => (
+                  {weekDays.map((date) => (
                     <div
-                      key={index}
+                      key={date.toISOString()}
                       className={cn(
                         'p-2 text-center border-r last:border-r-0',
                         isToday(date) && 'bg-primary/5',
@@ -246,7 +254,7 @@ export function SchedulePage() {
                     <div className="p-2 text-center text-sm text-muted-foreground border-r">
                       {hour.toString().padStart(2, '0')}:00
                     </div>
-                    {weekDays.map((date, dayIndex) => {
+                    {weekDays.map((date) => {
                       const dateStr = formatDateForApi(date)
                       const dayLessons = (lessonsByDay[dateStr] || []).filter((lesson) => {
                         const lessonHour = parseInt(lesson.startTime.split(':')[0])
@@ -255,7 +263,7 @@ export function SchedulePage() {
 
                       return (
                         <div
-                          key={dayIndex}
+                          key={dateStr}
                           className={cn(
                             'p-1 border-r last:border-r-0 min-h-[60px]',
                             isToday(date) && 'bg-primary/5',
@@ -269,7 +277,7 @@ export function SchedulePage() {
                                 'p-1.5 rounded text-xs border mb-1 cursor-pointer hover:opacity-80 transition-opacity',
                                 getStatusColor(lesson.status)
                               )}
-                              title={`${lesson.title}\n${lesson.teacherName}${lesson.roomName ? `\n${lesson.roomName}` : ''}`}
+                              title={getLessonTooltip(lesson)}
                             >
                               <p className="font-medium truncate">{lesson.instrumentName}</p>
                               <p className="truncate">

@@ -30,12 +30,12 @@ export const EnrollmentGroupMemberCard = ({
   onRemove,
 }: EnrollmentGroupMemberCardProps) => {
   const handleDiscountTypeChange = (value: DiscountType) => {
-    const discountPercentage =
-      value === 'Family'
-        ? familyDiscountPercent
-        : value === 'Course'
-          ? courseDiscountPercent
-          : 0
+    let discountPercentage = 0
+    if (value === 'Family') {
+      discountPercentage = familyDiscountPercent
+    } else if (value === 'Course') {
+      discountPercentage = courseDiscountPercent
+    }
 
     // Only allow Course discount if eligible
     if (value === 'Course' && !member.isEligibleForCourseDiscount) {

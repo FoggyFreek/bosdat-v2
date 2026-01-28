@@ -92,8 +92,8 @@ export const Step2StudentSelection = () => {
         <Alert variant="destructive">
           <AlertDescription>
             <ul className="list-disc list-inside space-y-1">
-              {validationResult.errors.map((error, index) => (
-                <li key={index}>{error}</li>
+              {validationResult.errors.map((error) => (
+                <li key={error}>{error}</li>
               ))}
             </ul>
           </AlertDescription>

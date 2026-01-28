@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, useMemo, type ReactNode } from 'react'
 
 interface FormDirtyContextType {
   isDirty: boolean
@@ -10,8 +10,10 @@ const FormDirtyContext = createContext<FormDirtyContextType | undefined>(undefin
 export function FormDirtyProvider({ children }: { children: ReactNode }) {
   const [isDirty, setIsDirty] = useState(false)
 
+  const value = useMemo(() => ({ isDirty, setIsDirty }), [isDirty])
+
   return (
-    <FormDirtyContext.Provider value={{ isDirty, setIsDirty }}>
+    <FormDirtyContext.Provider value={value}>
       {children}
     </FormDirtyContext.Provider>
   )
