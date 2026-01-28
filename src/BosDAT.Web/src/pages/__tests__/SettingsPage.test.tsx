@@ -75,11 +75,11 @@ describe('SettingsPage', () => {
       expect(screen.getByRole('button', { name: /system settings/i })).toBeInTheDocument()
     })
 
-    it('defaults to instruments section', async () => {
+    it('defaults to profile section', async () => {
       render(<SettingsPage />)
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /instruments/i })).toBeInTheDocument()
+        expect(screen.getByText(/profile settings coming soon/i)).toBeInTheDocument()
       })
     })
 
@@ -137,9 +137,9 @@ describe('SettingsPage', () => {
 
       render(<SettingsPage />)
 
-      // Wait for page to load
+      // Wait for default profile page to load
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /instruments/i })).toBeInTheDocument()
+        expect(screen.getByText(/profile settings coming soon/i)).toBeInTheDocument()
       })
 
       // Navigate to Rooms without making changes
@@ -167,6 +167,7 @@ describe('SettingsPage', () => {
 
   describe('Instruments Section', () => {
     it('displays instruments list', async () => {
+      const user = userEvent.setup()
       vi.mocked(instrumentsApi.getAll).mockResolvedValue([
         { id: 1, name: 'Piano', category: 'Keyboard', isActive: true },
         { id: 2, name: 'Guitar', category: 'String', isActive: true },
@@ -174,6 +175,9 @@ describe('SettingsPage', () => {
       ])
 
       render(<SettingsPage />)
+
+      // Navigate to Instruments section
+      await user.click(screen.getByRole('button', { name: /instruments/i }))
 
       await waitFor(() => {
         expect(screen.getByText('Piano')).toBeInTheDocument()
@@ -193,6 +197,9 @@ describe('SettingsPage', () => {
 
       render(<SettingsPage />)
 
+      // Navigate to Instruments section
+      await user.click(screen.getByRole('button', { name: /instruments/i }))
+
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /instruments/i })).toBeInTheDocument()
       })
@@ -208,6 +215,9 @@ describe('SettingsPage', () => {
       vi.mocked(instrumentsApi.create).mockResolvedValue({ id: 1, name: 'Violin', category: 'String', isActive: true })
 
       render(<SettingsPage />)
+
+      // Navigate to Instruments section
+      await user.click(screen.getByRole('button', { name: /instruments/i }))
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /instruments/i })).toBeInTheDocument()
