@@ -67,7 +67,7 @@ public class StudentLedgerRepository : Repository<StudentLedgerEntry>, IStudentL
             .Include(e => e.Applications)
             .ToListAsync(cancellationToken);
 
-        return entries.Sum(e => e.Amount - e.Applications.Sum(a => a.AppliedAmount));
+        return entries.Sum((StudentLedgerEntry e) => e.Amount - e.Applications.Sum((StudentLedgerApplication a) => a.AppliedAmount));
     }
 
     public async Task<decimal> GetAvailableDebitAsync(Guid studentId, CancellationToken cancellationToken = default)
@@ -80,7 +80,7 @@ public class StudentLedgerRepository : Repository<StudentLedgerEntry>, IStudentL
             .Include(e => e.Applications)
             .ToListAsync(cancellationToken);
 
-            return entries.Sum<StudentLedgerEntry>(e => e.Amount - e.Applications.Sum(a => a.AppliedAmount));
+        return entries.Sum((StudentLedgerEntry e) => e.Amount - e.Applications.Sum((StudentLedgerApplication a) => a.AppliedAmount));
     }
 
     public async Task<string> GenerateCorrectionRefNameAsync(CancellationToken cancellationToken = default)

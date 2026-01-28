@@ -9,7 +9,7 @@ namespace BosDAT.Infrastructure.Audit;
 public class AuditEntry
 {
     public EntityEntry Entry { get; }
-    public string EntityName { get; set; } = string.Empty;
+    public string EntityName { get; set; } 
     public AuditAction Action { get; set; }
     public Dictionary<string, object?> OldValues { get; } = new();
     public Dictionary<string, object?> NewValues { get; } = new();

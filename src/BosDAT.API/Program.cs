@@ -59,11 +59,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Authorization policies
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("TeacherOrAdmin", policy => policy.RequireRole("Teacher", "Admin"));
-});
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"))
+    .AddPolicy("TeacherOrAdmin", policy => policy.RequireRole("Teacher", "Admin"));
 
 // Services
 builder.Services.AddHttpContextAccessor();

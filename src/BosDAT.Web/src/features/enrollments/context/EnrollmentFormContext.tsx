@@ -219,13 +219,6 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
         }
       }
 
-      // Rule 6: Discount types are mutually exclusive
-      const hasFamilyDiscount = students.some((s) => s.discountType === 'Family')
-      const hasCourseDiscount = students.some((s) => s.discountType === 'Course')
-      if (hasFamilyDiscount && hasCourseDiscount) {
-        errors.push('Family and course discounts cannot be combined in the same enrollment')
-      }
-
       return { isValid: errors.length === 0, errors }
     },
     [state.formData]

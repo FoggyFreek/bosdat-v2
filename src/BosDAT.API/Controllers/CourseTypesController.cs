@@ -34,9 +34,6 @@ public class CourseTypesController(
             query = query.Where(ct => ct.InstrumentId == instrumentId.Value);
         }
 
-        var courseRepo = unitOfWork.Repository<Course>();
-        var teacherCourseTypeRepo = unitOfWork.Repository<TeacherCourseType>();
-
         var courseTypes = await query
             .OrderBy(ct => ct.Instrument.Name)
             .ThenBy(ct => ct.Name)
