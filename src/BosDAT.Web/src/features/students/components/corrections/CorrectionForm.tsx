@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Pencil, Calculator } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,30 +19,35 @@ import { PricingBreakdown } from './PricingBreakdown'
 
 type CalculationMethod = 'manual' | 'course-based'
 
+const VALID_ENTRY_TYPES = ['Credit', 'Debit'] as const
+function isLedgerEntryType(value: string): value is LedgerEntryType {
+  return VALID_ENTRY_TYPES.includes(value as LedgerEntryType)
+}
+
 interface CorrectionFormProps {
   // Form state
-  description: string
-  amount: string
-  entryType: LedgerEntryType
-  calculationMethod: CalculationMethod
-  selectedCourseId: string
-  numberOfOccurrences: string
+  readonly description: string
+  readonly amount: string
+  readonly entryType: LedgerEntryType
+  readonly calculationMethod: CalculationMethod
+  readonly selectedCourseId: string
+  readonly numberOfOccurrences: string
   // Data
-  activeEnrollments: StudentEnrollment[]
-  enrollmentPricing?: EnrollmentPricing
-  calculatedAmount: number
-  isPricingLoading: boolean
-  isSubmitting: boolean
+  readonly activeEnrollments: readonly StudentEnrollment[]
+  readonly enrollmentPricing?: Readonly<EnrollmentPricing>
+  readonly calculatedAmount: number
+  readonly isPricingLoading: boolean
+  readonly isSubmitting: boolean
   // Handlers
-  onDescriptionChange: (value: string) => void
-  onAmountChange: (value: string) => void
-  onEntryTypeChange: (value: LedgerEntryType) => void
-  onCalculationMethodChange: (method: CalculationMethod) => void
-  onCourseChange: (courseId: string) => void
-  onOccurrencesChange: (value: string) => void
-  onSubmit: (e: React.FormEvent) => void
-  onCancel: () => void
-  isFormValid: boolean
+  readonly onDescriptionChange: (value: string) => void
+  readonly onAmountChange: (value: string) => void
+  readonly onEntryTypeChange: (value: LedgerEntryType) => void
+  readonly onCalculationMethodChange: (method: CalculationMethod) => void
+  readonly onCourseChange: (courseId: string) => void
+  readonly onOccurrencesChange: (value: string) => void
+  readonly onSubmit: (e: React.FormEvent) => void
+  readonly onCancel: () => void
+  readonly isFormValid: boolean
 }
 
 export function CorrectionForm({
@@ -112,11 +118,14 @@ export function CorrectionForm({
 }
 
 interface CalculationMethodToggleProps {
-  method: CalculationMethod
-  onChange: (method: CalculationMethod) => void
+  readonly method: CalculationMethod
+  readonly onChange: (method: CalculationMethod) => void
 }
 
-function CalculationMethodToggle({ method, onChange }: CalculationMethodToggleProps) {
+const CalculationMethodToggle = memo(function CalculationMethodToggle({
+  method,
+  onChange,
+}: CalculationMethodToggleProps) {
   return (
     <div className="space-y-2">
       <Label>Calculation Method</Label>
@@ -144,18 +153,18 @@ function CalculationMethodToggle({ method, onChange }: CalculationMethodTogglePr
       </div>
     </div>
   )
-}
+})
 
 interface ManualEntryFieldsProps {
-  description: string
-  amount: string
-  entryType: LedgerEntryType
-  onDescriptionChange: (value: string) => void
-  onAmountChange: (value: string) => void
-  onEntryTypeChange: (value: LedgerEntryType) => void
+  readonly description: string
+  readonly amount: string
+  readonly entryType: LedgerEntryType
+  readonly onDescriptionChange: (value: string) => void
+  readonly onAmountChange: (value: string) => void
+  readonly onEntryTypeChange: (value: LedgerEntryType) => void
 }
 
-function ManualEntryFields({
+const ManualEntryFields = memo(function ManualEntryFields({
   description,
   amount,
   entryType,
@@ -191,24 +200,24 @@ function ManualEntryFields({
       <EntryTypeSelect value={entryType} onChange={onEntryTypeChange} />
     </div>
   )
-}
+})
 
 interface CourseBasedFieldsProps {
-  description: string
-  entryType: LedgerEntryType
-  selectedCourseId: string
-  numberOfOccurrences: string
-  activeEnrollments: StudentEnrollment[]
-  enrollmentPricing?: EnrollmentPricing
-  calculatedAmount: number
-  isPricingLoading: boolean
-  onDescriptionChange: (value: string) => void
-  onEntryTypeChange: (value: LedgerEntryType) => void
-  onCourseChange: (courseId: string) => void
-  onOccurrencesChange: (value: string) => void
+  readonly description: string
+  readonly entryType: LedgerEntryType
+  readonly selectedCourseId: string
+  readonly numberOfOccurrences: string
+  readonly activeEnrollments: readonly StudentEnrollment[]
+  readonly enrollmentPricing?: Readonly<EnrollmentPricing>
+  readonly calculatedAmount: number
+  readonly isPricingLoading: boolean
+  readonly onDescriptionChange: (value: string) => void
+  readonly onEntryTypeChange: (value: LedgerEntryType) => void
+  readonly onCourseChange: (courseId: string) => void
+  readonly onOccurrencesChange: (value: string) => void
 }
 
-function CourseBasedFields({
+const CourseBasedFields = memo(function CourseBasedFields({
   description,
   entryType,
   selectedCourseId,
@@ -279,19 +288,29 @@ function CourseBasedFields({
       )}
     </div>
   )
-}
+})
 
 interface EntryTypeSelectProps {
-  value: LedgerEntryType
-  onChange: (value: LedgerEntryType) => void
-  id?: string
+  readonly value: LedgerEntryType
+  readonly onChange: (value: LedgerEntryType) => void
+  readonly id?: string
 }
 
-function EntryTypeSelect({ value, onChange, id = 'entryType' }: EntryTypeSelectProps) {
+const EntryTypeSelect = memo(function EntryTypeSelect({
+  value,
+  onChange,
+  id = 'entryType',
+}: EntryTypeSelectProps) {
+  const handleValueChange = (v: string) => {
+    if (isLedgerEntryType(v)) {
+      onChange(v)
+    }
+  }
+
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>Type</Label>
-      <Select value={value} onValueChange={(v) => onChange(v as LedgerEntryType)}>
+      <Select value={value} onValueChange={handleValueChange}>
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
@@ -302,16 +321,16 @@ function EntryTypeSelect({ value, onChange, id = 'entryType' }: EntryTypeSelectP
       </Select>
     </div>
   )
-}
+})
 
 interface PricingSectionProps {
-  isPricingLoading: boolean
-  enrollmentPricing?: EnrollmentPricing
-  numberOfOccurrences: string
-  calculatedAmount: number
+  readonly isPricingLoading: boolean
+  readonly enrollmentPricing?: Readonly<EnrollmentPricing>
+  readonly numberOfOccurrences: string
+  readonly calculatedAmount: number
 }
 
-function PricingSection({
+const PricingSection = memo(function PricingSection({
   isPricingLoading,
   enrollmentPricing,
   numberOfOccurrences,
@@ -342,4 +361,4 @@ function PricingSection({
       />
     </div>
   )
-}
+})
