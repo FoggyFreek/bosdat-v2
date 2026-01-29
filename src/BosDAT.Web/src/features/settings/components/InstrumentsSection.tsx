@@ -1,33 +1,31 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, X, Check } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { instrumentsApi } from '@/services/api'
 import { useFormDirty } from '@/context/FormDirtyContext'
-import { cn } from '@/lib/utils'
 import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
+import { InstrumentForm } from './InstrumentForm'
+import { InstrumentListItem } from './InstrumentListItem'
 
-const categories: readonly InstrumentCategory[] = ['String', 'Percussion', 'Vocal', 'Keyboard', 'Wind', 'Brass', 'Electronic', 'Other'] as const
+interface InstrumentFormData {
+  name: string
+  category: InstrumentCategory
+  isActive: boolean
+}
 
-function isInstrumentCategory(value: string): value is InstrumentCategory {
-  return categories.includes(value as InstrumentCategory)
+const initialFormData: InstrumentFormData = {
+  name: '',
+  category: 'Other',
+  isActive: true,
 }
 
 export function InstrumentsSection() {
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
-  const [formData, setFormData] = useState<{ name: string; category: InstrumentCategory; isActive: boolean }>({ name: '', category: 'Other', isActive: true })
+  const [formData, setFormData] = useState<InstrumentFormData>(initialFormData)
   const { setIsDirty } = useFormDirty()
 
   const { data: instruments = [], isLoading } = useQuery<Instrument[]>({
@@ -40,7 +38,7 @@ export function InstrumentsSection() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instruments'] })
       setShowAdd(false)
-      setFormData({ name: '', category: 'Other', isActive: true })
+      setFormData(initialFormData)
       setIsDirty(false)
     },
   })
@@ -62,19 +60,34 @@ export function InstrumentsSection() {
 
   const handleCancelAdd = () => {
     setShowAdd(false)
-    setFormData({ name: '', category: 'Other', isActive: true })
+    setFormData(initialFormData)
     setIsDirty(false)
   }
 
   const handleStartEdit = (instrument: Instrument) => {
     setEditId(instrument.id)
-    setFormData({ name: instrument.name, category: instrument.category, isActive: instrument.isActive })
+    setFormData({
+      name: instrument.name,
+      category: instrument.category,
+      isActive: instrument.isActive,
+    })
     setIsDirty(true)
   }
 
   const handleCancelEdit = () => {
     setEditId(null)
+    setFormData(initialFormData)
     setIsDirty(false)
+  }
+
+  const handleCreateSubmit = () => {
+    createMutation.mutate(formData)
+  }
+
+  const handleUpdateSubmit = () => {
+    if (editId !== null) {
+      updateMutation.mutate({ id: editId, data: formData })
+    }
   }
 
   return (
@@ -91,36 +104,14 @@ export function InstrumentsSection() {
       </CardHeader>
       <CardContent>
         {showAdd && (
-          <div className="flex gap-2 mb-4 p-4 bg-muted/50 rounded-lg">
-            <Input
-              placeholder="Instrument name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="flex-1"
+          <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+            <InstrumentForm
+              formData={formData}
+              isPending={createMutation.isPending}
+              onCancel={handleCancelAdd}
+              onFormDataChange={setFormData}
+              onSubmit={handleCreateSubmit}
             />
-            <Select
-              value={formData.category}
-              onValueChange={(value) => {
-                if (isInstrumentCategory(value)) {
-                  setFormData({ ...formData, category: value })
-                }
-              }}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => createMutation.mutate(formData)} disabled={!formData.name || createMutation.isPending}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" onClick={handleCancelAdd}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         )}
 
@@ -137,67 +128,17 @@ export function InstrumentsSection() {
         {!isLoading && instruments.length > 0 && (
           <div className="divide-y">
             {instruments.map((instrument) => (
-              <div key={instrument.id} className="flex items-center justify-between py-2">
-                {editId === instrument.id ? (
-                  <div className="flex gap-2 flex-1">
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="flex-1"
-                    />
-                    <Checkbox
-                      checked={formData.isActive}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked === true })}
-                      className="h-4 w-4 shrink-0"
-                    />
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) => {
-                        if (isInstrumentCategory(value)) {
-                          setFormData({ ...formData, category: value })
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button size="icon" onClick={() => updateMutation.mutate({ id: instrument.id, data: formData })}>
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={handleCancelEdit}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <p className="font-medium">{instrument.name}</p>
-                      <p className="text-sm text-muted-foreground">{instrument.category}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
-                        instrument.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      )}>
-                        {instrument.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleStartEdit(instrument)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
+              <InstrumentListItem
+                key={instrument.id}
+                formData={formData}
+                instrument={instrument}
+                isEditing={editId === instrument.id}
+                isPending={updateMutation.isPending}
+                onCancelEdit={handleCancelEdit}
+                onEdit={handleStartEdit}
+                onFormDataChange={setFormData}
+                onUpdate={handleUpdateSubmit}
+              />
             ))}
           </div>
         )}

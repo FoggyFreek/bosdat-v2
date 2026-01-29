@@ -14,6 +14,9 @@ import { StepPlaceholder } from './StepPlaceholder'
 import { courseTypesApi } from '@/services/api'
 import type { CourseType } from '@/features/course-types/types'
 
+const DISPLAY_NAME = 'EnrollmentStepper'
+const CONTENT_DISPLAY_NAME = 'EnrollmentStepperContent'
+
 const STEPS: StepConfig[] = [
   { title: 'Lesson Details', description: 'Configure course and schedule' },
   { title: 'Students', description: 'Select students to enroll' },
@@ -21,10 +24,20 @@ const STEPS: StepConfig[] = [
   { title: 'Confirmation', description: 'Review and confirm' },
 ]
 
-const EnrollmentStepperContent = () => {
-  const { currentStep, setCurrentStep, isStep1Valid, isStep2Valid, isStep3Valid, formData } = useEnrollmentForm()
+const getNextButtonLabel = (currentStep: number, totalSteps: number) => {
+  return currentStep === totalSteps - 1 ? 'Submit' : 'Next'
+}
 
-  // Fetch course types for validation
+const EnrollmentStepperContent = () => {
+  const {
+    currentStep,
+    setCurrentStep,
+    isStep1Valid,
+    isStep2Valid,
+    isStep3Valid,
+    formData,
+  } = useEnrollmentForm()
+
   const { data: courseTypes = [] } = useQuery<CourseType[]>({
     queryKey: ['courseTypes', 'active'],
     queryFn: () => courseTypesApi.getAll({ activeOnly: true }),
@@ -34,6 +47,27 @@ const EnrollmentStepperContent = () => {
     () => courseTypes.find((ct) => ct.id === formData.step1.courseTypeId),
     [courseTypes, formData.step1.courseTypeId]
   )
+
+  const isNextButtonDisabled = useMemo(() => {
+    if (currentStep === 0) {
+      return !isStep1Valid()
+    }
+    if (currentStep === 1) {
+      if (!selectedCourseType) return true
+      const validationResult = isStep2Valid(
+        selectedCourseType.type,
+        selectedCourseType.maxStudents
+      )
+      return !validationResult.isValid
+    }
+    if (currentStep === 2) {
+      const validationResult = isStep3Valid()
+      return !validationResult.isValid
+    }
+    return false
+  }, [currentStep, isStep1Valid, isStep2Valid, isStep3Valid, selectedCourseType])
+
+  const isLastStep = currentStep === STEPS.length - 1
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -51,78 +85,94 @@ const EnrollmentStepperContent = () => {
     setCurrentStep(step)
   }
 
-  const isNextDisabled = () => {
-    if (currentStep === 0) {
-      return !isStep1Valid()
-    }
-    if (currentStep === 1) {
-      if (!selectedCourseType) return true
-      const validationResult = isStep2Valid(
-        selectedCourseType.type,
-        selectedCourseType.maxStudents
-      )
-      return !validationResult.isValid
-    }
-    if (currentStep === 2) {
-      const validationResult = isStep3Valid()
-      return !validationResult.isValid
-    }
-    return false
+  const renderStep1 = () => <Step1LessonDetails />
+
+  const renderStep2 = () => <Step2StudentSelection />
+
+  const renderStep3 = () => {
+    if (!selectedCourseType) return null
+    return (
+      <Step3CalendarSlotSelection
+        durationMinutes={selectedCourseType.durationMinutes}
+        teacherId={formData.step1.teacherId!}
+      />
+    )
   }
+
+  const renderStep4 = () => <StepPlaceholder title="Confirmation" />
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <Step1LessonDetails />
+        return renderStep1()
       case 1:
-        return <Step2StudentSelection />
+        return renderStep2()
       case 2:
-        return selectedCourseType ? (
-          <Step3CalendarSlotSelection
-            teacherId={formData.step1.teacherId!}
-            durationMinutes={selectedCourseType.durationMinutes}
-          />
-        ) : null
+        return renderStep3()
       case 3:
-        return <StepPlaceholder title="Confirmation" />
+        return renderStep4()
       default:
         return null
     }
   }
 
+  const renderHeader = () => (
+    <CardHeader>
+      <CardTitle>New Enrollment</CardTitle>
+    </CardHeader>
+  )
+
+  const renderStepper = () => (
+    <Stepper
+      currentStep={currentStep}
+      onStepChange={handleStepClick}
+      steps={STEPS}
+    />
+  )
+
+  const renderStepContainer = () => (
+    <div className="min-h-[300px]">{renderStepContent()}</div>
+  )
+
+  const renderPreviousButton = () => (
+    <Button
+      disabled={currentStep === 0}
+      onClick={handlePrevious}
+      variant="outline"
+    >
+      Previous
+    </Button>
+  )
+
+  const renderNextButton = () => (
+    <Button
+      disabled={isNextButtonDisabled || isLastStep}
+      onClick={handleNext}
+    >
+      {getNextButtonLabel(currentStep, STEPS.length)}
+    </Button>
+  )
+
+  const renderNavigationButtons = () => (
+    <div className="flex justify-between pt-4 border-t">
+      {renderPreviousButton()}
+      {renderNextButton()}
+    </div>
+  )
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>New Enrollment</CardTitle>
-      </CardHeader>
+      {renderHeader()}
       <CardContent className="space-y-8">
-        <Stepper
-          steps={STEPS}
-          currentStep={currentStep}
-          onStepChange={handleStepClick}
-        />
-
-        <div className="min-h-[300px]">{renderStepContent()}</div>
-
-        <div className="flex justify-between pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-          >
-            Previous
-          </Button>
-          <Button
-            onClick={handleNext}
-            disabled={isNextDisabled() || currentStep === STEPS.length - 1}
-          >
-            {currentStep === STEPS.length - 1 ? 'Submit' : 'Next'}
-          </Button>
-        </div>
+        {renderStepper()}
+        {renderStepContainer()}
+        {renderNavigationButtons()}
       </CardContent>
     </Card>
   )
 }
+
+EnrollmentStepperContent.displayName = CONTENT_DISPLAY_NAME
 
 export const EnrollmentStepper = () => {
   return (
@@ -131,3 +181,5 @@ export const EnrollmentStepper = () => {
     </EnrollmentFormProvider>
   )
 }
+
+EnrollmentStepper.displayName = DISPLAY_NAME

@@ -80,7 +80,7 @@ export const CalendarDayGrid = ({
         containerRef.current.scrollTop = Math.max(0, scrollPosition)
       }
     }
-  }, []) // Empty dependency array - only run on mount
+  }, [timeSlots]) // Empty dependency array - only run on mount
 
   const handleTimeSelect = (time: string) => {
     const item = getItemAtTime(time, items)

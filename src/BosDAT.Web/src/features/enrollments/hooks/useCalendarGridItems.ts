@@ -28,7 +28,7 @@ const determineCourseType = (
  * Transform API data (lessons and courses) into calendar grid items
  */
 export const useCalendarGridItems = ({
-  date,
+  
   lessons,
   courses,
   isTrial,
@@ -78,5 +78,5 @@ export const useCalendarGridItems = ({
 
     // Sort by start time
     return items.toSorted((a, b) => a.startTime.localeCompare(b.startTime))
-  }, [date, lessons, courses, isTrial])
+  }, [lessons, courses, isTrial])
 }

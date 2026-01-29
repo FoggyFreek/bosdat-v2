@@ -1,0 +1,80 @@
+import { Button } from '@/components/ui/button'
+import { Pencil } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
+import { InstrumentForm } from './InstrumentForm'
+
+interface InstrumentFormData {
+  name: string
+  category: InstrumentCategory
+  isActive: boolean
+}
+
+interface InstrumentListItemProps {
+  instrument: Instrument
+  isEditing: boolean
+  formData: InstrumentFormData
+  isPending?: boolean
+  onEdit: (instrument: Instrument) => void
+  onFormDataChange: (data: InstrumentFormData) => void
+  onUpdate: () => void
+  onCancelEdit: () => void
+}
+
+const getStatusBadgeClassName = (isActive: boolean): string => {
+  return cn(
+    'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
+    isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+  )
+}
+
+const getStatusLabel = (isActive: boolean): string => {
+  return isActive ? 'Active' : 'Inactive'
+}
+
+export function InstrumentListItem({
+  instrument,
+  isEditing,
+  formData,
+  isPending = false,
+  onEdit,
+  onFormDataChange,
+  onUpdate,
+  onCancelEdit,
+}: InstrumentListItemProps) {
+  if (isEditing) {
+    return (
+      <div className="flex items-center py-2">
+        <InstrumentForm
+          formData={formData}
+          isEdit
+          isPending={isPending}
+          onCancel={onCancelEdit}
+          onFormDataChange={onFormDataChange}
+          onSubmit={onUpdate}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center justify-between py-2">
+      <div>
+        <p className="font-medium">{instrument.name}</p>
+        <p className="text-sm text-muted-foreground">{instrument.category}</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className={getStatusBadgeClassName(instrument.isActive)}>
+          {getStatusLabel(instrument.isActive)}
+        </span>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => onEdit(instrument)}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
