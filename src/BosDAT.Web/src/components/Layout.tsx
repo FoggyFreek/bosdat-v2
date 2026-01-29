@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 
 interface LayoutProps {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 const navigation = [

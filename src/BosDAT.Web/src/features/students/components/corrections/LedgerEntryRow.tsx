@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/utils'
@@ -5,11 +6,14 @@ import type { StudentLedgerEntry } from '@/features/students/types'
 import { EntryTypeBadge, StatusBadge, EntryAmount } from './EntryBadges'
 
 interface LedgerEntryRowProps {
-  entry: StudentLedgerEntry
-  onReverse: (entryId: string) => void
+  readonly entry: Readonly<StudentLedgerEntry>
+  readonly onReverse: (entryId: string) => void
 }
 
-export function LedgerEntryRow({ entry, onReverse }: LedgerEntryRowProps) {
+export const LedgerEntryRow = memo(function LedgerEntryRow({
+  entry,
+  onReverse,
+}: LedgerEntryRowProps) {
   const showRemainingAmount = entry.remainingAmount !== entry.amount
   const canReverse = entry.status === 'Open'
 
@@ -51,4 +55,4 @@ export function LedgerEntryRow({ entry, onReverse }: LedgerEntryRowProps) {
       </div>
     </div>
   )
-}
+})

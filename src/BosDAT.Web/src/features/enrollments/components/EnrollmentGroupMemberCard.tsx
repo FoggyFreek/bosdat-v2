@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,22 +14,22 @@ import { Badge } from '@/components/ui/badge'
 import type { EnrollmentGroupMember, DiscountType } from '../types'
 
 interface EnrollmentGroupMemberCardProps {
-  member: EnrollmentGroupMember
-  courseStartDate: string
-  familyDiscountPercent: number
-  courseDiscountPercent: number
-  onUpdate: (updates: Partial<EnrollmentGroupMember>) => void
-  onRemove: () => void
+  readonly member: Readonly<EnrollmentGroupMember>
+  readonly courseStartDate: string
+  readonly familyDiscountPercent: number
+  readonly courseDiscountPercent: number
+  readonly onUpdate: (updates: Partial<EnrollmentGroupMember>) => void
+  readonly onRemove: () => void
 }
 
-export const EnrollmentGroupMemberCard = ({
+export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard({
   member,
   courseStartDate,
   familyDiscountPercent,
   courseDiscountPercent,
   onUpdate,
   onRemove,
-}: EnrollmentGroupMemberCardProps) => {
+}: EnrollmentGroupMemberCardProps) {
   const handleDiscountTypeChange = (value: DiscountType) => {
     let discountPercentage = 0
     if (value === 'Family') {
@@ -147,4 +148,4 @@ export const EnrollmentGroupMemberCard = ({
       </div>
     </div>
   )
-}
+})

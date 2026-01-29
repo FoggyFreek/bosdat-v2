@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { CourseTypePricingVersion } from '@/features/course-types/types'
 
 interface PricingHistoryCollapsibleProps {
-  pricingHistory: CourseTypePricingVersion[]
+  readonly pricingHistory: readonly CourseTypePricingVersion[]
 }
 
 const formatCurrency = (value: number): string => {
@@ -24,7 +24,9 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-export const PricingHistoryCollapsible = ({ pricingHistory }: PricingHistoryCollapsibleProps) => {
+export const PricingHistoryCollapsible = memo(function PricingHistoryCollapsible({
+  pricingHistory,
+}: PricingHistoryCollapsibleProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   if (pricingHistory.length <= 1) {
@@ -71,4 +73,4 @@ export const PricingHistoryCollapsible = ({ pricingHistory }: PricingHistoryColl
       </CollapsibleContent>
     </Collapsible>
   )
-}
+})

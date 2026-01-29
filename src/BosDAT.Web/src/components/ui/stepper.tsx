@@ -1,18 +1,19 @@
+import { memo } from 'react'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface StepConfig {
-  title: string
-  description?: string
+  readonly title: string
+  readonly description?: string
 }
 
 interface StepperProps {
-  steps: StepConfig[]
-  currentStep: number
-  onStepChange: (step: number) => void
+  readonly steps: readonly StepConfig[]
+  readonly currentStep: number
+  readonly onStepChange: (step: number) => void
 }
 
-export const Stepper = ({ steps, currentStep, onStepChange }: StepperProps) => {
+export const Stepper = memo(function Stepper({ steps, currentStep, onStepChange }: StepperProps) {
   const handleStepClick = (stepIndex: number) => {
     if (stepIndex <= currentStep) {
       onStepChange(stepIndex)
@@ -85,4 +86,4 @@ export const Stepper = ({ steps, currentStep, onStepChange }: StepperProps) => {
       </ol>
     </nav>
   )
-}
+})

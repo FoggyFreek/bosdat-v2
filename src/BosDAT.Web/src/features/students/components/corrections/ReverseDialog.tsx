@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,15 +12,15 @@ import {
 } from '@/components/ui/dialog'
 
 interface ReverseDialogProps {
-  open: boolean
-  reason: string
-  isPending: boolean
-  onOpenChange: (open: boolean) => void
-  onReasonChange: (reason: string) => void
-  onConfirm: () => void
+  readonly open: boolean
+  readonly reason: string
+  readonly isPending: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly onReasonChange: (reason: string) => void
+  readonly onConfirm: () => void
 }
 
-export function ReverseDialog({
+export const ReverseDialog = memo(function ReverseDialog({
   open,
   reason,
   isPending,
@@ -60,4 +61,4 @@ export function ReverseDialog({
       </DialogContent>
     </Dialog>
   )
-}
+})

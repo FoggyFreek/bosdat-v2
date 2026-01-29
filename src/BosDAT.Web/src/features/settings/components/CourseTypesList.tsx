@@ -1,17 +1,18 @@
+import { memo } from 'react'
 import { CourseTypeListItem } from './CourseTypeListItem'
 import type { CourseType } from '@/features/course-types/types'
 
 export interface CourseTypesListProps {
-  courseTypes: CourseType[]
-  isLoading: boolean
-  onEdit: (courseType: CourseType) => void
-  onArchive: (id: string) => void
-  onReactivate: (id: string) => void
-  isArchiving: boolean
-  isReactivating: boolean
+  readonly courseTypes: readonly CourseType[]
+  readonly isLoading: boolean
+  readonly onEdit: (courseType: CourseType) => void
+  readonly onArchive: (id: string) => void
+  readonly onReactivate: (id: string) => void
+  readonly isArchiving: boolean
+  readonly isReactivating: boolean
 }
 
-export const CourseTypesList = ({
+export const CourseTypesList = memo(function CourseTypesList({
   courseTypes,
   isLoading,
   onEdit,
@@ -19,7 +20,7 @@ export const CourseTypesList = ({
   onReactivate,
   isArchiving,
   isReactivating,
-}: CourseTypesListProps) => {
+}: CourseTypesListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -47,4 +48,4 @@ export const CourseTypesList = ({
       ))}
     </div>
   )
-}
+})

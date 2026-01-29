@@ -3,10 +3,10 @@ import { EnrollmentGroupMemberCard } from './EnrollmentGroupMemberCard'
 import type { EnrollmentGroupMember } from '../types'
 
 interface EnrollmentGroupPanelProps {
-  courseStartDate: string
-  familyDiscountPercent: number
-  courseDiscountPercent: number
-  maxStudents: number
+  readonly courseStartDate: string
+  readonly familyDiscountPercent: number
+  readonly courseDiscountPercent: number
+  readonly maxStudents: number
 }
 
 export const EnrollmentGroupPanel = ({
