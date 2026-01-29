@@ -3,6 +3,7 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
+using BosDAT.Infrastructure.Utilities;
 
 namespace BosDAT.Infrastructure.Services;
 
@@ -12,8 +13,6 @@ public class RegistrationFeeService(
     IUnitOfWork unitOfWork,
     ICurrentUserService currentUserService) : IRegistrationFeeService
 {
-    private const int MaxRetries = 3;
-
     public async Task<bool> IsStudentEligibleForFeeAsync(Guid studentId, CancellationToken ct = default)
     {
         var student = await context.Students
@@ -61,7 +60,7 @@ public class RegistrationFeeService(
         var feeAmount = await GetFeeAmountAsync(ct);
         var feeDescription = await GetFeeDescriptionAsync(ct);
 
-        return await ExecuteWithRetryAsync(async () =>
+        return await DbOperationRetryHelper.ExecuteWithRetryAsync(async () =>
         {
             await unitOfWork.BeginTransactionAsync(ct);
             try
@@ -158,28 +157,5 @@ public class RegistrationFeeService(
             .FirstOrDefaultAsync(s => s.Key == "registration_fee_description", ct);
 
         return setting?.Value ?? "Eenmalig inschrijfgeld";
-    }
-
-    private static async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> operation, CancellationToken ct)
-    {
-        for (int attempt = 1; attempt <= MaxRetries; attempt++)
-        {
-            try
-            {
-                return await operation();
-            }
-            catch (DbUpdateException ex) when (attempt < MaxRetries && IsDuplicateKeyException(ex))
-            {
-                await Task.Delay(50 * attempt, ct);
-            }
-        }
-
-        return await operation();
-    }
-
-    private static bool IsDuplicateKeyException(DbUpdateException ex)
-    {
-        return ex.InnerException?.Message.Contains("duplicate key") == true ||
-               ex.InnerException?.Message.Contains("unique constraint") == true;
     }
 }

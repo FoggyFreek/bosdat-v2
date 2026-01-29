@@ -3,6 +3,7 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
+using BosDAT.Infrastructure.Utilities;
 
 namespace BosDAT.Infrastructure.Services;
 
@@ -12,7 +13,6 @@ public class StudentLedgerService(
     IUnitOfWork unitOfWork) : IStudentLedgerService
 {
     private const int MaxDescriptionLength = 500;
-    private const int MaxRetries = 3;
     private const string UnknownUserName = "Unknown";
 
     public async Task<StudentLedgerEntryDto> CreateEntryAsync(CreateStudentLedgerEntryDto dto, Guid userId, CancellationToken ct = default)
@@ -45,7 +45,7 @@ public class StudentLedgerService(
             }
         }
 
-        return await ExecuteWithRetryAsync(async () =>
+        return await DbOperationRetryHelper.ExecuteWithRetryAsync(async () =>
         {
             await unitOfWork.BeginTransactionAsync(ct);
             try
@@ -117,7 +117,7 @@ public class StudentLedgerService(
         }
 
         // CRITICAL-1: Use transaction with retry logic
-        return await ExecuteWithRetryAsync(async () =>
+        return await DbOperationRetryHelper.ExecuteWithRetryAsync(async () =>
         {
             await unitOfWork.BeginTransactionAsync(ct);
             try
@@ -349,34 +349,6 @@ public class StudentLedgerService(
     public async Task<string> GenerateCorrectionRefNameAsync(CancellationToken ct = default)
     {
         return await ledgerRepository.GenerateCorrectionRefNameAsync(ct);
-    }
-
-    /// <summary>
-    /// Executes an operation with retry logic for handling duplicate key exceptions.
-    /// </summary>
-    private static async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> operation, CancellationToken ct)
-    {
-        for (int attempt = 1; attempt <= MaxRetries; attempt++)
-        {
-            try
-            {
-                return await operation();
-            }
-            catch (DbUpdateException ex) when (attempt < MaxRetries && IsDuplicateKeyException(ex))
-            {
-                // Wait briefly before retry to allow other transaction to complete
-                await Task.Delay(50 * attempt, ct);
-            }
-        }
-
-        return await operation(); // Final attempt, let exception propagate
-    }
-
-    private static bool IsDuplicateKeyException(DbUpdateException ex)
-    {
-        // PostgreSQL duplicate key violation
-        return ex.InnerException?.Message.Contains("duplicate key") == true ||
-               ex.InnerException?.Message.Contains("unique constraint") == true;
     }
 
     private async Task<StudentLedgerEntryDto> LoadEntryAndMapToDtoAsync(Guid entryId, CancellationToken ct)
