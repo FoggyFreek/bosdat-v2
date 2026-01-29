@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { EnrollmentStepper } from '../EnrollmentStepper'
 import { courseTypesApi, teachersApi, settingsApi, studentsApi } from '@/services/api'
 import type { CourseType } from '@/features/course-types/types'
-import type { TeacherList } from '@/features/teachers/types'
+import type { TeacherList, Teacher } from '@/features/teachers/types'
 
 vi.mock('@/services/api', () => ({
   courseTypesApi: {
@@ -12,6 +12,7 @@ vi.mock('@/services/api', () => ({
   },
   teachersApi: {
     getAll: vi.fn(),
+    getById: vi.fn(),
   },
   settingsApi: {
     getByKey: vi.fn(),
@@ -52,6 +53,22 @@ const mockTeachers: TeacherList[] = [
   },
 ]
 
+const mockTeacher: Teacher = {
+  id: 't-1',
+  firstName: 'John',
+  lastName: 'Smith',
+  fullName: 'John Smith',
+  email: 'john@example.com',
+  phone: '',
+  hourlyRate: 50,
+  isActive: true,
+  role: 'Teacher',
+  instruments: [{ id: 1, name: 'Piano', category: 'Keyboard', isActive: true }],
+  courseTypes: [{ id: 'ct-1', name: 'Piano Individual', instrumentId: 1, instrumentName: 'Piano', durationMinutes: 30, type: 'Individual' }],
+  createdAt: '2024-01-01',
+  updatedAt: '2024-01-01',
+}
+
 describe('EnrollmentStepper', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -77,6 +94,7 @@ describe('EnrollmentStepper', () => {
       }
       return Promise.resolve(mockTeachers)
     })
+    vi.mocked(teachersApi.getById).mockResolvedValue(mockTeacher)
   })
 
   it('renders stepper with 4 steps', async () => {
@@ -85,7 +103,7 @@ describe('EnrollmentStepper', () => {
     await waitFor(() => {
       expect(screen.getByText('Lesson Details')).toBeInTheDocument()
       expect(screen.getByText('Students')).toBeInTheDocument()
-      expect(screen.getByText('Pricing')).toBeInTheDocument()
+      expect(screen.getByText('Time Slot')).toBeInTheDocument()
       expect(screen.getByText('Confirmation')).toBeInTheDocument()
     })
   })

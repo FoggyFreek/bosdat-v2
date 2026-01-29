@@ -57,7 +57,13 @@ const renderWithProviders = ({ route = '/students/new', path = '/students/new' }
   const queryClient = createQueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[route]}>
+      <MemoryRouter
+        initialEntries={[route]}
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Routes>
           <Route path={path} element={<StudentFormPage />} />
           <Route path="/students/:id" element={<div>Student Detail Page</div>} />

@@ -20,7 +20,7 @@ export interface Step1LessonDetailsData {
 export interface EnrollmentFormData {
   step1: Step1LessonDetailsData
   step2: Step2StudentSelectionData
-  step3: Record<string, unknown>
+  step3: Step3CalendarSlotSelectionData
   step4: Record<string, unknown>
 }
 
@@ -53,10 +53,47 @@ export const initialStep2Data: Step2StudentSelectionData = {
   students: [],
 }
 
+// Step 3: Calendar Slot Selection Types
+
+export interface Step3CalendarSlotSelectionData {
+  selectedRoomId: number | null
+  selectedDayOfWeek: number | null  // 0-6
+  selectedDate: string | null       // ISO date
+  selectedStartTime: string | null  // HH:mm
+  selectedEndTime: string | null    // HH:mm
+}
+
+export interface Step3ValidationResult {
+  isValid: boolean
+  errors: string[]
+}
+
+export interface CalendarGridItem {
+  id: string
+  type: 'course' | 'lesson'
+  courseType: 'Individual' | 'Group' | 'Workshop' | 'Trail'
+  title: string
+  startTime: string
+  endTime: string
+  teacherName: string
+  studentNames: string[]
+  frequency?: 'Weekly' | 'Biweekly' | 'Trail'
+  isFuture: boolean
+  roomId?: number
+}
+
+export const initialStep3Data: Step3CalendarSlotSelectionData = {
+  selectedRoomId: null,
+  selectedDayOfWeek: null,
+  selectedDate: null,
+  selectedStartTime: null,
+  selectedEndTime: null,
+}
+
 export const initialEnrollmentFormData: EnrollmentFormData = {
   step1: initialStep1Data,
   step2: initialStep2Data,
-  step3: {},
+  step3: initialStep3Data,
   step4: {},
 }
 

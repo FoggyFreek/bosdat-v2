@@ -374,4 +374,183 @@ describe('EnrollmentFormContext', () => {
       expect(result.current.formData.step2.students).toHaveLength(0)
     })
   })
+
+  // Step 3 Tests
+  describe('Step 3: Calendar Slot Selection', () => {
+    describe('UPDATE_STEP3 action', () => {
+      it('should update step3 data immutably', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        const step3Data = {
+          selectedRoomId: 1,
+          selectedDayOfWeek: 1,
+          selectedDate: '2024-03-18',
+          selectedStartTime: '14:00',
+          selectedEndTime: '15:00',
+        }
+
+        act(() => {
+          result.current.updateStep3(step3Data)
+        })
+
+        expect(result.current.formData.step3).toEqual(step3Data)
+      })
+
+      it('should partially update step3 data', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep3({
+            selectedRoomId: 1,
+            selectedDayOfWeek: 1,
+          })
+        })
+
+        expect(result.current.formData.step3).toEqual({
+          selectedRoomId: 1,
+          selectedDayOfWeek: 1,
+          selectedDate: null,
+          selectedStartTime: null,
+          selectedEndTime: null,
+        })
+
+        act(() => {
+          result.current.updateStep3({
+            selectedDate: '2024-03-18',
+            selectedStartTime: '14:00',
+          })
+        })
+
+        expect(result.current.formData.step3).toEqual({
+          selectedRoomId: 1,
+          selectedDayOfWeek: 1,
+          selectedDate: '2024-03-18',
+          selectedStartTime: '14:00',
+          selectedEndTime: null,
+        })
+      })
+
+      it('should maintain immutability when updating step3', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        const initialFormData = result.current.formData
+        const initialStep3 = result.current.formData.step3
+
+        act(() => {
+          result.current.updateStep3({ selectedRoomId: 1 })
+        })
+
+        expect(result.current.formData).not.toBe(initialFormData)
+        expect(result.current.formData.step3).not.toBe(initialStep3)
+      })
+    })
+
+    describe('isStep3Valid', () => {
+      it('should return invalid when no data is set', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        const validation = result.current.isStep3Valid()
+
+        expect(validation.isValid).toBe(false)
+        expect(validation.errors).toContain('Room must be selected')
+        expect(validation.errors).toContain('Date must be selected')
+        expect(validation.errors).toContain('Start time must be selected')
+      })
+
+      it('should return invalid when only room is selected', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep3({ selectedRoomId: 1 })
+        })
+
+        const validation = result.current.isStep3Valid()
+
+        expect(validation.isValid).toBe(false)
+        expect(validation.errors).not.toContain('Room must be selected')
+        expect(validation.errors).toContain('Date must be selected')
+        expect(validation.errors).toContain('Start time must be selected')
+      })
+
+      it('should return invalid when room and date are selected but no time', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep3({
+            selectedRoomId: 1,
+            selectedDate: '2024-03-18',
+          })
+        })
+
+        const validation = result.current.isStep3Valid()
+
+        expect(validation.isValid).toBe(false)
+        expect(validation.errors).not.toContain('Room must be selected')
+        expect(validation.errors).not.toContain('Date must be selected')
+        expect(validation.errors).toContain('Start time must be selected')
+      })
+
+      it('should return valid when all required fields are set', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep3({
+            selectedRoomId: 1,
+            selectedDate: '2024-03-18',
+            selectedStartTime: '14:00',
+          })
+        })
+
+        const validation = result.current.isStep3Valid()
+
+        expect(validation.isValid).toBe(true)
+        expect(validation.errors).toEqual([])
+      })
+
+      it('should accept endTime as optional', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep3({
+            selectedRoomId: 1,
+            selectedDate: '2024-03-18',
+            selectedStartTime: '14:00',
+            selectedEndTime: '15:00',
+          })
+        })
+
+        const validation = result.current.isStep3Valid()
+
+        expect(validation.isValid).toBe(true)
+        expect(validation.errors).toEqual([])
+      })
+    })
+
+    describe('updateStep3 method', () => {
+      it('should be available in context', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        expect(result.current.updateStep3).toBeDefined()
+        expect(typeof result.current.updateStep3).toBe('function')
+      })
+
+      it('should update only provided fields', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep3({
+            selectedRoomId: 1,
+            selectedDayOfWeek: 2,
+            selectedDate: '2024-03-19',
+          })
+        })
+
+        expect(result.current.formData.step3.selectedRoomId).toBe(1)
+        expect(result.current.formData.step3.selectedDayOfWeek).toBe(2)
+        expect(result.current.formData.step3.selectedDate).toBe('2024-03-19')
+        expect(result.current.formData.step3.selectedStartTime).toBe(null)
+        expect(result.current.formData.step3.selectedEndTime).toBe(null)
+      })
+    })
+  })
 })

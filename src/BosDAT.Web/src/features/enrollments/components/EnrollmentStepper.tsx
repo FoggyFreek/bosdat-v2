@@ -9,6 +9,7 @@ import {
 } from '../context/EnrollmentFormContext'
 import { Step1LessonDetails } from './Step1LessonDetails'
 import { Step2StudentSelection } from './Step2StudentSelection'
+import { Step3CalendarSlotSelection } from './Step3CalendarSlotSelection'
 import { StepPlaceholder } from './StepPlaceholder'
 import { courseTypesApi } from '@/services/api'
 import type { CourseType } from '@/features/course-types/types'
@@ -16,12 +17,12 @@ import type { CourseType } from '@/features/course-types/types'
 const STEPS: StepConfig[] = [
   { title: 'Lesson Details', description: 'Configure course and schedule' },
   { title: 'Students', description: 'Select students to enroll' },
-  { title: 'Pricing', description: 'Review pricing details' },
+  { title: 'Time Slot', description: 'Choose day and time' },
   { title: 'Confirmation', description: 'Review and confirm' },
 ]
 
 const EnrollmentStepperContent = () => {
-  const { currentStep, setCurrentStep, isStep1Valid, isStep2Valid, formData } = useEnrollmentForm()
+  const { currentStep, setCurrentStep, isStep1Valid, isStep2Valid, isStep3Valid, formData } = useEnrollmentForm()
 
   // Fetch course types for validation
   const { data: courseTypes = [] } = useQuery<CourseType[]>({
@@ -62,6 +63,10 @@ const EnrollmentStepperContent = () => {
       )
       return !validationResult.isValid
     }
+    if (currentStep === 2) {
+      const validationResult = isStep3Valid()
+      return !validationResult.isValid
+    }
     return false
   }
 
@@ -72,7 +77,12 @@ const EnrollmentStepperContent = () => {
       case 1:
         return <Step2StudentSelection />
       case 2:
-        return <StepPlaceholder title="Pricing" />
+        return selectedCourseType ? (
+          <Step3CalendarSlotSelection
+            teacherId={formData.step1.teacherId!}
+            durationMinutes={selectedCourseType.durationMinutes}
+          />
+        ) : null
       case 3:
         return <StepPlaceholder title="Confirmation" />
       default:

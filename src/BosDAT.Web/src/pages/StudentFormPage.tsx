@@ -51,12 +51,18 @@ export function StudentFormPage() {
 
   const handleSubmit = async (data: CreateStudent): Promise<{ id: string }> => {
     setError(undefined)
-    if (isEditMode) {
-      await updateMutation.mutateAsync(data)
-      return { id: id! }
-    } else {
-      const result = await createMutation.mutateAsync(data)
-      return result
+    try {
+      if (isEditMode) {
+        await updateMutation.mutateAsync(data)
+        return { id: id! }
+      } else {
+        const result = await createMutation.mutateAsync(data)
+        return result
+      }
+    } catch {
+      // Error is already handled by onError callback which sets error state
+      // Return empty id to prevent navigation in StudentForm
+      return { id: '' }
     }
   }
 

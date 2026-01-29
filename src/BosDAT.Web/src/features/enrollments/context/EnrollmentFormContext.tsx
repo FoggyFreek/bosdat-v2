@@ -3,6 +3,8 @@ import type {
   EnrollmentFormData,
   Step1LessonDetailsData,
   Step2StudentSelectionData,
+  Step3CalendarSlotSelectionData,
+  Step3ValidationResult,
   EnrollmentGroupMember,
 } from '../types'
 import {
@@ -13,6 +15,7 @@ import type { CourseTypeCategory } from '@/features/course-types/types'
 type Action =
   | { type: 'UPDATE_STEP1'; payload: Partial<Step1LessonDetailsData> }
   | { type: 'UPDATE_STEP2'; payload: Step2StudentSelectionData }
+  | { type: 'UPDATE_STEP3'; payload: Partial<Step3CalendarSlotSelectionData> }
   | { type: 'ADD_STUDENT'; payload: EnrollmentGroupMember }
   | { type: 'REMOVE_STUDENT'; payload: string }
   | { type: 'UPDATE_STUDENT'; payload: { studentId: string; updates: Partial<EnrollmentGroupMember> } }
@@ -51,6 +54,17 @@ const enrollmentFormReducer = (
         formData: {
           ...state.formData,
           step2: action.payload,
+        },
+      }
+    case 'UPDATE_STEP3':
+      return {
+        ...state,
+        formData: {
+          ...state.formData,
+          step3: {
+            ...state.formData.step3,
+            ...action.payload,
+          },
         },
       }
     case 'ADD_STUDENT':
@@ -114,6 +128,7 @@ interface EnrollmentFormContextType {
   currentStep: number
   updateStep1: (data: Partial<Step1LessonDetailsData>) => void
   updateStep2: (data: Step2StudentSelectionData) => void
+  updateStep3: (data: Partial<Step3CalendarSlotSelectionData>) => void
   addStudent: (student: EnrollmentGroupMember) => void
   removeStudent: (studentId: string) => void
   updateStudent: (studentId: string, updates: Partial<EnrollmentGroupMember>) => void
@@ -121,6 +136,7 @@ interface EnrollmentFormContextType {
   resetForm: () => void
   isStep1Valid: () => boolean
   isStep2Valid: (courseTypeCategory: CourseTypeCategory, maxStudents: number) => Step2ValidationResult
+  isStep3Valid: () => Step3ValidationResult
 }
 
 const EnrollmentFormContext = createContext<EnrollmentFormContextType | undefined>(
@@ -140,6 +156,10 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
 
   const updateStep2 = useCallback((data: Step2StudentSelectionData) => {
     dispatch({ type: 'UPDATE_STEP2', payload: data })
+  }, [])
+
+  const updateStep3 = useCallback((data: Partial<Step3CalendarSlotSelectionData>) => {
+    dispatch({ type: 'UPDATE_STEP3', payload: data })
   }, [])
 
   const addStudent = useCallback((student: EnrollmentGroupMember) => {
@@ -224,12 +244,30 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
     [state.formData]
   )
 
+  const isStep3Valid = useCallback((): Step3ValidationResult => {
+    const { step3 } = state.formData
+    const errors: string[] = []
+
+    if (step3.selectedRoomId === null) {
+      errors.push('Room must be selected')
+    }
+    if (step3.selectedDate === null) {
+      errors.push('Date must be selected')
+    }
+    if (step3.selectedStartTime === null) {
+      errors.push('Start time must be selected')
+    }
+
+    return { isValid: errors.length === 0, errors }
+  }, [state.formData])
+
   const value = useMemo(
     () => ({
       formData: state.formData,
       currentStep: state.currentStep,
       updateStep1,
       updateStep2,
+      updateStep3,
       addStudent,
       removeStudent,
       updateStudent,
@@ -237,12 +275,14 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
       resetForm,
       isStep1Valid,
       isStep2Valid,
+      isStep3Valid,
     }),
     [
       state.formData,
       state.currentStep,
       updateStep1,
       updateStep2,
+      updateStep3,
       addStudent,
       removeStudent,
       updateStudent,
@@ -250,6 +290,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
       resetForm,
       isStep1Valid,
       isStep2Valid,
+      isStep3Valid,
     ]
   )
 
