@@ -22,11 +22,11 @@ const getStatusBadgeClass = (status: string) => {
 }
 
 interface StudentFormProps {
-  student?: Student
-  onSubmit: (data: CreateStudent) => Promise<{ id: string }>
-  isSubmitting: boolean
-  error?: string
-  onSuccess?: (student: Student) => void
+  readonly student?: Student
+  readonly onSubmit: (data: CreateStudent) => Promise<{ id: string }>
+  readonly isSubmitting: boolean
+  readonly error?: string
+  readonly onSuccess?: (student: Student) => void
 }
 
 interface FormData {

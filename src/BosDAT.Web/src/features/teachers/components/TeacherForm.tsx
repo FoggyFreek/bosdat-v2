@@ -20,10 +20,10 @@ import type { Instrument } from '@/features/instruments/types'
 import type { CourseTypeSimple } from '@/features/course-types/types'
 
 interface TeacherFormProps {
-  teacher?: Teacher
-  onSubmit: (data: CreateTeacher) => Promise<{ id: string }>
-  isSubmitting: boolean
-  error?: string
+  readonly teacher?: Teacher
+  readonly onSubmit: (data: CreateTeacher) => Promise<{ id: string }>
+  readonly isSubmitting: boolean
+  readonly error?: string
 }
 
 interface FormData {
@@ -51,6 +51,11 @@ interface FormErrors {
 }
 
 const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'
+
+const VALID_TEACHER_ROLES = ['Teacher', 'Admin', 'Staff'] as const
+function isTeacherRole(value: string): value is TeacherRole {
+  return VALID_TEACHER_ROLES.includes(value as TeacherRole)
+}
 
 export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherFormProps) {
   const navigate = useNavigate()
@@ -321,7 +326,11 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
             <Label htmlFor="role">Role</Label>
             <Select
               value={formData.role}
-              onValueChange={(value) => handleChange('role', value as TeacherRole)}
+              onValueChange={(value) => {
+                if (isTeacherRole(value)) {
+                  handleChange('role', value)
+                }
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select role" />

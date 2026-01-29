@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,26 +16,26 @@ import type { Instrument } from '@/features/instruments/types'
 import type { CourseType } from '@/features/course-types/types'
 
 export interface CourseTypeFormProps {
-  formData: CourseTypeFormData
-  instruments: Instrument[]
-  editId: string | null
-  editingCourseType: CourseType | null
-  useCustomDuration: boolean
-  teacherWarning: string | null
-  childDiscountPercent: number
-  isFormValid: boolean
-  isSubmitting: boolean
-  onFormDataChange: (updates: Partial<CourseTypeFormData>) => void
-  onInstrumentChange: (value: string) => void
-  onTypeChange: (value: string) => void
-  onAdultPriceChange: (value: string) => void
-  onChildPriceChange: (value: string) => void
-  onCustomDurationToggle: () => void
-  onCancel: () => void
-  onSubmit: () => void
+  readonly formData: Readonly<CourseTypeFormData>
+  readonly instruments: readonly Instrument[]
+  readonly editId: string | null
+  readonly editingCourseType: Readonly<CourseType> | null
+  readonly useCustomDuration: boolean
+  readonly teacherWarning: string | null
+  readonly childDiscountPercent: number
+  readonly isFormValid: boolean
+  readonly isSubmitting: boolean
+  readonly onFormDataChange: (updates: Partial<CourseTypeFormData>) => void
+  readonly onInstrumentChange: (value: string) => void
+  readonly onTypeChange: (value: string) => void
+  readonly onAdultPriceChange: (value: string) => void
+  readonly onChildPriceChange: (value: string) => void
+  readonly onCustomDurationToggle: () => void
+  readonly onCancel: () => void
+  readonly onSubmit: () => void
 }
 
-export const CourseTypeForm = ({
+export const CourseTypeForm = memo(function CourseTypeForm({
   formData,
   instruments,
   editId,
@@ -52,7 +53,7 @@ export const CourseTypeForm = ({
   onCustomDurationToggle,
   onCancel,
   onSubmit,
-}: CourseTypeFormProps) => {
+}: CourseTypeFormProps) {
   const hasChildPriceError = Number.parseFloat(formData.priceChild) > Number.parseFloat(formData.priceAdult)
 
   return (
@@ -206,4 +207,4 @@ export const CourseTypeForm = ({
       </div>
     </div>
   )
-}
+})

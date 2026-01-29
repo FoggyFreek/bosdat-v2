@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Pencil, Trash2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
@@ -5,12 +6,12 @@ import { PricingHistoryCollapsible } from './PricingHistoryCollapsible'
 import type { CourseType } from '@/features/course-types/types'
 
 export interface CourseTypeListItemProps {
-  courseType: CourseType
-  onEdit: (courseType: CourseType) => void
-  onArchive: (id: string) => void
-  onReactivate: (id: string) => void
-  isArchiving: boolean
-  isReactivating: boolean
+  readonly courseType: Readonly<CourseType>
+  readonly onEdit: (courseType: CourseType) => void
+  readonly onArchive: (id: string) => void
+  readonly onReactivate: (id: string) => void
+  readonly isArchiving: boolean
+  readonly isReactivating: boolean
 }
 
 const getStatusBadgeClasses = (isActive: boolean): string => {
@@ -20,14 +21,14 @@ const getStatusBadgeClasses = (isActive: boolean): string => {
   )
 }
 
-export const CourseTypeListItem = ({
+export const CourseTypeListItem = memo(function CourseTypeListItem({
   courseType,
   onEdit,
   onArchive,
   onReactivate,
   isArchiving,
   isReactivating,
-}: CourseTypeListItemProps) => {
+}: CourseTypeListItemProps) {
   const { currentPricing, pricingHistory } = courseType
 
   return (
@@ -108,4 +109,4 @@ export const CourseTypeListItem = ({
       )}
     </div>
   )
-}
+})

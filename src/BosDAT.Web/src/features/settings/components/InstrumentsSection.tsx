@@ -17,7 +17,11 @@ import { useFormDirty } from '@/context/FormDirtyContext'
 import { cn } from '@/lib/utils'
 import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
 
-const categories: InstrumentCategory[] = ['String', 'Percussion', 'Vocal', 'Keyboard', 'Wind', 'Brass', 'Electronic', 'Other']
+const categories: readonly InstrumentCategory[] = ['String', 'Percussion', 'Vocal', 'Keyboard', 'Wind', 'Brass', 'Electronic', 'Other'] as const
+
+function isInstrumentCategory(value: string): value is InstrumentCategory {
+  return categories.includes(value as InstrumentCategory)
+}
 
 export function InstrumentsSection() {
   const queryClient = useQueryClient()
@@ -96,7 +100,11 @@ export function InstrumentsSection() {
             />
             <Select
               value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value as InstrumentCategory })}
+              onValueChange={(value) => {
+                if (isInstrumentCategory(value)) {
+                  setFormData({ ...formData, category: value })
+                }
+              }}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
@@ -139,12 +147,16 @@ export function InstrumentsSection() {
                     />
                     <Checkbox
                       checked={formData.isActive}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked as boolean })}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked === true })}
                       className="h-4 w-4 shrink-0"
                     />
                     <Select
                       value={formData.category}
-                      onValueChange={(value) => setFormData({ ...formData, category: value as InstrumentCategory })}
+                      onValueChange={(value) => {
+                        if (isInstrumentCategory(value)) {
+                          setFormData({ ...formData, category: value })
+                        }
+                      }}
                     >
                       <SelectTrigger className="w-[150px]">
                         <SelectValue />

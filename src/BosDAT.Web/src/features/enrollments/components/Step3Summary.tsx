@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getInitials } from '@/lib/string-utils'
@@ -6,10 +7,10 @@ import { Step2Summary } from './Step2Summary'
 import type { Room } from '@/features/rooms/types'
 
 interface Step3SummaryProps {
-  rooms: Room[]
+  readonly rooms: readonly Room[]
 }
 
-export const Step3Summary = ({ rooms }: Step3SummaryProps) => {
+export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryProps) {
   const { formData, updateStep3 } = useEnrollmentForm()
   const { step2, step3 } = formData
 
@@ -58,4 +59,4 @@ export const Step3Summary = ({ rooms }: Step3SummaryProps) => {
       </div>
     </div>
   )
-}
+})
