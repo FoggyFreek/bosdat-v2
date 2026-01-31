@@ -10,11 +10,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { WeekParity } from '../types'
 
 interface WeekParitySelectProps {
-  value: WeekParity
-  onChange: (value: WeekParity) => void
-  disabled?: boolean
-  helperText?: string
-  has53WeekYearWarning?: boolean
+  readonly value: WeekParity
+  readonly onChange: (value: WeekParity) => void
+  readonly disabled?: boolean
+  readonly helperText?: string
+  readonly has53WeekYearWarning?: boolean
 }
 
 const WEEK_PARITY_OPTIONS = [
