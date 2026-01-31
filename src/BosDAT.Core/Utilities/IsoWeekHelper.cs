@@ -41,7 +41,9 @@ public static class IsoWeekHelper
     {
         // Get the last day of the ISO year
         // If week 53 exists, Dec 31 or a nearby date will be in week 53
-        var dec31 = new DateTime(isoYear, 12, 31);
+        // DateTimeKind.Unspecified is used since ISO week calculations are calendar-based
+        // and independent of timezone (per SonarQube rule csharpsquid:S6562)
+        var dec31 = new DateTime(isoYear, 12, 31, 0, 0, 0, DateTimeKind.Unspecified);
         var isoWeekOfDec31 = GetIsoWeekNumber(dec31);
         var isoYearOfDec31 = GetIsoWeekYear(dec31);
 
@@ -52,7 +54,7 @@ public static class IsoWeekHelper
         }
 
         // Check a few days before Dec 31 (since Dec 31 might be in Week 1 of next year)
-        var dec28 = new DateTime(isoYear, 12, 28);
+        var dec28 = new DateTime(isoYear, 12, 28, 0, 0, 0, DateTimeKind.Unspecified);
         var isoWeekOfDec28 = GetIsoWeekNumber(dec28);
         var isoYearOfDec28 = GetIsoWeekYear(dec28);
 
