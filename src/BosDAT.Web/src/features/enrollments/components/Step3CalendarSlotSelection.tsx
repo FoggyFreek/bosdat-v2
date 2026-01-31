@@ -146,6 +146,7 @@ export const Step3CalendarSlotSelection = ({
           description: `Selected ${formatDateForApi(targetDate)} ${time} - ${endTime}`,
         })
       } catch (error) {
+        console.error('Failed to check availability:', error)
         toast({
           title: 'Error',
           description: 'Failed to check availability. Please try again.',
