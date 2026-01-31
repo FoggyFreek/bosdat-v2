@@ -1,32 +1,33 @@
 import { describe, it, expect } from 'vitest'
 import { createEnrollmentColorScheme, formatTimeSlotToTime } from '../calendarAdapter'
-import type { TimeSlot } from '@/components/calendar/types'
+import type { TimeSlot, EventType } from '@/components/calendar/types'
 
 describe('calendarAdapter', () => {
   describe('createEnrollmentColorScheme', () => {
     it('should return color scheme with all event types', () => {
       const colorScheme = createEnrollmentColorScheme()
 
-      expect(colorScheme).toHaveProperty('individual')
-      expect(colorScheme).toHaveProperty('group')
+      expect(colorScheme).toHaveProperty('course')
       expect(colorScheme).toHaveProperty('workshop')
       expect(colorScheme).toHaveProperty('trail')
       expect(colorScheme).toHaveProperty('holiday')
+      expect(colorScheme).toHaveProperty('absence')
     })
 
     it('should have valid color properties for each type', () => {
       const colorScheme = createEnrollmentColorScheme()
-      const eventTypes = ['individual', 'group', 'workshop', 'trail', 'holiday']
+      const eventTypes: EventType[] = ['course', 'workshop', 'trail', 'holiday', 'absence']
 
       eventTypes.forEach((eventType) => {
-        expect(colorScheme[eventType]).toHaveProperty('background')
-        expect(colorScheme[eventType]).toHaveProperty('border')
-        expect(colorScheme[eventType]).toHaveProperty('textBackground')
+        const colors = colorScheme[eventType]
+        expect(colors).toHaveProperty('background')
+        expect(colors).toHaveProperty('border')
+        expect(colors).toHaveProperty('textBackground')
 
         // Verify they are valid hex colors
-        expect(colorScheme[eventType].background).toMatch(/^#[0-9a-f]{6}$/i)
-        expect(colorScheme[eventType].border).toMatch(/^#[0-9a-f]{6}$/i)
-        expect(colorScheme[eventType].textBackground).toMatch(/^#[0-9a-f]{6}$/i)
+        expect(colors?.background).toMatch(/^#[0-9a-f]{6}$/i)
+        expect(colors?.border).toMatch(/^#[0-9a-f]{6}$/i)
+        expect(colors?.textBackground).toMatch(/^#[0-9a-f]{6}$/i)
       })
     })
 

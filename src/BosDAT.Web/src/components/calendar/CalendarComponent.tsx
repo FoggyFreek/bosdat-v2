@@ -10,12 +10,12 @@ const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 const MIN_HOUR = Math.min(...HOURS);
 const MAX_HOUR = Math.max(...HOURS);
 
-const Scheduler: React.FC<SchedulerProps> = ({
+export const CalendarComponent: React.FC<SchedulerProps> = ({
   title,
   events,
   dates,
-  daystartTime = 9,
-  dayendTime = 21,
+  dayStartTime = 9,
+  dayEndTime = 21,
   hourHeight = 100,
   colorScheme,
   onNavigatePrevious,
@@ -37,7 +37,7 @@ const Scheduler: React.FC<SchedulerProps> = ({
       />
 
       {/* Calendar Grid Container */}
-      <div className="flex flex-col flex-1" style={{ overflowX: 'visible', overflowY: 'hidden' }}>
+      <div className="flex flex-col flex-1 overflow-x-visible overflow-y-hidden">
         <DayHeaders dates={dates} highlightedDate={highlightedDate} onDateSelect={onDateSelect} />
 
         {/* Scrollable Body */}
@@ -50,8 +50,8 @@ const Scheduler: React.FC<SchedulerProps> = ({
               hourHeight={hourHeight}
               minHour={MIN_HOUR}
               maxHour={MAX_HOUR}
-              daystartTime={daystartTime}
-              dayendTime={dayendTime}
+              dayStartTime={dayStartTime}
+              dayEndTime={dayEndTime}
               colorScheme={colorScheme}
               onTimeslotClick={onTimeslotClick}
               highlightedDate={highlightedDate}
@@ -64,4 +64,4 @@ const Scheduler: React.FC<SchedulerProps> = ({
   );
 };
 
-export default Scheduler;
+CalendarComponent.displayName = 'CalendarComponent';

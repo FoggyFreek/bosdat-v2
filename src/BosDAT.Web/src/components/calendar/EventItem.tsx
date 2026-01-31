@@ -1,24 +1,35 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
-import type { Event, ColorScheme } from './types';
+import { cn } from '@/lib/utils';
+import type { Event, ColorScheme, EventColors, EventCategory } from './types';
 import { EventHoverNote } from './EventHoverNote';
 import { getDecimalHours, getDurationInHours, isValidEventTime } from './utils';
 
 type EventItemProps = {
   event: Event;
-  dayIndex: number; // The column index (0-6) where this event should appear
+  dayIndex: number;
   hourHeight: number;
   minHour: number;
   colorScheme?: ColorScheme;
 };
 
-// Move constant outside component to prevent recreation on every render
-const DEFAULT_COLOR_SCHEME: ColorScheme = {
+// Named constants for magic numbers
+const HOVER_DELAY_MS = 300;
+const MIN_EVENT_HEIGHT_PX = 20;
+const DAYS_IN_WEEK = 7;
+const LAST_DAY_INDEX = 6;
+
+// Default colors for event types - uses Partial since not all categories need defaults
+// LessonStatus colors should be provided via colorScheme prop
+const DEFAULT_COLOR_SCHEME: Partial<Record<EventCategory, EventColors>> = {
   course: { background: '#eff6ff', border: '#3b82f6', textBackground: '#dbeafe' },
   workshop: { background: '#f0fdf4', border: '#22c55e', textBackground: '#dcfce7' },
   trail: { background: '#fff7ed', border: '#f97316', textBackground: '#ffedd5' },
   holiday: { background: '#fee2e2', border: '#991b1b', textBackground: '#fecaca' },
   absence: { background: '#fefce8', border: '#ca8a04', textBackground: '#fef08a' },
 };
+
+// Fallback color when no matching scheme is found
+const FALLBACK_COLORS: EventColors = { background: '#f3f4f6', border: '#9ca3af', textBackground: '#e5e7eb' };
 
 const EventItemComponent: React.FC<EventItemProps> = ({
   event,
@@ -52,13 +63,16 @@ const EventItemComponent: React.FC<EventItemProps> = ({
     [event.startDateTime, event.endDateTime]
   );
 
-  // Memoize position calculations to ensure component is pure
+  // Memoize position calculations
   const top = useMemo(() => (startTime - minHour) * hourHeight, [startTime, minHour, hourHeight]);
-  const height = useMemo(() => Math.max(duration * hourHeight, 20), [duration, hourHeight]); // Minimum height of 20px
+  const height = useMemo(
+    () => Math.max(duration * hourHeight, MIN_EVENT_HEIGHT_PX),
+    [duration, hourHeight]
+  );
 
-  // Memoize color selection to prevent unnecessary recalculations
+  // Memoize color selection
   const colors = useMemo(
-    () => colorScheme?.[event.eventType] || DEFAULT_COLOR_SCHEME[event.eventType] || DEFAULT_COLOR_SCHEME['trail'],
+    () => colorScheme?.[event.eventType] ?? DEFAULT_COLOR_SCHEME[event.eventType] ?? FALLBACK_COLORS,
     [colorScheme, event.eventType]
   );
 
@@ -66,7 +80,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
   const handleMouseEnter = useCallback(() => {
     hoverTimerRef.current = setTimeout(() => {
       setIsHovered(true);
-    }, 300); // 300ms delay
+    }, HOVER_DELAY_MS);
   }, []);
 
   // Handle mouse leave
@@ -82,29 +96,33 @@ const EventItemComponent: React.FC<EventItemProps> = ({
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      setIsHovered(prev => !prev);
+      setIsHovered((prev) => !prev);
     } else if (e.key === 'Escape') {
       setIsHovered(false);
     }
   }, []);
 
   if (!isValid) {
-    return null; // Don't render invalid events
+    return null;
   }
+
+  const columnWidthPercent = 100 / DAYS_IN_WEEK;
 
   return (
     <button
       type="button"
-      className="absolute mx-1 p-2 rounded-md border-l-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 text-left"
+      className={cn(
+        'absolute mx-1 p-2 rounded-md border-l-4 text-left overflow-visible',
+        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+        isHovered ? 'z-[9999]' : 'z-[5]'
+      )}
       style={{
         top: `${top}px`,
         height: `${height}px`,
-        left: `${(dayIndex * (100 / 7))}%`,
-        width: `calc(${100 / 7}% - 8px)`,
+        left: `${dayIndex * columnWidthPercent}%`,
+        width: `calc(${columnWidthPercent}% - 8px)`,
         backgroundColor: colors.background,
         borderLeftColor: colors.border,
-        overflow: 'visible',
-        zIndex: isHovered ? 9999 : 5,
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -139,7 +157,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
         <EventHoverNote
           event={event}
           colors={colors}
-          isLastColumn={dayIndex === 6}
+          isLastColumn={dayIndex === LAST_DAY_INDEX}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         />

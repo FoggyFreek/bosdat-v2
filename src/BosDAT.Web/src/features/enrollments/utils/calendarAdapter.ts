@@ -7,20 +7,15 @@ import type { ColorScheme, TimeSlot } from '@/components/calendar/types'
  */
 export const createEnrollmentColorScheme = (): ColorScheme => {
   return {
-    individual: {
+    course: {
       background: '#eff6ff',
       border: '#3b82f6',
       textBackground: '#dbeafe',
     },
-    group: {
+    workshop: {
       background: '#f0fdf4',
       border: '#22c55e',
       textBackground: '#dcfce7',
-    },
-    workshop: {
-      background: '#fff7ed',
-      border: '#f97316',
-      textBackground: '#ffedd5',
     },
     trail: {
       background: '#fef3c7',
@@ -31,6 +26,11 @@ export const createEnrollmentColorScheme = (): ColorScheme => {
       background: '#fef2f2',
       border: '#ef4444',
       textBackground: '#fee2e2',
+    },
+    absence: {
+      background: '#fefce8',
+      border: '#ca8a04',
+      textBackground: '#fef08a',
     },
   }
 }

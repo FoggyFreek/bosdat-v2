@@ -75,7 +75,7 @@ describe('useCalendarEvents', () => {
       expect(result.current[0].title).toBe('Piano Lesson')
     })
 
-    it('should set eventType based on instrumentName', () => {
+    it('should set eventType to course for non-trial lessons', () => {
       const lessons = [
         createMockLesson({ id: 'lesson-1', instrumentName: 'Individual Piano' }),
         createMockLesson({ id: 'lesson-2', instrumentName: 'Group Guitar' }),
@@ -85,8 +85,8 @@ describe('useCalendarEvents', () => {
         useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
       )
 
-      expect(result.current[0].eventType).toBe('individual')
-      expect(result.current[1].eventType).toBe('group')
+      expect(result.current[0].eventType).toBe('course')
+      expect(result.current[1].eventType).toBe('course')
     })
 
     it('should use trail eventType for lessons in trial mode', () => {
@@ -97,7 +97,7 @@ describe('useCalendarEvents', () => {
       )
 
       expect(result.current[0].eventType).toBe('trail')
-      expect(result.current[0].frequency).toBe('Trail')
+      expect(result.current[0].frequency).toBe('once')
     })
 
     it('should include student name as attendee', () => {
@@ -181,10 +181,10 @@ describe('useCalendarEvents', () => {
       expect(result.current).toHaveLength(1)
     })
 
-    it('should determine eventType from courseTypeName', () => {
+    it('should determine eventType based on isWorkshop flag', () => {
       const courses = [
-        createMockCourse({ id: 'c1', courseTypeName: 'Individual Piano' }),
-        createMockCourse({ id: 'c2', courseTypeName: 'Group Guitar' }),
+        createMockCourse({ id: 'c1', courseTypeName: 'Individual Piano', isWorkshop: false }),
+        createMockCourse({ id: 'c2', courseTypeName: 'Group Guitar', isWorkshop: false }),
         createMockCourse({ id: 'c3', isWorkshop: true, courseTypeName: 'Drums Workshop' }),
       ]
 
@@ -192,8 +192,8 @@ describe('useCalendarEvents', () => {
         useCalendarEvents({ weekStart, lessons: [], courses, holidays: [], isTrial: false })
       )
 
-      expect(result.current[0].eventType).toBe('individual')
-      expect(result.current[1].eventType).toBe('group')
+      expect(result.current[0].eventType).toBe('course')
+      expect(result.current[1].eventType).toBe('course')
       expect(result.current[2].eventType).toBe('workshop')
     })
 
@@ -252,8 +252,8 @@ describe('useCalendarEvents', () => {
         useCalendarEvents({ weekStart, lessons: [], courses, holidays: [], isTrial: false })
       )
 
-      expect(result.current[0].frequency).toBe('Weekly')
-      expect(result.current[1].frequency).toBe('Biweekly')
+      expect(result.current[0].frequency).toBe('weekly')
+      expect(result.current[1].frequency).toBe('bi-weekly')
     })
   })
 
@@ -268,7 +268,7 @@ describe('useCalendarEvents', () => {
       expect(result.current).toHaveLength(1)
       expect(result.current[0].title).toBe('Teacher Day')
       expect(result.current[0].eventType).toBe('holiday')
-      expect(result.current[0].frequency).toBe('Once')
+      expect(result.current[0].frequency).toBe('once')
     })
 
     it('should create events for each day of a multi-day holiday within the week', () => {
@@ -353,7 +353,7 @@ describe('useCalendarEvents', () => {
       // 1 lesson + 1 course + 1 holiday day
       expect(result.current).toHaveLength(3)
       expect(result.current.some((e) => e.eventType === 'holiday')).toBe(true)
-      expect(result.current.some((e) => e.eventType === 'individual')).toBe(true)
+      expect(result.current.some((e) => e.eventType === 'course')).toBe(true)
     })
   })
 

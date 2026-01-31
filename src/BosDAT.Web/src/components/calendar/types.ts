@@ -1,10 +1,27 @@
 // Type definitions for calendar component
+
+// Event types for enrollment/scheduling flows
+export type EventType =
+  | 'course'
+  | 'workshop'
+  | 'trail'
+  | 'holiday'
+  | 'absence';
+
+// Lesson status types for schedule display
+export type LessonStatus = 'Scheduled' | 'Completed' | 'Cancelled' | 'NoShow';
+
+// Combined type for Event.eventType - can be either an EventType or a LessonStatus
+export type EventCategory = EventType | LessonStatus;
+
+export type EventFrequency = 'weekly' | 'bi-weekly' | 'once';
+
 export type Event = {
   startDateTime: string; // ISO 8601 datetime string (e.g., "2024-01-15T09:30:00")
   endDateTime: string;   // ISO 8601 datetime string (e.g., "2024-01-15T10:00:00")
   title: string;
-  frequency: string; // weekly or bi-weekly
-  eventType: string; // trail, course, workshop, absence, holiday
+  frequency: EventFrequency;
+  eventType: EventCategory;
   attendees: string[]; // persons attending the event
   room?: string;
 };
@@ -15,9 +32,7 @@ export type EventColors = {
   textBackground: string;
 };
 
-export type ColorScheme = {
-  [eventType: string]: EventColors;
-};
+export type ColorScheme = Partial<Record<EventCategory, EventColors>>;
 
 export type TimeSlot = {
   date: Date;
@@ -29,8 +44,8 @@ export type SchedulerProps = {
   title: string;
   events: Event[];
   dates: Date[];
-  daystartTime?: number;
-  dayendTime?: number;
+  dayStartTime?: number;
+  dayEndTime?: number;
   hourHeight?: number;
   colorScheme?: ColorScheme;
   onNavigatePrevious?: () => void;

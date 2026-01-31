@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { roomsApi, calendarApi, coursesApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { Step3Summary } from './Step3Summary'
-import CalendarComponent from '@/components/calendar/CalendarComponent'
+import { CalendarComponent } from '@/components/calendar/CalendarComponent'
 import { useCalendarEvents } from '../hooks/useCalendarEvents'
 import { getWeekStart, getWeekDays, formatDateForApi, calculateEndTime } from '@/lib/calendar-utils'
 import { useToast } from '@/hooks/use-toast'
@@ -200,8 +200,8 @@ export const Step3CalendarSlotSelection = ({
           title={`Week of ${formatDateForApi(weekStart)}`}
           events={events}
           dates={weekDays}
-          daystartTime={8}
-          dayendTime={23}
+          dayStartTime={8}
+          dayEndTime={23}
           hourHeight={80}
           colorScheme={colorScheme}
           onNavigatePrevious={() => handleWeekChange(-7)}

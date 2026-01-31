@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { CalendarLesson, Holiday } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
-import type { Event } from '@/components/calendar/types'
+import type { Event, EventType, EventFrequency } from '@/components/calendar/types'
 
 interface UseCalendarEventsProps {
   weekStart: Date
@@ -36,8 +36,8 @@ export const useCalendarEvents = ({
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
         title: lesson.title,
-        frequency: isTrial ? 'Trail' : 'Weekly',
-        eventType: isTrial ? 'trail' : determineEventType(lesson.instrumentName, false),
+        frequency: isTrial ? 'once' : 'weekly',
+        eventType: isTrial ? 'trail' : 'course',
         attendees: lesson.studentName ? [lesson.studentName] : [],
         room: undefined,
       })
@@ -60,16 +60,14 @@ export const useCalendarEvents = ({
         if (isFuture) return
 
         const studentNames = course.enrollments.map((e) => e.studentName)
-        const frequency = course.frequency === 'Weekly' || course.frequency === 'Biweekly'
-          ? course.frequency
-          : 'Weekly'
+        const frequency: EventFrequency = course.frequency === 'Biweekly' ? 'bi-weekly' : 'weekly'
 
         events.push({
           startDateTime: startDateTime.toISOString(),
           endDateTime: endDateTime.toISOString(),
           title: `${course.courseTypeName} - ${course.teacherName}`,
           frequency,
-          eventType: determineEventType(course.courseTypeName, course.isWorkshop),
+          eventType: determineEventType(course.isWorkshop),
           attendees: studentNames,
           room: course.roomId?.toString(),
         })
@@ -98,7 +96,7 @@ export const useCalendarEvents = ({
           startDateTime: dayStart.toISOString(),
           endDateTime: dayEnd.toISOString(),
           title: holiday.name,
-          frequency: 'Once',
+          frequency: 'once',
           eventType: 'holiday',
           attendees: [],
         })
@@ -111,16 +109,10 @@ export const useCalendarEvents = ({
 }
 
 /**
- * Determines the event type based on course/lesson name and workshop flag
+ * Determines the event type based on workshop flag
  */
-const determineEventType = (name: string, isWorkshop: boolean): string => {
-  if (isWorkshop) return 'workshop'
-
-  const lowercaseName = name.toLowerCase()
-  if (lowercaseName.includes('individual')) return 'individual'
-  if (lowercaseName.includes('group')) return 'group'
-
-  return 'individual'
+const determineEventType = (isWorkshop: boolean): EventType => {
+  return isWorkshop ? 'workshop' : 'course'
 }
 
 /**

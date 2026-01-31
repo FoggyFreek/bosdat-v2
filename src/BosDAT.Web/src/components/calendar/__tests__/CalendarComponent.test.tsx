@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
-import Scheduler from '../CalendarComponent'
-import type { Event, ColorScheme } from '../types'
+import { CalendarComponent } from '../CalendarComponent'
+import type { Event, EventFrequency, EventType, ColorScheme } from '../types'
 
 const createMockDate = (dateStr: string): Date => {
   return new Date(dateStr)
@@ -12,8 +12,8 @@ const createMockEvent = (overrides?: Partial<Event>): Event => ({
   startDateTime: '2024-01-15T09:00:00',
   endDateTime: '2024-01-15T10:00:00',
   title: 'Piano Lesson',
-  frequency: 'weekly',
-  eventType: 'course',
+  frequency: 'weekly' as EventFrequency,
+  eventType: 'course' as EventType,
   attendees: ['John Doe', 'Jane Smith'],
   room: 'Room 101',
   ...overrides,
@@ -25,7 +25,7 @@ const mockColorScheme: ColorScheme = {
   trail: { background: '#fff7ed', border: '#f97316', textBackground: '#ffedd5' },
 }
 
-describe('CalendarComponent (Scheduler)', () => {
+describe('CalendarComponent', () => {
   const mockDates = [
     createMockDate('2024-01-15T00:00:00'), // Monday
     createMockDate('2024-01-16T00:00:00'), // Tuesday
@@ -48,7 +48,7 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Basic Rendering', () => {
     it('renders the scheduler with correct title', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -60,7 +60,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders with application role and aria-label', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -73,7 +73,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders 7 day columns', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -89,7 +89,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders correct day numbers', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -106,7 +106,7 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Time Grid', () => {
     it('renders time column with hours 6-22', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -123,7 +123,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders grid with role', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -138,7 +138,7 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Navigation', () => {
     it('renders previous navigation button', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -152,7 +152,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders next navigation button', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -167,7 +167,7 @@ describe('CalendarComponent (Scheduler)', () => {
     it('calls onNavigatePrevious when previous button is clicked', async () => {
       const user = userEvent.setup()
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -184,7 +184,7 @@ describe('CalendarComponent (Scheduler)', () => {
     it('calls onNavigateNext when next button is clicked', async () => {
       const user = userEvent.setup()
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -202,7 +202,7 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Date Selection', () => {
     it('renders date headers as buttons when onDateSelect is provided', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -221,7 +221,7 @@ describe('CalendarComponent (Scheduler)', () => {
     it('calls onDateSelect when a date is clicked', async () => {
       const user = userEvent.setup()
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -239,7 +239,7 @@ describe('CalendarComponent (Scheduler)', () => {
     it('supports keyboard navigation with Enter key on dates', async () => {
       const user = userEvent.setup()
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -258,7 +258,7 @@ describe('CalendarComponent (Scheduler)', () => {
     it('supports keyboard navigation with Space key on dates', async () => {
       const user = userEvent.setup()
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -276,7 +276,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('highlights selected date when highlightedDate is provided', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -298,7 +298,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -323,7 +323,7 @@ describe('CalendarComponent (Scheduler)', () => {
       ]
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={events}
           dates={mockDates}
@@ -341,7 +341,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[invalidEvent]}
           dates={mockDates}
@@ -358,7 +358,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[outsideEvent]}
           dates={mockDates}
@@ -374,7 +374,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent({ eventType: 'course' })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -389,7 +389,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent({ eventType: 'course' })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -408,7 +408,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -430,7 +430,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -456,7 +456,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -483,7 +483,7 @@ describe('CalendarComponent (Scheduler)', () => {
       })
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -506,7 +506,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent()
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -535,7 +535,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent()
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -562,7 +562,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent()
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -589,7 +589,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent()
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -617,7 +617,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent()
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -635,7 +635,7 @@ describe('CalendarComponent (Scheduler)', () => {
       const event = createMockEvent()
 
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
@@ -650,7 +650,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('has keyboard-accessible grid', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -666,7 +666,7 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Grid Interaction', () => {
     it('renders clickable grid when onTimeslotClick is provided', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -681,7 +681,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders grid without errors when onTimeslotClick is not provided', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -696,11 +696,11 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Working Hours Overlay', () => {
     it('shows unavailable time overlay before day start', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
-          daystartTime={9}
+          dayStartTime={9}
         />
       )
 
@@ -710,11 +710,11 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('shows unavailable time overlay after day end', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
-          dayendTime={18}
+          dayEndTime={18}
         />
       )
 
@@ -726,7 +726,7 @@ describe('CalendarComponent (Scheduler)', () => {
   describe('Props and Configuration', () => {
     it('uses custom hourHeight prop', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}
@@ -741,7 +741,7 @@ describe('CalendarComponent (Scheduler)', () => {
 
     it('renders with default hourHeight when not provided', () => {
       render(
-        <Scheduler
+        <CalendarComponent
           title="Weekly Schedule"
           events={[]}
           dates={mockDates}

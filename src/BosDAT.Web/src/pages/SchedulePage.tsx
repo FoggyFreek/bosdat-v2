@@ -177,8 +177,8 @@ export function SchedulePage() {
           colorScheme={statusColorScheme}
           onNavigatePrevious={goToPreviousWeek}
           onNavigateNext={goToNextWeek}
-          daystartTime={8}
-          dayendTime={21}
+          dayStartTime={8}
+          dayEndTime={21}
           hourHeight={100}
         />
       )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, MapPin } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { Event, EventColors } from './types';
 import { formatTimeRange } from './utils';
 
@@ -11,11 +12,10 @@ type EventHoverNoteProps = {
   onMouseLeave: () => void;
 };
 
-// Helper function to get initials from a name
 const getInitials = (name: string): string => {
   return name
     .split(' ')
-    .map(part => part[0])
+    .map((part) => part[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
@@ -30,10 +30,10 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
 }) => {
   return (
     <div
-      className={`absolute bg-white rounded-lg shadow-lg border border-slate-200 p-3 min-w-[200px] ${
+      className={cn(
+        'absolute top-0 z-[9999] bg-white rounded-lg shadow-lg border border-slate-200 p-3 min-w-[200px]',
         isLastColumn ? 'right-full mr-2' : 'left-full ml-2'
-      }`}
-      style={{ top: 0, zIndex: 9999 }}
+      )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       role="tooltip"

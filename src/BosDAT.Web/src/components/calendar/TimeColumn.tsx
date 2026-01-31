@@ -5,19 +5,23 @@ type TimeColumnProps = {
   hourHeight: number;
 };
 
+const formatHour = (hour: number): string => `${String(hour).padStart(2, '0')}:00`;
+
 const TimeColumnComponent: React.FC<TimeColumnProps> = ({ hours, hourHeight }) => {
   return (
     <div className="border-r border-slate-100" aria-label="Time labels">
-      {hours.map((hour) => (
-        <div
-          key={hour}
-          className="text-right pr-4 text-xs text-slate-600"
-          style={{ height: `${hourHeight}px` }}
-          aria-label={`${String(hour).padStart(2, '0')}:00`}
-        >
-          {String(hour).padStart(2, '0')}:00
-        </div>
-      ))}
+      {hours.map((hour) => {
+        const formattedHour = formatHour(hour);
+        return (
+          <div
+            key={hour}
+            className="text-right pr-4 text-xs text-slate-600"
+            style={{ height: `${hourHeight}px` }}
+          >
+            {formattedHour}
+          </div>
+        );
+      })}
     </div>
   );
 };
