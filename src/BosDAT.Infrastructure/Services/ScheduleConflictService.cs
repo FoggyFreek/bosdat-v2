@@ -22,16 +22,11 @@ public class ScheduleConflictService(IUnitOfWork unitOfWork) : IScheduleConflict
         // Get student's active enrollments
         var existingEnrollments = await _unitOfWork.Enrollments.GetActiveEnrollmentsByStudentIdAsync(studentId);
 
-        var conflictingCourses = new List<ConflictingCourse>();
-
-        // Check each existing enrollment for conflicts
-        foreach (var enrollment in existingEnrollments)
-        {
-            if (HasScheduleConflict(targetCourse, enrollment.Course))
-            {
-                conflictingCourses.Add(MapToConflictingCourse(enrollment.Course));
-            }
-        }
+        // Check each existing enrollment for conflicts using LINQ
+        var conflictingCourses = existingEnrollments
+            .Where(e => HasScheduleConflict(targetCourse, e.Course))
+            .Select(e => MapToConflictingCourse(e.Course))
+            .ToList();
 
         return new ConflictCheckResult
         {

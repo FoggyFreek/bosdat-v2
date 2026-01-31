@@ -6,7 +6,7 @@
  * Get the Monday of the week containing the given date
  */
 export const getWeekStart = (date: Date): Date => {
-  const result = new Date(date.getTime())
+  const result = new Date(date)
   const day = result.getDay()
   const diff = day === 0 ? -6 : 1 - day // Sunday is 0, Monday is 1
   result.setDate(result.getDate() + diff)

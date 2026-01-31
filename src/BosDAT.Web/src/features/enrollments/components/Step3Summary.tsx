@@ -15,7 +15,7 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
   const { step2, step3 } = formData
 
   const handleRoomChange = (value: string) => {
-    updateStep3({ selectedRoomId: parseInt(value, 10) })
+    updateStep3({ selectedRoomId: Number.parseInt(value, 10) })
   }
 
   return (
