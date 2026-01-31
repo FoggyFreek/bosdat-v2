@@ -13,7 +13,7 @@ export {
 } from './calendar';
 
 export type {
-  Event,
+  CalendarEvent,
   EventColors,
   ColorScheme,
   SchedulerProps,

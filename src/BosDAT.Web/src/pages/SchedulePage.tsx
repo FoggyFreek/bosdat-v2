@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CalendarComponent } from '@/components'
-import type { Event, ColorScheme } from '@/components'
+import type { CalendarEvent, ColorScheme } from '@/components'
 import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
 import type { TeacherList } from '@/features/teachers/types'
@@ -19,7 +19,7 @@ import type { Room } from '@/features/rooms/types'
 import { getWeekStart, getWeekDays } from '@/lib/calendar-utils'
 
 // Convert CalendarLesson to Event format for CalendarComponent
-const convertLessonToEvent = (lesson: CalendarLesson): Event => {
+const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
   const attendees = []
   if (lesson.studentName) {
     attendees.push(lesson.studentName)

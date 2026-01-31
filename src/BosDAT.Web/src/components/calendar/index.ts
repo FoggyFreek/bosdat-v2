@@ -10,7 +10,7 @@ export { EventItem } from './EventItem';
 
 // Types
 export type {
-  Event,
+  CalendarEvent,
   EventType,
   EventFrequency,
   EventColors,

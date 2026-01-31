@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { EventItem } from './EventItem';
-import type { Event, ColorScheme, TimeSlot } from './types';
+import type { CalendarEvent, ColorScheme, TimeSlot } from './types';
 import { getDateFromDateTime, isSameDay, isValidEventTime } from './utils';
 
 type EventsGridProps = {
   hours: number[];
-  events: Event[];
+  events: CalendarEvent[];
   hourHeight: number;
   minHour: number;
   maxHour: number;

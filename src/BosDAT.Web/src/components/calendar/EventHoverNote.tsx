@@ -1,11 +1,11 @@
 import React from 'react';
 import { Clock, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Event, EventColors } from './types';
+import type { CalendarEvent, EventColors } from './types';
 import { formatTimeRange } from './utils';
 
 type EventHoverNoteProps = {
-  event: Event;
+  event: CalendarEvent;
   colors: EventColors;
   isLastColumn: boolean;
   onMouseEnter: () => void;

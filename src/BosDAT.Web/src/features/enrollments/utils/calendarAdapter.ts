@@ -32,6 +32,11 @@ export const createEnrollmentColorScheme = (): ColorScheme => {
       border: '#ca8a04',
       textBackground: '#fef08a',
     },
+    placeholder: {
+      background: '#f3e8ff',   // Light purple
+      border: '#9333ea',       // Purple
+      textBackground: '#e9d5ff',
+    },
   }
 }
 

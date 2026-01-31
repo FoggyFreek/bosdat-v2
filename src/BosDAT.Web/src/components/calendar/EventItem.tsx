@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import type { Event, ColorScheme, EventColors, EventCategory } from './types';
+import type { CalendarEvent, ColorScheme, EventColors, EventCategory } from './types';
 import { EventHoverNote } from './EventHoverNote';
 import { getDecimalHours, getDurationInHours, isValidEventTime } from './utils';
 
 type EventItemProps = {
-  event: Event;
+  event: CalendarEvent;
   dayIndex: number;
   hourHeight: number;
   minHour: number;
@@ -137,20 +137,22 @@ const EventItemComponent: React.FC<EventItemProps> = ({
         {event.title}
       </h3>
 
-      <div className="text-[10px] text-slate-600 mt-1">
-        <span
-          className="inline-block px-2 py-0.5 rounded mr-2"
-          style={{ backgroundColor: colors.textBackground }}
-        >
-          {event.eventType}
-        </span>
-        <span
-          className="inline-block px-2 py-0.5 rounded"
-          style={{ backgroundColor: colors.textBackground }}
-        >
-          {event.frequency}
-        </span>
-      </div>
+      {duration > 0.5 && (
+        <div className="text-[10px] text-slate-600 mt-1">
+          <span
+            className="inline-block px-2 py-0.5 rounded mr-2"
+            style={{ backgroundColor: colors.textBackground }}
+          >
+            {event.eventType}
+          </span>
+          <span
+            className="inline-block px-2 py-0.5 rounded"
+            style={{ backgroundColor: colors.textBackground }}
+          >
+            {event.frequency}
+          </span>
+        </div>
+      )}
 
       {/* Hover Note */}
       {isHovered && (

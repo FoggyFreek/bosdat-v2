@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { CalendarComponent } from '../CalendarComponent'
-import type { Event, EventFrequency, EventType, ColorScheme } from '../types'
+import type { CalendarEvent, EventFrequency, EventType, ColorScheme } from '../types'
 
 const createMockDate = (dateStr: string): Date => {
   return new Date(dateStr)
 }
 
-const createMockEvent = (overrides?: Partial<Event>): Event => ({
+const createMockEvent = (overrides?: Partial<CalendarEvent>): CalendarEvent => ({
   startDateTime: '2024-01-15T09:00:00',
   endDateTime: '2024-01-15T10:00:00',
   title: 'Piano Lesson',

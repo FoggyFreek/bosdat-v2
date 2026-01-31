@@ -44,7 +44,7 @@ const DayHeadersComponent: React.FC<DayHeadersProps> = ({ dates, highlightedDate
 
           const className = cn(
             'py-4 text-center transition-colors',
-            isHighlighted && 'bg-primary text-primary-foreground',
+            isHighlighted && 'bg-sky text-primary-foreground',
             isClickable && 'hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
           );
 

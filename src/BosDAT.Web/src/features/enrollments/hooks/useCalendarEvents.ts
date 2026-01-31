@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { CalendarLesson, Holiday } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
-import type { Event, EventType, EventFrequency } from '@/components/calendar/types'
+import type { CalendarEvent, EventType, EventFrequency } from '@/components/calendar/types'
 
 interface UseCalendarEventsProps {
   weekStart: Date
@@ -21,9 +21,9 @@ export const useCalendarEvents = ({
   courses,
   holidays,
   isTrial,
-}: UseCalendarEventsProps): Event[] => {
+}: UseCalendarEventsProps): CalendarEvent[] => {
   return useMemo(() => {
-    const events: Event[] = []
+    const events: CalendarEvent[] = []
     const today = new Date().toISOString().split('T')[0]
 
     // Transform lessons to events

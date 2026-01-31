@@ -6,7 +6,8 @@ export type EventType =
   | 'workshop'
   | 'trail'
   | 'holiday'
-  | 'absence';
+  | 'absence'
+  | 'placeholder';
 
 // Lesson status types for schedule display
 export type LessonStatus = 'Scheduled' | 'Completed' | 'Cancelled' | 'NoShow';
@@ -16,7 +17,7 @@ export type EventCategory = EventType | LessonStatus;
 
 export type EventFrequency = 'weekly' | 'bi-weekly' | 'once';
 
-export type Event = {
+export type CalendarEvent = {
   startDateTime: string; // ISO 8601 datetime string (e.g., "2024-01-15T09:30:00")
   endDateTime: string;   // ISO 8601 datetime string (e.g., "2024-01-15T10:00:00")
   title: string;
@@ -42,7 +43,7 @@ export type TimeSlot = {
 
 export type SchedulerProps = {
   title: string;
-  events: Event[];
+  events: CalendarEvent[];
   dates: Date[];
   dayStartTime?: number;
   dayEndTime?: number;

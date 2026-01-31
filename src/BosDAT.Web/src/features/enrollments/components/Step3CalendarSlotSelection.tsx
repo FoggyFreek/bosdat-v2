@@ -11,7 +11,7 @@ import { createEnrollmentColorScheme, formatTimeSlotToTime } from '../utils/cale
 import type { Room } from '@/features/rooms/types'
 import type { WeekCalendar } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
-import type { TimeSlot } from '@/components/calendar/types'
+import type { CalendarEvent, TimeSlot } from '@/components/calendar/types'
 
 interface Step3CalendarSlotSelectionProps {
   teacherId: string
@@ -23,16 +23,33 @@ export const Step3CalendarSlotSelection = ({
   durationMinutes,
 }: Step3CalendarSlotSelectionProps) => {
   const { formData, updateStep3 } = useEnrollmentForm()
-  const { step1, step3 } = formData
+  const { step1, step2, step3 } = formData
   const { toast } = useToast()
 
-  const [weekOffset, setWeekOffset] = useState(0)
-  const [selectedDate, setSelectedDate] = useState(() => new Date())
+  const [weekOffset, setWeekOffset] = useState(() => {
+    if (step1.startDate) {
+      const startDate = new Date(step1.startDate)
+      const today = new Date()
+      const timeDiff = startDate.getTime() - today.getTime()
+      const diffInDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+      return diffInDays - (diffInDays % 7)
+    }
+    return 0
+  })
+
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (step1.startDate) {
+      return new Date(step1.startDate)
+    }
+    return new Date()
+  })
+
+  const [placeholderEvent, setPlaceholderEvent] = useState<CalendarEvent | null>(null)
 
   const weekStart = useMemo(() => {
-    const baseDate = new Date()
-    baseDate.setDate(baseDate.getDate() + weekOffset)
-    return getWeekStart(baseDate)
+    //const baseDate = new Date()
+    //baseDate.setDate(baseDate.getDate() + weekOffset)
+    return getWeekStart(selectedDate)
   }, [weekOffset])
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
@@ -80,10 +97,25 @@ export const Step3CalendarSlotSelection = ({
     isTrial: step1.isTrial,
   })
 
+  const allEvents = useMemo(() => {
+    if (placeholderEvent) {
+      return [...events, placeholderEvent]
+    }
+    return events
+  }, [events, placeholderEvent])
+
+
   const isLoading = isLoadingRooms || isLoadingCalendar || isLoadingCourses
 
   const handleWeekChange = (days: number) => {
-    setWeekOffset(prev => prev + days)
+    setWeekOffset(prev => {
+      const newOffset = prev + days
+      //Update selectedDate to reflect new week
+      const baseDate = new Date()
+      baseDate.setDate(baseDate.getDate() + newOffset)
+      setSelectedDate(getWeekStart(baseDate))
+      return newOffset
+    })
   }
 
   const handleDateSelect = (date: Date) => {
@@ -96,6 +128,23 @@ export const Step3CalendarSlotSelection = ({
     })
   }
 
+  const createPlaceholderEvent = useCallback(
+    (date: Date, startTime: string, endTime: string): CalendarEvent => {
+      const dateStr = formatDateForApi(date)
+      return {
+        startDateTime: `${dateStr}T${startTime}:00`,
+        endDateTime: `${dateStr}T${endTime}:00`,
+        title: 'Selected Slot',
+        frequency: step1.recurrence === 'Biweekly' ? 'bi-weekly' : 'weekly',
+        eventType: 'placeholder',
+        attendees: step2.students.map(s => s.studentName),
+      }
+    },
+    []
+  )
+
+
+  // When a time is selected, check availability and update context
   const handleTimeSelect = useCallback(
     async (time: string, date?: Date) => {
       if (!step3.selectedRoomId) {
@@ -129,6 +178,9 @@ export const Step3CalendarSlotSelection = ({
           })
           return
         }
+
+        const placeholder = createPlaceholderEvent(targetDate, time, endTime)
+        setPlaceholderEvent(placeholder)
 
         // Update context with valid selection including the date
         updateStep3({
@@ -198,7 +250,7 @@ export const Step3CalendarSlotSelection = ({
       <div className="flex-1 overflow-hidden">
         <CalendarComponent
           title={`Week of ${formatDateForApi(weekStart)}`}
-          events={events}
+          events={allEvents}
           dates={weekDays}
           dayStartTime={8}
           dayEndTime={23}
