@@ -157,7 +157,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
 
       {/* Vertical Grid Lines */}
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="border-r border-slate-300 h-full" aria-hidden="true" />
+        <div key={`grid-line-${i}`} className="border-r border-slate-300 h-full" aria-hidden="true" />
       ))}
 
       {/* Hover Indicator */}
@@ -199,7 +199,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
       )}
 
       {/* Events */}
-      {validEvents.map((event, idx) => {
+      {validEvents.map((event) => {
         // Extract the date from the event's datetime
         const eventDate = getDateFromDateTime(event.startDateTime);
 
@@ -211,7 +211,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
 
         return (
           <EventItem
-            key={`${event.startDateTime}-${event.title}-${idx}`}
+            key={`${event.startDateTime}-${event.title}`}
             event={event}
             dayIndex={dayIndex}
             hourHeight={hourHeight}

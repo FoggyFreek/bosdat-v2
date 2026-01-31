@@ -44,9 +44,9 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
         <div className="mb-3">
           <div className="text-[10px] font-semibold text-slate-600 mb-2">Attendees</div>
           <div className="flex flex-wrap gap-1.5">
-            {event.attendees.map((attendee, idx) => (
+            {event.attendees.map((attendee) => (
               <div
-                key={idx}
+                key={attendee}
                 className="w-7 h-7 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center text-[10px] font-medium text-slate-700"
                 title={attendee}
                 aria-label={attendee}
