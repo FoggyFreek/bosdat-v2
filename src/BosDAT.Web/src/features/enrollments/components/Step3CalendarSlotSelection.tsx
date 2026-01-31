@@ -4,14 +4,10 @@ import { roomsApi, calendarApi, coursesApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { Step3Summary } from './Step3Summary'
 import CalendarComponent from '@/features/calendar/CalendarComponent'
-import { useCalendarGridItems } from '../hooks/useCalendarGridItems'
+import { useCalendarEvents } from '../hooks/useCalendarEvents'
 import { getWeekStart, getWeekDays, formatDateForApi, calculateEndTime } from '@/lib/calendar-utils'
 import { useToast } from '@/hooks/use-toast'
-import {
-  transformGridItemsToEvents,
-  createEnrollmentColorScheme,
-  formatTimeSlotToTime,
-} from '../utils/calendarAdapter'
+import { createEnrollmentColorScheme, formatTimeSlotToTime } from '../utils/calendarAdapter'
 import type { Room } from '@/features/rooms/types'
 import type { WeekCalendar } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
@@ -75,19 +71,14 @@ export const Step3CalendarSlotSelection = ({
     enabled: !step1.isTrial,
   })
 
-  // Transform data
-  const gridItems = useCalendarGridItems({
-    date: formatDateForApi(selectedDate),
+  // Transform API data directly to calendar events
+  const events = useCalendarEvents({
     weekStart,
     lessons: weekCalendar?.lessons || [],
     courses,
+    holidays: weekCalendar?.holidays || [],
     isTrial: step1.isTrial,
   })
-
-  const events = useMemo(
-    () => transformGridItemsToEvents(gridItems),
-    [gridItems]
-  )
 
   const isLoading = isLoadingRooms || isLoadingCalendar || isLoadingCourses
 
@@ -106,7 +97,7 @@ export const Step3CalendarSlotSelection = ({
   }
 
   const handleTimeSelect = useCallback(
-    async (time: string) => {
+    async (time: string, date?: Date) => {
       if (!step3.selectedRoomId) {
         toast({
           title: 'Room Required',
@@ -116,12 +107,14 @@ export const Step3CalendarSlotSelection = ({
         return
       }
 
+      // Use provided date or fall back to selectedDate
+      const targetDate = date || selectedDate
       const endTime = calculateEndTime(time, durationMinutes)
 
       // Check availability
       try {
         const availability = await calendarApi.checkAvailability({
-          date: formatDateForApi(selectedDate),
+          date: formatDateForApi(targetDate),
           startTime: time,
           endTime,
           teacherId,
@@ -137,15 +130,20 @@ export const Step3CalendarSlotSelection = ({
           return
         }
 
-        // Update context with valid selection
+        // Update context with valid selection including the date
         updateStep3({
+          selectedDate: formatDateForApi(targetDate),
+          selectedDayOfWeek: targetDate.getDay(),
           selectedStartTime: time,
           selectedEndTime: endTime,
         })
 
+        // Update local state to reflect the selected date
+        setSelectedDate(targetDate)
+
         toast({
           title: 'Time Slot Selected',
-          description: `Selected ${time} - ${endTime}`,
+          description: `Selected ${formatDateForApi(targetDate)} ${time} - ${endTime}`,
         })
       } catch (error) {
         toast({
@@ -161,7 +159,8 @@ export const Step3CalendarSlotSelection = ({
   const handleTimeslotClick = useCallback(
     (timeslot: TimeSlot) => {
       const time = formatTimeSlotToTime(timeslot)
-      handleTimeSelect(time)
+      // Pass both time and date from the timeslot, overriding any previously selected date
+      handleTimeSelect(time, timeslot.date)
     },
     [handleTimeSelect]
   )
