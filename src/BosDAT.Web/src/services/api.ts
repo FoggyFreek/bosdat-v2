@@ -371,12 +371,7 @@ export const enrollmentsApi = {
       `/enrollments/student/${studentId}/course/${courseId}/pricing`
     )
     return response.data
-  },
-
-  validate: async (data: ValidateEnrollmentRequest): Promise<EnrollmentValidationResult> => {
-    const response = await api.post<EnrollmentValidationResult>('/enrollments/validate', data)
-    return response.data
-  },
+  }
 }
 
 // Lessons API

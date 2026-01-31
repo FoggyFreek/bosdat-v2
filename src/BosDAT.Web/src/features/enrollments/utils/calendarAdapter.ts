@@ -1,35 +1,8 @@
-import type { CalendarGridItem } from '../types'
-import type { Event, ColorScheme, TimeSlot } from '@/features/calendar/types'
-
-/**
- * Transforms CalendarGridItem array to Event array for CalendarComponent
- * @param items - Array of calendar grid items from enrollment context
- * @returns Array of events in CalendarComponent format
- */
-export const transformGridItemsToEvents = (
-  items: CalendarGridItem[]
-): Event[] => {
-  return items.map((item) => {
-    // Each item should have its own date, parse it
-    const itemDate = item.date ? new Date(item.date) : new Date()
-    const startDateTime = combineDateAndTime(itemDate, item.startTime)
-    const endDateTime = combineDateAndTime(itemDate, item.endTime)
-
-    return {
-      startDateTime: startDateTime.toISOString(),
-      endDateTime: endDateTime.toISOString(),
-      title: item.title,
-      frequency: item.frequency || 'Weekly',
-      eventType: mapCourseTypeToEventType(item.courseType),
-      attendees: item.studentNames,
-      room: item.roomId?.toString(),
-    }
-  })
-}
+import type { ColorScheme, TimeSlot } from '@/features/calendar/types'
 
 /**
  * Creates the color scheme for enrollment calendar events
- * Maps course types to colors matching the enrollment feature design
+ * Maps event types to colors matching the enrollment feature design
  * @returns ColorScheme object for CalendarComponent
  */
 export const createEnrollmentColorScheme = (): ColorScheme => {
@@ -54,6 +27,11 @@ export const createEnrollmentColorScheme = (): ColorScheme => {
       border: '#f59e0b',
       textBackground: '#fde68a',
     },
+    holiday: {
+      background: '#fef2f2',
+      border: '#ef4444',
+      textBackground: '#fee2e2',
+    },
   }
 }
 
@@ -74,30 +52,6 @@ export const formatTimeSlotToTime = (timeslot: TimeSlot): string => {
   const finalMinute = roundedMinute === 60 ? 0 : roundedMinute
 
   return `${padZero(finalHour)}:${padZero(finalMinute)}`
-}
-
-/**
- * Combines a date and time string into a Date object
- * @param date - The base date
- * @param time - Time string in HH:mm format
- * @returns Combined Date object
- */
-const combineDateAndTime = (date: Date, time: string): Date => {
-  const [hours, minutes] = time.split(':').map(Number)
-  const result = new Date(date)
-  result.setUTCHours(hours, minutes, 0, 0)
-  return result
-}
-
-/**
- * Maps enrollment course type to calendar event type
- * @param courseType - Course type from enrollment domain
- * @returns Event type string (lowercase)
- */
-const mapCourseTypeToEventType = (
-  courseType: 'Individual' | 'Group' | 'Workshop' | 'Trail'
-): string => {
-  return courseType.toLowerCase()
 }
 
 /**

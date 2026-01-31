@@ -48,10 +48,13 @@ describe('SettingsPage', () => {
   })
 
   describe('Navigation', () => {
-    it('renders settings title and navigation sidebar', () => {
+    it('renders settings title and navigation sidebar', async () => {
       render(<SettingsPage />)
 
-      expect(screen.getByRole('heading', { name: /settings/i })).toBeInTheDocument()
+      // Wait for lazy-loaded content to settle
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /settings/i })).toBeInTheDocument()
+      })
     })
 
     it('renders all navigation groups', () => {

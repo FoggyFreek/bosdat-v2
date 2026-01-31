@@ -70,21 +70,6 @@ export interface Step3ValidationResult {
   errors: string[]
 }
 
-export interface CalendarGridItem {
-  id: string
-  type: 'course' | 'lesson'
-  courseType: 'Individual' | 'Group' | 'Workshop' | 'Trail'
-  title: string
-  date?: string  // ISO date string for lessons
-  startTime: string
-  endTime: string
-  teacherName: string
-  studentNames: string[]
-  frequency?: 'Weekly' | 'Biweekly' | 'Trail'
-  isFuture: boolean
-  roomId?: number
-}
-
 export const initialStep3Data: Step3CalendarSlotSelectionData = {
   selectedRoomId: null,
   selectedDayOfWeek: null,
