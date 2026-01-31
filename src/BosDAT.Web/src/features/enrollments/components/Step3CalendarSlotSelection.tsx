@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { roomsApi, calendarApi, coursesApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { Step3Summary } from './Step3Summary'
-import CalendarComponent from '@/features/calendar/CalendarComponent'
+import CalendarComponent from '@/components/calendar/CalendarComponent'
 import { useCalendarEvents } from '../hooks/useCalendarEvents'
 import { getWeekStart, getWeekDays, formatDateForApi, calculateEndTime } from '@/lib/calendar-utils'
 import { useToast } from '@/hooks/use-toast'
@@ -11,7 +11,7 @@ import { createEnrollmentColorScheme, formatTimeSlotToTime } from '../utils/cale
 import type { Room } from '@/features/rooms/types'
 import type { WeekCalendar } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
-import type { TimeSlot } from '@/features/calendar/types'
+import type { TimeSlot } from '@/components/calendar/types'
 
 interface Step3CalendarSlotSelectionProps {
   teacherId: string

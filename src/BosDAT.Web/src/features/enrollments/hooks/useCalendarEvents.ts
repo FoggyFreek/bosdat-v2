@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { CalendarLesson, Holiday } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
-import type { Event } from '@/features/calendar/types'
+import type { Event } from '@/components/calendar/types'
 
 interface UseCalendarEventsProps {
   weekStart: Date

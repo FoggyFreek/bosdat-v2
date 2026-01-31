@@ -1,4 +1,4 @@
-import type { ColorScheme, TimeSlot } from '@/features/calendar/types'
+import type { ColorScheme, TimeSlot } from '@/components/calendar/types'
 
 /**
  * Creates the color scheme for enrollment calendar events

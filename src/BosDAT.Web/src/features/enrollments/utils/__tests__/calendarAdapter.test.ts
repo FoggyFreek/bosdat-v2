@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { createEnrollmentColorScheme, formatTimeSlotToTime } from '../calendarAdapter'
-import type { TimeSlot } from '@/features/calendar/types'
+import type { TimeSlot } from '@/components/calendar/types'
 
 describe('calendarAdapter', () => {
   describe('createEnrollmentColorScheme', () => {
