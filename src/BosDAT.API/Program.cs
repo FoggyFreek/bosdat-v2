@@ -79,6 +79,7 @@ builder.Services.AddScoped<IRegistrationFeeService, RegistrationFeeService>();
 builder.Services.AddScoped<IEnrollmentPricingService, EnrollmentPricingService>();
 builder.Services.AddScoped<IStudentLedgerRepository, StudentLedgerRepository>();
 builder.Services.AddScoped<IStudentLedgerService, StudentLedgerService>();
+builder.Services.AddScoped<IScheduleConflictService, ScheduleConflictService>();
 
 // CORS
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();

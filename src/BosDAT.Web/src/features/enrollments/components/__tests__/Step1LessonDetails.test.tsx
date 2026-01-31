@@ -439,4 +439,44 @@ describe('Step1LessonDetails', () => {
       })
     })
   })
+
+  describe('Week Parity selection', () => {
+    it('hides week parity selector when Weekly is selected', async () => {
+      renderWithProvider(<Step1LessonDetails />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: /^weekly$/i })).toBeChecked()
+      })
+
+      expect(screen.queryByText(/all weeks/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/odd weeks/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/even weeks/i)).not.toBeInTheDocument()
+    })
+
+    it('shows week parity selector when Biweekly is selected', async () => {
+      const user = userEvent.setup()
+      renderWithProvider(<Step1LessonDetails />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: /bi-weekly/i })).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole('radio', { name: /bi-weekly/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText(/all weeks \(every week\)/i)).toBeInTheDocument()
+      })
+    })
+
+    it('defaults week parity to All', async () => {
+      const user = userEvent.setup()
+      renderWithProvider(<Step1LessonDetails />)
+
+      await user.click(screen.getByRole('radio', { name: /bi-weekly/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText(/all weeks \(every week\)/i)).toBeInTheDocument()
+      })
+    })
+  })
 })

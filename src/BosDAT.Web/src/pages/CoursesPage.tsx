@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { coursesApi } from '@/services/api'
 import type { CourseList } from '@/features/courses/types'
 import { cn, getDayName } from '@/lib/utils'
@@ -24,6 +25,19 @@ export function CoursesPage() {
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const getWeekParityBadge = (course: CourseList) => {
+    if (course.frequency !== 'Biweekly' || !course.weekParity || course.weekParity === 'All') {
+      return null
+    }
+
+    const variant = course.weekParity === 'Odd' ? 'default' : 'secondary'
+    return (
+      <Badge variant={variant} className="text-xs">
+        {course.weekParity} Weeks
+      </Badge>
+    )
   }
 
   // Group courses by day
@@ -109,14 +123,17 @@ export function CoursesPage() {
                             <div className="text-right">
                               <p className="text-sm">{course.enrollmentCount} enrolled</p>
                             </div>
-                            <span
-                              className={cn(
-                                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                getStatusColor(course.status)
-                              )}
-                            >
-                              {course.status}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {getWeekParityBadge(course)}
+                              <span
+                                className={cn(
+                                  'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                  getStatusColor(course.status)
+                                )}
+                              >
+                                {course.status}
+                              </span>
+                            </div>
                           </div>
                         </Link>
                       ))}

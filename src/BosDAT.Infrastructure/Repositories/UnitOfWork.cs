@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private IStudentRepository? _students;
     private ITeacherRepository? _teachers;
     private ICourseRepository? _courses;
+    private IEnrollmentRepository? _enrollments;
     private ILessonRepository? _lessons;
     private IInvoiceRepository? _invoices;
     private IStudentLedgerRepository? _studentLedgerEntries;
@@ -30,6 +31,9 @@ public class UnitOfWork : IUnitOfWork
 
     public ICourseRepository Courses =>
         _courses ??= new CourseRepository(_context);
+
+    public IEnrollmentRepository Enrollments =>
+        _enrollments ??= new EnrollmentRepository(_context);
 
     public ILessonRepository Lessons =>
         _lessons ??= new LessonRepository(_context);

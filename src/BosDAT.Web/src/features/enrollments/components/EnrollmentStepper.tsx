@@ -10,7 +10,7 @@ import {
 import { Step1LessonDetails } from './Step1LessonDetails'
 import { Step2StudentSelection } from './Step2StudentSelection'
 import { Step3CalendarSlotSelection } from './Step3CalendarSlotSelection'
-import { StepPlaceholder } from './StepPlaceholder'
+import { Step4Summary } from './Step4Summary'
 import { courseTypesApi } from '@/services/api'
 import type { CourseType } from '@/features/course-types/types'
 
@@ -99,7 +99,7 @@ const EnrollmentStepperContent = () => {
     )
   }
 
-  const renderStep4 = () => <StepPlaceholder title="Confirmation" />
+  const renderStep4 = () => <Step4Summary />
 
   const renderStepContent = () => {
     switch (currentStep) {

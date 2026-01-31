@@ -12,10 +12,12 @@ namespace BosDAT.API.Controllers;
 [Authorize]
 public class EnrollmentsController(
     IUnitOfWork unitOfWork,
+    IScheduleConflictService scheduleConflictService,
     IRegistrationFeeService registrationFeeService,
     IEnrollmentPricingService enrollmentPricingService) : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IScheduleConflictService _scheduleConflictService = scheduleConflictService;
     private readonly IRegistrationFeeService _registrationFeeService = registrationFeeService;
     private readonly IEnrollmentPricingService _enrollmentPricingService = enrollmentPricingService;
 
@@ -174,6 +176,20 @@ public class EnrollmentsController(
         if (course == null)
         {
             return BadRequest(new { message = "Course not found" });
+        }
+
+        // Check for schedule conflicts
+        var conflictCheck = await _scheduleConflictService.HasConflictAsync(dto.StudentId, dto.CourseId);
+        if (conflictCheck.HasConflict)
+        {
+            var conflictDetails = conflictCheck.ConflictingCourses
+                .Select(ConflictingCourseDto.FromConflict);
+
+            return BadRequest(new
+            {
+                message = "Schedule conflict detected. This course overlaps with existing enrollment(s).",
+                conflicts = conflictDetails
+            });
         }
 
         // Check if already enrolled

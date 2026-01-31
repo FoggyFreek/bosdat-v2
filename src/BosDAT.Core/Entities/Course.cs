@@ -1,3 +1,5 @@
+using BosDAT.Core.Enums;
+
 namespace BosDAT.Core.Entities;
 
 public enum CourseStatus
@@ -26,6 +28,7 @@ public class Course : BaseEntity
     public TimeOnly EndTime { get; set; }
 
     public CourseFrequency Frequency { get; set; } = CourseFrequency.Weekly;
+    public WeekParity WeekParity { get; set; } = WeekParity.All;
     public DateOnly StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
 

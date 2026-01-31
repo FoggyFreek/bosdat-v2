@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Utilities;
 
 namespace BosDAT.API.Controllers;
 
@@ -338,7 +340,7 @@ public class LessonsController : ControllerBase
 
         var lessonsCreated = 0;
         var lessonsSkipped = 0;
-        var currentDate = FindFirstOccurrenceDate(startDate, course.DayOfWeek, endDate);
+        var currentDate = FindFirstOccurrenceDate(startDate, course, endDate);
 
         while (currentDate <= endDate)
         {
@@ -354,7 +356,7 @@ public class LessonsController : ControllerBase
                     : 1;
             }
 
-            currentDate = GetNextOccurrenceDate(currentDate, course.Frequency);
+            currentDate = GetNextOccurrenceDate(currentDate, course);
         }
 
         return (lessonsCreated, lessonsSkipped);
@@ -393,6 +395,29 @@ public class LessonsController : ControllerBase
         return currentDate;
     }
 
+    private static DateOnly FindFirstOccurrenceDate(DateOnly startDate, Course course, DateOnly endDate)
+    {
+        var currentDate = startDate;
+
+        // Find first occurrence of the target day of week
+        while (currentDate.DayOfWeek != course.DayOfWeek && currentDate <= endDate)
+        {
+            currentDate = currentDate.AddDays(1);
+        }
+
+        // For biweekly with specific parity, ensure we start on correct week
+        if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
+        {
+            while (!IsoWeekHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
+                   && currentDate <= endDate)
+            {
+                currentDate = currentDate.AddDays(7);
+            }
+        }
+
+        return currentDate;
+    }
+
     private static bool ShouldSkipDate(DateOnly date, List<Holiday> holidays, HashSet<DateOnly> existingDates)
     {
         var isHoliday = holidays.Any(h => date >= h.StartDate && date <= h.EndDate);
@@ -402,6 +427,33 @@ public class LessonsController : ControllerBase
     private static DateOnly GetNextOccurrenceDate(DateOnly currentDate, CourseFrequency frequency)
     {
         return frequency switch
+        {
+            CourseFrequency.Weekly => currentDate.AddDays(7),
+            CourseFrequency.Biweekly => currentDate.AddDays(14),
+            CourseFrequency.Monthly => currentDate.AddMonths(1),
+            _ => currentDate.AddDays(7)
+        };
+    }
+
+    private static DateOnly GetNextOccurrenceDate(DateOnly currentDate, Course course)
+    {
+        // For biweekly with specific parity, we need to find the next occurrence in a matching week
+        if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
+        {
+            // Start by adding 7 days (1 week)
+            var nextDate = currentDate.AddDays(7);
+
+            // Keep adding weeks until we find one that matches the parity
+            while (!IsoWeekHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
+            {
+                nextDate = nextDate.AddDays(7);
+            }
+
+            return nextDate;
+        }
+
+        // For other frequencies, use simple date arithmetic
+        return course.Frequency switch
         {
             CourseFrequency.Weekly => currentDate.AddDays(7),
             CourseFrequency.Biweekly => currentDate.AddDays(14),

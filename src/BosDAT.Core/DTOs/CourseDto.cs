@@ -1,4 +1,5 @@
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 
 namespace BosDAT.Core.DTOs;
 
@@ -16,6 +17,8 @@ public record CourseDto
     public TimeOnly StartTime { get; init; }
     public TimeOnly EndTime { get; init; }
     public CourseFrequency Frequency { get; init; }
+    public WeekParity WeekParity { get; init; }
+    public bool? Has53WeekYearWarning { get; init; }
     public DateOnly StartDate { get; init; }
     public DateOnly? EndDate { get; init; }
     public CourseStatus Status { get; init; }
@@ -37,6 +40,7 @@ public record CreateCourseDto
     public TimeOnly StartTime { get; init; }
     public TimeOnly EndTime { get; init; }
     public CourseFrequency Frequency { get; init; } = CourseFrequency.Weekly;
+    public WeekParity WeekParity { get; init; } = WeekParity.All;
     public DateOnly StartDate { get; init; }
     public DateOnly? EndDate { get; init; }
     public bool IsWorkshop { get; init; }
@@ -53,6 +57,7 @@ public record UpdateCourseDto
     public TimeOnly StartTime { get; init; }
     public TimeOnly EndTime { get; init; }
     public CourseFrequency Frequency { get; init; }
+    public WeekParity WeekParity { get; init; }
     public DateOnly StartDate { get; init; }
     public DateOnly? EndDate { get; init; }
     public CourseStatus Status { get; init; }
@@ -71,6 +76,8 @@ public record CourseListDto
     public DayOfWeek DayOfWeek { get; init; }
     public TimeOnly StartTime { get; init; }
     public TimeOnly EndTime { get; init; }
+    public CourseFrequency Frequency { get; init; }
+    public WeekParity WeekParity { get; init; }
     public CourseStatus Status { get; init; }
     public int EnrollmentCount { get; init; }
 }

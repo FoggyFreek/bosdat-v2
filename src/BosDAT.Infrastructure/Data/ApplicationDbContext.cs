@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Audit;
 
@@ -189,6 +190,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<Course>(entity =>
         {
             entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.WeekParity)
+                .HasColumnName("week_parity")
+                .HasDefaultValue(WeekParity.All);
+
+            entity.HasIndex(e => new { e.DayOfWeek, e.Frequency, e.WeekParity })
+                .HasDatabaseName("ix_courses_schedule_lookup");
 
             entity.HasOne(e => e.Teacher)
                 .WithMany(t => t.Courses)

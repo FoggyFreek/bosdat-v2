@@ -11,6 +11,10 @@ import type {
   CreateStudentLedgerEntry,
   EnrollmentPricing,
 } from '@/features/students/types'
+import type {
+  EnrollmentValidationResult,
+  ValidateEnrollmentRequest,
+} from '@/features/enrollments/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
@@ -366,6 +370,11 @@ export const enrollmentsApi = {
     const response = await api.get<EnrollmentPricing>(
       `/enrollments/student/${studentId}/course/${courseId}/pricing`
     )
+    return response.data
+  },
+
+  validate: async (data: ValidateEnrollmentRequest): Promise<EnrollmentValidationResult> => {
+    const response = await api.post<EnrollmentValidationResult>('/enrollments/validate', data)
     return response.data
   },
 }

@@ -1,16 +1,21 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { roomsApi, calendarApi, coursesApi, holidaysApi } from '@/services/api'
+import { roomsApi, calendarApi, coursesApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { Step3Summary } from './Step3Summary'
-import { CalendarDayNavigation } from './CalendarDayNavigation'
-import { CalendarDayGrid } from './CalendarDayGrid'
+import CalendarComponent from '@/features/calendar/CalendarComponent'
 import { useCalendarGridItems } from '../hooks/useCalendarGridItems'
-import { getWeekStart, formatDateForApi, calculateEndTime } from '@/lib/calendar-utils'
+import { getWeekStart, getWeekDays, formatDateForApi, calculateEndTime } from '@/lib/calendar-utils'
 import { useToast } from '@/hooks/use-toast'
+import {
+  transformGridItemsToEvents,
+  createEnrollmentColorScheme,
+  formatTimeSlotToTime,
+} from '../utils/calendarAdapter'
 import type { Room } from '@/features/rooms/types'
-import type { DayCalendar, Holiday } from '@/features/schedule/types'
+import type { WeekCalendar } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
+import type { TimeSlot } from '@/features/calendar/types'
 
 interface Step3CalendarSlotSelectionProps {
   teacherId: string
@@ -34,54 +39,56 @@ export const Step3CalendarSlotSelection = ({
     return getWeekStart(baseDate)
   }, [weekOffset])
 
+  const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
+
+  const colorScheme = useMemo(() => createEnrollmentColorScheme(), [])
+
   // Fetch rooms
   const { data: rooms = [], isLoading: isLoadingRooms, error: roomsError } = useQuery<Room[]>({
     queryKey: ['rooms', { activeOnly: true }],
     queryFn: () => roomsApi.getAll({ activeOnly: true }),
   })
 
-  // Fetch day calendar data
+  // Fetch week calendar data
   const {
-    data: dayCalendar,
+    data: weekCalendar,
     isLoading: isLoadingCalendar,
     error: calendarError,
-  } = useQuery<DayCalendar>({
-    queryKey: ['calendar', 'day', formatDateForApi(selectedDate), teacherId, step3.selectedRoomId],
+  } = useQuery<WeekCalendar>({
+    queryKey: ['calendar', 'week', formatDateForApi(weekStart), teacherId, step3.selectedRoomId],
     queryFn: () =>
-      calendarApi.getDay({
-        date: formatDateForApi(selectedDate),
+      calendarApi.getWeek({
+        date: formatDateForApi(weekStart),
         teacherId,
         roomId: step3.selectedRoomId || undefined,
       }),
     enabled: !!step3.selectedRoomId,
   })
 
-  // Fetch courses
+  // Fetch all courses for the teacher (for the entire week)
   const { data: courses = [], isLoading: isLoadingCourses } = useQuery<Course[]>({
-    queryKey: ['courses', { dayOfWeek: selectedDate.getDay(), teacherId }],
+    queryKey: ['courses', { teacherId }],
     queryFn: () =>
       coursesApi.getAll({
-        dayOfWeek: selectedDate.getDay(),
         teacherId,
       }),
     enabled: !step1.isTrial,
   })
 
-  // Fetch holidays
-  const { data: holidays = [] } = useQuery<Holiday[]>({
-    queryKey: ['holidays'],
-    queryFn: () => holidaysApi.getAll(),
-  })
-
   // Transform data
   const gridItems = useCalendarGridItems({
     date: formatDateForApi(selectedDate),
-    lessons: dayCalendar?.lessons || [],
+    weekStart,
+    lessons: weekCalendar?.lessons || [],
     courses,
     isTrial: step1.isTrial,
   })
 
-  const isHoliday = dayCalendar?.isHoliday || false
+  const events = useMemo(
+    () => transformGridItemsToEvents(gridItems),
+    [gridItems]
+  )
+
   const isLoading = isLoadingRooms || isLoadingCalendar || isLoadingCourses
 
   const handleWeekChange = (days: number) => {
@@ -98,55 +105,66 @@ export const Step3CalendarSlotSelection = ({
     })
   }
 
-  const handleTimeSelect = async (time: string) => {
-    if (!step3.selectedRoomId) {
-      toast({
-        title: 'Room Required',
-        description: 'Please select a room first.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const endTime = calculateEndTime(time, durationMinutes)
-
-    // Check availability
-    try {
-      const availability = await calendarApi.checkAvailability({
-        date: formatDateForApi(selectedDate),
-        startTime: time,
-        endTime,
-        teacherId,
-        roomId: step3.selectedRoomId,
-      })
-
-      if (!availability.isAvailable) {
+  const handleTimeSelect = useCallback(
+    async (time: string) => {
+      if (!step3.selectedRoomId) {
         toast({
-          title: 'Time Slot Unavailable',
-          description: availability.conflicts?.[0]?.description || 'This time slot is not available.',
+          title: 'Room Required',
+          description: 'Please select a room first.',
           variant: 'destructive',
         })
         return
       }
 
-      // Update context with valid selection
-      updateStep3({
-        selectedStartTime: time,
-        selectedEndTime: endTime,
-      })
+      const endTime = calculateEndTime(time, durationMinutes)
 
-      toast({
-        title: 'Time Slot Selected',
-        description: `Selected ${time} - ${endTime}`,
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to check availability. Please try again.',
-        variant: 'destructive',
-      })
-    }
-  }
+      // Check availability
+      try {
+        const availability = await calendarApi.checkAvailability({
+          date: formatDateForApi(selectedDate),
+          startTime: time,
+          endTime,
+          teacherId,
+          roomId: step3.selectedRoomId,
+        })
+
+        if (!availability.isAvailable) {
+          toast({
+            title: 'Time Slot Unavailable',
+            description: availability.conflicts?.[0]?.description || 'This time slot is not available.',
+            variant: 'destructive',
+          })
+          return
+        }
+
+        // Update context with valid selection
+        updateStep3({
+          selectedStartTime: time,
+          selectedEndTime: endTime,
+        })
+
+        toast({
+          title: 'Time Slot Selected',
+          description: `Selected ${time} - ${endTime}`,
+        })
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to check availability. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    },
+    [step3.selectedRoomId, durationMinutes, selectedDate, teacherId, updateStep3, toast]
+  )
+
+  const handleTimeslotClick = useCallback(
+    (timeslot: TimeSlot) => {
+      const time = formatTimeSlotToTime(timeslot)
+      handleTimeSelect(time)
+    },
+    [handleTimeSelect]
+  )
 
   if (roomsError || calendarError) {
     return (
@@ -176,25 +194,21 @@ export const Step3CalendarSlotSelection = ({
         <Step3Summary rooms={rooms} />
       </div>
 
-      {/* Day Navigation - Anchored below summary */}
-      <div className="sticky top-[calc(theme(spacing.0)+var(--summary-height,8rem))] z-10 bg-white pb-4">
-        <CalendarDayNavigation
-          weekStart={weekStart}
-          selectedDate={selectedDate}
-          holidays={holidays}
-          onDateSelect={handleDateSelect}
-          onWeekChange={handleWeekChange}
-        />
-      </div>
-
       {/* Calendar Grid - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <CalendarDayGrid
-          items={gridItems}
-          selectedTime={step3.selectedStartTime}
-          isHoliday={isHoliday}
-          durationMinutes={durationMinutes}
-          onTimeSelect={handleTimeSelect}
+      <div className="flex-1 overflow-hidden">
+        <CalendarComponent
+          title={`Week of ${formatDateForApi(weekStart)}`}
+          events={events}
+          dates={weekDays}
+          daystartTime={8}
+          dayendTime={23}
+          hourHeight={80}
+          colorScheme={colorScheme}
+          onNavigatePrevious={() => handleWeekChange(-7)}
+          onNavigateNext={() => handleWeekChange(7)}
+          onTimeslotClick={handleTimeslotClick}
+          onDateSelect={handleDateSelect}
+          highlightedDate={selectedDate}
         />
       </div>
     </div>

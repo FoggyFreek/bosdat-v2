@@ -5,6 +5,7 @@ public interface IUnitOfWork : IDisposable
     IStudentRepository Students { get; }
     ITeacherRepository Teachers { get; }
     ICourseRepository Courses { get; }
+    IEnrollmentRepository Enrollments { get; }
     ILessonRepository Lessons { get; }
     IInvoiceRepository Invoices { get; }
     IStudentLedgerRepository StudentLedgerEntries { get; }

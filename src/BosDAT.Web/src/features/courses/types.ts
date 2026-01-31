@@ -4,6 +4,7 @@ import type { Enrollment } from '@/features/enrollments/types'
 
 export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
 export type CourseFrequency = 'Weekly' | 'Biweekly' | 'Monthly'
+export type WeekParity = 'All' | 'Odd' | 'Even'
 
 export interface Course {
   id: string
@@ -18,6 +19,8 @@ export interface Course {
   startTime: string
   endTime: string
   frequency: CourseFrequency
+  weekParity: WeekParity
+  has53WeekYearWarning?: boolean
   startDate: string
   endDate?: string
   status: CourseStatus
@@ -39,6 +42,8 @@ export interface CourseList {
   dayOfWeek: number
   startTime: string
   endTime: string
+  frequency: CourseFrequency
+  weekParity: WeekParity
   status: CourseStatus
   enrollmentCount: number
 }

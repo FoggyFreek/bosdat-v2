@@ -13,9 +13,11 @@ import {
 import { courseTypesApi, teachersApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayName } from '@/lib/utils'
+import { WeekParitySelect } from '@/features/courses/components/WeekParitySelect'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { RecurrenceType } from '../types'
+import type { WeekParity } from '@/features/courses/types'
 
 export const Step1LessonDetails = () => {
   const { formData, updateStep1 } = useEnrollmentForm()
@@ -94,6 +96,10 @@ export const Step1LessonDetails = () => {
 
   const handleRecurrenceChange = (value: RecurrenceType) => {
     updateStep1({ recurrence: value })
+  }
+
+  const handleWeekParityChange = (value: WeekParity) => {
+    updateStep1({ weekParity: value })
   }
 
   return (
@@ -224,6 +230,16 @@ export const Step1LessonDetails = () => {
           </label>
         </div>
       </div>
+
+      {/* Week Parity - only for Biweekly */}
+      {step1.recurrence === 'Biweekly' && (
+        <WeekParitySelect
+          value={step1.weekParity}
+          onChange={handleWeekParityChange}
+          disabled={false}
+          helperText="Select which weeks this biweekly course occurs in"
+        />
+      )}
     </div>
   )
 }

@@ -5,6 +5,7 @@ import type { CalendarGridItem } from '../types'
 
 interface UseCalendarGridItemsProps {
   date: string
+  weekStart: Date
   lessons: CalendarLesson[]
   courses: Course[]
   isTrial: boolean
@@ -28,7 +29,8 @@ const determineCourseType = (
  * Transform API data (lessons and courses) into calendar grid items
  */
 export const useCalendarGridItems = ({
-  
+
+  weekStart,
   lessons,
   courses,
   isTrial,
@@ -44,6 +46,7 @@ export const useCalendarGridItems = ({
         type: 'lesson',
         courseType: isTrial ? 'Trail' : determineCourseType(lesson.instrumentName, false),
         title: lesson.title,
+        date: lesson.date,
         startTime: lesson.startTime,
         endTime: lesson.endTime,
         teacherName: lesson.teacherName,
@@ -58,11 +61,19 @@ export const useCalendarGridItems = ({
       courses.forEach((course) => {
         const studentNames = course.enrollments.map((e) => e.studentName)
 
+        // Calculate the date for this course within the displayed week
+        // weekStart is Monday, dayOfWeek is 0-6 (0=Sunday, 1=Monday, etc.)
+        // Offset: Monday(1)=0, Tuesday(2)=1, ..., Saturday(6)=5, Sunday(0)=6
+        const offset = course.dayOfWeek === 0 ? 6 : course.dayOfWeek - 1
+        const courseDate = new Date(weekStart)
+        courseDate.setDate(weekStart.getDate() + offset)
+
         items.push({
           id: course.id,
           type: 'course',
           courseType: determineCourseType(course.courseTypeName, course.isWorkshop),
           title: `${course.courseTypeName} - ${course.teacherName}`,
+          date: courseDate.toISOString().split('T')[0],
           startTime: course.startTime,
           endTime: course.endTime,
           teacherName: course.teacherName,
@@ -78,5 +89,5 @@ export const useCalendarGridItems = ({
 
     // Sort by start time
     return items.toSorted((a, b) => a.startTime.localeCompare(b.startTime))
-  }, [lessons, courses, isTrial])
+  }, [weekStart, lessons, courses, isTrial])
 }

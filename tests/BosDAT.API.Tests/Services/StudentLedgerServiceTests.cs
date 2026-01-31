@@ -18,6 +18,7 @@ internal class TestUnitOfWork(ApplicationDbContext context, IStudentLedgerReposi
     public IStudentRepository Students => throw new NotImplementedException();
     public ITeacherRepository Teachers => throw new NotImplementedException();
     public ICourseRepository Courses => throw new NotImplementedException();
+    public IEnrollmentRepository Enrollments => throw new NotImplementedException();
     public ILessonRepository Lessons => throw new NotImplementedException();
     public IInvoiceRepository Invoices => throw new NotImplementedException();
     public IStudentLedgerRepository StudentLedgerEntries => ledgerRepository;

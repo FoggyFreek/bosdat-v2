@@ -21,7 +21,13 @@ public class EnrollmentsControllerTests
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
         _mockRegistrationFeeService = new Mock<IRegistrationFeeService>();
         _mockEnrollmentPricingService = new Mock<IEnrollmentPricingService>();
-        _controller = new EnrollmentsController(_mockUnitOfWork.Object, _mockRegistrationFeeService.Object, _mockEnrollmentPricingService.Object);
+        var mockScheduleConflictService = new Mock<IScheduleConflictService>();
+
+        // Setup default behavior - no conflicts
+        mockScheduleConflictService.Setup(s => s.HasConflictAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .ReturnsAsync(new ConflictCheckResult { HasConflict = false, ConflictingCourses = new List<ConflictingCourse>() });
+
+        _controller = new EnrollmentsController(_mockUnitOfWork.Object, mockScheduleConflictService.Object, _mockRegistrationFeeService.Object, _mockEnrollmentPricingService.Object);
     }
 
     [Fact]

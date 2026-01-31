@@ -15,6 +15,7 @@ export interface Step1LessonDetailsData {
   endDate: string | null
   isTrial: boolean
   recurrence: RecurrenceType
+  weekParity: 'All' | 'Odd' | 'Even'
 }
 
 export interface EnrollmentFormData {
@@ -31,6 +32,7 @@ export const initialStep1Data: Step1LessonDetailsData = {
   endDate: null,
   isTrial: false,
   recurrence: 'Weekly',
+  weekParity: 'All',
 }
 
 // Step 2: Student Selection Types
@@ -73,6 +75,7 @@ export interface CalendarGridItem {
   type: 'course' | 'lesson'
   courseType: 'Individual' | 'Group' | 'Workshop' | 'Trail'
   title: string
+  date?: string  // ISO date string for lessons
   startTime: string
   endTime: string
   teacherName: string
@@ -121,4 +124,25 @@ export interface UpdateEnrollment {
   discountPercent: number
   status: EnrollmentStatus
   notes?: string
+}
+
+// Enrollment Validation & Conflict Types
+
+export interface ConflictingCourse {
+  courseId: string
+  courseName: string
+  dayOfWeek: string
+  timeSlot: string
+  frequency: string
+  weekParity?: string
+}
+
+export interface EnrollmentValidationResult {
+  isValid: boolean
+  conflicts: ConflictingCourse[]
+}
+
+export interface ValidateEnrollmentRequest {
+  studentId: string
+  courseId: string
 }
