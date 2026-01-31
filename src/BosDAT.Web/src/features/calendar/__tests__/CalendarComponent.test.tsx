@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import Scheduler from '../CalendarComponent'
-import type { Event, ColorScheme, TimeSlot } from '../types'
+import type { Event, ColorScheme } from '../types'
 
 const createMockDate = (dateStr: string): Date => {
   return new Date(dateStr)
@@ -542,7 +542,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')!
+      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')! as HTMLElement
       eventElement.focus()
       await user.keyboard('{Enter}')
 
@@ -569,7 +569,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')!
+      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')! as HTMLElement
       eventElement.focus()
       await user.keyboard(' ')
 
@@ -596,7 +596,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')!
+      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')! as HTMLElement
       eventElement.focus()
       await user.keyboard('{Enter}')
 

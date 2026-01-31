@@ -11,10 +11,6 @@ import type {
   CreateStudentLedgerEntry,
   EnrollmentPricing,
 } from '@/features/students/types'
-import type {
-  EnrollmentValidationResult,
-  ValidateEnrollmentRequest,
-} from '@/features/enrollments/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
