@@ -385,16 +385,6 @@ public class LessonsController : ControllerBase
         return existingLessons.Select(l => l.ScheduledDate).ToHashSet();
     }
 
-    private static DateOnly FindFirstOccurrenceDate(DateOnly startDate, DayOfWeek targetDay, DateOnly endDate)
-    {
-        var currentDate = startDate;
-        while (currentDate.DayOfWeek != targetDay && currentDate <= endDate)
-        {
-            currentDate = currentDate.AddDays(1);
-        }
-        return currentDate;
-    }
-
     private static DateOnly FindFirstOccurrenceDate(DateOnly startDate, Course course, DateOnly endDate)
     {
         var currentDate = startDate;

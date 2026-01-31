@@ -122,11 +122,6 @@ export interface ConflictingCourse {
   weekParity?: string
 }
 
-export interface EnrollmentValidationResult {
-  isValid: boolean
-  conflicts: ConflictingCourse[]
-}
-
 export interface ValidateEnrollmentRequest {
   studentId: string
   courseId: string
