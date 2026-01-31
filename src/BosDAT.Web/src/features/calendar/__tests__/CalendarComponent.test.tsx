@@ -381,7 +381,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div')
+      const eventElement = screen.getByText('Piano Lesson').closest('button')
       expect(eventElement).toHaveStyle({ backgroundColor: '#eff6ff' })
     })
 
@@ -397,7 +397,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div')
+      const eventElement = screen.getByText('Piano Lesson').closest('button')
       expect(eventElement).toHaveStyle({ backgroundColor: '#eff6ff' })
     })
 
@@ -542,7 +542,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')! as HTMLElement
+      const eventElement = screen.getByText('Piano Lesson').closest('button')! as HTMLElement
       eventElement.focus()
       await user.keyboard('{Enter}')
 
@@ -569,7 +569,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')! as HTMLElement
+      const eventElement = screen.getByText('Piano Lesson').closest('button')! as HTMLElement
       eventElement.focus()
       await user.keyboard(' ')
 
@@ -596,7 +596,7 @@ describe('CalendarComponent (Scheduler)', () => {
         />
       )
 
-      const eventElement = screen.getByText('Piano Lesson').closest('div[role="button"]')! as HTMLElement
+      const eventElement = screen.getByText('Piano Lesson').closest('button')! as HTMLElement
       eventElement.focus()
       await user.keyboard('{Enter}')
 
@@ -628,7 +628,7 @@ describe('CalendarComponent (Scheduler)', () => {
         name: /Piano Lesson, course, weekly/i,
       })
       expect(eventButton).toBeInTheDocument()
-      expect(eventButton).toHaveAttribute('tabIndex', '0')
+      // Button elements are focusable by default, tabIndex attribute is not required
     })
 
     it('has appropriate ARIA labels for events', () => {

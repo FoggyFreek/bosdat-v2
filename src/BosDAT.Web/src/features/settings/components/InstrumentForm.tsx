@@ -33,12 +33,12 @@ interface InstrumentFormData {
 }
 
 interface InstrumentFormProps {
-  formData: InstrumentFormData
-  isEdit?: boolean
-  isPending?: boolean
-  onFormDataChange: (data: InstrumentFormData) => void
-  onSubmit: () => void
-  onCancel: () => void
+  readonly formData: InstrumentFormData
+  readonly isEdit?: boolean
+  readonly isPending?: boolean
+  readonly onFormDataChange: (data: InstrumentFormData) => void
+  readonly onSubmit: () => void
+  readonly onCancel: () => void
 }
 
 export function InstrumentForm({

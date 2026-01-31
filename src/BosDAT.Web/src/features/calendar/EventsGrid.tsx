@@ -125,7 +125,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
         if (isSameDay(date, highlightedDate)) {
           return (
             <div
-              key={`highlight-${dayIndex}`}
+              key={`highlight-${date.toISOString()}`}
               className="absolute bg-sky-100 opacity-60 z-[4]"
               style={{
                 left: `${(dayIndex / 7) * 100}%`,
@@ -156,8 +156,8 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
       ))}
 
       {/* Vertical Grid Lines */}
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={`grid-line-${i}`} className="border-r border-slate-300 h-full" aria-hidden="true" />
+      {Array.from({ length: 6 }, (_, i) => i + 1).map((columnNumber) => (
+        <div key={`grid-line-col-${columnNumber}`} className="border-r border-slate-300 h-full" aria-hidden="true" />
       ))}
 
       {/* Hover Indicator */}

@@ -12,9 +12,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { ConflictingCourse } from '../types'
 
 interface ConflictDialogProps {
-  open: boolean
-  conflicts: ConflictingCourse[]
-  onClose: () => void
+  readonly open: boolean
+  readonly conflicts: ConflictingCourse[]
+  readonly onClose: () => void
 }
 
 export function ConflictDialog({ open, conflicts, onClose }: ConflictDialogProps) {

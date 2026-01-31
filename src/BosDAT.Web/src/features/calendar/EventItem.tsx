@@ -93,8 +93,9 @@ const EventItemComponent: React.FC<EventItemProps> = ({
   }
 
   return (
-    <div
-      className="absolute mx-1 p-2 rounded-md border-l-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+    <button
+      type="button"
+      className="absolute mx-1 p-2 rounded-md border-l-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 text-left"
       style={{
         top: `${top}px`,
         height: `${height}px`,
@@ -108,8 +109,6 @@ const EventItemComponent: React.FC<EventItemProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="button"
       aria-label={`${event.title}, ${event.eventType}, ${event.frequency}`}
       aria-expanded={isHovered}
     >
@@ -145,7 +144,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
           onMouseLeave={handleMouseLeave}
         />
       )}
-    </div>
+    </button>
   );
 };
 

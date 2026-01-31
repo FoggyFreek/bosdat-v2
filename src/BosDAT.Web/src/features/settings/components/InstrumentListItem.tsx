@@ -11,14 +11,14 @@ interface InstrumentFormData {
 }
 
 interface InstrumentListItemProps {
-  instrument: Instrument
-  isEditing: boolean
-  formData: InstrumentFormData
-  isPending?: boolean
-  onEdit: (instrument: Instrument) => void
-  onFormDataChange: (data: InstrumentFormData) => void
-  onUpdate: () => void
-  onCancelEdit: () => void
+  readonly instrument: Instrument
+  readonly isEditing: boolean
+  readonly formData: InstrumentFormData
+  readonly isPending?: boolean
+  readonly onEdit: (instrument: Instrument) => void
+  readonly onFormDataChange: (data: InstrumentFormData) => void
+  readonly onUpdate: () => void
+  readonly onCancelEdit: () => void
 }
 
 const getStatusBadgeClassName = (isActive: boolean): string => {

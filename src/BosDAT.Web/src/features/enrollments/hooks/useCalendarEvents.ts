@@ -85,8 +85,8 @@ export const useCalendarEvents = ({
       weekEnd.setDate(weekStart.getDate() + 6)
 
       // Find overlapping days
-      const overlapStart = holidayStart > weekStart ? holidayStart : weekStart
-      const overlapEnd = holidayEnd < weekEnd ? holidayEnd : weekEnd
+      const overlapStart = new Date(Math.max(holidayStart.getTime(), weekStart.getTime()))
+      const overlapEnd = new Date(Math.min(holidayEnd.getTime(), weekEnd.getTime()))
 
       for (let d = new Date(overlapStart); d <= overlapEnd; d.setDate(d.getDate() + 1)) {
         const dayStart = new Date(d)
