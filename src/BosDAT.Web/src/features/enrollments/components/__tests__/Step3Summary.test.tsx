@@ -79,14 +79,4 @@ describe('Step3Summary', () => {
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
   })
-
-  it('should populate room dropdown with available rooms', () => {
-    renderWithProvider(<Step3Summary rooms={mockRooms} />)
-
-    const select = screen.getByRole('combobox')
-    select.click()
-
-    // Note: shadcn/ui Select uses a portal, so options may not be directly queryable in tests
-    // This is a known limitation. For now, we just verify the select exists.
-  })
 })
