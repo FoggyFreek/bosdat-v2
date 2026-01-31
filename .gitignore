@@ -40,6 +40,14 @@ Thumbs.db
 # Test / Coverage
 TestResults/
 coverage/
+coveragereport/
+*.cobertura.xml
+*.opencover.xml
+*.coverage
+*.coveragexml
+coverage.json
+lcov.info
+.nyc_output/
 
 # Docker
 *.env.docker
