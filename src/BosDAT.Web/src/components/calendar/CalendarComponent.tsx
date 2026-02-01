@@ -26,7 +26,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
 }) => {
   return (
     <div
-      className="flex flex-col h-screen bg-white text-slate-600 font-sans"
+      className="flex flex-col h-full bg-white text-slate-600 font-sans"
       role="application"
       aria-label="Weekly calendar scheduler"
     >

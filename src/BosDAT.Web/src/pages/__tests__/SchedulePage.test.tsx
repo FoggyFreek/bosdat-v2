@@ -6,6 +6,8 @@ import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { WeekCalendar, CalendarLesson, Holiday } from '@/features/schedule/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
+import type { SchedulerProps } from '@/components'
+
 
 // Mock API modules
 vi.mock('@/services/api', () => ({
@@ -22,14 +24,14 @@ vi.mock('@/services/api', () => ({
 
 // Mock CalendarComponent to isolate SchedulePage logic
 vi.mock('@/components', () => ({
-  CalendarComponent: ({ title, events, onNavigatePrevious, onNavigateNext }: any) => (
+  CalendarComponent: (props: SchedulerProps) => (
     <div data-testid="calendar-component">
-      <div data-testid="calendar-title">{title}</div>
-      <div data-testid="calendar-events-count">{events.length}</div>
-      <button onClick={onNavigatePrevious} aria-label="Previous week">
+      <div data-testid="calendar-title">{props.title}</div>
+      <div data-testid="calendar-events-count">{props.events.length}</div>
+      <button onClick={props.onNavigatePrevious} aria-label="Previous week">
         Previous
       </button>
-      <button onClick={onNavigateNext} aria-label="Next week">
+      <button onClick={props.onNavigateNext} aria-label="Next week">
         Next
       </button>
     </div>

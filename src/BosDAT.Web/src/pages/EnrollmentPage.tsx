@@ -2,7 +2,7 @@ import { EnrollmentStepper } from '@/features/enrollments/components/EnrollmentS
 
 export const EnrollmentPage = () => {
   return (
-    <div className="container py-6">
+    <div className="w-full">
       <EnrollmentStepper />
     </div>
   )

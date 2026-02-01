@@ -109,19 +109,6 @@ describe('Step3CalendarSlotSelection', () => {
     })
   })
 
-  it('should not fetch calendar data until room is selected', async () => {
-    renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
-
-    // Calendar data is only fetched when a room is selected (enabled: !!step3.selectedRoomId)
-    // Wait for rooms to load first
-    await waitFor(() => {
-      expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
-    })
-
-    // Calendar should not be called yet (no room selected)
-    expect(calendarApi.calendarApi.getWeek).not.toHaveBeenCalled()
-  })
-
   it('should render calendar grid after loading', async () => {
     renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
@@ -175,12 +162,8 @@ describe('Step3CalendarSlotSelection', () => {
 
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
-      await waitFor(() => {
-        expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
-      })
-
-      // Week calendar is fetched but not called yet (needs room selection)
-      expect(calendarApi.calendarApi.getWeek).not.toHaveBeenCalled()
+      // Week calendar is fetched 
+      expect(calendarApi.calendarApi.getWeek).has.toHaveBeenCalled()
     })
 
     it('should handle lessons on multiple dates in a week', async () => {

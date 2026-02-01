@@ -418,6 +418,94 @@ public class TeachersControllerTests
         Assert.NotNull(badRequestResult.Value);
     }
 
+    [Fact]
+    public async Task Create_WithInactiveCourseType_ReturnsBadRequest()
+    {
+        // Arrange
+        var instrument = CreateInstrument(1, "Piano");
+        var courseType = new CourseType
+        {
+            Id = Guid.NewGuid(),
+            Name = "Inactive Piano Lesson",
+            InstrumentId = 1,
+            Instrument = instrument,
+            IsActive = false,
+            Type = CourseTypeCategory.Individual,
+            MaxStudents = 1,
+            DurationMinutes = 30
+        };
+
+        await _context.Instruments.AddAsync(instrument);
+        await _context.CourseTypes.AddAsync(courseType);
+        await _context.SaveChangesAsync();
+
+        var teachers = new List<Teacher>();
+        var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(teachers);
+        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
+
+        var dto = new CreateTeacherDto
+        {
+            FirstName = "New",
+            LastName = "Teacher",
+            Email = "new@example.com",
+            HourlyRate = 50m,
+            InstrumentIds = new List<int> { 1 },
+            CourseTypeIds = new List<Guid> { courseType.Id }
+        };
+
+        // Act
+        var result = await _controller.Create(dto, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task Create_WithMismatchedInstrumentAndCourseType_ReturnsBadRequest()
+    {
+        // Arrange
+        var piano = CreateInstrument(1, "Piano");
+        var guitar = CreateInstrument(2, "Guitar");
+        var guitarCourseType = new CourseType
+        {
+            Id = Guid.NewGuid(),
+            Name = "Guitar Lesson",
+            InstrumentId = 2,
+            Instrument = guitar,
+            IsActive = true,
+            Type = CourseTypeCategory.Individual,
+            MaxStudents = 1,
+            DurationMinutes = 30
+        };
+
+        await _context.Instruments.AddAsync(piano);
+        await _context.Instruments.AddAsync(guitar);
+        await _context.CourseTypes.AddAsync(guitarCourseType);
+        await _context.SaveChangesAsync();
+
+        var teachers = new List<Teacher>();
+        var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(teachers);
+        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
+
+        var dto = new CreateTeacherDto
+        {
+            FirstName = "New",
+            LastName = "Teacher",
+            Email = "new@example.com",
+            HourlyRate = 50m,
+            InstrumentIds = new List<int> { 1 }, // Piano
+            CourseTypeIds = new List<Guid> { guitarCourseType.Id } // Guitar lesson
+        };
+
+        // Act
+        var result = await _controller.Create(dto, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
     #endregion
 
     #region Update Tests
@@ -523,6 +611,104 @@ public class TeachersControllerTests
 
         // Act
         var result = await _controller.Update(teacher1.Id, dto, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task Update_WithInactiveCourseType_ReturnsBadRequest()
+    {
+        // Arrange
+        var instrument = CreateInstrument(1, "Piano");
+        var courseType = new CourseType
+        {
+            Id = Guid.NewGuid(),
+            Name = "Inactive Piano Lesson",
+            InstrumentId = 1,
+            Instrument = instrument,
+            IsActive = false,
+            Type = CourseTypeCategory.Individual,
+            MaxStudents = 1,
+            DurationMinutes = 30
+        };
+
+        await _context.Instruments.AddAsync(instrument);
+        await _context.CourseTypes.AddAsync(courseType);
+        await _context.SaveChangesAsync();
+
+        var teacher = CreateTeacher();
+        teacher.TeacherInstruments = new List<TeacherInstrument>();
+        teacher.TeacherCourseTypes = new List<TeacherCourseType>();
+        var teachers = new List<Teacher> { teacher };
+        var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(teachers);
+        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
+
+        var dto = new UpdateTeacherDto
+        {
+            FirstName = "Updated",
+            LastName = "Teacher",
+            Email = teacher.Email,
+            HourlyRate = 50m,
+            IsActive = true,
+            Role = TeacherRole.Teacher,
+            InstrumentIds = new List<int> { 1 },
+            CourseTypeIds = new List<Guid> { courseType.Id }
+        };
+
+        // Act
+        var result = await _controller.Update(teacher.Id, dto, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task Update_WithMismatchedInstrumentAndCourseType_ReturnsBadRequest()
+    {
+        // Arrange
+        var piano = CreateInstrument(1, "Piano");
+        var guitar = CreateInstrument(2, "Guitar");
+        var guitarCourseType = new CourseType
+        {
+            Id = Guid.NewGuid(),
+            Name = "Guitar Lesson",
+            InstrumentId = 2,
+            Instrument = guitar,
+            IsActive = true,
+            Type = CourseTypeCategory.Individual,
+            MaxStudents = 1,
+            DurationMinutes = 30
+        };
+
+        await _context.Instruments.AddAsync(piano);
+        await _context.Instruments.AddAsync(guitar);
+        await _context.CourseTypes.AddAsync(guitarCourseType);
+        await _context.SaveChangesAsync();
+
+        var teacher = CreateTeacher();
+        teacher.TeacherInstruments = new List<TeacherInstrument>();
+        teacher.TeacherCourseTypes = new List<TeacherCourseType>();
+        var teachers = new List<Teacher> { teacher };
+        var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(teachers);
+        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
+
+        var dto = new UpdateTeacherDto
+        {
+            FirstName = "Updated",
+            LastName = "Teacher",
+            Email = teacher.Email,
+            HourlyRate = 50m,
+            IsActive = true,
+            Role = TeacherRole.Teacher,
+            InstrumentIds = new List<int> { 1 }, // Piano
+            CourseTypeIds = new List<Guid> { guitarCourseType.Id } // Guitar lesson
+        };
+
+        // Act
+        var result = await _controller.Update(teacher.Id, dto, CancellationToken.None);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);

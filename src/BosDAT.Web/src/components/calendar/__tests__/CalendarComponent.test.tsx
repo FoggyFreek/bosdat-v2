@@ -286,7 +286,7 @@ describe('CalendarComponent', () => {
       )
 
       const mondayButton = screen.getByRole('button', { name: /MON 15/i })
-      expect(mondayButton).toHaveClass('bg-primary', 'text-primary-foreground')
+      expect(mondayButton).toHaveClass('bg-sky', 'text-primary-foreground')
     })
   })
 

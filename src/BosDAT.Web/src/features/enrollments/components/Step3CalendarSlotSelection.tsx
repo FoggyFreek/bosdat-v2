@@ -26,17 +26,6 @@ export const Step3CalendarSlotSelection = ({
   const { step1, step2, step3 } = formData
   const { toast } = useToast()
 
-  const [weekOffset, setWeekOffset] = useState(() => {
-    if (step1.startDate) {
-      const startDate = new Date(step1.startDate)
-      const today = new Date()
-      const timeDiff = startDate.getTime() - today.getTime()
-      const diffInDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
-      return diffInDays - (diffInDays % 7)
-    }
-    return 0
-  })
-
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     if (step1.startDate) {
       return new Date(step1.startDate)
@@ -47,10 +36,8 @@ export const Step3CalendarSlotSelection = ({
   const [placeholderEvent, setPlaceholderEvent] = useState<CalendarEvent | null>(null)
 
   const weekStart = useMemo(() => {
-    //const baseDate = new Date()
-    //baseDate.setDate(baseDate.getDate() + weekOffset)
     return getWeekStart(selectedDate)
-  }, [weekOffset])
+  }, [selectedDate])
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
 
@@ -62,7 +49,7 @@ export const Step3CalendarSlotSelection = ({
     queryFn: () => roomsApi.getAll({ activeOnly: true }),
   })
 
-  // Fetch week calendar data
+  // Fetch week calendar data - loads all events initially, filters by room when selected
   const {
     data: weekCalendar,
     isLoading: isLoadingCalendar,
@@ -75,7 +62,6 @@ export const Step3CalendarSlotSelection = ({
         teacherId,
         roomId: step3.selectedRoomId || undefined,
       }),
-    enabled: !!step3.selectedRoomId,
   })
 
   // Fetch all courses for the teacher (for the entire week)
@@ -108,14 +94,10 @@ export const Step3CalendarSlotSelection = ({
   const isLoading = isLoadingRooms || isLoadingCalendar || isLoadingCourses
 
   const handleWeekChange = (days: number) => {
-    setWeekOffset(prev => {
-      const newOffset = prev + days
-      //Update selectedDate to reflect new week
-      const baseDate = new Date()
-      baseDate.setDate(baseDate.getDate() + newOffset)
-      setSelectedDate(getWeekStart(baseDate))
-      return newOffset
-    })
+    const newDate = new Date(selectedDate)
+    newDate.setDate(newDate.getDate() + days)
+    const newWeekStart = getWeekStart(newDate)
+    setSelectedDate(newWeekStart)
   }
 
   const handleDateSelect = (date: Date) => {
@@ -140,7 +122,7 @@ export const Step3CalendarSlotSelection = ({
         attendees: step2.students.map(s => s.studentName),
       }
     },
-    []
+    [step1.recurrence, step2.students]
   )
 
 
@@ -206,7 +188,7 @@ export const Step3CalendarSlotSelection = ({
         })
       }
     },
-    [step3.selectedRoomId, durationMinutes, selectedDate, teacherId, updateStep3, toast]
+    [step3.selectedRoomId, createPlaceholderEvent, durationMinutes, selectedDate, teacherId, updateStep3, toast]
   )
 
   const handleTimeslotClick = useCallback(
@@ -240,14 +222,14 @@ export const Step3CalendarSlotSelection = ({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)]">
-      {/* Summary - Anchored at top */}
-      <div className="sticky top-0 z-10 bg-white pb-4">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-12rem)]">
+      {/* Left side: Summary and Room Selection */}
+      <div className="lg:overflow-y-auto lg:pr-2">
         <Step3Summary rooms={rooms} />
       </div>
 
-      {/* Calendar Grid - Scrollable */}
-      <div className="flex-1 overflow-hidden">
+      {/* Right side: Calendar - takes remaining space on desktop, full width on mobile */}
+      <div className="overflow-hidden">
         <CalendarComponent
           title={`Week of ${formatDateForApi(weekStart)}`}
           events={allEvents}

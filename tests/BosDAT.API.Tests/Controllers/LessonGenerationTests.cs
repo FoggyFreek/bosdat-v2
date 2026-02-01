@@ -12,12 +12,12 @@ namespace BosDAT.API.Tests.Controllers;
 public class LessonGenerationTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly LessonsController _controller;
+    private readonly BosDAT.API.Controllers.LessonsController _controller;
 
     public LessonGenerationTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new LessonsController(_mockUnitOfWork.Object);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object);
     }
 
     [Fact]

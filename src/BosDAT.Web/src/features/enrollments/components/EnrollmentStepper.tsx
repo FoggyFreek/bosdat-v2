@@ -161,10 +161,12 @@ const EnrollmentStepperContent = () => {
   )
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full">
       {renderHeader()}
       <CardContent className="space-y-8">
-        {renderStepper()}
+        <div className="max-w-4xl mx-auto">
+          {renderStepper()}
+        </div>
         {renderStepContainer()}
         {renderNavigationButtons()}
       </CardContent>
