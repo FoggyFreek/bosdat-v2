@@ -210,8 +210,8 @@ describe('Step1LessonDetails', () => {
     })
   })
 
-  describe('AC4/AC5: Trail toggle visibility', () => {
-    it('shows Trail toggle for Individual course type', async () => {
+  describe('AC4/AC5: Trail radio button visibility', () => {
+    it('shows Trail radio button for Individual course type', async () => {
       const user = userEvent.setup()
       renderWithProvider(<Step1LessonDetails />)
 
@@ -224,11 +224,11 @@ describe('Step1LessonDetails', () => {
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/trial lesson/i)).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: /trail \(single occurrence\)/i })).toBeInTheDocument()
       })
     })
 
-    it('shows Trail toggle for Group course type', async () => {
+    it('shows Trail radio button for Group course type', async () => {
       const user = userEvent.setup()
       renderWithProvider(<Step1LessonDetails />)
 
@@ -241,11 +241,11 @@ describe('Step1LessonDetails', () => {
       await user.click(screen.getByRole('option', { name: /guitar group/i }))
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/trial lesson/i)).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: /trail \(single occurrence\)/i })).toBeInTheDocument()
       })
     })
 
-    it('hides Trail toggle for Workshop course type', async () => {
+    it('hides Trail radio button for Workshop course type', async () => {
       const user = userEvent.setup()
       renderWithProvider(<Step1LessonDetails />)
 
@@ -258,7 +258,7 @@ describe('Step1LessonDetails', () => {
       await user.click(screen.getByRole('option', { name: /piano workshop/i }))
 
       await waitFor(() => {
-        expect(screen.queryByLabelText(/trial lesson/i)).not.toBeInTheDocument()
+        expect(screen.queryByRole('radio', { name: /trail \(single occurrence\)/i })).not.toBeInTheDocument()
       })
     })
   })
@@ -357,8 +357,8 @@ describe('Step1LessonDetails', () => {
     })
   })
 
-  describe('Trial lesson behavior', () => {
-    it('sets end date equal to start date when trial is enabled', async () => {
+  describe('Trail recurrence behavior', () => {
+    it('sets end date equal to start date when Trail is selected', async () => {
       const user = userEvent.setup()
       renderWithProvider(<Step1LessonDetails />)
 
@@ -376,8 +376,8 @@ describe('Step1LessonDetails', () => {
       await user.clear(startDateInput)
       await user.type(startDateInput, '2024-01-15')
 
-      // Enable trial
-      await user.click(screen.getByLabelText(/trial lesson/i))
+      // Select Trail recurrence
+      await user.click(screen.getByRole('radio', { name: /trail \(single occurrence\)/i }))
 
       await waitFor(() => {
         const endDateInput = screen.getByLabelText(/end date/i) as HTMLInputElement
@@ -385,7 +385,7 @@ describe('Step1LessonDetails', () => {
       })
     })
 
-    it('disables end date when trial is enabled', async () => {
+    it('disables end date when Trail is selected', async () => {
       const user = userEvent.setup()
       renderWithProvider(<Step1LessonDetails />)
 
@@ -398,8 +398,8 @@ describe('Step1LessonDetails', () => {
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
-      // Enable trial
-      await user.click(screen.getByLabelText(/trial lesson/i))
+      // Select Trail recurrence
+      await user.click(screen.getByRole('radio', { name: /trail \(single occurrence\)/i }))
 
       await waitFor(() => {
         const endDateInput = screen.getByLabelText(/end date/i)
@@ -440,43 +440,4 @@ describe('Step1LessonDetails', () => {
     })
   })
 
-  describe('Week Parity selection', () => {
-    it('hides week parity selector when Weekly is selected', async () => {
-      renderWithProvider(<Step1LessonDetails />)
-
-      await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /^weekly$/i })).toBeChecked()
-      })
-
-      expect(screen.queryByText(/all weeks/i)).not.toBeInTheDocument()
-      expect(screen.queryByText(/odd weeks/i)).not.toBeInTheDocument()
-      expect(screen.queryByText(/even weeks/i)).not.toBeInTheDocument()
-    })
-
-    it('shows week parity selector when Biweekly is selected', async () => {
-      const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
-
-      await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /bi-weekly/i })).toBeInTheDocument()
-      })
-
-      await user.click(screen.getByRole('radio', { name: /bi-weekly/i }))
-
-      await waitFor(() => {
-        expect(screen.getByText(/all weeks \(every week\)/i)).toBeInTheDocument()
-      })
-    })
-
-    it('defaults week parity to All', async () => {
-      const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
-
-      await user.click(screen.getByRole('radio', { name: /bi-weekly/i }))
-
-      await waitFor(() => {
-        expect(screen.getByText(/all weeks \(every week\)/i)).toBeInTheDocument()
-      })
-    })
-  })
 })

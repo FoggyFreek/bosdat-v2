@@ -222,7 +222,7 @@ export const Step3CalendarSlotSelection = ({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-12rem)]">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-28rem)]">
       {/* Left side: Summary and Room Selection */}
       <div className="lg:overflow-y-auto lg:pr-2">
         <Step3Summary rooms={rooms} />

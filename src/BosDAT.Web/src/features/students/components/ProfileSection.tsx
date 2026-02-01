@@ -6,7 +6,7 @@ import type { Student, RegistrationFeeStatus } from '@/features/students/types'
 import { formatDate } from '@/lib/utils'
 
 interface ProfileSectionProps {
-  studentId: string
+  readonly studentId: string
 }
 
 export function ProfileSection({ studentId }: ProfileSectionProps) {

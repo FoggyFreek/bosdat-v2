@@ -2,7 +2,6 @@ import { useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -13,11 +12,9 @@ import {
 import { courseTypesApi, teachersApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayName } from '@/lib/utils'
-import { WeekParitySelect } from '@/features/courses/components/WeekParitySelect'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { RecurrenceType } from '../types'
-import type { WeekParity } from '@/features/courses/types'
 
 export const Step1LessonDetails = () => {
   const { formData, updateStep1 } = useEnrollmentForm()
@@ -40,9 +37,10 @@ export const Step1LessonDetails = () => {
   }, [courseTypes, step1.courseTypeId])
 
   const isWorkshop = selectedCourseType?.type === 'Workshop'
-  const showTrialToggle = selectedCourseType && !isWorkshop
+  const isTrail = step1.recurrence === 'Trail'
+  const isIndividualOrGroup = selectedCourseType?.type === 'Individual' || selectedCourseType?.type === 'Group'
   const isEndDateRequired = isWorkshop
-  const isEndDateDisabled = step1.isTrial
+  const isEndDateDisabled = isTrail
 
   const dayOfWeek = useMemo(() => {
     if (!step1.startDate) return null
@@ -50,12 +48,12 @@ export const Step1LessonDetails = () => {
     return getDayName(date.getDay())
   }, [step1.startDate])
 
-  // Auto-set end date when trial is enabled
+  // Auto-set end date when Trail recurrence is selected
   useEffect(() => {
-    if (step1.isTrial && step1.startDate) {
+    if (isTrail && step1.startDate) {
       updateStep1({ endDate: step1.startDate })
     }
-  }, [step1.isTrial, step1.startDate, updateStep1])
+  }, [isTrail, step1.startDate, updateStep1])
 
   // Clear teacher when course type changes
   useEffect(() => {
@@ -67,12 +65,12 @@ export const Step1LessonDetails = () => {
     }
   }, [step1.courseTypeId, step1.teacherId, filteredTeachers, updateStep1])
 
-  // Reset trial when switching to Workshop
+  // Reset recurrence to Weekly when switching to Workshop (Trail not allowed for Workshop)
   useEffect(() => {
-    if (isWorkshop && step1.isTrial) {
-      updateStep1({ isTrial: false })
+    if (isWorkshop && isTrail) {
+      updateStep1({ recurrence: 'Weekly' })
     }
-  }, [isWorkshop, step1.isTrial, updateStep1])
+  }, [isWorkshop, isTrail, updateStep1])
 
   const handleCourseTypeChange = (value: string) => {
     updateStep1({ courseTypeId: value })
@@ -90,16 +88,8 @@ export const Step1LessonDetails = () => {
     updateStep1({ endDate: e.target.value || null })
   }
 
-  const handleTrialChange = (checked: boolean) => {
-    updateStep1({ isTrial: checked })
-  }
-
   const handleRecurrenceChange = (value: RecurrenceType) => {
     updateStep1({ recurrence: value })
-  }
-
-  const handleWeekParityChange = (value: WeekParity) => {
-    updateStep1({ weekParity: value })
   }
 
   return (
@@ -131,8 +121,7 @@ export const Step1LessonDetails = () => {
           <Select
             value={step1.teacherId || ''}
             onValueChange={handleTeacherChange}
-            disabled={!step1.courseTypeId}
-          >
+            disabled={!step1.courseTypeId}>
             <SelectTrigger id="teacher" aria-label="Teacher">
               <SelectValue placeholder={!step1.courseTypeId ? 'Select a course type first' : 'Select a teacher'} />
             </SelectTrigger>
@@ -188,24 +177,23 @@ export const Step1LessonDetails = () => {
         </div>
       </div>
 
-      {/* Trial Toggle - only for Individual/Group */}
-      {showTrialToggle && (
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="trial"
-            checked={step1.isTrial}
-            onCheckedChange={handleTrialChange}
-          />
-          <Label htmlFor="trial" className="cursor-pointer">
-            Trial Lesson (single occurrence)
-          </Label>
-        </div>
-      )}
-
       {/* Recurrence Options */}
       <div className="space-y-2">
         <Label>Recurrence</Label>
+        
         <div className="flex gap-4">
+          {isIndividualOrGroup && (<label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="recurrence"
+              value="Trail"
+              checked={step1.recurrence === 'Trail'}
+              onChange={() => handleRecurrenceChange('Trail')}
+              className="h-4 w-4"
+              disabled={isWorkshop}
+            />
+            <span>Trail (single occurrence)</span>
+          </label>)}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
@@ -230,16 +218,6 @@ export const Step1LessonDetails = () => {
           </label>
         </div>
       </div>
-
-      {/* Week Parity - only for Biweekly */}
-      {step1.recurrence === 'Biweekly' && (
-        <WeekParitySelect
-          value={step1.weekParity}
-          onChange={handleWeekParityChange}
-          disabled={false}
-          helperText="Select which weeks this biweekly course occurs in"
-        />
-      )}
     </div>
   )
 }

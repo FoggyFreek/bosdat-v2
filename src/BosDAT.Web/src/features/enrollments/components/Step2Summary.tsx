@@ -4,6 +4,7 @@ import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayName } from '@/lib/utils'
+import { RecurrenceType } from '../types'
 
 export const Step2Summary = () => {
   const { formData } = useEnrollmentForm()
@@ -26,6 +27,14 @@ export const Step2Summary = () => {
     ? getDayName(new Date(step1.startDate).getDay())
     : null
 
+  const getRecurrenceLabel = (recurrence: RecurrenceType) => {
+  const labels: Record<RecurrenceType, string> = {
+    Trail: 'Trial Lesson',
+    Weekly: 'Once per week',
+    Biweekly: 'Every two weeks',
+  }
+  return labels[recurrence]
+}
   const formatDate = (date: string | null) => {
     if (!date) return '-'
     return new Date(date).toLocaleDateString('nl-NL')
@@ -69,7 +78,7 @@ export const Step2Summary = () => {
         <div className="flex justify-between">
           <span className="text-muted-foreground">Recurrence:</span>
           <span className="font-medium">
-            {step1.recurrence === 'Weekly' ? 'Weekly' : 'Bi-weekly'}
+            {getRecurrenceLabel(step1.recurrence)}
           </span>
         </div>
         {selectedCourseType && (

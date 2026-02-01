@@ -16,7 +16,7 @@ const STATUS_STYLES: Record<LedgerEntryStatus, string> = {
 const badgeBaseClasses = 'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium'
 
 interface EntryTypeBadgeProps {
-  type: LedgerEntryType
+  readonly type: LedgerEntryType
 }
 
 export function EntryTypeBadge({ type }: EntryTypeBadgeProps) {
@@ -28,7 +28,7 @@ export function EntryTypeBadge({ type }: EntryTypeBadgeProps) {
 }
 
 interface StatusBadgeProps {
-  status: LedgerEntryStatus
+  readonly status: LedgerEntryStatus
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
@@ -40,8 +40,8 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 }
 
 interface EntryAmountProps {
-  amount: number
-  entryType: LedgerEntryType
+  readonly amount: number
+  readonly entryType: LedgerEntryType
 }
 
 export function EntryAmount({ amount, entryType }: EntryAmountProps) {

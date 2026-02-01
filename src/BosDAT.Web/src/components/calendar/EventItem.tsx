@@ -5,11 +5,11 @@ import { EventHoverNote } from './EventHoverNote';
 import { getDecimalHours, getDurationInHours, isValidEventTime } from './utils';
 
 type EventItemProps = {
-  event: CalendarEvent;
-  dayIndex: number;
-  hourHeight: number;
-  minHour: number;
-  colorScheme?: ColorScheme;
+  readonly event: Readonly<CalendarEvent>;
+  readonly dayIndex: number;
+  readonly hourHeight: number;
+  readonly minHour: number;
+  readonly colorScheme?: ColorScheme;
 };
 
 // Named constants for magic numbers

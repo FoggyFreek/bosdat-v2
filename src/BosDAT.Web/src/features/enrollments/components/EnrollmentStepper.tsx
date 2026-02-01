@@ -131,7 +131,7 @@ const EnrollmentStepperContent = () => {
   )
 
   const renderStepContainer = () => (
-    <div className="min-h-[300px]">{renderStepContent()}</div>
+    <div className="flex-1 overflow-y-auto min-h-0">{renderStepContent()}</div>
   )
 
   const renderPreviousButton = () => (
@@ -154,17 +154,17 @@ const EnrollmentStepperContent = () => {
   )
 
   const renderNavigationButtons = () => (
-    <div className="flex justify-between pt-4 border-t">
+    <div className="flex justify-between pt-4 border-t shrink-0">
       {renderPreviousButton()}
       {renderNextButton()}
     </div>
   )
 
   return (
-    <Card className="w-full">
+    <Card className="w-full h-full flex flex-col">
       {renderHeader()}
-      <CardContent className="space-y-8">
-        <div className="max-w-4xl mx-auto">
+      <CardContent className="flex-1 flex flex-col gap-8 overflow-hidden">
+        <div className="max-w-4xl mx-auto shrink-0">
           {renderStepper()}
         </div>
         {renderStepContainer()}

@@ -2,9 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { EnrollmentPricing } from '@/features/students/types'
 
 interface PricingBreakdownProps {
-  pricing: EnrollmentPricing
-  numberOfOccurrences: string
-  calculatedAmount: number
+  readonly pricing: Readonly<EnrollmentPricing>
+  readonly numberOfOccurrences: string
+  readonly calculatedAmount: number
 }
 
 export function PricingBreakdown({
@@ -52,10 +52,10 @@ export function PricingBreakdown({
 }
 
 interface PricingRowProps {
-  label: string
-  value: string
-  className?: string
-  valueClassName?: string
+  readonly label: string
+  readonly value: string
+  readonly className?: string
+  readonly valueClassName?: string
 }
 
 function PricingRow({ label, value, className = '', valueClassName = '' }: PricingRowProps) {

@@ -6,7 +6,7 @@ export type DiscountType = 'None' | 'Family' | 'Course'
 
 // Enrollment Stepper Form Types
 
-export type RecurrenceType = 'Weekly' | 'Biweekly'
+export type RecurrenceType = 'Trail' | 'Weekly' | 'Biweekly'
 
 export interface Step1LessonDetailsData {
   courseTypeId: string | null
@@ -15,7 +15,6 @@ export interface Step1LessonDetailsData {
   endDate: string | null
   isTrial: boolean
   recurrence: RecurrenceType
-  weekParity: 'All' | 'Odd' | 'Even'
 }
 
 export interface EnrollmentFormData {
@@ -32,7 +31,6 @@ export const initialStep1Data: Step1LessonDetailsData = {
   endDate: null,
   isTrial: false,
   recurrence: 'Weekly',
-  weekParity: 'All',
 }
 
 // Step 2: Student Selection Types
@@ -66,6 +64,11 @@ export interface Step3CalendarSlotSelectionData {
 }
 
 export interface Step3ValidationResult {
+  isValid: boolean
+  errors: string[]
+}
+
+export interface Step2ValidationResult {
   isValid: boolean
   errors: string[]
 }

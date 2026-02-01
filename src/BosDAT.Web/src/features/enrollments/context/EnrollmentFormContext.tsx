@@ -4,6 +4,7 @@ import type {
   Step1LessonDetailsData,
   Step2StudentSelectionData,
   Step3CalendarSlotSelectionData,
+  Step2ValidationResult,
   Step3ValidationResult,
   EnrollmentGroupMember,
 } from '../types'
@@ -118,10 +119,6 @@ const enrollmentFormReducer = (
   }
 }
 
-interface Step2ValidationResult {
-  isValid: boolean
-  errors: string[]
-}
 
 interface EnrollmentFormContextType {
   formData: EnrollmentFormData
@@ -192,7 +189,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
       step1.teacherId !== null &&
       step1.startDate !== null
     )
-  }, [state.formData])
+  }, [state.formData.step1])
 
   const isStep2Valid = useCallback(
     (courseTypeCategory: CourseTypeCategory, maxStudents: number): Step2ValidationResult => {
@@ -241,7 +238,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
 
       return { isValid: errors.length === 0, errors }
     },
-    [state.formData]
+    [state.formData.step1, state.formData.step2]
   )
 
   const isStep3Valid = useCallback((): Step3ValidationResult => {
@@ -259,7 +256,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
     }
 
     return { isValid: errors.length === 0, errors }
-  }, [state.formData])
+  }, [state.formData.step3])
 
   const value = useMemo(
     () => ({

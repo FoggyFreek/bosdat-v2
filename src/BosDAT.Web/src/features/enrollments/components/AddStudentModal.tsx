@@ -11,9 +11,9 @@ import { studentsApi } from '@/services/api'
 import type { CreateStudent, Student } from '@/features/students/types'
 
 interface AddStudentModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onStudentCreated: (student: Student) => void
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly onStudentCreated: (student: Student) => void
 }
 
 export const AddStudentModal = ({

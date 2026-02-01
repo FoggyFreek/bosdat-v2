@@ -129,7 +129,7 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex-1" />
         </header>
 
-        <main className="p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-hidden p-6 lg:p-8">{children}</main>
       </div>
     </div>
   )
