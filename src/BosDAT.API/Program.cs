@@ -183,19 +183,28 @@ using (var scope = app.Services.CreateScope())
 
         if (adminUser == null)
         {
-            adminUser = new ApplicationUser
+            var adminPassword = builder.Configuration["AdminSettings:DefaultPassword"];
+            if (string.IsNullOrEmpty(adminPassword))
             {
-                UserName = adminEmail,
-                Email = adminEmail,
-                FirstName = "System",
-                LastName = "Administrator",
-                EmailConfirmed = true
-            };
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogWarning("AdminSettings:DefaultPassword not configured. Skipping default admin user creation.");
+            }
+            else
+            {
+                adminUser = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FirstName = "System",
+                    LastName = "Administrator",
+                    EmailConfirmed = true
+                };
 
-            var result = await userManager.CreateAsync(adminUser, "Admin@123456");
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
             }
         }
     }

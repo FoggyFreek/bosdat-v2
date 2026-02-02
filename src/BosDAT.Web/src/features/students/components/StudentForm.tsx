@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
+import { validateEmail } from '@/lib/utils'
 import type { Student, StudentStatus, Gender, CreateStudent } from '@/features/students/types'
 
 const getStatusBadgeClass = (status: string) => {
@@ -144,11 +145,6 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
       })
     }
   }, [student])
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
