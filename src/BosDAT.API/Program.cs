@@ -9,6 +9,7 @@ using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
+using BosDAT.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,7 @@ builder.Services.AddScoped<IEnrollmentPricingService, EnrollmentPricingService>(
 builder.Services.AddScoped<IStudentLedgerRepository, StudentLedgerRepository>();
 builder.Services.AddScoped<IStudentLedgerService, StudentLedgerService>();
 builder.Services.AddScoped<IScheduleConflictService, ScheduleConflictService>();
+builder.Services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
 // CORS
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
