@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { instrumentsApi, courseTypesApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
-import { validateEmail } from '@/utils/validation'
+import { validateEmail } from '@/lib/utils'
 import type { Teacher, TeacherRole, CreateTeacher } from '@/features/teachers/types'
 import type { Instrument } from '@/features/instruments/types'
 import type { CourseTypeSimple } from '@/features/course-types/types'

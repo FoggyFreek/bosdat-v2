@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
-import { validateEmail } from '@/utils/validation'
+import { validateEmail } from '@/lib/utils'
 import type { Student, StudentStatus, Gender, CreateStudent } from '@/features/students/types'
 
 const getStatusBadgeClass = (status: string) => {
