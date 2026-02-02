@@ -542,3 +542,40 @@ export const studentLedgerApi = {
     return response.data
   },
 }
+
+// Seeder API Types
+export interface SeederStatusResponse {
+  isSeeded: boolean
+  environment: string
+  canSeed: boolean
+  canReset: boolean
+}
+
+export interface SeederActionResponse {
+  success: boolean
+  message: string
+  action: string
+}
+
+// Seeder API (Admin only, Development environment)
+export const seederApi = {
+  getStatus: async (): Promise<SeederStatusResponse> => {
+    const response = await api.get<SeederStatusResponse>('/admin/seeder/status')
+    return response.data
+  },
+
+  seed: async (): Promise<SeederActionResponse> => {
+    const response = await api.post<SeederActionResponse>('/admin/seeder/seed')
+    return response.data
+  },
+
+  reset: async (): Promise<SeederActionResponse> => {
+    const response = await api.post<SeederActionResponse>('/admin/seeder/reset')
+    return response.data
+  },
+
+  reseed: async (): Promise<SeederActionResponse> => {
+    const response = await api.post<SeederActionResponse>('/admin/seeder/reseed')
+    return response.data
+  },
+}

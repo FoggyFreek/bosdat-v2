@@ -22,6 +22,7 @@ const InstrumentsSection = lazy(() => import('@/features/settings/components/Ins
 const CourseTypesSection = lazy(() => import('@/features/settings/components/CourseTypesSection').then(m => ({ default: m.CourseTypesSection })))
 const RoomsSection = lazy(() => import('@/features/settings/components/RoomsSection').then(m => ({ default: m.RoomsSection })))
 const HolidaysSection = lazy(() => import('@/features/settings/components/HolidaysSection').then(m => ({ default: m.HolidaysSection })))
+const SeedingSection = lazy(() => import('@/features/settings/components/SeedingSection').then(m => ({ default: m.SeedingSection })))
 
 function SettingsLoadingFallback() {
   return (
@@ -76,6 +77,8 @@ function SettingsContent() {
         return <Suspense fallback={<SettingsLoadingFallback />}><HolidaysSection /></Suspense>
       case 'system':
         return <Suspense fallback={<SettingsLoadingFallback />}><SystemSettingsSection /></Suspense>
+      case 'seeding':
+        return <Suspense fallback={<SettingsLoadingFallback />}><SeedingSection /></Suspense>
       default:
         return null
     }
