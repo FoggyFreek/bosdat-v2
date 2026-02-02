@@ -1,6 +1,6 @@
 import {
   User, SlidersHorizontal, Music, BookOpen,
-  DoorOpen, CalendarDays, Settings2
+  DoorOpen, CalendarDays, Settings2, Database
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SettingKey, NavGroup } from '@/features/settings/types'
@@ -31,6 +31,12 @@ const navigationGroups: NavGroup[] = [
     label: 'GENERAL',
     items: [
       { key: 'system', label: 'System settings', icon: <Settings2 className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'DATA AND STORAGE',
+    items: [
+      { key: 'seeding', label: 'Seeding', icon: <Database className="h-4 w-4" /> },
     ],
   },
 ]

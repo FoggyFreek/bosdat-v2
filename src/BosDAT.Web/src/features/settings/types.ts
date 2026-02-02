@@ -8,6 +8,7 @@ export type SettingKey =
   | 'rooms'
   | 'holidays'
   | 'system'
+  | 'seeding'
 
 export interface NavItem {
   key: SettingKey
