@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select'
 import { instrumentsApi, courseTypesApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
+import { validateEmail } from '@/utils/validation'
 import type { Teacher, TeacherRole, CreateTeacher } from '@/features/teachers/types'
 import type { Instrument } from '@/features/instruments/types'
 import type { CourseTypeSimple } from '@/features/course-types/types'
@@ -137,19 +138,6 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
       }
     }
   }, [formData.instrumentIds, formData.courseTypeIds, allCourseTypes])
-
-  const validateEmail = (email: string): boolean => {
-    // Prevent ReDoS by limiting input length and using simple string checks
-    if (email.length > 254) return false
-    const parts = email.split('@')
-    if (parts.length !== 2) return false
-    const [local, domain] = parts
-    if (!local || local.length > 64 || !domain || domain.length > 253) return false
-    if (local.includes(' ') || domain.includes(' ')) return false
-    if (!domain.includes('.')) return false
-    const domainParts = domain.split('.')
-    return domainParts.every(part => part.length > 0 && part.length <= 63)
-  }
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
+import { validateEmail } from '@/utils/validation'
 import type { Student, StudentStatus, Gender, CreateStudent } from '@/features/students/types'
 
 const getStatusBadgeClass = (status: string) => {
@@ -144,19 +145,6 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
       })
     }
   }, [student])
-
-  const validateEmail = (email: string): boolean => {
-    // Prevent ReDoS by limiting input length and using simple string checks
-    if (email.length > 254) return false
-    const parts = email.split('@')
-    if (parts.length !== 2) return false
-    const [local, domain] = parts
-    if (!local || local.length > 64 || !domain || domain.length > 253) return false
-    if (local.includes(' ') || domain.includes(' ')) return false
-    if (!domain.includes('.')) return false
-    const domainParts = domain.split('.')
-    return domainParts.every(part => part.length > 0 && part.length <= 63)
-  }
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
