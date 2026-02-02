@@ -317,8 +317,8 @@ public class CourseDataGenerator
                 // Check max students for group/workshop
                 if (courseType.Type != CourseTypeCategory.Individual)
                 {
-                    var existingCount = enrollments.Count(e => e.CourseId == course.Id);
-                    if (existingCount >= courseType.MaxStudents) continue;
+                    var courseEnrollmentCount = enrollments.Count(e => e.CourseId == course.Id);
+                    if (courseEnrollmentCount >= courseType.MaxStudents) continue;
                 }
 
                 enrolledCourseIds.Add(course.Id);
