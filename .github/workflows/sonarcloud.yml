@@ -42,7 +42,7 @@ jobs:
 
       # Frontend dependencies & tests
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: src/BosDAT.Web
 
       - name: Run frontend tests with coverage
