@@ -16,7 +16,7 @@ export const EnrollmentGroupPanel = ({
   maxStudents,
 }: EnrollmentGroupPanelProps) => {
   const { formData, removeStudent, updateStudent } = useEnrollmentForm()
-  const { students } = formData.step2
+  const students = formData.step2.students || []
 
   const handleUpdate = (
     studentId: string,

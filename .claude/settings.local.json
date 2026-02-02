@@ -1,7 +1,31 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git check-ignore:*)"
+      "mcp__atlassian__getJiraIssue",
+      "mcp__jira__createJiraIssue",
+      "mcp__jira__transitionJiraIssue",
+      "mcp__jira__addCommentToJiraIssue",
+      "Bash(dotnet build:*)",
+      "Bash(npm run build:*)",
+      "Bash(dotnet test:*)",
+      "mcp__jira__getJiraIssue",
+      "mcp__jira__getJiraProjectIssueTypesMetadata",
+      "mcp__jira__getTransitionsForJiraIssue",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(find:*)",
+      "Bash(npm run lint)",
+      "Bash(npx tsc:*)",
+      "mcp__sonarqube__search_sonar_issues_in_projects",
+      "Bash(npm install:*)",
+      "Bash(grep:*)",
+      "Bash(npm test:*)",
+      "Bash(node -e:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(npm run test:*)",
+      "Bash(ls:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

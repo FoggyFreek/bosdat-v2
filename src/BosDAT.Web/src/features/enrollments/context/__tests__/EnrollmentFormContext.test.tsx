@@ -373,6 +373,50 @@ describe('EnrollmentFormContext', () => {
 
       expect(result.current.formData.step2.students).toHaveLength(0)
     })
+
+    // Fallback tests for undefined students array
+    describe('handles undefined students array gracefully', () => {
+      it('handles adding student when students array exists', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+        const member = createTestMember()
+
+        act(() => {
+          result.current.addStudent(member)
+        })
+
+        expect(result.current.formData.step2.students).toHaveLength(1)
+        expect(result.current.formData.step2.students[0]).toEqual(member)
+      })
+
+      it('handles removing student from empty array', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.removeStudent('non-existent')
+        })
+
+        expect(result.current.formData.step2.students).toEqual([])
+      })
+
+      it('handles updating student in empty array', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStudent('non-existent', { discountType: 'Family' })
+        })
+
+        expect(result.current.formData.step2.students).toEqual([])
+      })
+
+      it('validates step2 with empty students array', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        const validation = result.current.isStep2Valid('Individual', 1)
+
+        expect(validation.isValid).toBe(false)
+        expect(validation.errors).toContain('At least one student must be selected')
+      })
+    })
   })
 
   // Step 3 Tests

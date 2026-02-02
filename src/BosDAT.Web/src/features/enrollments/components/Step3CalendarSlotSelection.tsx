@@ -84,10 +84,11 @@ export const Step3CalendarSlotSelection = ({
   })
 
   const allEvents = useMemo(() => {
+    const safeEvents = events || []
     if (placeholderEvent) {
-      return [...events, placeholderEvent]
+      return [...safeEvents, placeholderEvent]
     }
-    return events
+    return safeEvents
   }, [events, placeholderEvent])
 
 
@@ -113,13 +114,14 @@ export const Step3CalendarSlotSelection = ({
   const createPlaceholderEvent = useCallback(
     (date: Date, startTime: string, endTime: string): CalendarEvent => {
       const dateStr = formatDateForApi(date)
+      const students = step2.students || []
       return {
         startDateTime: `${dateStr}T${startTime}:00`,
         endDateTime: `${dateStr}T${endTime}:00`,
         title: 'Selected Slot',
         frequency: step1.recurrence === 'Biweekly' ? 'bi-weekly' : 'weekly',
         eventType: 'placeholder',
-        attendees: step2.students.map(s => s.studentName),
+        attendees: students.map(s => s.studentName),
       }
     },
     [step1.recurrence, step2.students]

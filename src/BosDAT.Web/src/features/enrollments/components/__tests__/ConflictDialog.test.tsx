@@ -93,4 +93,22 @@ describe('ConflictDialog', () => {
     expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
     expect(screen.queryByText('Piano Basics')).not.toBeInTheDocument()
   })
+
+  describe('handles undefined conflicts gracefully', () => {
+    it('should handle undefined conflicts array', () => {
+      const onClose = vi.fn()
+      render(<ConflictDialog open={true} conflicts={undefined as any} onClose={onClose} />)
+
+      expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
+      expect(screen.getByText('No conflicts to display.')).toBeInTheDocument()
+    })
+
+    it('should handle null conflicts array', () => {
+      const onClose = vi.fn()
+      render(<ConflictDialog open={true} conflicts={null as any} onClose={onClose} />)
+
+      expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
+      expect(screen.getByText('No conflicts to display.')).toBeInTheDocument()
+    })
+  })
 })

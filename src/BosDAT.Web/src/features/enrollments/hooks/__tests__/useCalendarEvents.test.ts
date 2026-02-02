@@ -524,4 +524,206 @@ describe('useCalendarEvents', () => {
       expect(new Date(result.current[2].startDateTime).getMinutes()).toBe(15)
     })
   })
+
+  describe('handles undefined arrays gracefully', () => {
+    it('should handle undefined lessons array', () => {
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: undefined as any, courses: [], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toEqual([])
+    })
+
+    it('should handle undefined courses array', () => {
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses: undefined as any, holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toEqual([])
+    })
+
+    it('should handle undefined holidays array', () => {
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses: [], holidays: undefined as any, isTrial: false })
+      )
+
+      expect(result.current).toEqual([])
+    })
+
+    it('should handle all arrays being undefined', () => {
+      const { result } = renderHook(() =>
+        useCalendarEvents({
+          weekStart,
+          lessons: undefined as any,
+          courses: undefined as any,
+          holidays: undefined as any,
+          isTrial: false,
+        })
+      )
+
+      expect(result.current).toEqual([])
+    })
+
+    it('should handle course with undefined enrollments', () => {
+      const courseWithoutEnrollments = createMockCourse({ enrollments: undefined as any })
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses: [courseWithoutEnrollments], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+      expect(result.current[0].attendees).toEqual([])
+    })
+
+    it('should handle null enrollments in course', () => {
+      const courseWithNullEnrollments = createMockCourse({ enrollments: null as any })
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses: [courseWithNullEnrollments], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+      expect(result.current[0].attendees).toEqual([])
+    })
+  })
+
+  describe('handles invalid time/date values gracefully', () => {
+    it('should skip lessons with null startTime', () => {
+      const lessons = [
+        createMockLesson({ id: 'valid', startTime: '10:00' }),
+        createMockLesson({ id: 'invalid', startTime: null as any }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
+      )
+
+      // Should only include the valid lesson
+      expect(result.current).toHaveLength(1)
+      expect(result.current[0].title).toBe('Piano Lesson')
+    })
+
+    it('should skip lessons with undefined startTime', () => {
+      const lessons = [
+        createMockLesson({ id: 'valid', startTime: '10:00' }),
+        createMockLesson({ id: 'invalid', startTime: undefined as any }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip lessons with empty string startTime', () => {
+      const lessons = [
+        createMockLesson({ id: 'valid', startTime: '10:00' }),
+        createMockLesson({ id: 'invalid', startTime: '' }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip lessons with invalid time format', () => {
+      const lessons = [
+        createMockLesson({ id: 'valid', startTime: '10:00' }),
+        createMockLesson({ id: 'invalid', startTime: 'invalid' }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip lessons with null endTime', () => {
+      const lessons = [
+        createMockLesson({ id: 'valid', endTime: '11:00' }),
+        createMockLesson({ id: 'invalid', endTime: null as any }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip lessons with invalid date', () => {
+      const lessons = [
+        createMockLesson({ id: 'valid', date: '2024-03-20' }),
+        createMockLesson({ id: 'invalid', date: 'invalid-date' }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses: [], holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip courses with null startTime', () => {
+      const courses = [
+        createMockCourse({ id: 'valid', startTime: '10:00' }),
+        createMockCourse({ id: 'invalid', startTime: null as any }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses, holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip courses with undefined endTime', () => {
+      const courses = [
+        createMockCourse({ id: 'valid', endTime: '11:00' }),
+        createMockCourse({ id: 'invalid', endTime: undefined as any }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses, holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should skip courses with invalid time format', () => {
+      const courses = [
+        createMockCourse({ id: 'valid', startTime: '10:00', endTime: '11:00' }),
+        createMockCourse({ id: 'invalid', startTime: '10:00', endTime: 'not-a-time' }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons: [], courses, holidays: [], isTrial: false })
+      )
+
+      expect(result.current).toHaveLength(1)
+    })
+
+    it('should handle mixed valid and invalid data gracefully', () => {
+      const lessons = [
+        createMockLesson({ id: 'l1', startTime: '10:00', endTime: '11:00' }),
+        createMockLesson({ id: 'l2-invalid', startTime: null as any }),
+        createMockLesson({ id: 'l3', startTime: '14:00', endTime: '15:00' }),
+      ]
+      const courses = [
+        createMockCourse({ id: 'c1', startTime: '09:00', endTime: '10:00' }),
+        createMockCourse({ id: 'c2-invalid', startTime: 'bad' }),
+      ]
+
+      const { result } = renderHook(() =>
+        useCalendarEvents({ weekStart, lessons, courses, holidays: [], isTrial: false })
+      )
+
+      // Should include 2 valid lessons + 1 valid course
+      expect(result.current).toHaveLength(3)
+    })
+  })
 })

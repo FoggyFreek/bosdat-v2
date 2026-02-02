@@ -174,36 +174,66 @@ public class DatabaseSeeder : IDatabaseSeeder
     private async Task DeleteInOrderAsync(CancellationToken cancellationToken)
     {
         // Order matters - delete child tables before parent tables
+        // Using RemoveRange instead of ExecuteDelete for in-memory database compatibility
 
         // Financial data
-        await _context.StudentLedgerApplications.ExecuteDeleteAsync(cancellationToken);
-        await _context.StudentLedgerEntries.ExecuteDeleteAsync(cancellationToken);
-        await _context.Payments.ExecuteDeleteAsync(cancellationToken);
-        await _context.InvoiceLines.ExecuteDeleteAsync(cancellationToken);
-        await _context.Invoices.ExecuteDeleteAsync(cancellationToken);
+        var ledgerApplications = await _context.StudentLedgerApplications.ToListAsync(cancellationToken);
+        _context.StudentLedgerApplications.RemoveRange(ledgerApplications);
+
+        var ledgerEntries = await _context.StudentLedgerEntries.ToListAsync(cancellationToken);
+        _context.StudentLedgerEntries.RemoveRange(ledgerEntries);
+
+        var payments = await _context.Payments.ToListAsync(cancellationToken);
+        _context.Payments.RemoveRange(payments);
+
+        var invoiceLines = await _context.InvoiceLines.ToListAsync(cancellationToken);
+        _context.InvoiceLines.RemoveRange(invoiceLines);
+
+        var invoices = await _context.Invoices.ToListAsync(cancellationToken);
+        _context.Invoices.RemoveRange(invoices);
 
         // Lesson data
-        await _context.Lessons.ExecuteDeleteAsync(cancellationToken);
+        var lessons = await _context.Lessons.ToListAsync(cancellationToken);
+        _context.Lessons.RemoveRange(lessons);
 
         // Enrollment data
-        await _context.Enrollments.ExecuteDeleteAsync(cancellationToken);
-        await _context.Cancellations.ExecuteDeleteAsync(cancellationToken);
+        var enrollments = await _context.Enrollments.ToListAsync(cancellationToken);
+        _context.Enrollments.RemoveRange(enrollments);
+
+        var cancellations = await _context.Cancellations.ToListAsync(cancellationToken);
+        _context.Cancellations.RemoveRange(cancellations);
 
         // Course data
-        await _context.Courses.ExecuteDeleteAsync(cancellationToken);
-        await _context.TeacherCourseTypes.ExecuteDeleteAsync(cancellationToken);
-        await _context.CourseTypePricingVersions.ExecuteDeleteAsync(cancellationToken);
-        await _context.CourseTypes.ExecuteDeleteAsync(cancellationToken);
+        var courses = await _context.Courses.ToListAsync(cancellationToken);
+        _context.Courses.RemoveRange(courses);
+
+        var teacherCourseTypes = await _context.TeacherCourseTypes.ToListAsync(cancellationToken);
+        _context.TeacherCourseTypes.RemoveRange(teacherCourseTypes);
+
+        var pricingVersions = await _context.CourseTypePricingVersions.ToListAsync(cancellationToken);
+        _context.CourseTypePricingVersions.RemoveRange(pricingVersions);
+
+        var courseTypes = await _context.CourseTypes.ToListAsync(cancellationToken);
+        _context.CourseTypes.RemoveRange(courseTypes);
 
         // Teacher data
-        await _context.TeacherInstruments.ExecuteDeleteAsync(cancellationToken);
-        await _context.TeacherPayments.ExecuteDeleteAsync(cancellationToken);
-        await _context.Teachers.ExecuteDeleteAsync(cancellationToken);
+        var teacherInstruments = await _context.TeacherInstruments.ToListAsync(cancellationToken);
+        _context.TeacherInstruments.RemoveRange(teacherInstruments);
+
+        var teacherPayments = await _context.TeacherPayments.ToListAsync(cancellationToken);
+        _context.TeacherPayments.RemoveRange(teacherPayments);
+
+        var teachers = await _context.Teachers.ToListAsync(cancellationToken);
+        _context.Teachers.RemoveRange(teachers);
 
         // Student data
-        await _context.Students.ExecuteDeleteAsync(cancellationToken);
+        var students = await _context.Students.ToListAsync(cancellationToken);
+        _context.Students.RemoveRange(students);
 
         // Reference data (holidays only - keep instruments/rooms)
-        await _context.Holidays.ExecuteDeleteAsync(cancellationToken);
+        var holidays = await _context.Holidays.ToListAsync(cancellationToken);
+        _context.Holidays.RemoveRange(holidays);
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

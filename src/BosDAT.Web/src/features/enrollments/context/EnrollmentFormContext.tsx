@@ -75,7 +75,7 @@ const enrollmentFormReducer = (
           ...state.formData,
           step2: {
             ...state.formData.step2,
-            students: [...state.formData.step2.students, action.payload],
+            students: [...(state.formData.step2.students || []), action.payload],
           },
         },
       }
@@ -86,7 +86,7 @@ const enrollmentFormReducer = (
           ...state.formData,
           step2: {
             ...state.formData.step2,
-            students: state.formData.step2.students.filter(
+            students: (state.formData.step2.students || []).filter(
               (s) => s.studentId !== action.payload
             ),
           },
@@ -99,7 +99,7 @@ const enrollmentFormReducer = (
           ...state.formData,
           step2: {
             ...state.formData.step2,
-            students: state.formData.step2.students.map((s) =>
+            students: (state.formData.step2.students || []).map((s) =>
               s.studentId === action.payload.studentId
                 ? { ...s, ...action.payload.updates }
                 : s
@@ -189,12 +189,12 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
       step1.teacherId !== null &&
       step1.startDate !== null
     )
-  }, [state.formData.step1])
+  }, [state.formData])
 
   const isStep2Valid = useCallback(
     (courseTypeCategory: CourseTypeCategory, maxStudents: number): Step2ValidationResult => {
       const { step2, step1 } = state.formData
-      const { students } = step2
+      const students = step2.students || []
       const errors: string[] = []
 
       // Rule 1: At least one student must be selected
@@ -238,7 +238,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
 
       return { isValid: errors.length === 0, errors }
     },
-    [state.formData.step1, state.formData.step2]
+    [state.formData]
   )
 
   const isStep3Valid = useCallback((): Step3ValidationResult => {
@@ -256,7 +256,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
     }
 
     return { isValid: errors.length === 0, errors }
-  }, [state.formData.step3])
+  }, [state.formData])
 
   const value = useMemo(
     () => ({

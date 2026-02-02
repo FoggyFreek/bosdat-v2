@@ -18,6 +18,8 @@ interface ConflictDialogProps {
 }
 
 export function ConflictDialog({ open, conflicts, onClose }: ConflictDialogProps) {
+  const safeConflicts = conflicts || []
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
@@ -30,10 +32,10 @@ export function ConflictDialog({ open, conflicts, onClose }: ConflictDialogProps
         </DialogHeader>
 
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {conflicts.length === 0 ? (
+          {safeConflicts.length === 0 ? (
             <p className="text-sm text-muted-foreground">No conflicts to display.</p>
           ) : (
-            conflicts.map((conflict) => (
+            safeConflicts.map((conflict) => (
               <Alert key={conflict.courseId} variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>{conflict.courseName}</AlertTitle>

@@ -329,4 +329,88 @@ describe('Step3CalendarSlotSelection', () => {
       })
     })
   })
+
+  describe('handles empty and missing data gracefully', () => {
+    it('should handle empty lessons array in calendar response', async () => {
+      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+        weekStart: '2024-03-18',
+        weekEnd: '2024-03-24',
+        lessons: [],
+        holidays: [],
+      })
+
+      renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should handle empty holidays array in calendar response', async () => {
+      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+        weekStart: '2024-03-18',
+        weekEnd: '2024-03-24',
+        lessons: [],
+        holidays: [],
+      })
+
+      renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should handle empty courses array', async () => {
+      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([])
+
+      renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should handle empty rooms array', async () => {
+      vi.mocked(roomsApi.roomsApi.getAll).mockResolvedValue([])
+
+      renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should handle course with empty enrollments', async () => {
+      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([
+        {
+          id: 'course-1',
+          teacherId: 'teacher-1',
+          teacherName: 'Teacher A',
+          courseTypeId: 1,
+          courseTypeName: 'Individual Piano',
+          instrumentName: 'Piano',
+          dayOfWeek: 1,
+          startTime: '09:00',
+          endTime: '10:00',
+          frequency: 'Weekly',
+          weekParity: 'All',
+          startDate: '2024-01-01',
+          status: 'Active',
+          isWorkshop: false,
+          isTrial: false,
+          enrollmentCount: 0,
+          enrollments: [],
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        },
+      ])
+
+      renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+      })
+    })
+  })
 })

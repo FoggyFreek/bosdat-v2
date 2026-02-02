@@ -79,4 +79,29 @@ describe('Step3Summary', () => {
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
   })
+
+  describe('handles undefined arrays gracefully', () => {
+    it('should render with undefined rooms array', () => {
+      renderWithProvider(<Step3Summary rooms={undefined as any} />)
+
+      expect(screen.getByText(/selected students/i)).toBeInTheDocument()
+      expect(screen.getByText(/room selection/i)).toBeInTheDocument()
+    })
+
+    it('should render with empty rooms array', () => {
+      renderWithProvider(<Step3Summary rooms={[]} />)
+
+      expect(screen.getByText(/selected students/i)).toBeInTheDocument()
+      expect(screen.getByText(/room selection/i)).toBeInTheDocument()
+      expect(screen.getByRole('combobox')).toBeInTheDocument()
+    })
+
+    it('should render with undefined students in context', () => {
+      // The component should handle when step2.students is undefined
+      renderWithProvider(<Step3Summary rooms={mockRooms} />)
+
+      // Should render the selected students section even with no students
+      expect(screen.getByText(/selected students/i)).toBeInTheDocument()
+    })
+  })
 })

@@ -13,6 +13,7 @@ interface Step3SummaryProps {
 export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryProps) {
   const { formData, updateStep3 } = useEnrollmentForm()
   const { step2, step3 } = formData
+  const students = step2.students || []
 
   const handleRoomChange = (value: string) => {
     updateStep3({ selectedRoomId: Number.parseInt(value, 10) })
@@ -27,7 +28,7 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
       <div className="rounded-lg border bg-muted/50 p-4">
         <h3 className="font-medium mb-3 text-sm">Selected Students</h3>
         <div className="flex flex-wrap gap-2">
-          {step2.students.map((student) => (
+          {students.map((student) => (
             <Badge
               key={student.studentId}
               variant="secondary"
@@ -49,7 +50,7 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
             <SelectValue placeholder="Select a room" />
           </SelectTrigger>
           <SelectContent>
-            {rooms.map((room) => (
+            {(rooms || []).map((room) => (
               <SelectItem key={room.id} value={room.id.toString()}>
                 {room.name}
               </SelectItem>

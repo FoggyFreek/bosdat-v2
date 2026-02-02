@@ -34,7 +34,7 @@ export const StudentSearchPanel = ({
 }: StudentSearchPanelProps) => {
   const [searchTerm, setSearchTerm] = useState('')
   const { formData, addStudent } = useEnrollmentForm()
-  const { students: selectedStudents } = formData.step2
+  const selectedStudents = formData.step2.students || []
 
   const { data: allStudents = [], isLoading } = useQuery<StudentList[]>({
     queryKey: ['students', 'search', searchTerm],
@@ -44,7 +44,7 @@ export const StudentSearchPanel = ({
   })
 
   const selectedStudentIds = useMemo(
-    () => new Set(selectedStudents.map((s) => s.studentId)),
+    () => new Set((selectedStudents || []).map((s) => s.studentId)),
     [selectedStudents]
   )
 
