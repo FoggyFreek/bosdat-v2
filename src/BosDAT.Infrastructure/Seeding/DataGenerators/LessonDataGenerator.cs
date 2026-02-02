@@ -25,7 +25,8 @@ public class LessonDataGenerator
         List<Enrollment> enrollments,
         CancellationToken cancellationToken)
     {
-        if (await _context.Lessons.AnyAsync(cancellationToken))
+        var existingCount = await _context.Lessons.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.Lessons.ToListAsync(cancellationToken);
         }
@@ -36,7 +37,7 @@ public class LessonDataGenerator
         foreach (var course in courses)
         {
             var courseEnrollments = enrollments.Where(e => e.CourseId == course.Id).ToList();
-            if (!courseEnrollments.Any()) continue;
+            if (courseEnrollments.Count == 0) continue;
 
             courseTypes.TryGetValue(course.CourseTypeId, out var courseType);
             var courseLessons = GenerateLessonsForCourse(course, courseEnrollments, courseType);

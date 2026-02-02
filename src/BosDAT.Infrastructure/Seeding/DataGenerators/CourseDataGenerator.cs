@@ -23,7 +23,8 @@ public class CourseDataGenerator
         List<Instrument> instruments,
         CancellationToken cancellationToken)
     {
-        if (await _context.CourseTypes.AnyAsync(cancellationToken))
+        var existingCount = await _context.CourseTypes.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.CourseTypes.ToListAsync(cancellationToken);
         }
@@ -89,7 +90,8 @@ public class CourseDataGenerator
         List<CourseType> courseTypes,
         CancellationToken cancellationToken)
     {
-        if (await _context.CourseTypePricingVersions.AnyAsync(cancellationToken))
+        var existingCount = await _context.CourseTypePricingVersions.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.CourseTypePricingVersions.ToListAsync(cancellationToken);
         }
@@ -161,7 +163,8 @@ public class CourseDataGenerator
         List<Room> rooms,
         CancellationToken cancellationToken)
     {
-        if (await _context.Courses.AnyAsync(cancellationToken))
+        var existingCount = await _context.Courses.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.Courses.ToListAsync(cancellationToken);
         }
@@ -176,7 +179,7 @@ public class CourseDataGenerator
                 .Select(tct => tct.TeacherId)
                 .ToList();
 
-            if (!eligibleTeacherIds.Any()) continue;
+            if (eligibleTeacherIds.Count == 0) continue;
 
             var room = SelectRoom(courseType, rooms);
             var coursesPerType = GetCoursesPerType(courseType.Type);
@@ -282,7 +285,8 @@ public class CourseDataGenerator
         List<Course> courses,
         CancellationToken cancellationToken)
     {
-        if (await _context.Enrollments.AnyAsync(cancellationToken))
+        var existingCount = await _context.Enrollments.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.Enrollments.ToListAsync(cancellationToken);
         }
@@ -305,7 +309,7 @@ public class CourseDataGenerator
                     .Where(c => !enrolledCourseIds.Contains(c.Id))
                     .ToList();
 
-                if (!availableCourses.Any()) break;
+                if (availableCourses.Count == 0) break;
 
                 var course = _seederContext.GetRandomItem(availableCourses);
                 var courseType = courseTypes.First(ct => ct.Id == course.CourseTypeId);

@@ -26,9 +26,10 @@ interface ActionConfig {
   confirmButtonText: string
   icon: React.ReactNode
   variant: 'default' | 'destructive' | 'outline'
+  isDestructive: boolean
 }
 
-const actionConfigs: Record<SeederAction, ActionConfig> = {
+const ACTION_CONFIGS: Record<SeederAction, ActionConfig> = {
   seed: {
     title: 'Seed Database',
     description: 'Populate the database with comprehensive test data including teachers, students, courses, lessons, and invoices.',
@@ -37,6 +38,7 @@ const actionConfigs: Record<SeederAction, ActionConfig> = {
     confirmButtonText: 'Yes, seed database',
     icon: <Database className="h-4 w-4" />,
     variant: 'default',
+    isDestructive: false,
   },
   reset: {
     title: 'Reset Database',
@@ -46,6 +48,7 @@ const actionConfigs: Record<SeederAction, ActionConfig> = {
     confirmButtonText: 'Yes, reset database',
     icon: <Trash2 className="h-4 w-4" />,
     variant: 'destructive',
+    isDestructive: true,
   },
   reseed: {
     title: 'Reset & Reseed',
@@ -55,7 +58,131 @@ const actionConfigs: Record<SeederAction, ActionConfig> = {
     confirmButtonText: 'Yes, reset and reseed',
     icon: <RefreshCw className="h-4 w-4" />,
     variant: 'destructive',
+    isDestructive: true,
   },
+}
+
+// Sub-components to reduce cognitive complexity
+function StatusLoadingState() {
+  return (
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      <span>Loading status...</span>
+    </div>
+  )
+}
+
+function StatusDisplay({ status }: { status: SeederStatusResponse }) {
+  const statusColor = status.isSeeded ? 'text-green-600' : 'text-gray-500'
+  const StatusIcon = status.isSeeded ? CheckCircle2 : Database
+  const statusText = status.isSeeded ? 'Seeded' : 'Not Seeded'
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Environment:</span>
+        <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{status.environment}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Database Status:</span>
+        <span className={`inline-flex items-center gap-1 text-sm font-medium ${statusColor}`}>
+          <StatusIcon className="h-4 w-4" />
+          {statusText}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function ResultAlert({ result }: { result: SeederActionResponse }) {
+  const alertVariant = result.success ? 'default' : 'destructive'
+  const alertClassName = result.success ? 'border-green-200 bg-green-50 text-green-800' : ''
+  const Icon = result.success ? CheckCircle2 : XCircle
+  const statusText = result.success ? 'Successful' : 'Failed'
+
+  return (
+    <Alert variant={alertVariant} className={alertClassName}>
+      <Icon className="h-4 w-4" />
+      <AlertTitle>{result.action} {statusText}</AlertTitle>
+      <AlertDescription>{result.message}</AlertDescription>
+    </Alert>
+  )
+}
+
+interface ActionButtonProps {
+  action: SeederAction
+  config: ActionConfig
+  isPending: boolean
+  isDisabled: boolean
+  onClick: () => void
+}
+
+function ActionButton({ action, config, isPending, isDisabled, onClick }: ActionButtonProps) {
+  const containerClass = config.isDestructive
+    ? 'flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30'
+    : 'flex items-start justify-between gap-4 p-4 rounded-lg border'
+
+  const titleClass = config.isDestructive ? 'font-medium text-red-900' : 'font-medium'
+  const descClass = config.isDestructive ? 'text-sm text-red-700/80 mt-1' : 'text-sm text-muted-foreground mt-1'
+
+  const buttonContent = isPending
+    ? <Loader2 className="h-4 w-4 animate-spin mr-2" />
+    : config.icon
+
+  const buttonLabel = action.charAt(0).toUpperCase() + action.slice(1)
+
+  return (
+    <div className={containerClass}>
+      <div className="flex-1">
+        <h4 className={titleClass}>{config.title}</h4>
+        <p className={descClass}>{config.description}</p>
+      </div>
+      <Button
+        onClick={onClick}
+        disabled={isDisabled}
+        variant={config.variant}
+      >
+        {buttonContent}
+        <span className="ml-2">{buttonLabel}</span>
+      </Button>
+    </div>
+  )
+}
+
+function ErrorState() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Database Seeding</CardTitle>
+        <CardDescription>Manage test data for development</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Failed to load seeder status. This feature may only be available in the Development environment or for Admin users.
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  )
+}
+
+function createMutationOptions(
+  queryClient: ReturnType<typeof useQueryClient>,
+  setLastResult: (result: SeederActionResponse) => void,
+  actionName: string
+) {
+  return {
+    onSuccess: (data: SeederActionResponse) => {
+      setLastResult(data)
+      queryClient.invalidateQueries({ queryKey: ['seeder-status'] })
+    },
+    onError: (error: Error) => {
+      setLastResult({ success: false, message: error.message, action: actionName })
+    },
+  }
 }
 
 export function SeedingSection() {
@@ -65,88 +192,51 @@ export function SeedingSection() {
 
   const { data: status, isLoading: isLoadingStatus, error: statusError } = useQuery<SeederStatusResponse>({
     queryKey: ['seeder-status'],
-    queryFn: () => seederApi.getStatus(),
+    queryFn: seederApi.getStatus,
     refetchInterval: false,
   })
 
   const seedMutation = useMutation({
-    mutationFn: () => seederApi.seed(),
-    onSuccess: (data) => {
-      setLastResult(data)
-      queryClient.invalidateQueries({ queryKey: ['seeder-status'] })
-    },
-    onError: (error: Error) => {
-      setLastResult({ success: false, message: error.message, action: 'Seed' })
-    },
+    mutationFn: seederApi.seed,
+    ...createMutationOptions(queryClient, setLastResult, 'Seed'),
   })
 
   const resetMutation = useMutation({
-    mutationFn: () => seederApi.reset(),
-    onSuccess: (data) => {
-      setLastResult(data)
-      queryClient.invalidateQueries({ queryKey: ['seeder-status'] })
-    },
-    onError: (error: Error) => {
-      setLastResult({ success: false, message: error.message, action: 'Reset' })
-    },
+    mutationFn: seederApi.reset,
+    ...createMutationOptions(queryClient, setLastResult, 'Reset'),
   })
 
   const reseedMutation = useMutation({
-    mutationFn: () => seederApi.reseed(),
-    onSuccess: (data) => {
-      setLastResult(data)
-      queryClient.invalidateQueries({ queryKey: ['seeder-status'] })
-    },
-    onError: (error: Error) => {
-      setLastResult({ success: false, message: error.message, action: 'Reseed' })
-    },
+    mutationFn: seederApi.reseed,
+    ...createMutationOptions(queryClient, setLastResult, 'Reseed'),
   })
 
+  const mutations = { seed: seedMutation, reset: resetMutation, reseed: reseedMutation }
   const isAnyMutationPending = seedMutation.isPending || resetMutation.isPending || reseedMutation.isPending
 
   const handleConfirm = () => {
     if (!confirmAction) return
 
     setLastResult(null)
-
-    switch (confirmAction) {
-      case 'seed':
-        seedMutation.mutate()
-        break
-      case 'reset':
-        resetMutation.mutate()
-        break
-      case 'reseed':
-        reseedMutation.mutate()
-        break
-    }
-
+    mutations[confirmAction].mutate()
     setConfirmAction(null)
   }
 
-  const handleActionClick = (action: SeederAction) => {
-    setConfirmAction(action)
+  const isActionDisabled = (action: SeederAction): boolean => {
+    if (isAnyMutationPending) return true
+    if (action === 'seed') return !status?.canSeed
+    if (action === 'reset') return !status?.canReset
+    return false
   }
 
   if (statusError) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Database Seeding</CardTitle>
-          <CardDescription>Manage test data for development</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              Failed to load seeder status. This feature may only be available in the Development environment or for Admin users.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    )
+    return <ErrorState />
   }
+
+  const currentConfig = confirmAction ? ACTION_CONFIGS[confirmAction] : null
+  const confirmButtonClass = confirmAction !== 'seed'
+    ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+    : ''
 
   return (
     <>
@@ -169,109 +259,27 @@ export function SeedingSection() {
           {/* Status Section */}
           <div className="rounded-lg border p-4">
             <h3 className="font-medium mb-3">Current Status</h3>
-            {isLoadingStatus ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Loading status...</span>
-              </div>
-            ) : status ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Environment:</span>
-                  <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{status.environment}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Database Status:</span>
-                  <span className={`inline-flex items-center gap-1 text-sm font-medium ${status.isSeeded ? 'text-green-600' : 'text-gray-500'}`}>
-                    {status.isSeeded ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4" />
-                        Seeded
-                      </>
-                    ) : (
-                      <>
-                        <Database className="h-4 w-4" />
-                        Not Seeded
-                      </>
-                    )}
-                  </span>
-                </div>
-              </div>
-            ) : null}
+            {isLoadingStatus && <StatusLoadingState />}
+            {!isLoadingStatus && status && <StatusDisplay status={status} />}
           </div>
 
           {/* Last Result */}
-          {lastResult && (
-            <Alert variant={lastResult.success ? 'default' : 'destructive'} className={lastResult.success ? 'border-green-200 bg-green-50 text-green-800' : ''}>
-              {lastResult.success ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-              <AlertTitle>{lastResult.action} {lastResult.success ? 'Successful' : 'Failed'}</AlertTitle>
-              <AlertDescription>{lastResult.message}</AlertDescription>
-            </Alert>
-          )}
+          {lastResult && <ResultAlert result={lastResult} />}
 
           {/* Actions */}
           <div className="space-y-4">
             <h3 className="font-medium">Actions</h3>
 
-            {/* Seed Button */}
-            <div className="flex items-start justify-between gap-4 p-4 rounded-lg border">
-              <div className="flex-1">
-                <h4 className="font-medium">{actionConfigs.seed.title}</h4>
-                <p className="text-sm text-muted-foreground mt-1">{actionConfigs.seed.description}</p>
-              </div>
-              <Button
-                onClick={() => handleActionClick('seed')}
-                disabled={isAnyMutationPending || !status?.canSeed}
-                variant={actionConfigs.seed.variant}
-              >
-                {seedMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  actionConfigs.seed.icon
-                )}
-                <span className="ml-2">Seed</span>
-              </Button>
-            </div>
-
-            {/* Reset Button */}
-            <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30">
-              <div className="flex-1">
-                <h4 className="font-medium text-red-900">{actionConfigs.reset.title}</h4>
-                <p className="text-sm text-red-700/80 mt-1">{actionConfigs.reset.description}</p>
-              </div>
-              <Button
-                onClick={() => handleActionClick('reset')}
-                disabled={isAnyMutationPending || !status?.canReset}
-                variant={actionConfigs.reset.variant}
-              >
-                {resetMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  actionConfigs.reset.icon
-                )}
-                <span className="ml-2">Reset</span>
-              </Button>
-            </div>
-
-            {/* Reseed Button */}
-            <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30">
-              <div className="flex-1">
-                <h4 className="font-medium text-red-900">{actionConfigs.reseed.title}</h4>
-                <p className="text-sm text-red-700/80 mt-1">{actionConfigs.reseed.description}</p>
-              </div>
-              <Button
-                onClick={() => handleActionClick('reseed')}
-                disabled={isAnyMutationPending}
-                variant={actionConfigs.reseed.variant}
-              >
-                {reseedMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  actionConfigs.reseed.icon
-                )}
-                <span className="ml-2">Reseed</span>
-              </Button>
-            </div>
+            {(['seed', 'reset', 'reseed'] as const).map((action) => (
+              <ActionButton
+                key={action}
+                action={action}
+                config={ACTION_CONFIGS[action]}
+                isPending={mutations[action].isPending}
+                isDisabled={isActionDisabled(action)}
+                onClick={() => setConfirmAction(action)}
+              />
+            ))}
           </div>
 
           {/* Data Preservation Info */}
@@ -293,10 +301,10 @@ export function SeedingSection() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              {confirmAction && actionConfigs[confirmAction].warningTitle}
+              {currentConfig?.warningTitle}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-left">
-              {confirmAction && actionConfigs[confirmAction].warningDescription}
+              {currentConfig?.warningDescription}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Alert variant="destructive" className="my-2">
@@ -308,11 +316,8 @@ export function SeedingSection() {
           </Alert>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirm}
-              className={confirmAction !== 'seed' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
-            >
-              {confirmAction && actionConfigs[confirmAction].confirmButtonText}
+            <AlertDialogAction onClick={handleConfirm} className={confirmButtonClass}>
+              {currentConfig?.confirmButtonText}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

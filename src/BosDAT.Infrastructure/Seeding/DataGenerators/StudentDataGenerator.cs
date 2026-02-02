@@ -57,7 +57,8 @@ public class StudentDataGenerator
 
     public async Task<List<Student>> GenerateAsync(CancellationToken cancellationToken)
     {
-        if (await _context.Students.AnyAsync(cancellationToken))
+        var existingCount = await _context.Students.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.Students.ToListAsync(cancellationToken);
         }

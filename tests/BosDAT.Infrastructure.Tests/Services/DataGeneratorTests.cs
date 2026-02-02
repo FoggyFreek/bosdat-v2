@@ -184,8 +184,8 @@ public class DataGeneratorTests : IDisposable
         await generator.GenerateAsync(CancellationToken.None);
         var links = await _context.TeacherInstruments.ToListAsync();
 
-        // Assert
-        Assert.True(links.Count > 8); // At least one per teacher, some have multiple
+        // Assert - At least one per teacher, some have multiple
+        Assert.InRange(links.Count, 9, int.MaxValue);
     }
 
     [Fact]
@@ -229,9 +229,9 @@ public class DataGeneratorTests : IDisposable
         var students = await generator.GenerateAsync(CancellationToken.None);
 
         // Assert
-        Assert.True(students.Any(s => s.Status == StudentStatus.Active));
-        Assert.True(students.Any(s => s.Status == StudentStatus.Trial));
-        Assert.True(students.Any(s => s.Status == StudentStatus.Inactive));
+        Assert.Contains(students, s => s.Status == StudentStatus.Active);
+        Assert.Contains(students, s => s.Status == StudentStatus.Trial);
+        Assert.Contains(students, s => s.Status == StudentStatus.Inactive);
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public class DataGeneratorTests : IDisposable
 
         // Assert
         var withBillingContact = children.Count(s => !string.IsNullOrEmpty(s.BillingContactEmail));
-        Assert.True(withBillingContact > 0);
+        Assert.NotEqual(0, withBillingContact);
     }
 
     #endregion
@@ -372,7 +372,7 @@ public class DataGeneratorTests : IDisposable
             _seederContext.Courses, _seederContext.Enrollments, CancellationToken.None);
 
         // Assert
-        Assert.True(lessons.Count > 0);
+        Assert.NotEmpty(lessons);
     }
 
     [Fact]

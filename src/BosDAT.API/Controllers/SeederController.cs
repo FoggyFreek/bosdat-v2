@@ -17,6 +17,20 @@ public class SeederController : ControllerBase
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<SeederController> _logger;
 
+    private static class ActionNames
+    {
+        public const string Seed = "Seed";
+        public const string Reset = "Reset";
+        public const string Reseed = "Reseed";
+    }
+
+    private static class SuccessMessages
+    {
+        public const string Seed = "Database seeded successfully with comprehensive test data.";
+        public const string Reset = "Database reset successfully. Admin user, settings, instruments, and rooms preserved.";
+        public const string Reseed = "Database reset and reseeded successfully with fresh test data.";
+    }
+
     public SeederController(
         IDatabaseSeeder seeder,
         IWebHostEnvironment environment,
@@ -56,46 +70,23 @@ public class SeederController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SeederActionResponse>> Seed(CancellationToken cancellationToken)
     {
-        // Only allow seeding in Development
-        if (!_environment.IsDevelopment())
+        if (!RequireDevelopmentEnvironment(ActionNames.Seed, out var forbidResult))
         {
-            _logger.LogWarning("Seeding attempted in non-development environment: {Environment}", _environment.EnvironmentName);
-            return Forbid();
+            return forbidResult!;
         }
 
         var isSeeded = await _seeder.IsSeededAsync(cancellationToken);
         if (isSeeded)
         {
-            return BadRequest(new SeederActionResponse
-            {
-                Success = false,
-                Message = "Database is already seeded. Use reset endpoint first if you want to re-seed.",
-                Action = "Seed"
-            });
+            return BadRequest(SeederActionResponse.Failure(
+                ActionNames.Seed,
+                "Database is already seeded. Use reset endpoint first if you want to re-seed."));
         }
 
-        try
-        {
-            _logger.LogInformation("Starting database seeding via API...");
-            await _seeder.SeedAsync(cancellationToken);
-
-            return Ok(new SeederActionResponse
-            {
-                Success = true,
-                Message = "Database seeded successfully with comprehensive test data.",
-                Action = "Seed"
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Database seeding failed");
-            return BadRequest(new SeederActionResponse
-            {
-                Success = false,
-                Message = $"Seeding failed: {ex.Message}",
-                Action = "Seed"
-            });
-        }
+        return await ExecuteSeederActionAsync(
+            ActionNames.Seed,
+            SuccessMessages.Seed,
+            () => _seeder.SeedAsync(cancellationToken));
     }
 
     /// <summary>
@@ -111,35 +102,15 @@ public class SeederController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SeederActionResponse>> Reset(CancellationToken cancellationToken)
     {
-        // Only allow reset in Development
-        if (!_environment.IsDevelopment())
+        if (!RequireDevelopmentEnvironment(ActionNames.Reset, out var forbidResult))
         {
-            _logger.LogWarning("Reset attempted in non-development environment: {Environment}", _environment.EnvironmentName);
-            return Forbid();
+            return forbidResult!;
         }
 
-        try
-        {
-            _logger.LogInformation("Starting database reset via API...");
-            await _seeder.ResetAsync(cancellationToken);
-
-            return Ok(new SeederActionResponse
-            {
-                Success = true,
-                Message = "Database reset successfully. Admin user, settings, instruments, and rooms preserved.",
-                Action = "Reset"
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Database reset failed");
-            return BadRequest(new SeederActionResponse
-            {
-                Success = false,
-                Message = $"Reset failed: {ex.Message}",
-                Action = "Reset"
-            });
-        }
+        return await ExecuteSeederActionAsync(
+            ActionNames.Reset,
+            SuccessMessages.Reset,
+            () => _seeder.ResetAsync(cancellationToken));
     }
 
     /// <summary>
@@ -153,40 +124,51 @@ public class SeederController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<SeederActionResponse>> Reseed(CancellationToken cancellationToken)
     {
-        // Only allow reseed in Development
-        if (!_environment.IsDevelopment())
+        if (!RequireDevelopmentEnvironment(ActionNames.Reseed, out var forbidResult))
         {
-            _logger.LogWarning("Reseed attempted in non-development environment: {Environment}", _environment.EnvironmentName);
-            return Forbid();
+            return forbidResult!;
         }
 
+        return await ExecuteSeederActionAsync(
+            ActionNames.Reseed,
+            SuccessMessages.Reseed,
+            async () =>
+            {
+                await _seeder.ResetAsync(cancellationToken);
+                _logger.LogInformation("Database reset completed, now seeding...");
+                await _seeder.SeedAsync(cancellationToken);
+            });
+    }
+
+    private bool RequireDevelopmentEnvironment(string actionName, out ActionResult<SeederActionResponse>? forbidResult)
+    {
+        if (_environment.IsDevelopment())
+        {
+            forbidResult = null;
+            return true;
+        }
+
+        _logger.LogWarning("{Action} attempted in non-development environment: {Environment}",
+            actionName, _environment.EnvironmentName);
+        forbidResult = Forbid();
+        return false;
+    }
+
+    private async Task<ActionResult<SeederActionResponse>> ExecuteSeederActionAsync(
+        string actionName,
+        string successMessage,
+        Func<Task> action)
+    {
         try
         {
-            _logger.LogInformation("Starting database reseed via API...");
-
-            // First reset
-            await _seeder.ResetAsync(cancellationToken);
-            _logger.LogInformation("Database reset completed, now seeding...");
-
-            // Then seed
-            await _seeder.SeedAsync(cancellationToken);
-
-            return Ok(new SeederActionResponse
-            {
-                Success = true,
-                Message = "Database reset and reseeded successfully with fresh test data.",
-                Action = "Reseed"
-            });
+            _logger.LogInformation("Starting database {Action} via API...", actionName.ToLowerInvariant());
+            await action();
+            return Ok(SeederActionResponse.Successful(actionName, successMessage));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Database reseed failed");
-            return BadRequest(new SeederActionResponse
-            {
-                Success = false,
-                Message = $"Reseed failed: {ex.Message}",
-                Action = "Reseed"
-            });
+            _logger.LogError(ex, "Database {Action} failed", actionName.ToLowerInvariant());
+            return BadRequest(SeederActionResponse.Failure(actionName, $"{actionName} failed: {ex.Message}"));
         }
     }
 }
@@ -210,4 +192,10 @@ public record SeederActionResponse
     public bool Success { get; init; }
     public string Message { get; init; } = string.Empty;
     public string Action { get; init; } = string.Empty;
+
+    public static SeederActionResponse Successful(string action, string message) =>
+        new() { Success = true, Action = action, Message = message };
+
+    public static SeederActionResponse Failure(string action, string message) =>
+        new() { Success = false, Action = action, Message = message };
 }

@@ -103,8 +103,8 @@ public class DatabaseSeeder : IDatabaseSeeder
 
             // 11. Seed Ledger Entries (open corrections)
             _logger.LogInformation("Seeding ledger entries...");
-            await supportGenerator.GenerateLedgerEntriesAsync(
-                students, courses, adminUser.Id, cancellationToken);
+            var ledgerParams = new LedgerEntryGenerationParams(students, courses, adminUser.Id);
+            await supportGenerator.GenerateLedgerEntriesAsync(ledgerParams, cancellationToken);
 
             // 12. Seed Holidays
             _logger.LogInformation("Seeding holidays...");
@@ -158,7 +158,7 @@ public class DatabaseSeeder : IDatabaseSeeder
 
         // Get all instruments
         var instruments = await _context.Instruments.ToListAsync(cancellationToken);
-        if (!instruments.Any())
+        if (instruments.Count == 0)
         {
             throw new InvalidOperationException(
                 "No instruments found. Please run migrations first.");

@@ -191,15 +191,15 @@ public class DatabaseSeederTests : IDisposable
 
         // Should have Individual types for all instruments (30min and 45min)
         var individualTypes = courseTypes.Where(ct => ct.Type == CourseTypeCategory.Individual).ToList();
-        Assert.True(individualTypes.Count >= 20); // 2 per instrument
+        Assert.InRange(individualTypes.Count, 20, int.MaxValue); // 2 per instrument
 
         // Should have Group types for some instruments
         var groupTypes = courseTypes.Where(ct => ct.Type == CourseTypeCategory.Group).ToList();
-        Assert.True(groupTypes.Count >= 4);
+        Assert.InRange(groupTypes.Count, 4, int.MaxValue);
 
         // Should have Workshop types for some instruments
         var workshopTypes = courseTypes.Where(ct => ct.Type == CourseTypeCategory.Workshop).ToList();
-        Assert.True(workshopTypes.Count >= 3);
+        Assert.InRange(workshopTypes.Count, 3, int.MaxValue);
     }
 
     [Fact]
@@ -245,13 +245,13 @@ public class DatabaseSeederTests : IDisposable
         var trialCount = students.Count(s => s.Status == StudentStatus.Trial);
         var inactiveCount = students.Count(s => s.Status == StudentStatus.Inactive);
 
-        Assert.True(activeCount > 15);
-        Assert.True(trialCount >= 3);
-        Assert.True(inactiveCount >= 3);
+        Assert.InRange(activeCount, 16, int.MaxValue);
+        Assert.InRange(trialCount, 3, int.MaxValue);
+        Assert.InRange(inactiveCount, 3, int.MaxValue);
 
         // Some should have billing contacts (children)
         var withBillingContact = students.Count(s => !string.IsNullOrEmpty(s.BillingContactEmail));
-        Assert.True(withBillingContact >= 8);
+        Assert.InRange(withBillingContact, 8, int.MaxValue);
     }
 
     [Fact]
@@ -264,23 +264,23 @@ public class DatabaseSeederTests : IDisposable
 
         // Assert
         var courses = await _context.Courses.ToListAsync();
-        Assert.True(courses.Count > 30);
+        Assert.InRange(courses.Count, 31, int.MaxValue);
 
         // Should have various frequencies
         var weeklyCount = courses.Count(c => c.Frequency == CourseFrequency.Weekly);
         var biweeklyCount = courses.Count(c => c.Frequency == CourseFrequency.Biweekly);
 
-        Assert.True(weeklyCount > biweeklyCount); // Majority should be weekly
+        Assert.True(weeklyCount > biweeklyCount, "Majority should be weekly"); // Comparison assertion
 
         // Should have various statuses
         var activeCount = courses.Count(c => c.Status == CourseStatus.Active);
         var completedCount = courses.Count(c => c.Status == CourseStatus.Completed);
 
-        Assert.True(activeCount > completedCount);
+        Assert.True(activeCount > completedCount, "Active courses should outnumber completed"); // Comparison assertion
 
         // Some should be trials
         var trialCount = courses.Count(c => c.IsTrial);
-        Assert.True(trialCount > 0);
+        Assert.NotEqual(0, trialCount);
     }
 
     [Fact]
@@ -293,16 +293,17 @@ public class DatabaseSeederTests : IDisposable
 
         // Assert
         var enrollments = await _context.Enrollments.ToListAsync();
-        Assert.True(enrollments.Count >= 20);
+        Assert.InRange(enrollments.Count, 20, int.MaxValue);
 
         // Some should have discounts
         var withDiscount = enrollments.Count(e => e.DiscountPercent > 0);
-        Assert.True(withDiscount > 0);
+        Assert.NotEqual(0, withDiscount);
 
         // Should have family and course discounts
         var familyDiscount = enrollments.Count(e => e.DiscountType == DiscountType.Family);
         var courseDiscount = enrollments.Count(e => e.DiscountType == DiscountType.Course);
-        Assert.True(familyDiscount > 0 || courseDiscount > 0);
+        var totalDiscounts = familyDiscount + courseDiscount;
+        Assert.NotEqual(0, totalDiscounts);
     }
 
     [Fact]
@@ -315,21 +316,22 @@ public class DatabaseSeederTests : IDisposable
 
         // Assert
         var lessons = await _context.Lessons.ToListAsync();
-        Assert.True(lessons.Count > 100); // Should have many lessons
+        Assert.InRange(lessons.Count, 101, int.MaxValue); // Should have many lessons
 
         // Should have past and future lessons
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var pastLessons = lessons.Count(l => l.ScheduledDate < today);
         var futureLessons = lessons.Count(l => l.ScheduledDate >= today);
 
-        Assert.True(pastLessons > 0);
-        Assert.True(futureLessons > 0);
+        Assert.NotEqual(0, pastLessons);
+        Assert.NotEqual(0, futureLessons);
 
         // Past lessons should mostly be completed
         var completedPastLessons = lessons
             .Where(l => l.ScheduledDate < today && l.Status == LessonStatus.Completed)
             .Count();
-        Assert.True(completedPastLessons > pastLessons * 0.7); // At least 70% completed
+        var minExpectedCompleted = (int)(pastLessons * 0.7);
+        Assert.InRange(completedPastLessons, minExpectedCompleted, int.MaxValue); // At least 70% completed
     }
 
     [Fact]
@@ -344,13 +346,13 @@ public class DatabaseSeederTests : IDisposable
         var invoices = await _context.Invoices.ToListAsync();
         var invoiceLines = await _context.InvoiceLines.ToListAsync();
 
-        Assert.True(invoices.Count > 0);
-        Assert.True(invoiceLines.Count > 0);
+        Assert.NotEmpty(invoices);
+        Assert.NotEmpty(invoiceLines);
 
         // Should have registration fee lines
         var registrationFeeLines = invoiceLines.Count(il =>
             il.Description.Contains("inschrijfgeld", StringComparison.OrdinalIgnoreCase));
-        Assert.True(registrationFeeLines > 0);
+        Assert.NotEqual(0, registrationFeeLines);
 
         // Invoices should have proper totals
         Assert.All(invoices, inv =>
@@ -370,16 +372,15 @@ public class DatabaseSeederTests : IDisposable
 
         // Assert
         var ledgerEntries = await _context.StudentLedgerEntries.ToListAsync();
-        Assert.True(ledgerEntries.Count > 0);
+        Assert.NotEmpty(ledgerEntries);
 
         // Should have some open entries
         var openEntries = ledgerEntries.Count(le => le.Status == LedgerEntryStatus.Open);
-        Assert.True(openEntries > 0);
+        Assert.NotEqual(0, openEntries);
 
         // Should have credits and debits
         var credits = ledgerEntries.Count(le => le.EntryType == LedgerEntryType.Credit);
-        var debits = ledgerEntries.Count(le => le.EntryType == LedgerEntryType.Debit);
-        Assert.True(credits > 0);
+        Assert.NotEqual(0, credits);
     }
 
     [Fact]
@@ -425,19 +426,19 @@ public class DatabaseSeederTests : IDisposable
     {
         // Arrange
         await _seeder.SeedAsync();
-        Assert.True(await _context.Teachers.AnyAsync());
-        Assert.True(await _context.Students.AnyAsync());
-        Assert.True(await _context.Courses.AnyAsync());
+        Assert.NotEqual(0, await _context.Teachers.CountAsync());
+        Assert.NotEqual(0, await _context.Students.CountAsync());
+        Assert.NotEqual(0, await _context.Courses.CountAsync());
 
         // Act
         await _seeder.ResetAsync();
 
         // Assert
-        Assert.False(await _context.Teachers.AnyAsync());
-        Assert.False(await _context.Students.AnyAsync());
-        Assert.False(await _context.Courses.AnyAsync());
-        Assert.False(await _context.Lessons.AnyAsync());
-        Assert.False(await _context.Invoices.AnyAsync());
+        Assert.Equal(0, await _context.Teachers.CountAsync());
+        Assert.Equal(0, await _context.Students.CountAsync());
+        Assert.Equal(0, await _context.Courses.CountAsync());
+        Assert.Equal(0, await _context.Lessons.CountAsync());
+        Assert.Equal(0, await _context.Invoices.CountAsync());
     }
 
     [Fact]
@@ -469,9 +470,9 @@ public class DatabaseSeederTests : IDisposable
         await _seeder.SeedAsync();
 
         // Assert
-        Assert.True(await _context.Teachers.AnyAsync());
-        Assert.True(await _context.Students.AnyAsync());
-        Assert.True(await _context.Courses.AnyAsync());
+        Assert.NotEqual(0, await _context.Teachers.CountAsync());
+        Assert.NotEqual(0, await _context.Students.CountAsync());
+        Assert.NotEqual(0, await _context.Courses.CountAsync());
     }
 
     #endregion
@@ -493,7 +494,7 @@ public class DatabaseSeederTests : IDisposable
         foreach (var teacher in teachers)
         {
             var instruments = teacherInstruments.Count(ti => ti.TeacherId == teacher.Id);
-            Assert.True(instruments > 0, $"Teacher {teacher.FirstName} {teacher.LastName} has no instruments");
+            Assert.NotEqual(0, instruments);
         }
     }
 
@@ -512,7 +513,7 @@ public class DatabaseSeederTests : IDisposable
         foreach (var teacher in teachers)
         {
             var courseTypes = teacherCourseTypes.Count(tct => tct.TeacherId == teacher.Id);
-            Assert.True(courseTypes > 0, $"Teacher {teacher.FirstName} {teacher.LastName} has no course types");
+            Assert.NotEqual(0, courseTypes);
         }
     }
 

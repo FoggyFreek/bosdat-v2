@@ -25,7 +25,8 @@ public class InvoiceDataGenerator
         List<CourseTypePricingVersion> pricingVersions,
         CancellationToken cancellationToken)
     {
-        if (await _context.Invoices.AnyAsync(cancellationToken))
+        var existingCount = await _context.Invoices.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.Invoices.ToListAsync(cancellationToken);
         }
@@ -101,7 +102,8 @@ public class InvoiceDataGenerator
         }
 
         // Add registration fee for first invoice
-        if (!existingInvoices.Any(i => i.StudentId == student.Id) && student.RegistrationFeePaidAt.HasValue)
+        var hasExistingInvoice = existingInvoices.Exists(i => i.StudentId == student.Id);
+        if (!hasExistingInvoice && student.RegistrationFeePaidAt.HasValue)
         {
             var regFeeLine = CreateRegistrationFeeLine(invoiceId);
             lines.Add(regFeeLine);

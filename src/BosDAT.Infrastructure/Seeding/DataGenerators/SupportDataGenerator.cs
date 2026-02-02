@@ -41,7 +41,8 @@ public class SupportDataGenerator
 
     public async Task GeneratePaymentsAsync(List<Invoice> invoices, CancellationToken cancellationToken)
     {
-        if (await _context.Payments.AnyAsync(cancellationToken))
+        var existingCount = await _context.Payments.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return;
         }
@@ -83,19 +84,16 @@ public class SupportDataGenerator
         };
     }
 
-    public async Task GenerateLedgerEntriesAsync(
-        List<Student> students,
-        List<Course> courses,
-        Guid adminUserId,
-        CancellationToken cancellationToken)
+    public async Task GenerateLedgerEntriesAsync(LedgerEntryGenerationParams entryParams, CancellationToken cancellationToken)
     {
-        if (await _context.StudentLedgerEntries.AnyAsync(cancellationToken))
+        var existingCount = await _context.StudentLedgerEntries.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return;
         }
 
         var ledgerEntries = new List<StudentLedgerEntry>();
-        var activeStudents = students
+        var activeStudents = entryParams.Students
             .Where(s => s.Status == StudentStatus.Active)
             .Take(8)
             .ToList();
@@ -106,7 +104,7 @@ public class SupportDataGenerator
 
             for (int i = 0; i < entryCount; i++)
             {
-                ledgerEntries.Add(CreateLedgerEntry(student, courses, adminUserId));
+                ledgerEntries.Add(CreateLedgerEntry(student, entryParams));
             }
         }
 
@@ -114,10 +112,10 @@ public class SupportDataGenerator
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private StudentLedgerEntry CreateLedgerEntry(Student student, List<Course> courses, Guid adminUserId)
+    private StudentLedgerEntry CreateLedgerEntry(Student student, LedgerEntryGenerationParams entryParams)
     {
         var entryType = _seederContext.NextBool(70) ? LedgerEntryType.Credit : LedgerEntryType.Debit;
-        var status = DetermineLedgerStatus();
+        var status = DetermineLedgerStatus(_seederContext);
         var amount = Math.Round((decimal)(_seederContext.Random.NextDouble() * 50 + 10), 2);
         var descriptions = entryType == LedgerEntryType.Credit ? CreditDescriptions : DebitDescriptions;
 
@@ -127,29 +125,30 @@ public class SupportDataGenerator
             CorrectionRefName = _seederContext.NextLedgerRefName(),
             Description = _seederContext.GetRandomItem(descriptions),
             StudentId = student.Id,
-            CourseId = _seederContext.NextBool(30) ? courses.FirstOrDefault()?.Id : null,
+            CourseId = _seederContext.NextBool(30) ? entryParams.Courses.FirstOrDefault()?.Id : null,
             Amount = amount,
             EntryType = entryType,
             Status = status,
-            CreatedById = adminUserId,
+            CreatedById = entryParams.AdminUserId,
             CreatedAt = DateTime.UtcNow.AddDays(-_seederContext.NextInt(1, 90)),
             UpdatedAt = DateTime.UtcNow.AddDays(-_seederContext.NextInt(1, 30))
         };
     }
 
-    private LedgerEntryStatus DetermineLedgerStatus()
+    private static LedgerEntryStatus DetermineLedgerStatus(SeederContext seederContext)
     {
-        if (_seederContext.NextBool(60))
+        if (seederContext.NextBool(60))
             return LedgerEntryStatus.Open;
 
-        return _seederContext.NextBool(50)
+        return seederContext.NextBool(50)
             ? LedgerEntryStatus.PartiallyApplied
             : LedgerEntryStatus.FullyApplied;
     }
 
     public async Task GenerateHolidaysAsync(CancellationToken cancellationToken)
     {
-        if (await _context.Holidays.AnyAsync(cancellationToken))
+        var existingCount = await _context.Holidays.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return;
         }
@@ -243,3 +242,11 @@ public class SupportDataGenerator
             }
         };
 }
+
+/// <summary>
+/// Parameters for ledger entry generation to reduce method parameter count.
+/// </summary>
+public record LedgerEntryGenerationParams(
+    List<Student> Students,
+    List<Course> Courses,
+    Guid AdminUserId);

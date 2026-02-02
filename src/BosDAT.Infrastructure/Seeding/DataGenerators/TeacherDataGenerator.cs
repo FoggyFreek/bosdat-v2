@@ -34,7 +34,8 @@ public class TeacherDataGenerator
 
     public async Task<List<Teacher>> GenerateAsync(CancellationToken cancellationToken)
     {
-        if (await _context.Teachers.AnyAsync(cancellationToken))
+        var existingCount = await _context.Teachers.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return await _context.Teachers.ToListAsync(cancellationToken);
         }
@@ -91,7 +92,8 @@ public class TeacherDataGenerator
         List<CourseType> courseTypes,
         CancellationToken cancellationToken)
     {
-        if (await _context.TeacherCourseTypes.AnyAsync(cancellationToken))
+        var existingCount = await _context.TeacherCourseTypes.CountAsync(cancellationToken);
+        if (existingCount > 0)
         {
             return;
         }
