@@ -7,6 +7,7 @@ using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Seeding;
+using BosDAT.Infrastructure.Seeding.DataGenerators;
 
 namespace BosDAT.Infrastructure.Tests.Services;
 
@@ -43,15 +44,15 @@ public class DatabaseSeederTests : IDisposable
         _adminUser = new ApplicationUser
         {
             Id = Guid.NewGuid(),
-            UserName = "admin@bosdat.nl",
-            Email = "admin@bosdat.nl",
+            UserName = SeederConstants.AdminEmail,
+            Email = SeederConstants.AdminEmail,
             FirstName = "Admin",
             LastName = "User",
             IsActive = true
         };
 
         _mockUserManager
-            .Setup(x => x.FindByEmailAsync("admin@bosdat.nl"))
+            .Setup(x => x.FindByEmailAsync(SeederConstants.AdminEmail))
             .ReturnsAsync(_adminUser);
 
         _mockLogger = new Mock<ILogger<DatabaseSeeder>>();
