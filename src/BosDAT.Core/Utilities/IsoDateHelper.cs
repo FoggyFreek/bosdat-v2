@@ -32,34 +32,13 @@ public static class IsoDateHelper
 
     /// <summary>
     /// Determines if a given ISO year has 53 weeks.
-    /// An ISO year has 53 weeks if:
-    /// - It starts on a Thursday (January 1 is a Thursday), OR
-    /// - It's a leap year starting on a Wednesday (January 1 is a Wednesday in a leap year)
+    /// Uses the native .NET ISOWeek.GetWeeksInYear method.
     /// </summary>
     /// <param name="isoYear">The ISO year to check.</param>
     /// <returns>True if the year has 53 weeks, false otherwise.</returns>
     public static bool Is53WeekYear(int isoYear)
     {
-        // Get the last day of the ISO year
-        // If week 53 exists, Dec 31 or a nearby date will be in week 53
-        // DateTimeKind.Unspecified is used since ISO week calculations are calendar-based
-        // and independent of timezone (per SonarQube rule csharpsquid:S6562)
-        var dec31 = new DateTime(isoYear, 12, 31, 0, 0, 0, DateTimeKind.Unspecified);
-        var isoWeekOfDec31 = GetIsoWeekNumber(dec31);
-        var isoYearOfDec31 = GetIsoWeekYear(dec31);
-
-        // If Dec 31 is in week 53 of the same ISO year, it's a 53-week year
-        if (isoYearOfDec31 == isoYear && isoWeekOfDec31 == 53)
-        {
-            return true;
-        }
-
-        // Check a few days before Dec 31 (since Dec 31 might be in Week 1 of next year)
-        var dec28 = new DateTime(isoYear, 12, 28, 0, 0, 0, DateTimeKind.Unspecified);
-        var isoWeekOfDec28 = GetIsoWeekNumber(dec28);
-        var isoYearOfDec28 = GetIsoWeekYear(dec28);
-
-        return isoYearOfDec28 == isoYear && isoWeekOfDec28 == 53;
+        return ISOWeek.GetWeeksInYear(isoYear) == 53;
     }
 
     /// <summary>
@@ -140,6 +119,7 @@ public static class IsoDateHelper
     /// <summary>
     /// Creates an ISO 8601 datetime string from date and time components.
     /// Supports time formats: 'HH:mm:ss', 'HH:mm:ss:ff' (with fractional seconds treated as milliseconds).
+    /// Uses native DateTime.ParseExact for parsing and formatting.
     /// </summary>
     /// <param name="date">The date in MM-dd-yyyy format (e.g., "02-15-2026").</param>
     /// <param name="time">The time in HH:mm:ss or HH:mm:ss:ff format (e.g., "19:30:00" or "19:30:00:00").</param>
@@ -147,28 +127,26 @@ public static class IsoDateHelper
     /// <exception cref="FormatException">Thrown when date or time format is invalid.</exception>
     public static string CreateIsoDateTime(string date, string time)
     {
-        // Parse date in MM-dd-yyyy format
-        if (!DateTime.TryParseExact(date, "MM-dd-yyyy", CultureInfo.InvariantCulture,
-            DateTimeStyles.None, out var parsedDate))
+        // Combine date and time for native parsing
+        var combinedFormats = new[]
         {
-            throw new FormatException($"Invalid date format: '{date}'. Expected format: MM-dd-yyyy");
+            "MM-dd-yyyyTHH:mm:ss",
+            "MM-dd-yyyyTHH:mm:ss:ff"
+        };
+
+        var combined = $"{date}T{time}";
+
+        if (!DateTime.TryParseExact(combined, combinedFormats, CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var parsedDateTime))
+        {
+            throw new FormatException(
+                $"Invalid date/time format: '{date}' and '{time}'. " +
+                $"Expected formats: MM-dd-yyyy and HH:mm:ss or HH:mm:ss:ff");
         }
 
-        // Parse time - support both HH:mm:ss and HH:mm:ss:ff formats
-        TimeOnly parsedTime;
-        var timeFormats = new[] { "HH:mm:ss", "HH:mm:ss:ff" };
-
-        if (!TimeOnly.TryParseExact(time, timeFormats, CultureInfo.InvariantCulture,
-            DateTimeStyles.None, out parsedTime))
-        {
-            throw new FormatException($"Invalid time format: '{time}'. Expected format: HH:mm:ss or HH:mm:ss:ff");
-        }
-
-        // Create UTC DateTime and format as ISO 8601
-        var dateTime = new DateTime(parsedDate.Year, parsedDate.Month, parsedDate.Day,
-            parsedTime.Hour, parsedTime.Minute, parsedTime.Second, DateTimeKind.Utc);
-
-        return dateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+        // Specify UTC kind and format as ISO 8601
+        var utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
+        return utcDateTime.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -239,15 +217,17 @@ public static class IsoDateHelper
 
     /// <summary>
     /// Gets the Monday (start of week) for a given date using ISO 8601 week definition.
+    /// Uses the native .NET ISOWeek.ToDateTime method.
     /// </summary>
     /// <param name="date">The date to find the week start for.</param>
     /// <returns>The Monday of the week containing the date.</returns>
     public static DateOnly GetWeekStart(DateOnly date)
     {
-        var dayOfWeek = (int)date.DayOfWeek;
-        // ISO 8601: Monday = 1, Sunday = 7
-        var daysFromMonday = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
-        return date.AddDays(-daysFromMonday);
+        var dateTime = date.ToDateTime(TimeOnly.MinValue);
+        var isoYear = ISOWeek.GetYear(dateTime);
+        var isoWeek = ISOWeek.GetWeekOfYear(dateTime);
+        var monday = ISOWeek.ToDateTime(isoYear, isoWeek, DayOfWeek.Monday);
+        return DateOnly.FromDateTime(monday);
     }
 
     /// <summary>

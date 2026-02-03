@@ -195,13 +195,10 @@ public class IsoDateHelperTests
     }
 
     [Fact]
-    public void Is53WeekYear_ShouldWorkWithExplicitDateTimeKind_53WeekYear()
+    public void Is53WeekYear_53WeekYear_ShouldReturnTrue()
     {
-        // This test verifies that the Is53WeekYear method's INTERNAL DateTime
-        // instantiations (lines 44 and 55 in IsoDateHelper.cs) correctly use
-        // DateTimeKind.Unspecified as required by SonarQube rule csharpsquid:S6562.
-        // The method accepts only an integer year, but internally creates DateTime
-        // instances with explicit DateTimeKind to prevent timezone-related bugs.
+        // This test verifies that the Is53WeekYear method correctly uses
+        // the native ISOWeek.GetWeeksInYear method to detect 53-week years.
 
         // Arrange - 2026 is a 53-week year (starts on Thursday)
         var year = 2026;
@@ -214,12 +211,10 @@ public class IsoDateHelperTests
     }
 
     [Fact]
-    public void Is53WeekYear_ShouldWorkWithExplicitDateTimeKind_RegularYear()
+    public void Is53WeekYear_RegularYear_ShouldReturnFalse()
     {
-        // This test verifies that the Is53WeekYear method produces correct results
-        // with the explicit DateTimeKind specification. ISO week calculations are
-        // calendar-based and independent of timezone, so DateTimeKind.Unspecified
-        // is semantically appropriate for these abstract calendar dates.
+        // This test verifies that the Is53WeekYear method correctly uses
+        // the native ISOWeek.GetWeeksInYear method to detect regular (52-week) years.
 
         // Arrange - 2024 is a regular year (52 weeks)
         var year = 2024;
