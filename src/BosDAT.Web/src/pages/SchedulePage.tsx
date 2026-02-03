@@ -16,7 +16,7 @@ import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
-import { getWeekStart, getWeekDays } from '@/lib/calendar-utils'
+import { getWeekStart, getWeekDays, formatDateForApi } from '@/lib/iso-helpers'
 
 // Convert CalendarLesson to Event format for CalendarComponent
 const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
@@ -61,10 +61,6 @@ const statusColorScheme: ColorScheme = {
     border: '#f97316',
     textBackground: '#fff7ed',
   },
-}
-
-function formatDateForApi(date: Date): string {
-  return date.toISOString().split('T')[0]
 }
 
 function formatDateDisplay(date: Date): string {

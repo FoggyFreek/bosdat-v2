@@ -4,24 +4,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CourseTypePricingVersion } from '@/features/course-types/types'
+import { formatCurrency } from '@/lib/utils'
+import { formatDate } from '@/lib/iso-helpers'
 
 interface PricingHistoryCollapsibleProps {
   readonly pricingHistory: readonly CourseTypePricingVersion[]
-}
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('nl-NL', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(value)
-}
-
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('nl-NL', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 export const PricingHistoryCollapsible = memo(function PricingHistoryCollapsible({

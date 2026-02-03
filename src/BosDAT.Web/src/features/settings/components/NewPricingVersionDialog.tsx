@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { CreateCourseTypePricingVersion, CourseTypePricingVersion } from '@/features/course-types/types'
+import { getTodayForApi } from '@/lib/iso-helpers'
 
 const pricingVersionSchema = z.object({
   priceAdult: z.coerce.number().min(0, 'Price must be 0 or greater'),
@@ -49,7 +50,7 @@ export const NewPricingVersionDialog = ({
   error = null,
   childDiscountPercent,
 }: NewPricingVersionDialogProps) => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayForApi()
 
   const {
     register,
