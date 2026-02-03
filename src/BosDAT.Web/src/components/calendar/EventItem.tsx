@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import type { CalendarEvent, ColorScheme, EventColors, EventCategory } from './types';
 import { EventHoverNote } from './EventHoverNote';
 import { getDecimalHours, getDurationInHours, isValidEventTime } from '@/lib/iso-helpers';
+import type { EventLayout } from './eventOverlapUtils';
 
 type EventItemProps = {
   readonly event: Readonly<CalendarEvent>;
@@ -10,6 +11,7 @@ type EventItemProps = {
   readonly hourHeight: number;
   readonly minHour: number;
   readonly colorScheme?: ColorScheme;
+  readonly layout?: EventLayout;
 };
 
 // Named constants for magic numbers
@@ -37,6 +39,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
   hourHeight,
   minHour,
   colorScheme,
+  layout,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,6 +111,16 @@ const EventItemComponent: React.FC<EventItemProps> = ({
 
   const columnWidthPercent = 100 / DAYS_IN_WEEK;
 
+  // Calculate position and width based on layout
+  const column = layout?.column ?? 0;
+  const totalColumns = layout?.totalColumns ?? 1;
+
+  // Calculate the width per column within the day
+  const widthPerColumn = columnWidthPercent / totalColumns;
+
+  // Calculate left position: base day position + offset for column
+  const leftPosition = dayIndex * columnWidthPercent + column * widthPerColumn;
+
   return (
     <button
       type="button"
@@ -119,8 +132,8 @@ const EventItemComponent: React.FC<EventItemProps> = ({
       style={{
         top: `${top}px`,
         height: `${height}px`,
-        left: `${dayIndex * columnWidthPercent}%`,
-        width: `calc(${columnWidthPercent}% - 8px)`,
+        left: `${leftPosition}%`,
+        width: `calc(${widthPerColumn}% - 8px)`,
         backgroundColor: colors.background,
         borderLeftColor: colors.border,
       }}
