@@ -24,6 +24,7 @@ public class CoursesController : ControllerBase
         [FromQuery] CourseStatus? status,
         [FromQuery] Guid? teacherId,
         [FromQuery] DayOfWeek? dayOfWeek,
+        [FromQuery] int? roomId,
         CancellationToken cancellationToken)
     {
         IQueryable<Course> query = _unitOfWork.Courses.Query()
@@ -46,6 +47,11 @@ public class CoursesController : ControllerBase
         if (dayOfWeek.HasValue)
         {
             query = query.Where(c => c.DayOfWeek == dayOfWeek.Value);
+        }
+
+        if (roomId.HasValue)
+        {
+            query = query.Where(c => c.RoomId == roomId.Value);
         }
 
         var courses = await query

@@ -25,6 +25,18 @@ describe('coursesApi', () => {
     expect(result).toEqual(courses)
   })
 
+  it('getAll fetches courses filtered by roomId', async () => {
+    const courses = [{ id: '1', name: 'Piano 101' }]
+    mock.onGet('/courses').reply((config) => {
+      expect(config.params).toEqual({ roomId: 5 })
+      return [200, courses]
+    })
+
+    const result = await coursesApi.getAll({ roomId: 5 })
+
+    expect(result).toEqual(courses)
+  })
+
   it('getById fetches single course', async () => {
     const course = { id: '1', name: 'Piano 101' }
     mock.onGet('/courses/1').reply(200, course)
