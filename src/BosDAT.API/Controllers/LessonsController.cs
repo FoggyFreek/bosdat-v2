@@ -398,7 +398,7 @@ public class LessonsController : ControllerBase
         // For biweekly with specific parity, ensure we start on correct week
         if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
         {
-            while (!IsoWeekHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
+            while (!IsoDateHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
                    && currentDate <= endDate)
             {
                 currentDate = currentDate.AddDays(7);
@@ -434,7 +434,7 @@ public class LessonsController : ControllerBase
             var nextDate = currentDate.AddDays(7);
 
             // Keep adding weeks until we find one that matches the parity
-            while (!IsoWeekHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
+            while (!IsoDateHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
             {
                 nextDate = nextDate.AddDays(7);
             }

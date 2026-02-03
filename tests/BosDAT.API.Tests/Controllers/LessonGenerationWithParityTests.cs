@@ -32,7 +32,7 @@ public class LessonGenerationWithParityTests
         Assert.Equal(new DateOnly(2024, 1, 15), nextDate);
 
         // Verify it's in an odd week
-        var nextWeekNumber = IsoWeekHelper.GetIsoWeekNumber(nextDate.ToDateTime(TimeOnly.MinValue));
+        var nextWeekNumber = IsoDateHelper.GetIsoWeekNumber(nextDate.ToDateTime(TimeOnly.MinValue));
         Assert.True(nextWeekNumber % 2 == 1, $"Week {nextWeekNumber} should be odd");
     }
 
@@ -57,7 +57,7 @@ public class LessonGenerationWithParityTests
         Assert.Equal(new DateOnly(2024, 1, 22), nextDate);
 
         // Verify it's in an even week
-        var nextWeekNumber = IsoWeekHelper.GetIsoWeekNumber(nextDate.ToDateTime(TimeOnly.MinValue));
+        var nextWeekNumber = IsoDateHelper.GetIsoWeekNumber(nextDate.ToDateTime(TimeOnly.MinValue));
         Assert.True(nextWeekNumber % 2 == 0, $"Week {nextWeekNumber} should be even");
     }
 
@@ -144,7 +144,7 @@ public class LessonGenerationWithParityTests
         // Should jump to Week 3 (odd week) - Monday, Jan 15, 2024
         Assert.Equal(new DateOnly(2024, 1, 15), firstDate);
 
-        var weekNumber = IsoWeekHelper.GetIsoWeekNumber(firstDate.ToDateTime(TimeOnly.MinValue));
+        var weekNumber = IsoDateHelper.GetIsoWeekNumber(firstDate.ToDateTime(TimeOnly.MinValue));
         Assert.True(weekNumber % 2 == 1, $"Week {weekNumber} should be odd");
     }
 
@@ -170,7 +170,7 @@ public class LessonGenerationWithParityTests
         // Should jump to Week 2 (even week) - Monday, Jan 8, 2024
         Assert.Equal(new DateOnly(2024, 1, 8), firstDate);
 
-        var weekNumber = IsoWeekHelper.GetIsoWeekNumber(firstDate.ToDateTime(TimeOnly.MinValue));
+        var weekNumber = IsoDateHelper.GetIsoWeekNumber(firstDate.ToDateTime(TimeOnly.MinValue));
         Assert.True(weekNumber % 2 == 0, $"Week {weekNumber} should be even");
     }
 
@@ -197,7 +197,7 @@ public class LessonGenerationWithParityTests
         // Verify all dates are in odd weeks
         foreach (var date in lessonDates)
         {
-            var weekNumber = IsoWeekHelper.GetIsoWeekNumber(date.ToDateTime(TimeOnly.MinValue));
+            var weekNumber = IsoDateHelper.GetIsoWeekNumber(date.ToDateTime(TimeOnly.MinValue));
             Assert.True(weekNumber % 2 == 1, $"Date {date} is in week {weekNumber}, which is not odd");
         }
 
@@ -228,7 +228,7 @@ public class LessonGenerationWithParityTests
         // Verify all dates are in even weeks
         foreach (var date in lessonDates)
         {
-            var weekNumber = IsoWeekHelper.GetIsoWeekNumber(date.ToDateTime(TimeOnly.MinValue));
+            var weekNumber = IsoDateHelper.GetIsoWeekNumber(date.ToDateTime(TimeOnly.MinValue));
             Assert.True(weekNumber % 2 == 0, $"Date {date} is in week {weekNumber}, which is not even");
         }
 
@@ -263,7 +263,7 @@ public class LessonGenerationWithParityTests
         // Verify all dates are in odd weeks
         foreach (var date in lessonDates)
         {
-            var weekNumber = IsoWeekHelper.GetIsoWeekNumber(date.ToDateTime(TimeOnly.MinValue));
+            var weekNumber = IsoDateHelper.GetIsoWeekNumber(date.ToDateTime(TimeOnly.MinValue));
             Assert.True(weekNumber % 2 == 1, $"Date {date} is in week {weekNumber}, which is not odd");
         }
 
@@ -289,7 +289,7 @@ public static class LessonGenerationHelper
             var nextDate = currentDate.AddDays(7);
 
             // Keep adding weeks until we find one that matches the parity
-            while (!IsoWeekHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
+            while (!IsoDateHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
             {
                 nextDate = nextDate.AddDays(7);
             }
@@ -320,7 +320,7 @@ public static class LessonGenerationHelper
         // For biweekly with specific parity, ensure we start on correct week
         if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
         {
-            while (!IsoWeekHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
+            while (!IsoDateHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
                    && currentDate <= endDate)
             {
                 currentDate = currentDate.AddDays(7);
