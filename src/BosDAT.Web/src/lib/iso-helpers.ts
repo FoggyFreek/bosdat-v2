@@ -132,10 +132,10 @@ export const formatDate = (date: string | Date): string => {
  * Extracts the date portion from an ISO datetime string.
  *
  * @param dateTimeString - ISO 8601 datetime string
- * @returns Date string in YYYY-MM-DD format
+ * @returns Date object representing the date
  */
-export const getDateFromDateTime = (dateTimeString: string): string => {
-  return dateTimeString.split('T')[0]
+export const getDateFromDateTime = (dateTimeString: string): Date => {
+  return new Date(dateTimeString);
 }
 
 // ============================================================================

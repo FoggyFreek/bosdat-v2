@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { EventItem } from './EventItem';
 import type { CalendarEvent, ColorScheme, TimeSlot } from './types';
-import { getDateFromDateTime, isSameDay, isValidEventTime } from './utils';
+import { getDateFromDateTime, isSameDay, isValidEventTime } from '@/lib/iso-helpers';
 
 type EventsGridProps = {
   hours: number[];
@@ -225,17 +225,17 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
       )}
 
       {/* Events */}
-      {validEvents.map((event) => {
-        const eventDate = getDateFromDateTime(event.startDateTime);
-        const dayIndex = dates.findIndex((date) => isSameDay(date, eventDate));
+      {validEvents.map((e) => {
+        const eventDate = getDateFromDateTime(e.startDateTime);
+        const dayIndex = eventDate.getDay() - 1; // Adjusting so Monday=0, Sunday=6
 
         // Skip events that don't fall within the current week's date range
         if (dayIndex === -1) return null;
 
         return (
           <EventItem
-            key={`${event.startDateTime}-${event.title}`}
-            event={event}
+            key={`${e.startDateTime}-${e.title}`}
+            event={e}
             dayIndex={dayIndex}
             hourHeight={hourHeight}
             minHour={minHour}

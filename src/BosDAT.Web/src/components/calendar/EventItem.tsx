@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils';
 import type { CalendarEvent, ColorScheme, EventColors, EventCategory } from './types';
 import { EventHoverNote } from './EventHoverNote';
-import { getDecimalHours, getDurationInHours, isValidEventTime } from './utils';
+import { getDecimalHours, getDurationInHours, isValidEventTime } from '@/lib/iso-helpers';
 
 type EventItemProps = {
   readonly event: Readonly<CalendarEvent>;

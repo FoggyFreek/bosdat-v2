@@ -16,7 +16,7 @@ import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
-import { getWeekStart, getWeekDays, formatDateForApi } from '@/lib/iso-helpers'
+import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime } from '@/lib/iso-helpers'
 
 // Convert CalendarLesson to Event format for CalendarComponent
 const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
@@ -29,8 +29,8 @@ const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
   }
 
   return {
-    startDateTime: `${lesson.date}T${lesson.startTime}:00`,
-    endDateTime: `${lesson.date}T${lesson.endTime}:00`,
+    startDateTime: combineDateAndTime(new Date(lesson.date), lesson.startTime),
+    endDateTime: combineDateAndTime(new Date(lesson.date), lesson.endTime),
     title: lesson.instrumentName || lesson.title,
     frequency: 'weekly',
     eventType: lesson.status,
