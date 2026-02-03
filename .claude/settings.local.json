@@ -25,7 +25,8 @@
       "Bash(npm run test:coverage:*)",
       "Bash(npm run test:*)",
       "Bash(ls:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

@@ -2,6 +2,7 @@
 .auto-claude/
 
 # .NET
+nul
 bin/
 obj/
 *.user
