@@ -1,25 +1,12 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
+// ============================================================================
+// UI Utilities
+// ============================================================================
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-}
-
-export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString('nl-NL', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-export function formatTime(time: string): string {
-  return time.substring(0, 5)
-}
-
-export function getDayName(day: number): string {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  return days[day] || ''
 }
 
 export function formatCurrency(amount: number): string {
@@ -44,3 +31,17 @@ export function validateEmail(email: string): boolean {
   const domainParts = domain.split('.')
   return domainParts.every(part => part.length > 0 && part.length <= 63)
 }
+
+// ============================================================================
+// Date/Time Utilities (Re-exported from iso-helpers)
+// ============================================================================
+
+/**
+ * @deprecated Import directly from '@/lib/iso-helpers' instead.
+ * These exports are maintained for backward compatibility only.
+ */
+export {
+  formatDate,
+  formatTime,
+  getDayNameFromNumber as getDayName,
+} from './iso-helpers'
