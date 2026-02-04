@@ -1,292 +1,174 @@
 import { describe, it, expect } from 'vitest';
-import { calculateEventLayout, doEventsOverlap } from '../eventOverlapUtils';
+import { calculateEventLayout } from '../eventOverlapUtils';
 import type { CalendarEvent } from '../types';
 
-describe('doEventsOverlap', () => {
-  it('should return true for overlapping events', () => {
-    const event1: CalendarEvent = {
-      startDateTime: '2024-01-15T09:00:00',
-      endDateTime: '2024-01-15T10:00:00',
-      title: 'Event 1',
-      frequency: 'once',
-      eventType: 'course',
-      attendees: [],
-    };
-
-    const event2: CalendarEvent = {
-      startDateTime: '2024-01-15T09:30:00',
-      endDateTime: '2024-01-15T10:30:00',
-      title: 'Event 2',
-      frequency: 'once',
-      eventType: 'workshop',
-      attendees: [],
-    };
-
-    expect(doEventsOverlap(event1, event2)).toBe(true);
-  });
-
-  it('should return false for non-overlapping events', () => {
-    const event1: CalendarEvent = {
-      startDateTime: '2024-01-15T09:00:00',
-      endDateTime: '2024-01-15T10:00:00',
-      title: 'Event 1',
-      frequency: 'once',
-      eventType: 'course',
-      attendees: [],
-    };
-
-    const event2: CalendarEvent = {
-      startDateTime: '2024-01-15T10:00:00',
-      endDateTime: '2024-01-15T11:00:00',
-      title: 'Event 2',
-      frequency: 'once',
-      eventType: 'workshop',
-      attendees: [],
-    };
-
-    expect(doEventsOverlap(event1, event2)).toBe(false);
-  });
-
-  it('should return true when one event contains another', () => {
-    const event1: CalendarEvent = {
-      startDateTime: '2024-01-15T09:00:00',
-      endDateTime: '2024-01-15T11:00:00',
-      title: 'Event 1',
-      frequency: 'once',
-      eventType: 'course',
-      attendees: [],
-    };
-
-    const event2: CalendarEvent = {
-      startDateTime: '2024-01-15T09:30:00',
-      endDateTime: '2024-01-15T10:00:00',
-      title: 'Event 2',
-      frequency: 'once',
-      eventType: 'workshop',
-      attendees: [],
-    };
-
-    expect(doEventsOverlap(event1, event2)).toBe(true);
-  });
-
-  it('should return false when events just touch at boundaries', () => {
-    const event1: CalendarEvent = {
-      startDateTime: '2024-01-15T09:00:00',
-      endDateTime: '2024-01-15T10:00:00',
-      title: 'Event 1',
-      frequency: 'once',
-      eventType: 'course',
-      attendees: [],
-    };
-
-    const event2: CalendarEvent = {
-      startDateTime: '2024-01-15T10:00:00',
-      endDateTime: '2024-01-15T11:00:00',
-      title: 'Event 2',
-      frequency: 'once',
-      eventType: 'workshop',
-      attendees: [],
-    };
-
-    expect(doEventsOverlap(event1, event2)).toBe(false);
-  });
+const makeEvent = (
+  id: string,
+  start: string,
+  end: string,
+  overrides: Partial<CalendarEvent> = {},
+): CalendarEvent => ({
+  id,
+  startDateTime: start,
+  endDateTime: end,
+  title: id,
+  frequency: 'once',
+  eventType: 'course',
+  attendees: [],
+  ...overrides,
 });
 
 describe('calculateEventLayout', () => {
-  it('should return no layout for single event', () => {
-    const events: CalendarEvent[] = [
-      {
-        startDateTime: '2024-01-15T09:00:00',
-        endDateTime: '2024-01-15T10:00:00',
-        title: 'Event 1',
-        frequency: 'once',
-        eventType: 'course',
-        attendees: [],
-      },
-    ];
+  it('should return empty map for no events', () => {
+    expect(calculateEventLayout([])).toHaveProperty('size', 0);
+  });
 
-    const layout = calculateEventLayout(events);
-    const key = '2024-01-15T09:00:00-Event 1';
+  it('should return single column for a lone event', () => {
+    const layout = calculateEventLayout([
+      makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T10:00:00'),
+    ]);
 
-    expect(layout.get(key)).toEqual({
-      column: 0,
-      totalColumns: 1,
+    expect(layout.get('a')).toEqual({ column: 0, totalColumns: 1 });
+  });
+
+  it('should assign separate columns for two overlapping events', () => {
+    const layout = calculateEventLayout([
+      makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T10:00:00'),
+      makeEvent('b', '2024-01-15T09:30:00', '2024-01-15T10:30:00'),
+    ]);
+
+    expect(layout.get('a')).toEqual({ column: 0, totalColumns: 2 });
+    expect(layout.get('b')).toEqual({ column: 1, totalColumns: 2 });
+  });
+
+  it('should treat abutting events as non-overlapping (end === start)', () => {
+    const layout = calculateEventLayout([
+      makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T10:00:00'),
+      makeEvent('b', '2024-01-15T10:00:00', '2024-01-15T11:00:00'),
+    ]);
+
+    expect(layout.get('a')).toEqual({ column: 0, totalColumns: 1 });
+    expect(layout.get('b')).toEqual({ column: 0, totalColumns: 1 });
+  });
+
+  it('should handle one event fully contained within another', () => {
+    const layout = calculateEventLayout([
+      makeEvent('outer', '2024-01-15T09:00:00', '2024-01-15T11:00:00'),
+      makeEvent('inner', '2024-01-15T09:30:00', '2024-01-15T10:30:00'),
+    ]);
+
+    expect(layout.get('outer')).toEqual({ column: 0, totalColumns: 2 });
+    expect(layout.get('inner')).toEqual({ column: 1, totalColumns: 2 });
+  });
+
+  it('should handle three mutually overlapping events', () => {
+    const layout = calculateEventLayout([
+      makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T11:00:00'),
+      makeEvent('b', '2024-01-15T09:30:00', '2024-01-15T10:30:00'),
+      makeEvent('c', '2024-01-15T10:00:00', '2024-01-15T11:30:00'),
+    ]);
+
+    expect(layout.get('a')?.totalColumns).toBe(3);
+    expect(layout.get('b')?.totalColumns).toBe(3);
+    expect(layout.get('c')?.totalColumns).toBe(3);
+    expect(new Set([
+      layout.get('a')?.column,
+      layout.get('b')?.column,
+      layout.get('c')?.column,
+    ]).size).toBe(3);
+  });
+
+  it('should isolate non-overlapping groups independently', () => {
+    const layout = calculateEventLayout([
+      makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T10:00:00'),
+      makeEvent('b', '2024-01-15T09:30:00', '2024-01-15T10:30:00'),
+      makeEvent('c', '2024-01-15T11:00:00', '2024-01-15T12:00:00'),
+    ]);
+
+    expect(layout.get('a')).toEqual({ column: 0, totalColumns: 2 });
+    expect(layout.get('b')).toEqual({ column: 1, totalColumns: 2 });
+    expect(layout.get('c')).toEqual({ column: 0, totalColumns: 1 });
+  });
+
+  describe('transitive overlap chain', () => {
+    // A (10:00-12:00) overlaps B (10:30-13:00), B overlaps C (12:30-13:00),
+    // but A and C do NOT directly overlap.  The algorithm must still group all
+    // three via the B bridge so every event gets totalColumns = 3 (33 % width).
+    it('should group transitively connected events even without direct overlap', () => {
+      const layout = calculateEventLayout([
+        makeEvent('a', '2024-01-15T10:00:00', '2024-01-15T12:00:00'),
+        makeEvent('b', '2024-01-15T10:30:00', '2024-01-15T13:00:00'),
+        makeEvent('c', '2024-01-15T12:30:00', '2024-01-15T13:00:00'),
+      ]);
+
+      expect(layout.get('a')).toEqual({ column: 0, totalColumns: 3 });
+      expect(layout.get('b')).toEqual({ column: 1, totalColumns: 3 });
+      expect(layout.get('c')).toEqual({ column: 2, totalColumns: 3 });
+    });
+
+    it('should not merge two groups separated by a gap', () => {
+      // {a, b} and {c, d} are each internally overlapping but the two pairs
+      // have no transitive connection.
+      const layout = calculateEventLayout([
+        makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T10:00:00'),
+        makeEvent('b', '2024-01-15T09:30:00', '2024-01-15T10:30:00'),
+        makeEvent('c', '2024-01-15T11:00:00', '2024-01-15T12:00:00'),
+        makeEvent('d', '2024-01-15T11:30:00', '2024-01-15T12:30:00'),
+      ]);
+
+      expect(layout.get('a')?.totalColumns).toBe(2);
+      expect(layout.get('b')?.totalColumns).toBe(2);
+      expect(layout.get('c')?.totalColumns).toBe(2);
+      expect(layout.get('d')?.totalColumns).toBe(2);
+    });
+
+    it('should handle a longer chain A-B-C-D where only adjacent pairs overlap', () => {
+      // A overlaps B, B overlaps C, C overlaps D — all four are transitively
+      // connected so every event should share 4 columns.
+      const layout = calculateEventLayout([
+        makeEvent('a', '2024-01-15T09:00:00', '2024-01-15T10:00:00'),
+        makeEvent('b', '2024-01-15T09:30:00', '2024-01-15T10:30:00'),
+        makeEvent('c', '2024-01-15T10:15:00', '2024-01-15T11:00:00'),
+        makeEvent('d', '2024-01-15T10:45:00', '2024-01-15T11:30:00'),
+      ]);
+
+      expect(layout.get('a')?.totalColumns).toBe(4);
+      expect(layout.get('b')?.totalColumns).toBe(4);
+      expect(layout.get('c')?.totalColumns).toBe(4);
+      expect(layout.get('d')?.totalColumns).toBe(4);
+      expect(new Set([
+        layout.get('a')?.column,
+        layout.get('b')?.column,
+        layout.get('c')?.column,
+        layout.get('d')?.column,
+      ]).size).toBe(4);
     });
   });
 
-  it('should assign columns for two overlapping events', () => {
-    const events: CalendarEvent[] = [
-      {
-        startDateTime: '2024-01-15T09:00:00',
-        endDateTime: '2024-01-15T10:00:00',
-        title: 'Event 1',
-        frequency: 'once',
-        eventType: 'course',
-        attendees: [],
-      },
-      {
-        startDateTime: '2024-01-15T09:30:00',
-        endDateTime: '2024-01-15T10:30:00',
-        title: 'Event 2',
-        frequency: 'once',
-        eventType: 'workshop',
-        attendees: [],
-      },
-    ];
+  describe('sort stability', () => {
+    it('should produce the same layout regardless of input order', () => {
+      const events = [
+        makeEvent('a', '2024-01-15T10:00:00', '2024-01-15T12:00:00'),
+        makeEvent('b', '2024-01-15T10:30:00', '2024-01-15T13:00:00'),
+        makeEvent('c', '2024-01-15T12:30:00', '2024-01-15T13:00:00'),
+      ];
 
-    const layout = calculateEventLayout(events);
-    const key1 = '2024-01-15T09:00:00-Event 1';
-    const key2 = '2024-01-15T09:30:00-Event 2';
+      const layoutForward = calculateEventLayout(events);
+      const layoutReversed = calculateEventLayout([...events].reverse());
 
-    expect(layout.get(key1)).toEqual({
-      column: 0,
-      totalColumns: 2,
+      expect(layoutReversed.get('a')).toEqual(layoutForward.get('a'));
+      expect(layoutReversed.get('b')).toEqual(layoutForward.get('b'));
+      expect(layoutReversed.get('c')).toEqual(layoutForward.get('c'));
     });
 
-    expect(layout.get(key2)).toEqual({
-      column: 1,
-      totalColumns: 2,
+    it('should sort same-start events by duration descending (longer event gets column 0)', () => {
+      const layout = calculateEventLayout([
+        makeEvent('short', '2024-01-15T10:00:00', '2024-01-15T10:30:00'),
+        makeEvent('long', '2024-01-15T10:00:00', '2024-01-15T12:00:00'),
+      ]);
+
+      expect(layout.get('long')?.column).toBe(0);
+      expect(layout.get('short')?.column).toBe(1);
     });
-  });
-
-  it('should handle three overlapping events', () => {
-    const events: CalendarEvent[] = [
-      {
-        startDateTime: '2024-01-15T09:00:00',
-        endDateTime: '2024-01-15T11:00:00',
-        title: 'Event 1',
-        frequency: 'once',
-        eventType: 'course',
-        attendees: [],
-      },
-      {
-        startDateTime: '2024-01-15T09:30:00',
-        endDateTime: '2024-01-15T10:30:00',
-        title: 'Event 2',
-        frequency: 'once',
-        eventType: 'workshop',
-        attendees: [],
-      },
-      {
-        startDateTime: '2024-01-15T10:00:00',
-        endDateTime: '2024-01-15T11:30:00',
-        title: 'Event 3',
-        frequency: 'once',
-        eventType: 'trail',
-        attendees: [],
-      },
-    ];
-
-    const layout = calculateEventLayout(events);
-    const key1 = '2024-01-15T09:00:00-Event 1';
-    const key2 = '2024-01-15T09:30:00-Event 2';
-    const key3 = '2024-01-15T10:00:00-Event 3';
-
-    // All three overlap, so they need 3 columns
-    expect(layout.get(key1)?.totalColumns).toBe(3);
-    expect(layout.get(key2)?.totalColumns).toBe(3);
-    expect(layout.get(key3)?.totalColumns).toBe(3);
-
-    // Each should have a unique column
-    const columns = [
-      layout.get(key1)?.column,
-      layout.get(key2)?.column,
-      layout.get(key3)?.column,
-    ];
-    expect(new Set(columns).size).toBe(3);
-  });
-
-  it('should handle non-overlapping events separately', () => {
-    const events: CalendarEvent[] = [
-      {
-        startDateTime: '2024-01-15T09:00:00',
-        endDateTime: '2024-01-15T10:00:00',
-        title: 'Event 1',
-        frequency: 'once',
-        eventType: 'course',
-        attendees: [],
-      },
-      {
-        startDateTime: '2024-01-15T10:00:00',
-        endDateTime: '2024-01-15T11:00:00',
-        title: 'Event 2',
-        frequency: 'once',
-        eventType: 'workshop',
-        attendees: [],
-      },
-    ];
-
-    const layout = calculateEventLayout(events);
-    const key1 = '2024-01-15T09:00:00-Event 1';
-    const key2 = '2024-01-15T10:00:00-Event 2';
-
-    // Non-overlapping events should each have their own full column
-    expect(layout.get(key1)).toEqual({
-      column: 0,
-      totalColumns: 1,
-    });
-
-    expect(layout.get(key2)).toEqual({
-      column: 0,
-      totalColumns: 1,
-    });
-  });
-
-  it('should handle mixed overlapping and non-overlapping events', () => {
-    const events: CalendarEvent[] = [
-      {
-        startDateTime: '2024-01-15T09:00:00',
-        endDateTime: '2024-01-15T10:00:00',
-        title: 'Event 1',
-        frequency: 'once',
-        eventType: 'course',
-        attendees: [],
-      },
-      {
-        startDateTime: '2024-01-15T09:30:00',
-        endDateTime: '2024-01-15T10:30:00',
-        title: 'Event 2',
-        frequency: 'once',
-        eventType: 'workshop',
-        attendees: [],
-      },
-      {
-        startDateTime: '2024-01-15T11:00:00',
-        endDateTime: '2024-01-15T12:00:00',
-        title: 'Event 3',
-        frequency: 'once',
-        eventType: 'trail',
-        attendees: [],
-      },
-    ];
-
-    const layout = calculateEventLayout(events);
-    const key1 = '2024-01-15T09:00:00-Event 1';
-    const key2 = '2024-01-15T09:30:00-Event 2';
-    const key3 = '2024-01-15T11:00:00-Event 3';
-
-    // First two overlap
-    expect(layout.get(key1)).toEqual({
-      column: 0,
-      totalColumns: 2,
-    });
-
-    expect(layout.get(key2)).toEqual({
-      column: 1,
-      totalColumns: 2,
-    });
-
-    // Third is alone
-    expect(layout.get(key3)).toEqual({
-      column: 0,
-      totalColumns: 1,
-    });
-  });
-
-  it('should handle empty events array', () => {
-    const events: CalendarEvent[] = [];
-    const layout = calculateEventLayout(events);
-
-    expect(layout.size).toBe(0);
   });
 });

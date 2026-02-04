@@ -30,6 +30,7 @@ const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
   }
 
   return {
+    id: lesson.id,
     startDateTime: combineDateAndTime(new Date(lesson.date), lesson.startTime),
     endDateTime: combineDateAndTime(new Date(lesson.date), lesson.endTime),
     title: lesson.instrumentName || lesson.title,

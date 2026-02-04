@@ -335,7 +335,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
         const isInDateRange = dates.some((date) => isSameDay(date, eventDate));
         if (!isInDateRange) return null;
 
-        const eventKey = `${e.startDateTime}-${e.title}`;
+        const eventKey = `${e.id}`;
         const layout = eventLayouts.get(eventKey);
 
         return (

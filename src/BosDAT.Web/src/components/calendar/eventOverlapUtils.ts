@@ -5,23 +5,17 @@ export type EventLayout = {
   totalColumns: number;
 };
 
-/**
- * Checks if two events overlap in time
- */
-export const doEventsOverlap = (event1: CalendarEvent, event2: CalendarEvent): boolean => {
+const doEventsOverlap = (event1: CalendarEvent, event2: CalendarEvent): boolean => {
   const start1 = new Date(event1.startDateTime).getTime();
   const end1 = new Date(event1.endDateTime).getTime();
   const start2 = new Date(event2.startDateTime).getTime();
   const end2 = new Date(event2.endDateTime).getTime();
 
-  // Events overlap if one starts before the other ends
-  // But they don't overlap if they just touch at boundaries
   return start1 < end2 && start2 < end1;
 };
 
 /**
- * Calculates layout information for events to display them side-by-side when they overlap
- * Returns a map of event keys to layout information (column index and total columns)
+ * Checks if two events overlap in time
  */
 export const calculateEventLayout = (events: CalendarEvent[]): Map<string, EventLayout> => {
   const layoutMap = new Map<string, EventLayout>();
@@ -35,82 +29,90 @@ export const calculateEventLayout = (events: CalendarEvent[]): Map<string, Event
     const startCompare = new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime();
     if (startCompare !== 0) return startCompare;
 
-    // If start times are equal, longer events come first
     const durationA = new Date(a.endDateTime).getTime() - new Date(a.startDateTime).getTime();
     const durationB = new Date(b.endDateTime).getTime() - new Date(b.startDateTime).getTime();
     return durationB - durationA;
   });
 
-  // Track which columns are occupied by events that haven't ended yet
-  const columns: CalendarEvent[] = [];
+  // Track which column each event is placed in
+  const columnMap = new Map<number, CalendarEvent>();
 
   for (const event of sortedEvents) {
-    const eventKey = `${event.startDateTime}-${event.title}`;
-
-    // Remove events from columns that have ended before this event starts
+    const eventKey = `${event.id}`;
     const eventStart = new Date(event.startDateTime).getTime();
-    let i = 0;
-    while (i < columns.length) {
-      const columnEvent = columns[i];
-      const columnEventEnd = new Date(columnEvent.endDateTime).getTime();
 
+    // Remove events from columnMap that have ended before this event starts
+    for (const [col, columnEvent] of columnMap.entries()) {
+      const columnEventEnd = new Date(columnEvent.endDateTime).getTime();
       if (columnEventEnd <= eventStart) {
-        columns.splice(i, 1);
-      } else {
-        i++;
+        columnMap.delete(col);
+      }
+    }
+
+    // Find all events that transitively overlap with this event
+    const overlapGroup = new Set<CalendarEvent>();
+    const toCheck = [event];
+    
+    while (toCheck.length > 0) {
+      const current = toCheck.pop()!;
+      if (overlapGroup.has(current)) continue;
+      overlapGroup.add(current);
+      
+      for (const e of sortedEvents) {
+        if (!overlapGroup.has(e) && doEventsOverlap(current, e)) {
+          toCheck.push(e);
+        }
+      }
+    }
+
+    // Find columns already used by events in this overlap group
+    const groupColumnsUsed = new Set<number>();
+    for (const overlapping of overlapGroup) {
+      if (overlapping === event) continue;
+      const existingLayout = layoutMap.get(`${overlapping.id}`);
+      if (existingLayout) {
+        groupColumnsUsed.add(existingLayout.column);
       }
     }
 
     // Find the first available column
+    // Avoid: 1) columns with overlapping active events, 2) columns already used in overlap group
     let column = 0;
-    let placed = false;
-
-    for (let col = 0; col < columns.length; col++) {
-      const columnEvent = columns[col];
-      if (!doEventsOverlap(event, columnEvent)) {
-        column = col;
-        columns[col] = event;
-        placed = true;
-        break;
+    while (true) {
+      const columnEvent = columnMap.get(column);
+      
+      // Skip if column has an event that overlaps with current event
+      if (columnEvent && doEventsOverlap(event, columnEvent)) {
+        column++;
+        continue;
       }
-    }
-
-    // If no column was available, add a new column
-    if (!placed) {
-      column = columns.length;
-      columns.push(event);
-    }
-
-    // Find all events that overlap with this event to determine totalColumns
-    const overlappingEvents = sortedEvents.filter((e) => doEventsOverlap(event, e));
-
-    // Calculate the maximum number of columns needed for this overlap group
-    let maxColumns = column + 1;
-
-    // Check all overlapping events to find the maximum column count needed
-    for (const overlapping of overlappingEvents) {
-      const overlappingKey = `${overlapping.startDateTime}-${overlapping.title}`;
-      const existingLayout = layoutMap.get(overlappingKey);
-      if (existingLayout) {
-        maxColumns = Math.max(maxColumns, existingLayout.column + 1);
+      
+      // Skip if this column is already used by another event in the overlap group
+      if (groupColumnsUsed.has(column)) {
+        column++;
+        continue;
       }
+      
+      break;
     }
+
+    columnMap.set(column, event);
+
+    // Calculate total columns for the entire overlap group
+    const allColumnsUsed = new Set([...groupColumnsUsed, column]);
+    const totalColumnsForGroup = allColumnsUsed.size;
 
     // Update this event's layout
     layoutMap.set(eventKey, {
       column,
-      totalColumns: Math.max(columns.length, maxColumns),
+      totalColumns: totalColumnsForGroup,
     });
 
-    // Update all overlapping events with the new totalColumns
-    for (const overlapping of overlappingEvents) {
-      const overlappingKey = `${overlapping.startDateTime}-${overlapping.title}`;
-      const existingLayout = layoutMap.get(overlappingKey);
+    // Update ALL events in the overlap group with the new totalColumns
+    for (const overlapping of overlapGroup) {
+      const existingLayout = layoutMap.get(`${overlapping.id}`);
       if (existingLayout) {
-        existingLayout.totalColumns = Math.max(
-          existingLayout.totalColumns,
-          layoutMap.get(eventKey)?.totalColumns ?? 1
-        );
+        existingLayout.totalColumns = Math.max(existingLayout.totalColumns, totalColumnsForGroup);
       }
     }
   }
