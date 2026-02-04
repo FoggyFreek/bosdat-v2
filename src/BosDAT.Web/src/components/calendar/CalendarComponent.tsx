@@ -23,6 +23,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
   onTimeslotClick,
   onDateSelect,
   highlightedDate,
+  availability,
 }) => {
   return (
     <div
@@ -50,6 +51,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
               hourHeight={hourHeight}
               minHour={MIN_HOUR}
               maxHour={MAX_HOUR}
+              availability={availability}
               dayStartTime={dayStartTime}
               dayEndTime={dayEndTime}
               colorScheme={colorScheme}

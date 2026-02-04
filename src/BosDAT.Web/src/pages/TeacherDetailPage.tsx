@@ -7,6 +7,7 @@ import { teachersApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import type { Teacher } from '@/features/teachers/types'
 import { formatCurrency } from '@/lib/utils'
+import { TeacherAvailabilitySection } from '@/features/teachers/components/TeacherAvailabilitySection'
 
 const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'
 
@@ -146,6 +147,8 @@ export function TeacherDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <TeacherAvailabilitySection teacherId={id!} />
 
       <Card>
         <CardHeader>

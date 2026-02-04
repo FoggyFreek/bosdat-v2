@@ -1,5 +1,10 @@
 // Type definitions for calendar component
 
+import type { DayOfWeek } from '@/lib/iso-helpers'
+
+// Re-export for consumers
+export type { DayOfWeek }
+
 // Event types for enrollment/scheduling flows
 export type EventType =
   | 'course'
@@ -41,6 +46,12 @@ export type TimeSlot = {
   minute: number;
 };
 
+export type DayAvailability = {
+  dayOfWeek: DayOfWeek;  // "Sunday", "Monday", etc.
+  fromTime: number;   // hour (9 for 09:00)
+  untilTime: number;  // hour (22 for 22:00)
+};
+
 export type SchedulerProps = {
   title: string;
   events: CalendarEvent[];
@@ -54,4 +65,5 @@ export type SchedulerProps = {
   onTimeslotClick?: (timeslot: TimeSlot) => void;
   onDateSelect?: (date: Date) => void;
   highlightedDate?: Date;
+  availability?: DayAvailability[];
 };

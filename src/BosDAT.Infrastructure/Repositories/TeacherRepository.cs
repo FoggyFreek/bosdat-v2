@@ -82,4 +82,20 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
             .ThenBy(t => t.FirstName)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Teacher?> GetWithAvailabilityAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(t => t.Availability)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<TeacherAvailability>> GetAvailabilityAsync(Guid teacherId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<TeacherAvailability>()
+            .Where(a => a.TeacherId == teacherId)
+            .OrderBy(a => a.DayOfWeek)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -202,6 +202,30 @@ export const getDecimalHours = (dateTimeString: string): number => {
 }
 
 /**
+ * Returns the hours component of a time string.
+ *
+ * @param dateTimeString - ISO 8601 datetime string
+ * @returns Hours as number (e.g., 9 for 9:30 AM)
+ */
+export const getHoursFromTimeString = (dateTimeString: string): number => {
+  // Add a dummy date to make it a valid ISO string
+  const date = new Date(`1970-01-01T${dateTimeString}`);
+  return date.getHours()
+}
+
+/**
+ * Returns the minutes component of a time string.
+ *
+ * @param dateTimeString - ISO 8601 datetime string
+ * @returns Minutes as number (e.g., 30 for 9:30 AM)
+ */
+export const getMinutesFromTimeString = (dateTimeString: string): number => {
+  // Add a dummy date to make it a valid ISO string
+  const date = new Date(`1970-01-01T${dateTimeString}`);
+  return date.getMinutes()
+}
+
+/**
  * Calculates duration in decimal hours between two datetime strings.
  *
  * @param startDateTime - ISO 8601 datetime string
@@ -275,6 +299,30 @@ export const getWeekDays = (weekStart: Date): Date[] => {
 // ============================================================================
 // Day Operations
 // ============================================================================
+
+/**
+ * Maps day names to JavaScript Date.getDay() values.
+ * Sunday = 0, Monday = 1, ... Saturday = 6
+ */
+export const DAY_NAME_TO_NUMBER = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+} as const
+
+export type DayOfWeek = keyof typeof DAY_NAME_TO_NUMBER
+
+/**
+ * Converts a day name to its JavaScript Date.getDay() number.
+ *
+ * @param day - Day name (e.g., "Monday")
+ * @returns Day number (0=Sunday, 1=Monday, ..., 6=Saturday)
+ */
+export const dayNameToNumber = (day: DayOfWeek): number => DAY_NAME_TO_NUMBER[day]
 
 /**
  * Gets the full day name from a Date object.

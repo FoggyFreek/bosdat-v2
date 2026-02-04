@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { EventItem } from './EventItem';
-import type { CalendarEvent, ColorScheme, TimeSlot } from './types';
-import { getDateFromDateTime, isSameDay, isValidEventTime } from '@/lib/iso-helpers';
+import type { CalendarEvent, ColorScheme, TimeSlot, DayAvailability } from './types';
+import { getDateFromDateTime, isSameDay, isValidEventTime, dayNameToNumber } from '@/lib/iso-helpers';
 
 type EventsGridProps = {
   hours: number[];
@@ -16,6 +16,7 @@ type EventsGridProps = {
   onTimeslotClick?: (timeslot: TimeSlot) => void;
   highlightedDate?: Date;
   dates: Date[];
+  availability?: DayAvailability[];
 };
 
 // Named constants
@@ -41,6 +42,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
   onTimeslotClick,
   highlightedDate,
   dates,
+  availability,
 }) => {
   const totalHeight = useMemo(() => hours.length * hourHeight, [hours.length, hourHeight]);
 
@@ -223,6 +225,72 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
           aria-label="Unavailable time after working hours"
         />
       )}
+
+      {/* Per-Day Teacher Availability Overlays */}
+      {availability?.map((dayAvail) => {
+        // Map dayOfWeek ("Sunday", "Monday", etc.) to column index
+        // Grid shows Monday(col 0) to Sunday(col 6), so adjust:
+        // Sunday -> column 6, Monday -> column 0, etc.
+        const dayNumber = dayNameToNumber(dayAvail.dayOfWeek);
+        const columnIndex = dayNumber === 0 ? 6 : dayNumber - 1;
+        const isFullDayUnavailable = dayAvail.fromTime === 0 && dayAvail.untilTime === 0;
+
+        if (isFullDayUnavailable) {
+          // Full column overlay for unavailable day
+          return (
+            <div
+              key={`unavail-full-${dayAvail.dayOfWeek}`}
+              className="absolute bg-gray-300 opacity-60 pointer-events-none z-[2]"
+              style={{
+                left: `${(columnIndex / DAYS_IN_WEEK) * 100}%`,
+                width: `${columnWidthPercent}%`,
+                top: `${(dayStartTime - minHour) * hourHeight}px`,
+                height: `${(dayEndTime - dayStartTime) * hourHeight}px`,
+              }}
+              aria-label={`Unavailable on ${dayAvail.dayOfWeek}`}
+            />
+          );
+        }
+
+        // Partial day - overlay before fromTime and after untilTime
+        const overlays = [];
+
+        // Overlay before teacher's start time
+        if (dayAvail.fromTime > minHour) {
+          overlays.push(
+            <div
+              key={`unavail-before-${dayAvail.dayOfWeek}`}
+              className="absolute bg-gray-300 opacity-60 pointer-events-none z-[2]"
+              style={{
+                left: `${(columnIndex / DAYS_IN_WEEK) * 100}%`,
+                width: `${columnWidthPercent}%`,
+                top: `${(dayStartTime - minHour) * hourHeight}px`,
+                height: `${(dayAvail.fromTime - dayStartTime) * hourHeight}px`,
+              }}
+              aria-hidden="true"
+            />
+          );
+        }
+
+        // Overlay after teacher's end time
+        if (dayAvail.untilTime < maxHour) {
+          overlays.push(
+            <div
+              key={`unavail-after-${dayAvail.dayOfWeek}`}
+              className="absolute bg-gray-300 opacity-60 pointer-events-none z-[2]"
+              style={{
+                left: `${(columnIndex / DAYS_IN_WEEK) * 100}%`,
+                width: `${columnWidthPercent}%`,
+                top: `${(dayAvail.untilTime - minHour) * hourHeight}px`,
+                height: `${(dayEndTime - dayAvail.untilTime) * hourHeight}px`,
+              }}
+              aria-hidden="true"
+            />
+          );
+        }
+
+        return overlays;
+      })}
 
       {/* Events */}
       {validEvents.map((e) => {

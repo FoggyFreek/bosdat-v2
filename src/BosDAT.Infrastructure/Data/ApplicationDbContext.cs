@@ -47,6 +47,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<StudentLedgerEntry> StudentLedgerEntries => Set<StudentLedgerEntry>();
     public DbSet<StudentLedgerApplication> StudentLedgerApplications => Set<StudentLedgerApplication>();
+    public DbSet<TeacherAvailability> TeacherAvailabilities => Set<TeacherAvailability>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +74,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<Setting>().ToTable("settings");
         modelBuilder.Entity<StudentLedgerEntry>().ToTable("student_ledger_entries");
         modelBuilder.Entity<StudentLedgerApplication>().ToTable("student_ledger_applications");
+        modelBuilder.Entity<TeacherAvailability>().ToTable("teacher_availability");
 
         // Student configuration
         modelBuilder.Entity<Student>(entity =>
@@ -110,6 +112,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.PostalCode).HasMaxLength(20);
             entity.Property(e => e.City).HasMaxLength(100);
             entity.Property(e => e.HourlyRate).HasPrecision(10, 2);
+        });
+
+        // TeacherAvailability configuration
+        modelBuilder.Entity<TeacherAvailability>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.Availability)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.TeacherId, e.DayOfWeek }).IsUnique();
         });
 
         // Instrument configuration

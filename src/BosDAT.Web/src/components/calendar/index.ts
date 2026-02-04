@@ -19,4 +19,5 @@ export type {
   TimeSlot,
   LessonStatus,
   EventCategory,
+  DayAvailability,
 } from './types';

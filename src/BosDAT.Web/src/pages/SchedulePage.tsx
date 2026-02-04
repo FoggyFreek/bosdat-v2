@@ -14,9 +14,10 @@ import { CalendarComponent } from '@/components'
 import type { CalendarEvent, ColorScheme } from '@/components'
 import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
-import type { TeacherList } from '@/features/teachers/types'
+import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
-import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime } from '@/lib/iso-helpers'
+import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime,getHoursFromTimeString, getMinutesFromTimeString } from '@/lib/iso-helpers'
+import { DayAvailability } from '@/components/calendar/types'
 
 // Convert CalendarLesson to Event format for CalendarComponent
 const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
@@ -95,6 +96,20 @@ export function SchedulePage() {
     queryFn: () => roomsApi.getAll({ activeOnly: true }),
   })
 
+  const { data: teacherAvailability = [] } = useQuery<TeacherAvailability[]>({
+    queryKey: ['teacher-availability', filterTeacher],
+    queryFn: () => 
+      filterTeacher === 'all' ? Promise.resolve([]) : teachersApi.getAvailability(filterTeacher),
+  })
+
+  const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailability[] => {
+    return availability.map((item) => ({
+      dayOfWeek: item.dayOfWeek,
+      fromTime: getHoursFromTimeString(item.fromTime),
+      untilTime: getHoursFromTimeString(item.untilTime),
+    }))
+  }
+
   const goToPreviousWeek = () => {
     const newDate = new Date(currentDate)
     newDate.setDate(newDate.getDate() - 7)
@@ -172,6 +187,7 @@ export function SchedulePage() {
           dates={weekDays}
           colorScheme={statusColorScheme}
           onNavigatePrevious={goToPreviousWeek}
+          availability={mapToDayAvailability(teacherAvailability)}
           onNavigateNext={goToNextWeek}
           dayStartTime={8}
           dayEndTime={21}

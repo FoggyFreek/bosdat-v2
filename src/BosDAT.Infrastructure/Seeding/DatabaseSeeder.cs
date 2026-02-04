@@ -48,6 +48,7 @@ public class DatabaseSeeder : IDatabaseSeeder
 
             // Create data generators
             var teacherGenerator = new TeacherDataGenerator(_context, seederContext);
+            var teacherAvailabilityGenerator = new TeacherAvailabilityDataGenerator(_context);
             var studentGenerator = new StudentDataGenerator(_context, seederContext);
             var courseGenerator = new CourseDataGenerator(_context, seederContext);
             var lessonGenerator = new LessonDataGenerator(_context, seederContext);
@@ -57,6 +58,10 @@ public class DatabaseSeeder : IDatabaseSeeder
             // 1. Seed Teachers
             _logger.LogInformation("Seeding teachers...");
             var teachers = await teacherGenerator.GenerateAsync(cancellationToken);
+
+            // 1b. Seed Teacher Availability (default 09:00-22:00 for all days)
+            _logger.LogInformation("Seeding teacher availability...");
+            await teacherAvailabilityGenerator.GenerateAsync(teachers, cancellationToken);
 
             // 2. Seed CourseTypes for all instruments
             _logger.LogInformation("Seeding course types...");
@@ -217,6 +222,9 @@ public class DatabaseSeeder : IDatabaseSeeder
         _context.CourseTypes.RemoveRange(courseTypes);
 
         // Teacher data
+        var teacherAvailability = await _context.TeacherAvailabilities.ToListAsync(cancellationToken);
+        _context.TeacherAvailabilities.RemoveRange(teacherAvailability);
+
         var teacherInstruments = await _context.TeacherInstruments.ToListAsync(cancellationToken);
         _context.TeacherInstruments.RemoveRange(teacherInstruments);
 

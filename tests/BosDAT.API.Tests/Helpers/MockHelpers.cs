@@ -82,6 +82,17 @@ public static class MockHelpers
         mock.Setup(r => r.GetWithCoursesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(t => t.Id == id));
 
+        mock.Setup(r => r.GetWithAvailabilityAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(t => t.Id == id));
+
+        mock.Setup(r => r.GetAvailabilityAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken _) =>
+            {
+                var teacher = data.FirstOrDefault(t => t.Id == id);
+                return teacher?.Availability?.OrderBy(a => a.DayOfWeek).ToList()
+                    ?? (IReadOnlyList<TeacherAvailability>)new List<TeacherAvailability>();
+            });
+
         mock.Setup(r => r.AddAsync(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Teacher entity, CancellationToken _) => entity);
 

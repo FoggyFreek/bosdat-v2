@@ -329,6 +329,108 @@ public class TeachersController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:guid}/availability")]
+    public async Task<ActionResult<IEnumerable<TeacherAvailabilityDto>>> GetAvailability(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var teacher = await _unitOfWork.Teachers.GetByIdAsync(id, cancellationToken);
+        if (teacher == null)
+        {
+            return NotFound();
+        }
+
+        var availability = await _unitOfWork.Teachers.GetAvailabilityAsync(id, cancellationToken);
+
+        var dtos = availability.Select(a => new TeacherAvailabilityDto
+        {
+            Id = a.Id,
+            DayOfWeek = a.DayOfWeek,
+            FromTime = a.FromTime,
+            UntilTime = a.UntilTime
+        });
+
+        return Ok(dtos);
+    }
+
+    [HttpPut("{id:guid}/availability")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<IEnumerable<TeacherAvailabilityDto>>> UpdateAvailability(
+        Guid id,
+        [FromBody] List<UpdateTeacherAvailabilityDto> dtos,
+        CancellationToken cancellationToken)
+    {
+        var teacher = await _unitOfWork.Teachers.GetWithAvailabilityAsync(id, cancellationToken);
+        if (teacher == null)
+        {
+            return NotFound();
+        }
+
+        // Validate: max 7 entries
+        if (dtos.Count > 7)
+        {
+            return BadRequest(new { message = "Maximum of 7 availability entries allowed (one per day)" });
+        }
+
+        // Validate: no duplicate days
+        var duplicateDays = dtos.GroupBy(d => d.DayOfWeek).Where(g => g.Count() > 1).Select(g => g.Key);
+        if (duplicateDays.Any())
+        {
+            return BadRequest(new { message = $"Duplicate days are not allowed: {string.Join(", ", duplicateDays)}" });
+        }
+
+        // Validate: time range (UntilTime >= FromTime + 1 hour, unless both 00:00 for unavailable)
+        foreach (var dto in dtos)
+        {
+            var isUnavailable = dto.FromTime == TimeOnly.MinValue && dto.UntilTime == TimeOnly.MinValue;
+            if (!isUnavailable)
+            {
+                var minEndTime = dto.FromTime.AddHours(1);
+                if (dto.UntilTime < minEndTime)
+                {
+                    return BadRequest(new { message = $"End time must be at least 1 hour after start time for {dto.DayOfWeek}. Use 00:00-00:00 to mark as unavailable." });
+                }
+            }
+        }
+
+        // Remove existing availability
+        var existingAvailability = teacher.Availability.ToList();
+        foreach (var existing in existingAvailability)
+        {
+            _context.TeacherAvailabilities.Remove(existing);
+        }
+
+        // Add new availability
+        var newAvailability = new List<TeacherAvailability>();
+        foreach (var dto in dtos)
+        {
+            var availability = new TeacherAvailability
+            {
+                Id = Guid.NewGuid(),
+                TeacherId = id,
+                DayOfWeek = dto.DayOfWeek,
+                FromTime = dto.FromTime,
+                UntilTime = dto.UntilTime
+            };
+            newAvailability.Add(availability);
+            _context.TeacherAvailabilities.Add(availability);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var resultDtos = newAvailability
+            .OrderBy(a => a.DayOfWeek)
+            .Select(a => new TeacherAvailabilityDto
+            {
+                Id = a.Id,
+                DayOfWeek = a.DayOfWeek,
+                FromTime = a.FromTime,
+                UntilTime = a.UntilTime
+            });
+
+        return Ok(resultDtos);
+    }
+
     [HttpGet("{id:guid}/available-lesson-types")]
     public async Task<ActionResult<IEnumerable<CourseTypeSimpleDto>>> GetAvailableCourseTypes(
         Guid id,

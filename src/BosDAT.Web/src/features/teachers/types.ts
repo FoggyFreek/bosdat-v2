@@ -2,6 +2,10 @@
 
 import type { Instrument } from '@/features/instruments/types'
 import type { CourseTypeSimple } from '@/features/course-types/types'
+import type { DayOfWeek } from '@/lib/iso-helpers'
+
+// Re-export for consumers
+export type { DayOfWeek }
 
 export type TeacherRole = 'Teacher' | 'Admin' | 'Staff'
 
@@ -52,4 +56,17 @@ export interface CreateTeacher {
   isActive: boolean
   instrumentIds: number[]
   courseTypeIds: string[]
+}
+
+export interface TeacherAvailability {
+  id: string
+  dayOfWeek: DayOfWeek // "Sunday", "Monday", etc.
+  fromTime: string // "HH:mm:ss"
+  untilTime: string // "HH:mm:ss"
+}
+
+export interface UpdateTeacherAvailability {
+  dayOfWeek: number
+  fromTime: string
+  untilTime: string
 }

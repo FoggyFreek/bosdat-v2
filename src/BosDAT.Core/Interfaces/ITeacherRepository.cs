@@ -11,4 +11,6 @@ public interface ITeacherRepository : IRepository<Teacher>
     Task<IReadOnlyList<Teacher>> GetActiveTeachersAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Teacher>> GetTeachersByInstrumentAsync(int instrumentId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Teacher>> GetTeachersByCourseTypeAsync(Guid courseTypeId, CancellationToken cancellationToken = default);
+    Task<Teacher?> GetWithAvailabilityAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TeacherAvailability>> GetAvailabilityAsync(Guid teacherId, CancellationToken cancellationToken = default);
 }

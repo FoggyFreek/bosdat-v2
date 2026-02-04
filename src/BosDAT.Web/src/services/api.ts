@@ -178,6 +178,16 @@ export const teachersApi = {
     const response = await api.get(`/teachers/${id}/available-course-types`, { params })
     return response.data
   },
+
+  getAvailability: async (id: string) => {
+    const response = await api.get(`/teachers/${id}/availability`)
+    return response.data
+  },
+
+  updateAvailability: async (id: string, data: { dayOfWeek: number; fromTime: string; untilTime: string }[]) => {
+    const response = await api.put(`/teachers/${id}/availability`, data)
+    return response.data
+  },
 }
 
 // Instruments API

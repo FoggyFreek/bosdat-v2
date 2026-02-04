@@ -70,7 +70,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
     [duration, hourHeight]
   );
 
-  // Memoize color selection
+   // Memoize color selection
   const colors = useMemo(
     () => colorScheme?.[event.eventType] ?? DEFAULT_COLOR_SCHEME[event.eventType] ?? FALLBACK_COLORS,
     [colorScheme, event.eventType]
