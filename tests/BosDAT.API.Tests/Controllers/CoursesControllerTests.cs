@@ -72,11 +72,23 @@ public class CoursesControllerTests
         };
     }
 
+    private static Room CreateRoom(int id = 1, string name = "Room 1")
+    {
+        return new Room
+        {
+            Id = id,
+            Name = name,
+            Capacity = 2,
+            IsActive = true
+        };
+    }
+
     private static Course CreateCourse(
         Teacher teacher,
         CourseType courseType,
         CourseStatus status = CourseStatus.Active,
-        DayOfWeek dayOfWeek = DayOfWeek.Monday)
+        DayOfWeek dayOfWeek = DayOfWeek.Monday,
+        Room? room = null)
     {
         return new Course
         {
@@ -85,6 +97,8 @@ public class CoursesControllerTests
             Teacher = teacher,
             CourseTypeId = courseType.Id,
             CourseType = courseType,
+            RoomId = room?.Id,
+            Room = room,
             DayOfWeek = dayOfWeek,
             StartTime = new TimeOnly(9, 0),
             EndTime = new TimeOnly(10, 0),
@@ -94,6 +108,340 @@ public class CoursesControllerTests
             Enrollments = new List<Enrollment>()
         };
     }
+
+    #region GetSummary Tests
+
+    [Fact]
+    public async Task GetSummary_WithNoFilters_ReturnsAllCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType),
+            CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Wednesday)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetSummary(null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        Assert.Equal(2, returnedCourses.Count());
+    }
+
+    [Fact]
+    public async Task GetSummary_WithStatusFilter_ReturnsMatchingCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var activeCourse = CreateCourse(teacher, courseType, CourseStatus.Active);
+        var cancelledCourse = CreateCourse(teacher, courseType, CourseStatus.Cancelled);
+        var courses = new List<Course> { activeCourse, cancelledCourse };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetSummary(CourseStatus.Active, null, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        Assert.Single(returnedCourses);
+        Assert.Equal(CourseStatus.Active, returnedCourses.First().Status);
+    }
+
+    [Fact]
+    public async Task GetSummary_WithTeacherFilter_ReturnsMatchingCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher1 = CreateTeacher("John", "Doe");
+        var teacher2 = CreateTeacher("Jane", "Smith");
+        var course1 = CreateCourse(teacher1, courseType);
+        var course2 = CreateCourse(teacher2, courseType);
+        var courses = new List<Course> { course1, course2 };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetSummary(null, teacher1.Id, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        Assert.Single(returnedCourses);
+    }
+
+    [Fact]
+    public async Task GetSummary_WithDayOfWeekFilter_ReturnsMatchingCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var mondayCourse = CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Monday);
+        var wednesdayCourse = CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Wednesday);
+        var courses = new List<Course> { mondayCourse, wednesdayCourse };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetSummary(null, null, DayOfWeek.Monday, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        Assert.Single(returnedCourses);
+        Assert.Equal(DayOfWeek.Monday, returnedCourses.First().DayOfWeek);
+    }
+
+    [Fact]
+    public async Task GetSummary_WithRoomFilter_ReturnsMatchingCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var room1 = CreateRoom(1, "Room 1");
+        var room2 = CreateRoom(2, "Room 2");
+        var course1 = CreateCourse(teacher, courseType, room: room1);
+        var course2 = CreateCourse(teacher, courseType, room: room2);
+        var courses = new List<Course> { course1, course2 };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetSummary(null, null, null, room1.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        Assert.Single(returnedCourses);
+        Assert.Equal("Room 1", returnedCourses.First().RoomName);
+    }
+
+    [Fact]
+    public async Task GetSummary_WithMultipleFilters_ReturnsMatchingCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var room = CreateRoom();
+        var activeMondayCourse = CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Monday, room);
+        var cancelledMondayCourse = CreateCourse(teacher, courseType, CourseStatus.Cancelled, DayOfWeek.Monday, room);
+        var activeWednesdayCourse = CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Wednesday, room);
+        var courses = new List<Course> { activeMondayCourse, cancelledMondayCourse, activeWednesdayCourse };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetSummary(CourseStatus.Active, teacher.Id, DayOfWeek.Monday, room.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        Assert.Single(returnedCourses);
+    }
+
+    #endregion
+
+    #region GetCount Tests
+
+    [Fact]
+    public async Task GetCount_WithNoFilters_ReturnsTotalCount()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType),
+            CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Wednesday),
+            CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Friday)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(null, null, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(3, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCount_WithStatusFilter_ReturnsFilteredCount()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType, CourseStatus.Active),
+            CreateCourse(teacher, courseType, CourseStatus.Active),
+            CreateCourse(teacher, courseType, CourseStatus.Cancelled)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(CourseStatus.Active, null, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(2, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCount_WithTeacherFilter_ReturnsFilteredCount()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher1 = CreateTeacher("John", "Doe");
+        var teacher2 = CreateTeacher("Jane", "Smith");
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher1, courseType),
+            CreateCourse(teacher1, courseType),
+            CreateCourse(teacher2, courseType)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(null, teacher1.Id, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(2, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCount_WithDayOfWeekFilter_ReturnsFilteredCount()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Monday),
+            CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Monday),
+            CreateCourse(teacher, courseType, dayOfWeek: DayOfWeek.Wednesday)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(null, null, DayOfWeek.Monday, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(2, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCount_WithRoomFilter_ReturnsFilteredCount()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var room1 = CreateRoom(1, "Room 1");
+        var room2 = CreateRoom(2, "Room 2");
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType, room: room1),
+            CreateCourse(teacher, courseType, room: room1),
+            CreateCourse(teacher, courseType, room: room2)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(null, null, null, room1.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(2, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCount_WithMultipleFilters_ReturnsFilteredCount()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var room = CreateRoom();
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Monday, room),
+            CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Monday, room),
+            CreateCourse(teacher, courseType, CourseStatus.Cancelled, DayOfWeek.Monday, room),
+            CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Wednesday, room)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(CourseStatus.Active, teacher.Id, DayOfWeek.Monday, room.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(2, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCount_WithNoMatches_ReturnsZero()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var courses = new List<Course>
+        {
+            CreateCourse(teacher, courseType, CourseStatus.Active)
+        };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetCount(CourseStatus.Cancelled, null, null, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(0, okResult.Value);
+    }
+
+    #endregion
 
     #region GetAll Tests
 
@@ -118,7 +466,7 @@ public class CoursesControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseDto>>(okResult.Value);
         Assert.Equal(2, returnedCourses.Count());
     }
 
@@ -141,7 +489,7 @@ public class CoursesControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseDto>>(okResult.Value);
         Assert.Single(returnedCourses);
         Assert.Equal(CourseStatus.Active, returnedCourses.First().Status);
     }
@@ -166,7 +514,7 @@ public class CoursesControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseDto>>(okResult.Value);
         Assert.Single(returnedCourses);
     }
 
@@ -189,9 +537,35 @@ public class CoursesControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseDto>>(okResult.Value);
         Assert.Single(returnedCourses);
         Assert.Equal(DayOfWeek.Monday, returnedCourses.First().DayOfWeek);
+    }
+
+    [Fact]
+    public async Task GetAll_WithRoomFilter_ReturnsMatchingCourses()
+    {
+        // Arrange
+        var instrument = CreateInstrument();
+        var courseType = CreateCourseType(instrument);
+        var teacher = CreateTeacher();
+        var room1 = CreateRoom(1, "Room 1");
+        var room2 = CreateRoom(2, "Room 2");
+        var course1 = CreateCourse(teacher, courseType, room: room1);
+        var course2 = CreateCourse(teacher, courseType, room: room2);
+        var courses = new List<Course> { course1, course2 };
+
+        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
+        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+
+        // Act
+        var result = await _controller.GetAll(null, null, null, room1.Id, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseDto>>(okResult.Value);
+        Assert.Single(returnedCourses);
+        Assert.Equal("Room 1", returnedCourses.First().RoomName);
     }
 
     [Fact]
@@ -201,20 +575,21 @@ public class CoursesControllerTests
         var instrument = CreateInstrument();
         var courseType = CreateCourseType(instrument);
         var teacher = CreateTeacher();
-        var activeMondayCourse = CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Monday);
-        var cancelledMondayCourse = CreateCourse(teacher, courseType, CourseStatus.Cancelled, DayOfWeek.Monday);
-        var activeWednesdayCourse = CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Wednesday);
+        var room = CreateRoom();
+        var activeMondayCourse = CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Monday, room);
+        var cancelledMondayCourse = CreateCourse(teacher, courseType, CourseStatus.Cancelled, DayOfWeek.Monday, room);
+        var activeWednesdayCourse = CreateCourse(teacher, courseType, CourseStatus.Active, DayOfWeek.Wednesday, room);
         var courses = new List<Course> { activeMondayCourse, cancelledMondayCourse, activeWednesdayCourse };
 
         var mockCourseRepo = MockHelpers.CreateMockCourseRepository(courses);
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(CourseStatus.Active, teacher.Id, DayOfWeek.Monday, null, CancellationToken.None);
+        var result = await _controller.GetAll(CourseStatus.Active, teacher.Id, DayOfWeek.Monday, room.Id, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseListDto>>(okResult.Value);
+        var returnedCourses = Assert.IsAssignableFrom<IEnumerable<CourseDto>>(okResult.Value);
         Assert.Single(returnedCourses);
     }
 

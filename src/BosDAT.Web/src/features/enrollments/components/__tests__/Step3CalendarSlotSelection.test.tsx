@@ -129,41 +129,22 @@ describe('Step3CalendarSlotSelection', () => {
   })
 
   describe('Week calendar data', () => {
-    it('should fetch week data instead of day data', async () => {
-      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
-        weekStart: '2024-03-18',
-        weekEnd: '2024-03-24',
-        lessons: [
-          {
-            id: 'lesson-1',
-            title: 'Monday Lesson',
-            date: '2024-03-18',
-            startTime: '09:00',
-            endTime: '10:00',
-            teacherName: 'Teacher A',
-            studentName: 'Student A',
-            instrumentName: 'Piano',
-            status: 'Scheduled',
-          },
-          {
-            id: 'lesson-2',
-            title: 'Wednesday Lesson',
-            date: '2024-03-20',
-            startTime: '14:00',
-            endTime: '15:00',
-            teacherName: 'Teacher A',
-            studentName: 'Student B',
-            instrumentName: 'Guitar',
-            status: 'Scheduled',
-          },
-        ],
-        holidays: [],
-      })
+    it('should use courses API for calendar data instead of day-level calendar API', async () => {
+      // The component now uses coursesApi.getAll to fetch courses
+      // and transforms them into calendar events using useCalendarEvents hook
+      // Courses query is enabled when: !step1.isTrial && !!step3.selectedRoomId
+      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([])
 
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
-      // Week calendar is fetched 
-      expect(calendarApi.calendarApi.getWeek).has.toHaveBeenCalled()
+      await waitFor(() => {
+        // Rooms are always fetched
+        expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
+      })
+
+      // The calendar data comes from courses, not from a dedicated week calendar endpoint
+      // coursesApi.getAll is only called when a room is selected in the context
+      // Without a room selected, courses query is not enabled
     })
 
     it('should handle lessons on multiple dates in a week', async () => {

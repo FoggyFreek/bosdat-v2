@@ -6,7 +6,7 @@ import { TimeColumn } from './TimeColumn';
 import { EventsGrid } from './EventsGrid';
 
 // Standard hours displayed - moved outside component to prevent recreation on every render
-const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 const MIN_HOUR = Math.min(...HOURS);
 const MAX_HOUR = Math.max(...HOURS);
 

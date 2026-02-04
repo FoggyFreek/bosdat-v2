@@ -19,8 +19,99 @@ public class CoursesController : ControllerBase
         _unitOfWork = unitOfWork;
     }
 
+    [HttpGet("summary")]
+    public async Task<ActionResult<IEnumerable<CourseListDto>>> GetSummary(
+        [FromQuery] CourseStatus? status,
+        [FromQuery] Guid? teacherId,
+        [FromQuery] DayOfWeek? dayOfWeek,
+        [FromQuery] int? roomId,
+        CancellationToken cancellationToken)
+    {
+        IQueryable<Course> query = _unitOfWork.Courses.Query()
+            .Include(c => c.Teacher)
+            .Include(c => c.CourseType)
+                .ThenInclude(ct => ct.Instrument)
+            .Include(c => c.Room);
+
+        if (status.HasValue)
+        {
+            query = query.Where(c => c.Status == status.Value);
+        }
+
+        if (teacherId.HasValue)
+        {
+            query = query.Where(c => c.TeacherId == teacherId.Value);
+        }
+
+        if (dayOfWeek.HasValue)
+        {
+            query = query.Where(c => c.DayOfWeek == dayOfWeek.Value);
+        }
+
+        if (roomId.HasValue)
+        {
+            query = query.Where(c => c.RoomId == roomId.Value);
+        }
+
+        var courses = await query
+            .OrderBy(c => c.DayOfWeek)
+            .ThenBy(c => c.StartTime)
+            .Select(c => new CourseListDto
+            {
+                Id = c.Id,
+                TeacherName = c.Teacher.FirstName + " " + c.Teacher.LastName,
+                CourseTypeName = c.CourseType.Name,
+                InstrumentName = c.CourseType.Instrument.Name,
+                RoomName = c.Room != null ? c.Room.Name : null,
+                DayOfWeek = c.DayOfWeek,
+                StartTime = c.StartTime,
+                EndTime = c.EndTime,
+                Frequency = c.Frequency,
+                WeekParity = c.WeekParity,
+                Status = c.Status
+            })
+            .ToListAsync(cancellationToken);
+
+        return Ok(courses);
+    }
+
+    [HttpGet("count")]
+    public async Task<ActionResult<int>> GetCount(
+        [FromQuery] CourseStatus? status,
+        [FromQuery] Guid? teacherId,
+        [FromQuery] DayOfWeek? dayOfWeek,
+        [FromQuery] int? roomId,
+        CancellationToken cancellationToken)
+    {
+        IQueryable<Course> query = _unitOfWork.Courses.Query();
+
+        if (status.HasValue)
+        {
+            query = query.Where(c => c.Status == status.Value);
+        }
+
+        if (teacherId.HasValue)
+        {
+            query = query.Where(c => c.TeacherId == teacherId.Value);
+        }
+
+        if (dayOfWeek.HasValue)
+        {
+            query = query.Where(c => c.DayOfWeek == dayOfWeek.Value);
+        }
+
+        if (roomId.HasValue)
+        {
+            query = query.Where(c => c.RoomId == roomId.Value);
+        }
+
+        var count = await query.CountAsync(cancellationToken);
+
+        return Ok(count);
+    }
+
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CourseListDto>>> GetAll(
+    public async Task<ActionResult<IEnumerable<CourseDto>>> GetAll(
         [FromQuery] CourseStatus? status,
         [FromQuery] Guid? teacherId,
         [FromQuery] DayOfWeek? dayOfWeek,
@@ -57,9 +148,10 @@ public class CoursesController : ControllerBase
         var courses = await query
             .OrderBy(c => c.DayOfWeek)
             .ThenBy(c => c.StartTime)
-            .Select(c => new CourseListDto
+            .Select(c => new CourseDto
             {
                 Id = c.Id,
+                TeacherId = c.TeacherId,
                 TeacherName = c.Teacher.FirstName + " " + c.Teacher.LastName,
                 CourseTypeName = c.CourseType.Name,
                 InstrumentName = c.CourseType.Instrument.Name,
@@ -67,8 +159,18 @@ public class CoursesController : ControllerBase
                 DayOfWeek = c.DayOfWeek,
                 StartTime = c.StartTime,
                 EndTime = c.EndTime,
+                Frequency = c.Frequency,
+                WeekParity = c.WeekParity,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
                 Status = c.Status,
-                EnrollmentCount = c.Enrollments.Count(e => e.Status == EnrollmentStatus.Active)
+                Enrollments = c.Enrollments
+                    .Where(e => e.Status == EnrollmentStatus.Active)
+                    .Select(e => new EnrollmentDto
+                    {
+                        StudentName = e.Student.FirstName + " " + e.Student.LastName,
+                    })
+                    .ToList(),
             })
             .ToListAsync(cancellationToken);
 

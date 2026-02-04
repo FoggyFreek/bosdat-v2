@@ -129,6 +129,23 @@ export const formatDate = (date: string | Date): string => {
 }
 
 /**
+ * Formats a Date object to a local ISO string without timezone offset.
+ * @param date 
+ * @returns 
+ */
+export function toLocalISOString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
+
+/**
  * Extracts the date portion from an ISO datetime string.
  *
  * @param dateTimeString - ISO 8601 datetime string
@@ -196,8 +213,8 @@ export const calculateEndTime = (startTime: string, durationMinutes: number): st
  */
 export const getDecimalHours = (dateTimeString: string): number => {
   const date = new Date(dateTimeString)
-  const hours = date.getUTCHours()
-  const minutes = date.getUTCMinutes()
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
   return hours + minutes / 60
 }
 
@@ -251,8 +268,8 @@ export const formatTimeRange = (startDateTime: string, endDateTime: string): str
   const end = new Date(endDateTime)
 
   const formatTime = (date: Date) => {
-    const hours = date.getUTCHours().toString().padStart(2, '0')
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0')
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
     return `${hours}:${minutes}`
   }
 
@@ -262,6 +279,59 @@ export const formatTimeRange = (startDateTime: string, endDateTime: string): str
 // ============================================================================
 // Week Operations (ISO 8601)
 // ============================================================================
+
+/**
+ * Week parity for biweekly course scheduling.
+ * Matches backend WeekParity enum.
+ */
+export type WeekParity = 'All' | 'Odd' | 'Even'
+
+/**
+ * Gets the ISO 8601 week number for a given date.
+ * Uses the algorithm: Week 1 is the week containing January 4th.
+ * Matches backend IsoDateHelper.GetIsoWeekNumber().
+ *
+ * @param date - JavaScript Date object
+ * @returns ISO week number (1-53)
+ */
+export const getIsoWeekNumber = (date: Date): number => {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  // Set to nearest Thursday: current date + 4 - current day number (Monday = 1)
+  const dayNum = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+  // Get first day of year
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  // Calculate full weeks to nearest Thursday
+  const weekNumber = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  return weekNumber
+}
+
+/**
+ * Gets the week parity (Odd or Even) for a given date based on its ISO week number.
+ * Matches backend IsoDateHelper.GetWeekParity().
+ *
+ * @param date - JavaScript Date object
+ * @returns 'Odd' for odd weeks (1, 3, 5, ...), 'Even' for even weeks (2, 4, 6, ...)
+ */
+export const getWeekParity = (date: Date): 'Odd' | 'Even' => {
+  const weekNumber = getIsoWeekNumber(date)
+  return weekNumber % 2 === 1 ? 'Odd' : 'Even'
+}
+
+/**
+ * Checks if a date matches a given week parity.
+ * Matches backend IsoDateHelper.MatchesWeekParity().
+ *
+ * @param date - JavaScript Date object
+ * @param parity - The week parity to match against
+ * @returns True if the date matches the parity, false otherwise. 'All' always returns true.
+ */
+export const matchesWeekParity = (date: Date, parity: WeekParity): boolean => {
+  if (parity === 'All') {
+    return true
+  }
+  return getWeekParity(date) === parity
+}
 
 /**
  * Gets the Monday of the week containing the given date (ISO 8601 week).

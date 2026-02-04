@@ -252,6 +252,16 @@ export const roomsApi = {
 
 // Courses API
 export const coursesApi = {
+  getCount: async (params?: { status?: string; teacherId?: string; dayOfWeek?: number; roomId?: number }) => {
+    const response = await api.get('/courses/count', { params })
+    return response.data
+  },
+
+  getSummary: async (params?: { status?: string; teacherId?: string; dayOfWeek?: number; roomId?: number }) => {
+    const response = await api.get('/courses/summary', { params })
+    return response.data
+  },
+
   getAll: async (params?: { status?: string; teacherId?: string; dayOfWeek?: number; roomId?: number }) => {
     const response = await api.get('/courses', { params })
     return response.data

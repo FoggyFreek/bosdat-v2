@@ -1,22 +1,29 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { roomsApi, calendarApi, coursesApi } from '@/services/api'
+import { roomsApi, calendarApi, coursesApi, teachersApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { Step3Summary } from './Step3Summary'
 import { CalendarComponent } from '@/components/calendar/CalendarComponent'
 import { useCalendarEvents } from '../hooks/useCalendarEvents'
-import { getWeekStart, getWeekDays, formatDateForApi, calculateEndTime } from '@/lib/calendar-utils'
+import { getWeekStart, getWeekDays, getHoursFromTimeString, formatDateForApi, toLocalISOString, calculateEndTime } from '@/lib/iso-helpers'
 import { useToast } from '@/hooks/use-toast'
 import { createEnrollmentColorScheme, formatTimeSlotToTime } from '../utils/calendarAdapter'
 import type { Room } from '@/features/rooms/types'
-import type { WeekCalendar } from '@/features/schedule/types'
 import type { Course } from '@/features/courses/types'
-import type { CalendarEvent, TimeSlot } from '@/components/calendar/types'
+import type { CalendarEvent, DayAvailability, TimeSlot } from '@/components/calendar/types'
+import { TeacherAvailability } from '@/features/teachers/types'
 
 interface Step3CalendarSlotSelectionProps {
   teacherId: string
   durationMinutes: number
 }
+
+const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailability[] =>
+  availability.map((item) => ({
+    dayOfWeek: item.dayOfWeek,
+    fromTime: getHoursFromTimeString(item.fromTime),
+    untilTime: getHoursFromTimeString(item.untilTime),
+  }))
 
 export const Step3CalendarSlotSelection = ({
   teacherId,
@@ -49,51 +56,39 @@ export const Step3CalendarSlotSelection = ({
     queryFn: () => roomsApi.getAll({ activeOnly: true }),
   })
 
-  // Fetch week calendar data - loads all events initially, filters by room when selected
-  const {
-    data: weekCalendar,
-    isLoading: isLoadingCalendar,
-    error: calendarError,
-  } = useQuery<WeekCalendar>({
-    queryKey: ['calendar', 'week', formatDateForApi(weekStart), teacherId, step3.selectedRoomId],
+  // Fetch teacher's availability
+  const { data: teacherAvailability = [], isLoading: isLoadingTeacherAvailability } = useQuery<TeacherAvailability[]>({
+    queryKey: ['teacher-availability', step1.teacherId],
     queryFn: () =>
-      calendarApi.getWeek({
-        date: formatDateForApi(weekStart),
-        teacherId,
-        roomId: step3.selectedRoomId || undefined,
-      }),
+      step1.teacherId !== null ? teachersApi.getAvailability(step1.teacherId) : Promise.resolve([]),
   })
 
-  // Fetch all courses for the selected room (shows all lessons in the room)
-  // Teacher availability is still checked via the calendar API when selecting a time slot
-  const { data: courses = [], isLoading: isLoadingCourses } = useQuery<Course[]>({
-    queryKey: ['courses', { roomId: step3.selectedRoomId }],
+  const availability = useMemo(
+    () => mapToDayAvailability(teacherAvailability),
+    [teacherAvailability]
+  )
+
+  // Fetch all courses (filter by selected room if applicable)
+  const { data: courses = [],  isLoading: isLoadingCourses } = useQuery<Course[]>({
+    queryKey: ['courses', { roomId: step3.selectedRoomId, selectedDate }],
     queryFn: () =>
       coursesApi.getAll({
         roomId: step3.selectedRoomId || undefined,
       }),
-    enabled: !step1.isTrial && !!step3.selectedRoomId,
   })
 
-  // Transform API data directly to calendar events
-  const events = useCalendarEvents({
-    weekStart,
-    lessons: weekCalendar?.lessons || [],
-    courses,
-    holidays: weekCalendar?.holidays || [],
-    isTrial: step1.isTrial,
-  })
+  // Transform courses into calendar events, filtering by week parity
+  const courseEvents = useCalendarEvents({ weekStart, courses })
 
   const allEvents = useMemo(() => {
-    const safeEvents = events || []
     if (placeholderEvent) {
-      return [...safeEvents, placeholderEvent]
+      return [...courseEvents, placeholderEvent]
     }
-    return safeEvents
-  }, [events, placeholderEvent])
+    return courseEvents
+  }, [courseEvents, placeholderEvent])
 
 
-  const isLoading = isLoadingRooms || isLoadingCalendar || isLoadingCourses
+  const isLoading = isLoadingRooms || isLoadingCourses || isLoadingTeacherAvailability
 
   const handleWeekChange = (days: number) => {
     const newDate = new Date(selectedDate)
@@ -149,7 +144,7 @@ export const Step3CalendarSlotSelection = ({
       // Check availability
       try {
         const availability = await calendarApi.checkAvailability({
-          date: formatDateForApi(targetDate),
+          date: toLocalISOString(targetDate),
           startTime: time,
           endTime,
           teacherId,
@@ -170,7 +165,7 @@ export const Step3CalendarSlotSelection = ({
 
         // Update context with valid selection including the date
         updateStep3({
-          selectedDate: formatDateForApi(targetDate),
+          selectedDate: toLocalISOString(targetDate),
           selectedDayOfWeek: targetDate.getDay(),
           selectedStartTime: time,
           selectedEndTime: endTime,
@@ -204,13 +199,13 @@ export const Step3CalendarSlotSelection = ({
     [handleTimeSelect]
   )
 
-  if (roomsError || calendarError) {
+  if (roomsError) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <p className="text-red-600 font-medium">Error loading data</p>
           <p className="text-sm text-slate-600 mt-2">
-            {(roomsError as Error)?.message || (calendarError as Error)?.message}
+            {(roomsError as Error)?.message}
           </p>
         </div>
       </div>
@@ -241,6 +236,7 @@ export const Step3CalendarSlotSelection = ({
           dayStartTime={8}
           dayEndTime={23}
           hourHeight={80}
+          availability={availability}
           colorScheme={colorScheme}
           onNavigatePrevious={() => handleWeekChange(-7)}
           onNavigateNext={() => handleWeekChange(7)}

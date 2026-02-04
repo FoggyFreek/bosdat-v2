@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { Users, GraduationCap, Music, Calendar } from 'lucide-react'
+import { Users, GraduationCap, Music } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { studentsApi, teachersApi, coursesApi } from '@/services/api'
-import type { CourseList } from '@/features/courses/types'
 import type { StudentList } from '@/features/students/types'
 import type { TeacherList } from '@/features/teachers/types'
 
@@ -27,15 +26,16 @@ export function DashboardPage() {
     queryFn: () => teachersApi.getAll(),
   })
 
-  const { data: courses = [] } = useQuery<CourseList[]>({
+  const { data: courses = 0 } = useQuery<number>({
     queryKey: ['courses'],
-    queryFn: () => coursesApi.getAll(),
+    queryFn: () => coursesApi.getCount(
+      { status: 'Active' }
+    ),
   })
 
   const activeStudents = students.filter((s) => s.status === 'Active').length
   const activeTeachers = teachers.filter((t) => t.isActive).length
-  const activeCourses = courses.filter((c) => c.status === 'Active').length
-  const totalEnrollments = courses.reduce((sum, c) => sum + c.enrollmentCount, 0)
+  const activeCourses = courses
 
   const stats = [
     {
@@ -54,14 +54,8 @@ export function DashboardPage() {
       name: 'Active Courses',
       value: activeCourses,
       icon: Music,
-      description: `${courses.length} total courses`,
-    },
-    {
-      name: 'Enrollments',
-      value: totalEnrollments,
-      icon: Calendar,
-      description: 'Active enrollments',
-    },
+      description: `${activeCourses} total courses`,
+    }
   ]
 
   return (
@@ -119,25 +113,7 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {courses
-                .filter((c) => c.dayOfWeek === new Date().getDay())
-                .slice(0, 5)
-                .map((course) => (
-                  <div key={course.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{course.instrumentName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {course.teacherName} - {course.roomName || 'No room'}
-                      </p>
-                    </div>
-                    <span className="text-sm">
-                      {course.startTime.substring(0, 5)} - {course.endTime.substring(0, 5)}
-                    </span>
-                  </div>
-                ))}
-              {courses.filter((c) => c.dayOfWeek === new Date().getDay()).length === 0 && (
-                <p className="text-sm text-muted-foreground">No lessons scheduled for today</p>
-              )}
+                <p className="text-sm text-muted-foreground">Coming soon!</p>
             </div>
           </CardContent>
         </Card>

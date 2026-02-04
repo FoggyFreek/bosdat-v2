@@ -1,6 +1,7 @@
 // Course Domain Types
 
 import type { Enrollment } from '@/features/enrollments/types'
+import { DayOfWeek } from '@/lib/iso-helpers'
 
 export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
 export type CourseFrequency = 'Weekly' | 'Biweekly' | 'Monthly'
@@ -15,7 +16,7 @@ export interface Course {
   instrumentName: string
   roomId?: number
   roomName?: string
-  dayOfWeek: number
+  dayOfWeek: DayOfWeek
   startTime: string
   endTime: string
   frequency: CourseFrequency

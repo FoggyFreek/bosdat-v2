@@ -20,6 +20,9 @@ import {
   getDayNameFromNumber,
   isSameDay,
   isValidEventTime,
+  getIsoWeekNumber,
+  getWeekParity,
+  matchesWeekParity,
 } from '../iso-helpers'
 
 describe('iso-helpers', () => {
@@ -432,6 +435,87 @@ describe('iso-helpers', () => {
       const start = '2024-03-20T23:00:00Z'
       const end = '2024-03-21T01:00:00Z'
       expect(isValidEventTime(start, end)).toBe(true)
+    })
+  })
+
+  // ============================================================================
+  // ISO Week Parity Operations
+  // ============================================================================
+
+  describe('getIsoWeekNumber', () => {
+    it('should return correct ISO week number for dates in the middle of the year', () => {
+      // March 18, 2024 is in ISO week 12
+      expect(getIsoWeekNumber(new Date(2024, 2, 18))).toBe(12)
+      // March 11, 2024 is in ISO week 11
+      expect(getIsoWeekNumber(new Date(2024, 2, 11))).toBe(11)
+    })
+
+    it('should return week 1 for dates in the first week of January', () => {
+      // January 4, 2024 is always in week 1 (ISO 8601)
+      expect(getIsoWeekNumber(new Date(2024, 0, 4))).toBe(1)
+      // January 1, 2024 is a Monday, so it's in week 1
+      expect(getIsoWeekNumber(new Date(2024, 0, 1))).toBe(1)
+    })
+
+    it('should handle year boundaries correctly', () => {
+      // December 31, 2024 falls in ISO week 1 of 2025 (Tuesday)
+      expect(getIsoWeekNumber(new Date(2024, 11, 31))).toBe(1)
+      // December 28, 2020 is in ISO week 53 (Monday of week 53)
+      expect(getIsoWeekNumber(new Date(2020, 11, 28))).toBe(53)
+    })
+
+    it('should return correct week for late December', () => {
+      // December 25, 2024 is in week 52
+      expect(getIsoWeekNumber(new Date(2024, 11, 25))).toBe(52)
+    })
+  })
+
+  describe('getWeekParity', () => {
+    it('should return Odd for odd-numbered weeks', () => {
+      // Week 11 (March 11, 2024)
+      expect(getWeekParity(new Date(2024, 2, 11))).toBe('Odd')
+      // Week 1 (January 1, 2024)
+      expect(getWeekParity(new Date(2024, 0, 1))).toBe('Odd')
+      // Week 53 (December 28, 2020)
+      expect(getWeekParity(new Date(2020, 11, 28))).toBe('Odd')
+    })
+
+    it('should return Even for even-numbered weeks', () => {
+      // Week 12 (March 18, 2024)
+      expect(getWeekParity(new Date(2024, 2, 18))).toBe('Even')
+      // Week 2 (January 8, 2024)
+      expect(getWeekParity(new Date(2024, 0, 8))).toBe('Even')
+      // Week 52 (December 25, 2024)
+      expect(getWeekParity(new Date(2024, 11, 25))).toBe('Even')
+    })
+  })
+
+  describe('matchesWeekParity', () => {
+    it('should return true for All parity regardless of week', () => {
+      const evenWeek = new Date(2024, 2, 18) // Week 12
+      const oddWeek = new Date(2024, 2, 11) // Week 11
+      expect(matchesWeekParity(evenWeek, 'All')).toBe(true)
+      expect(matchesWeekParity(oddWeek, 'All')).toBe(true)
+    })
+
+    it('should return true for Even parity in even weeks', () => {
+      const evenWeek = new Date(2024, 2, 18) // Week 12
+      expect(matchesWeekParity(evenWeek, 'Even')).toBe(true)
+    })
+
+    it('should return false for Even parity in odd weeks', () => {
+      const oddWeek = new Date(2024, 2, 11) // Week 11
+      expect(matchesWeekParity(oddWeek, 'Even')).toBe(false)
+    })
+
+    it('should return true for Odd parity in odd weeks', () => {
+      const oddWeek = new Date(2024, 2, 11) // Week 11
+      expect(matchesWeekParity(oddWeek, 'Odd')).toBe(true)
+    })
+
+    it('should return false for Odd parity in even weeks', () => {
+      const evenWeek = new Date(2024, 2, 18) // Week 12
+      expect(matchesWeekParity(evenWeek, 'Odd')).toBe(false)
     })
   })
 })

@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { coursesApi } from '@/services/api'
+import { getDayNameFromNumber } from '@/lib/iso-helpers'
 import type { CourseList } from '@/features/courses/types'
 import { cn, getDayName } from '@/lib/utils'
 
 export function CoursesPage() {
   const { data: courses = [], isLoading } = useQuery<CourseList[]>({
     queryKey: ['courses'],
-    queryFn: () => coursesApi.getAll(),
+    queryFn: () => coursesApi.getSummary(),
   })
 
   const getStatusColor = (status: string) => {
@@ -48,7 +49,7 @@ export function CoursesPage() {
     }
     acc[day].push(course)
     return acc
-  }, {} as Record<number, CourseList[]>)
+  }, {} as Record<string, CourseList[]>)
 
   return (
     <div className="space-y-6">
@@ -81,8 +82,8 @@ export function CoursesPage() {
 
       {!isLoading && courses.length > 0 && (
         <div className="grid gap-6">
-          {[1, 2, 3, 4, 5, 6, 0].map((day) => {
-            const dayCourses = coursesByDay[day] || []
+          {[1, 2, 3, 4, 5, 6, 0].map((day: number) => {
+            const dayCourses = coursesByDay[getDayNameFromNumber(day)]  || []
             if (dayCourses.length === 0) return null
 
             return (
