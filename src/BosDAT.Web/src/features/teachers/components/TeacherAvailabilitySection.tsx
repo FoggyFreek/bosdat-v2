@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { teachersApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import type { TeacherAvailability, UpdateTeacherAvailability } from '@/features/teachers/types'
+import { dayNameToNumber } from '@/lib/iso-helpers'
 
 interface TeacherAvailabilitySectionProps {
   teacherId: string
@@ -46,7 +47,7 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
   const availabilityByDay = useMemo(() => {
     const map = new Map<number, TeacherAvailability>()
     availability.forEach((a) =>
-      map.set(a.dayOfWeek, a))
+      map.set(dayNameToNumber(a.dayOfWeek), a))
     return map
   }, [availability])
 

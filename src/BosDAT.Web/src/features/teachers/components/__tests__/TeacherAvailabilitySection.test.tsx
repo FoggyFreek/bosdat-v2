@@ -53,9 +53,9 @@ vi.mock('@/context/AuthContext', () => ({
 }))
 
 const mockAvailability: TeacherAvailability[] = [
-  { id: '1', dayOfWeek: 1, fromTime: '09:00:00', untilTime: '17:00:00' }, // Monday
-  { id: '2', dayOfWeek: 2, fromTime: '10:00:00', untilTime: '18:00:00' }, // Tuesday
-  { id: '3', dayOfWeek: 3, fromTime: '00:00:00', untilTime: '00:00:00' }, // Wednesday - unavailable
+  { id: '1', dayOfWeek: 'Monday', fromTime: '09:00:00', untilTime: '17:00:00' },
+  { id: '2', dayOfWeek: 'Tuesday', fromTime: '10:00:00', untilTime: '18:00:00' },
+  { id: '3', dayOfWeek: 'Wednesday', fromTime: '00:00:00', untilTime: '00:00:00' }, // unavailable
 ]
 
 const createWrapper = () => {
@@ -287,7 +287,7 @@ describe('TeacherAvailabilitySection', () => {
     it('shows error message for invalid time range', async () => {
       const user = userEvent.setup()
       vi.mocked(teachersApi.getAvailability).mockResolvedValue([
-        { id: '1', dayOfWeek: 1, fromTime: '09:00:00', untilTime: '17:00:00' },
+        { id: '1', dayOfWeek: 'Monday', fromTime: '09:00:00', untilTime: '17:00:00' },
       ])
 
       render(<TeacherAvailabilitySection teacherId={teacherId} />, {
@@ -314,7 +314,7 @@ describe('TeacherAvailabilitySection', () => {
     it('disables save button when validation errors exist', async () => {
       const user = userEvent.setup()
       vi.mocked(teachersApi.getAvailability).mockResolvedValue([
-        { id: '1', dayOfWeek: 1, fromTime: '09:00:00', untilTime: '17:00:00' },
+        { id: '1', dayOfWeek: 'Monday', fromTime: '09:00:00', untilTime: '17:00:00' },
       ])
 
       render(<TeacherAvailabilitySection teacherId={teacherId} />, {
