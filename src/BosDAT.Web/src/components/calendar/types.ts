@@ -1,6 +1,6 @@
 // Type definitions for calendar component
 
-import type { DayOfWeek } from '@/lib/iso-helpers'
+import type { DayOfWeek } from '@/lib/datetime-helpers'
 
 // Re-export for consumers
 export type { DayOfWeek }

@@ -18,7 +18,7 @@ import type { WeekCalendar } from '@/features/schedule/types'
 import { groupLessonsByCourseAndDate, type GroupedLesson } from '@/features/schedule/utils/groupLessons'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
-import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/iso-helpers'
+import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/datetime-helpers'
 
 // --- Constants ---
 

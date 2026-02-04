@@ -7,7 +7,7 @@ import {
   minutesToTime,
   calculateEndTime,
   getDayName,
-} from '../iso-helpers'
+} from '../datetime-helpers'
 
 describe('calendar-utils', () => {
   describe('getWeekStart', () => {

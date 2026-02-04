@@ -2,7 +2,7 @@
 
 import type { Instrument } from '@/features/instruments/types'
 import type { CourseTypeSimple } from '@/features/course-types/types'
-import type { DayOfWeek } from '@/lib/iso-helpers'
+import type { DayOfWeek } from '@/lib/datetime-helpers'
 
 // Re-export for consumers
 export type { DayOfWeek }

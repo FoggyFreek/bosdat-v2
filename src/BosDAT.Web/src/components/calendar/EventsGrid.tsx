@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { EventItem } from './EventItem';
 import type { CalendarEvent, ColorScheme, TimeSlot, DayAvailability } from './types';
-import { getDateFromDateTime, isSameDay, isValidEventTime, dayNameToNumber } from '@/lib/iso-helpers';
+import { getDateFromDateTime, isSameDay, isValidEventTime, dayNameToNumber } from '@/lib/datetime-helpers';
 import { calculateEventLayout } from './eventOverlapUtils';
 
 type EventsGridProps = {

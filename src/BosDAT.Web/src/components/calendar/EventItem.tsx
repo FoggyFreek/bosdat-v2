@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils';
 import type { CalendarEvent, ColorScheme, EventColors, EventCategory } from './types';
 import { EventHoverNote } from './EventHoverNote';
-import { getDecimalHours, getDurationInHours, isValidEventTime } from '@/lib/iso-helpers';
+import { getDecimalHours, getDurationInHours, isValidEventTime } from '@/lib/datetime-helpers';
 import type { EventLayout } from './eventOverlapUtils';
 
 type EventItemProps = {

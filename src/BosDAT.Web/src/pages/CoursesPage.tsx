@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { coursesApi } from '@/services/api'
-import { getDayNameFromNumber } from '@/lib/iso-helpers'
+import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { CourseList } from '@/features/courses/types'
 import { cn, getDayName } from '@/lib/utils'
 

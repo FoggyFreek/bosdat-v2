@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { CreateCourseTypePricingVersion, CourseTypePricingVersion } from '@/features/course-types/types'
-import { getTodayForApi } from '@/lib/iso-helpers'
+import { getTodayForApi } from '@/lib/datetime-helpers'
 
 const pricingVersionSchema = z.object({
   priceAdult: z.coerce.number().min(0, 'Price must be 0 or greater'),

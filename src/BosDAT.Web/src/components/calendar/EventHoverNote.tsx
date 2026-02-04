@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent, EventColors } from './types';
-import { formatTimeRange } from '@/lib/iso-helpers';
+import { formatTimeRange } from '@/lib/datetime-helpers';
 
 type EventHoverNoteProps = {
   event: CalendarEvent;

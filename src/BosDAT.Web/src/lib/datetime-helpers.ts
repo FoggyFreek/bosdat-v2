@@ -1,20 +1,19 @@
 /**
- * ISO 8601 date/time utilities for consistent date handling across the application.
- * Uses native JavaScript Date methods for all operations.
+ * Date/time utilities for consistent date handling across the application.
+ * All dates are in local time (Central European Time) - no timezone conversion needed.
  */
 
 // ============================================================================
-// ISO DateTime String Creation
+// DateTime String Creation
 // ============================================================================
 
 /**
- * Creates an ISO 8601 datetime string from date and time components.
+ * Creates a local datetime string from date and time components.
  * Supports time formats: 'HH:mm:ss' and 'HH:mm:ss:ff' (fractional seconds).
- * Uses native Date methods for parsing and formatting.
  *
  * @param date - Date in MM-dd-yyyy format (e.g., "02-15-2026")
  * @param time - Time in HH:mm:ss or HH:mm:ss:ff format (e.g., "19:30:00" or "19:30:00:00")
- * @returns ISO 8601 formatted datetime string (e.g., "2026-02-15T19:30:00Z")
+ * @returns Local datetime string (e.g., "2026-02-15T19:30:00")
  * @throws Error if date or time format is invalid
  */
 export const createIsoDateTime = (date: string, time: string): string => {
@@ -46,19 +45,23 @@ export const createIsoDateTime = (date: string, time: string): string => {
     throw new Error(`Invalid time values in: '${time}'`)
   }
 
-  // Create Date in UTC using Date.UTC
-  const dateTime = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
+  // Format as local datetime string (no 'Z' suffix)
+  const yearStr = String(year)
+  const monthStr = String(month).padStart(2, '0')
+  const dayStr = String(day).padStart(2, '0')
+  const hoursStr = String(hours).padStart(2, '0')
+  const minutesStr = String(minutes).padStart(2, '0')
+  const secondsStr = String(seconds).padStart(2, '0')
 
-  // Format as ISO 8601 with 'Z' suffix
-  return dateTime.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  return `${yearStr}-${monthStr}-${dayStr}T${hoursStr}:${minutesStr}:${secondsStr}`
 }
 
 /**
- * Creates an ISO 8601 datetime string from a Date object and time string.
+ * Creates a local datetime string from a Date object and time string.
  *
  * @param date - JavaScript Date object
  * @param time - Time in HH:mm:ss or HH:mm:ss:ff format
- * @returns ISO 8601 formatted datetime string
+ * @returns Local datetime string
  */
 export const createIsoDateTimeFromDate = (date: Date, time: string): string => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -69,11 +72,11 @@ export const createIsoDateTimeFromDate = (date: Date, time: string): string => {
 }
 
 /**
- * Combines a Date and time string into an ISO 8601 datetime string.
+ * Combines a Date and time string into a local datetime string.
  *
  * @param date - JavaScript Date object
  * @param time - Time in HH:mm format
- * @returns ISO 8601 formatted datetime string
+ * @returns Local datetime string
  */
 export const combineDateAndTime = (date: Date, time: string): string => {
   const [hours, minutes] = time.split(':').map(Number)
@@ -82,12 +85,13 @@ export const combineDateAndTime = (date: Date, time: string): string => {
     throw new Error(`Invalid time format: '${time}'. Expected HH:mm`)
   }
 
-  // Use Date.UTC to create UTC datetime
-  const utcDate = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, 0)
-  )
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hoursStr = String(hours).padStart(2, '0')
+  const minutesStr = String(minutes).padStart(2, '0')
 
-  return utcDate.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  return `${year}-${month}-${day}T${hoursStr}:${minutesStr}:00`
 }
 
 // ============================================================================
@@ -96,22 +100,24 @@ export const combineDateAndTime = (date: Date, time: string): string => {
 
 /**
  * Formats a Date as YYYY-MM-DD for API calls.
- * Uses native toISOString and splits on 'T'.
  *
  * @param date - JavaScript Date object
  * @returns Date string in YYYY-MM-DD format
  */
 export const formatDateForApi = (date: Date): string => {
-  return date.toISOString().split('T')[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /**
- * Gets today's date as YYYY-MM-DD in UTC.
+ * Gets today's date as YYYY-MM-DD in local time.
  *
  * @returns Today's date in YYYY-MM-DD format
  */
 export const getTodayForApi = (): string => {
-  return new Date().toISOString().split('T')[0]
+  return formatDateForApi(new Date())
 }
 
 /**
@@ -130,29 +136,26 @@ export const formatDate = (date: string | Date): string => {
 
 /**
  * Formats a Date object to a local ISO string without timezone offset.
- * @param date 
- * @returns 
  */
 export function toLocalISOString(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
 }
 
-
 /**
- * Extracts the date portion from an ISO datetime string.
+ * Extracts the date portion from a datetime string.
  *
- * @param dateTimeString - ISO 8601 datetime string
+ * @param dateTimeString - Datetime string
  * @returns Date object representing the date
  */
 export const getDateFromDateTime = (dateTimeString: string): Date => {
-  return new Date(dateTimeString);
+  return new Date(dateTimeString)
 }
 
 // ============================================================================
@@ -206,9 +209,9 @@ export const calculateEndTime = (startTime: string, durationMinutes: number): st
 }
 
 /**
- * Calculates the start time as decimal hours from an ISO datetime string.
+ * Calculates the start time as decimal hours from a datetime string.
  *
- * @param dateTimeString - ISO 8601 datetime string
+ * @param dateTimeString - Datetime string
  * @returns Hours as decimal (e.g., 9.5 for 9:30 AM)
  */
 export const getDecimalHours = (dateTimeString: string): number => {
@@ -221,32 +224,30 @@ export const getDecimalHours = (dateTimeString: string): number => {
 /**
  * Returns the hours component of a time string.
  *
- * @param dateTimeString - ISO 8601 datetime string
+ * @param dateTimeString - Time string (HH:mm:ss)
  * @returns Hours as number (e.g., 9 for 9:30 AM)
  */
 export const getHoursFromTimeString = (dateTimeString: string): number => {
-  // Add a dummy date to make it a valid ISO string
-  const date = new Date(`1970-01-01T${dateTimeString}`);
+  const date = new Date(`1970-01-01T${dateTimeString}`)
   return date.getHours()
 }
 
 /**
  * Returns the minutes component of a time string.
  *
- * @param dateTimeString - ISO 8601 datetime string
+ * @param dateTimeString - Time string (HH:mm:ss)
  * @returns Minutes as number (e.g., 30 for 9:30 AM)
  */
 export const getMinutesFromTimeString = (dateTimeString: string): number => {
-  // Add a dummy date to make it a valid ISO string
-  const date = new Date(`1970-01-01T${dateTimeString}`);
+  const date = new Date(`1970-01-01T${dateTimeString}`)
   return date.getMinutes()
 }
 
 /**
  * Calculates duration in decimal hours between two datetime strings.
  *
- * @param startDateTime - ISO 8601 datetime string
- * @param endDateTime - ISO 8601 datetime string
+ * @param startDateTime - Datetime string
+ * @param endDateTime - Datetime string
  * @returns Duration in hours as decimal (e.g., 1.5 for 90 minutes)
  */
 export const getDurationInHours = (startDateTime: string, endDateTime: string): number => {
@@ -259,8 +260,8 @@ export const getDurationInHours = (startDateTime: string, endDateTime: string): 
 /**
  * Formats datetime range to display time string.
  *
- * @param startDateTime - ISO 8601 datetime string
- * @param endDateTime - ISO 8601 datetime string
+ * @param startDateTime - Datetime string
+ * @param endDateTime - Datetime string
  * @returns Formatted time string (e.g., "09:30 – 10:00")
  */
 export const formatTimeRange = (startDateTime: string, endDateTime: string): string => {
@@ -277,7 +278,7 @@ export const formatTimeRange = (startDateTime: string, endDateTime: string): str
 }
 
 // ============================================================================
-// Week Operations (ISO 8601)
+// Week Operations
 // ============================================================================
 
 /**
@@ -287,27 +288,28 @@ export const formatTimeRange = (startDateTime: string, endDateTime: string): str
 export type WeekParity = 'All' | 'Odd' | 'Even'
 
 /**
- * Gets the ISO 8601 week number for a given date.
- * Uses the algorithm: Week 1 is the week containing January 4th.
+ * Gets the week number for a given date.
+ * Week 1 is the week containing January 4th.
  * Matches backend IsoDateHelper.GetIsoWeekNumber().
  *
  * @param date - JavaScript Date object
- * @returns ISO week number (1-53)
+ * @returns Week number (1-53)
  */
 export const getIsoWeekNumber = (date: Date): number => {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  // Create a copy to avoid mutating the input
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate())
   // Set to nearest Thursday: current date + 4 - current day number (Monday = 1)
-  const dayNum = d.getUTCDay() || 7
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+  const dayNum = d.getDay() || 7
+  d.setDate(d.getDate() + 4 - dayNum)
   // Get first day of year
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  const yearStart = new Date(d.getFullYear(), 0, 1)
   // Calculate full weeks to nearest Thursday
-  const weekNumber = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  const weekNumber = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
   return weekNumber
 }
 
 /**
- * Gets the week parity (Odd or Even) for a given date based on its ISO week number.
+ * Gets the week parity (Odd or Even) for a given date based on its week number.
  * Matches backend IsoDateHelper.GetWeekParity().
  *
  * @param date - JavaScript Date object
@@ -334,20 +336,19 @@ export const matchesWeekParity = (date: Date, parity: WeekParity): boolean => {
 }
 
 /**
- * Gets the Monday of the week containing the given date (ISO 8601 week).
- * Uses native Date methods.
+ * Gets the Monday of the week containing the given date.
  *
  * @param date - JavaScript Date object
  * @returns Date object representing Monday of the week
  */
 export const getWeekStart = (date: Date): Date => {
-  const d = new Date(date);
-  const day = d.getDay();
+  const d = new Date(date)
+  const day = d.getDay()
   // Adjust to Monday: Sunday(0) moves back 6, others move back (day - 1)
-  const diff = d.getDate() - (day === 0 ? 6 : day - 1);
-  d.setDate(diff);
-  d.setHours(12, 0, 0, 0); //set hour to noon to avoid timezone issues
-  return d;
+  const diff = d.getDate() - (day === 0 ? 6 : day - 1)
+  d.setDate(diff)
+  d.setHours(12, 0, 0, 0) // Set hour to noon to avoid DST issues
+  return d
 }
 
 /**
@@ -396,7 +397,6 @@ export const dayNameToNumber = (day: DayOfWeek): number => DAY_NAME_TO_NUMBER[da
 
 /**
  * Gets the full day name from a Date object.
- * Uses native toLocaleDateString.
  *
  * @param date - JavaScript Date object
  * @returns Full day name (e.g., "Monday")
@@ -438,8 +438,8 @@ export const isSameDay = (date1: Date, date2: Date): boolean => {
 /**
  * Validates that an event has valid time bounds.
  *
- * @param startDateTime - ISO 8601 datetime string
- * @param endDateTime - ISO 8601 datetime string
+ * @param startDateTime - Datetime string
+ * @param endDateTime - Datetime string
  * @returns True if the event times are valid (end is after start)
  */
 export const isValidEventTime = (startDateTime: string, endDateTime: string): boolean => {

@@ -33,15 +33,15 @@ export function validateEmail(email: string): boolean {
 }
 
 // ============================================================================
-// Date/Time Utilities (Re-exported from iso-helpers)
+// Date/Time Utilities (Re-exported from datetime-helpers)
 // ============================================================================
 
 /**
- * @deprecated Import directly from '@/lib/iso-helpers' instead.
+ * @deprecated Import directly from '@/lib/datetime-helpers' instead.
  * These exports are maintained for backward compatibility only.
  */
 export {
   formatDate,
   formatTime,
   getDayNameFromNumber as getDayName,
-} from './iso-helpers'
+} from './datetime-helpers'

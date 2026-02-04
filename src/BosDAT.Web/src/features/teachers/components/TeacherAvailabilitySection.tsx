@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { teachersApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import type { TeacherAvailability, UpdateTeacherAvailability } from '@/features/teachers/types'
-import { dayNameToNumber } from '@/lib/iso-helpers'
+import { dayNameToNumber } from '@/lib/datetime-helpers'
 
 interface TeacherAvailabilitySectionProps {
   teacherId: string

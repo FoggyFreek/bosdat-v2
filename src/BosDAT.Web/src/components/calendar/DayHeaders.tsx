@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { isSameDay } from '@/lib/iso-helpers';
+import { isSameDay } from '@/lib/datetime-helpers';
 
 type DayHeadersProps = {
   dates: Date[];

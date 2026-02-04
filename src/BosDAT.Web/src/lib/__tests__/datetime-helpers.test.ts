@@ -23,37 +23,37 @@ import {
   getIsoWeekNumber,
   getWeekParity,
   matchesWeekParity,
-} from '../iso-helpers'
+} from '../datetime-helpers'
 
-describe('iso-helpers', () => {
+describe('datetime-helpers', () => {
   // ============================================================================
-  // ISO DateTime String Creation
+  // DateTime String Creation
   // ============================================================================
 
   describe('createIsoDateTime', () => {
-    it('should create ISO datetime string from MM-dd-yyyy and HH:mm:ss', () => {
+    it('should create local datetime string from MM-dd-yyyy and HH:mm:ss', () => {
       const result = createIsoDateTime('02-15-2026', '19:30:00')
-      expect(result).toBe('2026-02-15T19:30:00Z')
+      expect(result).toBe('2026-02-15T19:30:00')
     })
 
-    it('should create ISO datetime string from MM-dd-yyyy and HH:mm:ss:ff (fractional seconds)', () => {
+    it('should create local datetime string from MM-dd-yyyy and HH:mm:ss:ff (fractional seconds)', () => {
       const result = createIsoDateTime('02-15-2026', '19:30:00:00')
-      expect(result).toBe('2026-02-15T19:30:00Z')
+      expect(result).toBe('2026-02-15T19:30:00')
     })
 
     it('should handle midnight', () => {
       const result = createIsoDateTime('01-01-2024', '00:00:00')
-      expect(result).toBe('2024-01-01T00:00:00Z')
+      expect(result).toBe('2024-01-01T00:00:00')
     })
 
     it('should handle end of day', () => {
       const result = createIsoDateTime('12-31-2025', '23:59:59')
-      expect(result).toBe('2025-12-31T23:59:59Z')
+      expect(result).toBe('2025-12-31T23:59:59')
     })
 
     it('should handle various times with fractional seconds', () => {
-      expect(createIsoDateTime('03-20-2024', '09:15:30')).toBe('2024-03-20T09:15:30Z')
-      expect(createIsoDateTime('03-20-2024', '09:15:30:50')).toBe('2024-03-20T09:15:30Z')
+      expect(createIsoDateTime('03-20-2024', '09:15:30')).toBe('2024-03-20T09:15:30')
+      expect(createIsoDateTime('03-20-2024', '09:15:30:50')).toBe('2024-03-20T09:15:30')
     })
 
     it('should throw error for invalid date format', () => {
@@ -79,30 +79,30 @@ describe('iso-helpers', () => {
   })
 
   describe('createIsoDateTimeFromDate', () => {
-    it('should create ISO datetime from Date object and time string', () => {
+    it('should create local datetime from Date object and time string', () => {
       const date = new Date(2026, 1, 15) // February 15, 2026
       const result = createIsoDateTimeFromDate(date, '19:30:00')
-      expect(result).toBe('2026-02-15T19:30:00Z')
+      expect(result).toBe('2026-02-15T19:30:00')
     })
 
     it('should support fractional seconds', () => {
       const date = new Date(2026, 1, 15)
       const result = createIsoDateTimeFromDate(date, '19:30:00:00')
-      expect(result).toBe('2026-02-15T19:30:00Z')
+      expect(result).toBe('2026-02-15T19:30:00')
     })
   })
 
   describe('combineDateAndTime', () => {
-    it('should combine date and HH:mm time into ISO datetime', () => {
+    it('should combine date and HH:mm time into local datetime', () => {
       const date = new Date(2026, 1, 15) // February 15, 2026
       const result = combineDateAndTime(date, '19:30')
-      expect(result).toBe('2026-02-15T19:30:00Z')
+      expect(result).toBe('2026-02-15T19:30:00')
     })
 
     it('should handle midnight', () => {
       const date = new Date(2024, 0, 1)
       const result = combineDateAndTime(date, '00:00')
-      expect(result).toBe('2024-01-01T00:00:00Z')
+      expect(result).toBe('2024-01-01T00:00:00')
     })
 
     it('should throw error for invalid time format', () => {
@@ -117,14 +117,14 @@ describe('iso-helpers', () => {
   // ============================================================================
 
   describe('formatDateForApi', () => {
-    it('should format date as YYYY-MM-DD using native toISOString', () => {
-      const date = new Date(Date.UTC(2024, 2, 20, 15, 30)) // March 20, 2024 UTC
+    it('should format date as YYYY-MM-DD using local date', () => {
+      const date = new Date(2024, 2, 20, 15, 30) // March 20, 2024
       const formatted = formatDateForApi(date)
       expect(formatted).toBe('2024-03-20')
     })
 
     it('should pad single-digit months and days', () => {
-      const date = new Date(Date.UTC(2024, 2, 5)) // March 5, 2024 UTC
+      const date = new Date(2024, 2, 5) // March 5, 2024
       const formatted = formatDateForApi(date)
       expect(formatted).toBe('2024-03-05')
     })
@@ -155,20 +155,17 @@ describe('iso-helpers', () => {
   })
 
   describe('getDateFromDateTime', () => {
-    it('should extract date from ISO datetime string', () => {
-      const result = getDateFromDateTime('2026-02-15T19:30:00Z')
+    it('should extract date from datetime string', () => {
+      const result = getDateFromDateTime('2026-02-15T19:30:00')
       expect(result).toBeInstanceOf(Date)
-      expect(result.getUTCFullYear()).toBe(2026)
-      expect(result.getUTCMonth()).toBe(1) // February
-      expect(result.getUTCDate()).toBe(15)
+      expect(result.getFullYear()).toBe(2026)
+      expect(result.getMonth()).toBe(1) // February
+      expect(result.getDate()).toBe(15)
     })
 
-    it('should handle datetime without Z suffix', () => {
-      const result = getDateFromDateTime('2024-03-20T09:15:30')
+    it('should handle datetime with Z suffix for backwards compatibility', () => {
+      const result = getDateFromDateTime('2024-03-20T09:15:30Z')
       expect(result).toBeInstanceOf(Date)
-      expect(result.getFullYear()).toBe(2024)
-      expect(result.getMonth()).toBe(2) // March
-      expect(result.getDate()).toBe(20)
     })
   })
 
@@ -235,47 +232,47 @@ describe('iso-helpers', () => {
   })
 
   describe('getDecimalHours', () => {
-    it('should calculate decimal hours from ISO datetime', () => {
-      expect(getDecimalHours('2024-03-20T09:00:00Z')).toBe(9)
-      expect(getDecimalHours('2024-03-20T09:30:00Z')).toBe(9.5)
-      expect(getDecimalHours('2024-03-20T14:15:00Z')).toBe(14.25)
+    it('should calculate decimal hours from local datetime', () => {
+      expect(getDecimalHours('2024-03-20T09:00:00')).toBe(9)
+      expect(getDecimalHours('2024-03-20T09:30:00')).toBe(9.5)
+      expect(getDecimalHours('2024-03-20T14:15:00')).toBe(14.25)
     })
 
     it('should handle midnight', () => {
-      expect(getDecimalHours('2024-03-20T00:00:00Z')).toBe(0)
+      expect(getDecimalHours('2024-03-20T00:00:00')).toBe(0)
     })
   })
 
   describe('getDurationInHours', () => {
     it('should calculate duration in hours between two datetimes', () => {
-      const start = '2024-03-20T09:00:00Z'
-      const end = '2024-03-20T10:30:00Z'
+      const start = '2024-03-20T09:00:00'
+      const end = '2024-03-20T10:30:00'
       expect(getDurationInHours(start, end)).toBe(1.5)
     })
 
     it('should handle whole hour durations', () => {
-      const start = '2024-03-20T09:00:00Z'
-      const end = '2024-03-20T12:00:00Z'
+      const start = '2024-03-20T09:00:00'
+      const end = '2024-03-20T12:00:00'
       expect(getDurationInHours(start, end)).toBe(3)
     })
 
     it('should handle cross-day durations', () => {
-      const start = '2024-03-20T23:00:00Z'
-      const end = '2024-03-21T01:00:00Z'
+      const start = '2024-03-20T23:00:00'
+      const end = '2024-03-21T01:00:00'
       expect(getDurationInHours(start, end)).toBe(2)
     })
   })
 
   describe('formatTimeRange', () => {
     it('should format datetime range as time string', () => {
-      const start = '2024-03-20T09:30:00Z'
-      const end = '2024-03-20T10:00:00Z'
+      const start = '2024-03-20T09:30:00'
+      const end = '2024-03-20T10:00:00'
       expect(formatTimeRange(start, end)).toBe('09:30 – 10:00')
     })
 
     it('should pad single-digit hours', () => {
-      const start = '2024-03-20T09:00:00Z'
-      const end = '2024-03-20T09:45:00Z'
+      const start = '2024-03-20T09:00:00'
+      const end = '2024-03-20T09:45:00'
       expect(formatTimeRange(start, end)).toBe('09:00 – 09:45')
     })
   })
@@ -314,7 +311,7 @@ describe('iso-helpers', () => {
       expect(weekStart.getDate()).toBe(18)
     })
 
-    it('should set time to noon to avoid timezone issues', () => {
+    it('should set time to noon to avoid DST issues', () => {
       const wednesday = new Date(2024, 2, 20, 15, 30, 45) // March 20, 2024, 15:30:45
       const weekStart = getWeekStart(wednesday)
 
@@ -415,52 +412,52 @@ describe('iso-helpers', () => {
 
   describe('isValidEventTime', () => {
     it('should return true when end is after start', () => {
-      const start = '2024-03-20T09:00:00Z'
-      const end = '2024-03-20T10:00:00Z'
+      const start = '2024-03-20T09:00:00'
+      const end = '2024-03-20T10:00:00'
       expect(isValidEventTime(start, end)).toBe(true)
     })
 
     it('should return false when end is before start', () => {
-      const start = '2024-03-20T10:00:00Z'
-      const end = '2024-03-20T09:00:00Z'
+      const start = '2024-03-20T10:00:00'
+      const end = '2024-03-20T09:00:00'
       expect(isValidEventTime(start, end)).toBe(false)
     })
 
     it('should return false when times are equal', () => {
-      const time = '2024-03-20T09:00:00Z'
+      const time = '2024-03-20T09:00:00'
       expect(isValidEventTime(time, time)).toBe(false)
     })
 
     it('should handle cross-day events', () => {
-      const start = '2024-03-20T23:00:00Z'
-      const end = '2024-03-21T01:00:00Z'
+      const start = '2024-03-20T23:00:00'
+      const end = '2024-03-21T01:00:00'
       expect(isValidEventTime(start, end)).toBe(true)
     })
   })
 
   // ============================================================================
-  // ISO Week Parity Operations
+  // Week Parity Operations
   // ============================================================================
 
   describe('getIsoWeekNumber', () => {
-    it('should return correct ISO week number for dates in the middle of the year', () => {
-      // March 18, 2024 is in ISO week 12
+    it('should return correct week number for dates in the middle of the year', () => {
+      // March 18, 2024 is in week 12
       expect(getIsoWeekNumber(new Date(2024, 2, 18))).toBe(12)
-      // March 11, 2024 is in ISO week 11
+      // March 11, 2024 is in week 11
       expect(getIsoWeekNumber(new Date(2024, 2, 11))).toBe(11)
     })
 
     it('should return week 1 for dates in the first week of January', () => {
-      // January 4, 2024 is always in week 1 (ISO 8601)
+      // January 4, 2024 is always in week 1
       expect(getIsoWeekNumber(new Date(2024, 0, 4))).toBe(1)
       // January 1, 2024 is a Monday, so it's in week 1
       expect(getIsoWeekNumber(new Date(2024, 0, 1))).toBe(1)
     })
 
     it('should handle year boundaries correctly', () => {
-      // December 31, 2024 falls in ISO week 1 of 2025 (Tuesday)
+      // December 31, 2024 falls in week 1 of 2025 (Tuesday)
       expect(getIsoWeekNumber(new Date(2024, 11, 31))).toBe(1)
-      // December 28, 2020 is in ISO week 53 (Monday of week 53)
+      // December 28, 2020 is in week 53 (Monday of week 53)
       expect(getIsoWeekNumber(new Date(2020, 11, 28))).toBe(53)
     })
 

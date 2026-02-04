@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CourseTypePricingVersion } from '@/features/course-types/types'
 import { formatCurrency } from '@/lib/utils'
-import { formatDate } from '@/lib/iso-helpers'
+import { formatDate } from '@/lib/datetime-helpers'
 
 interface PricingHistoryCollapsibleProps {
   readonly pricingHistory: readonly CourseTypePricingVersion[]
