@@ -260,10 +260,12 @@ public class EdgeCaseTests
             CourseTypeCategory.Individual,
             studentCount: 2);
 
+        // Create existing lessons for both students on March 4
+        var studentIds = course.Enrollments.Select(e => e.StudentId).ToList();
         var existingLessons = new List<Lesson>
         {
-            CreateLesson(course.Id, course.TeacherId, new DateOnly(2024, 3, 4)),
-            CreateLesson(course.Id, course.TeacherId, new DateOnly(2024, 3, 4))  // Two for individual
+            CreateLessonWithStudent(course.Id, course.TeacherId, new DateOnly(2024, 3, 4), studentIds[0]),
+            CreateLessonWithStudent(course.Id, course.TeacherId, new DateOnly(2024, 3, 4), studentIds[1])
         };
 
         var holidays = new List<Holiday>
@@ -294,10 +296,10 @@ public class EdgeCaseTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var generateResult = Assert.IsType<GenerateLessonsResultDto>(okResult.Value);
 
-        // 4 Mondays: March 4 (existing), 11 (create 2), 18 (holiday), 25 (create 2)
-        // Created: 2 + 2 = 4, Skipped: 1 (existing) + 1 (holiday) = 2
+        // 4 Mondays: March 4 (existing x2), 11 (create 2), 18 (holiday), 25 (create 2)
+        // Created: 2 + 2 = 4, Skipped: 2 (existing) + 1 (holiday) = 3
         Assert.Equal(4, generateResult.LessonsCreated);
-        Assert.Equal(2, generateResult.LessonsSkipped);
+        Assert.Equal(3, generateResult.LessonsSkipped);
     }
 
     [Fact]
@@ -427,6 +429,7 @@ public class EdgeCaseTests
                 StudentId = studentId,
                 CourseId = courseId,
                 Status = EnrollmentStatus.Active,
+                EnrolledAt = new DateTime(2024, 1, 1), // Enrolled before test period
                 Student = new Student
                 {
                     Id = studentId,
@@ -485,6 +488,21 @@ public class EdgeCaseTests
             Id = Guid.NewGuid(),
             CourseId = courseId,
             TeacherId = teacherId,
+            ScheduledDate = date,
+            StartTime = new TimeOnly(10, 0),
+            EndTime = new TimeOnly(10, 30),
+            Status = LessonStatus.Scheduled
+        };
+    }
+
+    private static Lesson CreateLessonWithStudent(Guid courseId, Guid teacherId, DateOnly date, Guid studentId)
+    {
+        return new Lesson
+        {
+            Id = Guid.NewGuid(),
+            CourseId = courseId,
+            TeacherId = teacherId,
+            StudentId = studentId,
             ScheduledDate = date,
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),

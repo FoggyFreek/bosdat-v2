@@ -131,7 +131,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
       )}
       style={{
         top: `${top}px`,
-        height: `${height}px`,
+        height: `${height-2}px`,
         left: `${leftPosition}%`,
         width: `calc(${widthPerColumn}% - 8px)`,
         backgroundColor: colors.background,
@@ -143,7 +143,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
       aria-label={`${event.title}, ${event.eventType}, ${event.frequency}`}
       aria-expanded={isHovered}
     >
-      <h3 className="text-xs text-left font-bold text-slate-800 truncate">
+      <h3 className="text-xs text-left  font-bold text-slate-800 truncate">
         {event.eventType === 'holiday' && (
           <span className="uppercase text-[10px] mr-1">Deadline -</span>
         )}

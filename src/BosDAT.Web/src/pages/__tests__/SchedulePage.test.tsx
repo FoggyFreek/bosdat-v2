@@ -97,6 +97,7 @@ describe('SchedulePage', () => {
   const mockLessons: CalendarLesson[] = [
     {
       id: 'lesson-1',
+      courseId: 'course-1',
       title: 'Piano Lesson',
       date: '2026-01-27', // Monday of current week
       startTime: '10:00',
@@ -109,6 +110,7 @@ describe('SchedulePage', () => {
     },
     {
       id: 'lesson-2',
+      courseId: 'course-2',
       title: 'Guitar Lesson',
       date: '2026-01-28', // Tuesday
       startTime: '14:00',
@@ -121,6 +123,7 @@ describe('SchedulePage', () => {
     },
     {
       id: 'lesson-3',
+      courseId: 'course-3',
       title: 'Drums Lesson',
       date: '2026-01-29', // Wednesday
       startTime: '16:00',

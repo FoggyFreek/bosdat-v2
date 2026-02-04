@@ -4,6 +4,8 @@ import type { LessonStatus } from '@/features/lessons/types'
 
 export interface CalendarLesson {
   id: string
+  courseId: string
+  studentId?: string
   title: string
   date: string
   startTime: string

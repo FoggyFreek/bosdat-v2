@@ -9,6 +9,7 @@ describe('useCalendarEvents', () => {
 
   const createMockLesson = (overrides: Partial<CalendarLesson> = {}): CalendarLesson => ({
     id: 'lesson-1',
+    courseId: 'course-1',
     title: 'Piano Lesson',
     date: '2024-03-20',
     startTime: '14:00',

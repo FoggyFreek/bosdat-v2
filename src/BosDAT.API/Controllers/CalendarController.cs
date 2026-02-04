@@ -304,6 +304,8 @@ public class CalendarController : ControllerBase
             .Select(l => new CalendarLessonDto
             {
                 Id = l.Id,
+                CourseId = l.CourseId,
+                StudentId = l.StudentId,
                 Title = l.Course.CourseType.Instrument.Name + " - " + (l.Student != null ? l.Student.FirstName + " " + l.Student.LastName : "Group"),
                 Date = l.ScheduledDate,
                 StartTime = l.StartTime,

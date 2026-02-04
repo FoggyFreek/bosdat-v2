@@ -14,7 +14,8 @@ import { CalendarComponent } from '@/components'
 import type { CalendarEvent, ColorScheme } from '@/components'
 import type { DayAvailability } from '@/components/calendar/types'
 import { calendarApi, teachersApi, roomsApi } from '@/services/api'
-import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
+import type { WeekCalendar } from '@/features/schedule/types'
+import { groupLessonsByCourseAndDate, type GroupedLesson } from '@/features/schedule/utils/groupLessons'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/iso-helpers'
@@ -46,20 +47,24 @@ const statusColorScheme: ColorScheme = {
 
 // --- Helpers ---
 
-const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
-  const attendees = []
-  if (lesson.studentName) attendees.push(lesson.studentName)
-  if (lesson.teacherName) attendees.push(lesson.teacherName)
+const convertGroupedLessonToEvent = (group: GroupedLesson): CalendarEvent => {
+  const attendees = [...group.studentNames]
+  if (group.teacherName) attendees.push(group.teacherName)
+
+  // Use courseId + date as the event ID for grouped lessons
+  const eventId = group.lessons.length > 1
+    ? `${group.courseId}:${group.date}`
+    : group.lessons[0]?.id ?? `${group.courseId}:${group.date}`
 
   return {
-    id: lesson.id,
-    startDateTime: combineDateAndTime(new Date(lesson.date), lesson.startTime),
-    endDateTime: combineDateAndTime(new Date(lesson.date), lesson.endTime),
-    title: lesson.instrumentName || lesson.title,
+    id: eventId,
+    startDateTime: combineDateAndTime(new Date(group.date), group.startTime),
+    endDateTime: combineDateAndTime(new Date(group.date), group.endTime),
+    title: group.instrumentName || group.title,
     frequency: 'weekly',
-    eventType: lesson.status,
+    eventType: group.status,
     attendees,
-    room: lesson.roomName,
+    room: group.roomName,
   }
 }
 
@@ -117,10 +122,11 @@ export const SchedulePage = () => {
 
   const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate])
 
-  const events = useMemo(
-    () => (calendarData?.lessons ?? []).map(convertLessonToEvent),
-    [calendarData?.lessons]
-  )
+  const events = useMemo(() => {
+    const lessons = calendarData?.lessons ?? []
+    const grouped = groupLessonsByCourseAndDate(lessons)
+    return grouped.map(convertGroupedLessonToEvent)
+  }, [calendarData?.lessons])
 
   const availability = useMemo(
     () => mapToDayAvailability(teacherAvailability),

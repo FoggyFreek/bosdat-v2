@@ -64,18 +64,10 @@ public class LessonDataGenerator
         {
             if (ShouldGenerateLesson(course, currentDate))
             {
-                if (courseType?.Type == CourseTypeCategory.Individual)
+                // Generate lessons for each enrolled student
+                foreach (var enrollment in enrollments)
                 {
-                    // Individual lessons - one per enrolled student
-                    foreach (var enrollment in enrollments)
-                    {
-                        lessons.Add(CreateLesson(course, currentDate, enrollment.StudentId, courseType));
-                    }
-                }
-                else
-                {
-                    // Group/Workshop - one lesson for all
-                    lessons.Add(CreateLesson(course, currentDate, null, courseType));
+                    lessons.Add(CreateLesson(course, currentDate, enrollment.StudentId, courseType));
                 }
             }
 

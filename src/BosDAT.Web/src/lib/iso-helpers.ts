@@ -276,7 +276,7 @@ export const getWeekStart = (date: Date): Date => {
   // Adjust to Monday: Sunday(0) moves back 6, others move back (day - 1)
   const diff = d.getDate() - (day === 0 ? 6 : day - 1);
   d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
+  d.setHours(12, 0, 0, 0); //set hour to noon to avoid timezone issues
   return d;
 }
 

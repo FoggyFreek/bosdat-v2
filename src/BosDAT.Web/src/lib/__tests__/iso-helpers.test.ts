@@ -311,11 +311,11 @@ describe('iso-helpers', () => {
       expect(weekStart.getDate()).toBe(18)
     })
 
-    it('should reset time to midnight', () => {
+    it('should set time to noon to avoid timezone issues', () => {
       const wednesday = new Date(2024, 2, 20, 15, 30, 45) // March 20, 2024, 15:30:45
       const weekStart = getWeekStart(wednesday)
 
-      expect(weekStart.getHours()).toBe(0)
+      expect(weekStart.getHours()).toBe(12)
       expect(weekStart.getMinutes()).toBe(0)
       expect(weekStart.getSeconds()).toBe(0)
       expect(weekStart.getMilliseconds()).toBe(0)

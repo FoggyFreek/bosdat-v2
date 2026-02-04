@@ -219,6 +219,38 @@ public class LessonsController : ControllerBase
         return Ok(await GetLessonDto(id, cancellationToken));
     }
 
+    [HttpPut("group-status")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<UpdateGroupLessonStatusResultDto>> UpdateGroupStatus(
+        [FromBody] UpdateGroupLessonStatusDto dto,
+        CancellationToken cancellationToken)
+    {
+        var lessons = await _unitOfWork.Lessons.Query()
+            .Where(l => l.CourseId == dto.CourseId && l.ScheduledDate == dto.ScheduledDate)
+            .ToListAsync(cancellationToken);
+
+        if (lessons.Count == 0)
+        {
+            return NotFound(new { message = "No lessons found for the specified course and date" });
+        }
+
+        foreach (var lesson in lessons)
+        {
+            lesson.Status = dto.Status;
+            lesson.CancellationReason = dto.CancellationReason;
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Ok(new UpdateGroupLessonStatusResultDto
+        {
+            CourseId = dto.CourseId,
+            ScheduledDate = dto.ScheduledDate,
+            Status = dto.Status,
+            LessonsUpdated = lessons.Count
+        });
+    }
+
     [HttpDelete("{id:guid}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
@@ -336,7 +368,7 @@ public class LessonsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var holidays = await GetHolidaysAsync(startDate, endDate, skipHolidays, cancellationToken);
-        var existingDates = await GetExistingLessonDatesAsync(course.Id, startDate, endDate, cancellationToken);
+        var existingLessons = await GetExistingLessonsAsync(course.Id, startDate, endDate, cancellationToken);
 
         var lessonsCreated = 0;
         var lessonsSkipped = 0;
@@ -344,16 +376,15 @@ public class LessonsController : ControllerBase
 
         while (currentDate <= endDate)
         {
-            if (ShouldSkipDate(currentDate, holidays, existingDates))
+            if (IsHoliday(currentDate, holidays))
             {
                 lessonsSkipped++;
             }
             else
             {
-                await CreateLessonsForDate(course, currentDate);
-                lessonsCreated += course.CourseType?.Type == CourseTypeCategory.Individual
-                    ? course.Enrollments.Count
-                    : 1;
+                var (created, skipped) = await CreateLessonsForDate(course, currentDate, existingLessons);
+                lessonsCreated += created;
+                lessonsSkipped += skipped;
             }
 
             currentDate = GetNextOccurrenceDate(currentDate, course);
@@ -372,17 +403,15 @@ public class LessonsController : ControllerBase
             .ToListAsync(cancellationToken);
     }
 
-    private async Task<HashSet<DateOnly>> GetExistingLessonDatesAsync(
+    private async Task<List<Lesson>> GetExistingLessonsAsync(
         Guid courseId,
         DateOnly startDate,
         DateOnly endDate,
         CancellationToken cancellationToken)
     {
-        var existingLessons = await _unitOfWork.Lessons.Query()
+        return await _unitOfWork.Lessons.Query()
             .Where(l => l.CourseId == courseId && l.ScheduledDate >= startDate && l.ScheduledDate <= endDate)
             .ToListAsync(cancellationToken);
-
-        return existingLessons.Select(l => l.ScheduledDate).ToHashSet();
     }
 
     private static DateOnly FindFirstOccurrenceDate(DateOnly startDate, Course course, DateOnly endDate)
@@ -408,10 +437,14 @@ public class LessonsController : ControllerBase
         return currentDate;
     }
 
-    private static bool ShouldSkipDate(DateOnly date, List<Holiday> holidays, HashSet<DateOnly> existingDates)
+    private static bool IsHoliday(DateOnly date, List<Holiday> holidays)
     {
-        var isHoliday = holidays.Any(h => date >= h.StartDate && date <= h.EndDate);
-        return isHoliday || existingDates.Contains(date);
+        return holidays.Any(h => date >= h.StartDate && date <= h.EndDate);
+    }
+
+    private static bool HasExistingLesson(DateOnly date, Guid? studentId, List<Lesson> existingLessons)
+    {
+        return existingLessons.Any(l => l.ScheduledDate == date && l.StudentId == studentId);
     }
 
     private static DateOnly GetNextOccurrenceDate(DateOnly currentDate, CourseFrequency frequency)
@@ -452,25 +485,47 @@ public class LessonsController : ControllerBase
         };
     }
 
-    private async Task CreateLessonsForDate(Course course, DateOnly date)
+    private async Task<(int Created, int Skipped)> CreateLessonsForDate(Course course, DateOnly date, List<Lesson> existingLessons)
     {
-        var enrolledStudents = course.Enrollments.ToList();
+        var created = 0;
+        var skipped = 0;
+
+        // Filter enrollments to only include students enrolled by this date (mid-enrollment support)
+        var enrolledStudents = course.Enrollments
+            .Where(e => DateOnly.FromDateTime(e.EnrolledAt) <= date)
+            .ToList();
 
         if (enrolledStudents.Count == 0)
         {
-            await CreateLesson(course, date, null);
-        }
-        else if (course.CourseType?.Type == CourseTypeCategory.Individual)
-        {
-            foreach (var enrollment in enrolledStudents)
+            // No enrollments: create a placeholder lesson with null StudentId
+            if (!HasExistingLesson(date, null, existingLessons))
             {
-                await CreateLesson(course, date, enrollment.StudentId);
+                await CreateLesson(course, date, null);
+                created++;
+            }
+            else
+            {
+                skipped++;
             }
         }
         else
         {
-            await CreateLesson(course, date, null);
+            // All course types: one lesson per enrolled student
+            foreach (var enrollment in enrolledStudents)
+            {
+                if (!HasExistingLesson(date, enrollment.StudentId, existingLessons))
+                {
+                    await CreateLesson(course, date, enrollment.StudentId);
+                    created++;
+                }
+                else
+                {
+                    skipped++;
+                }
+            }
         }
+
+        return (created, skipped);
     }
 
     private async Task CreateLesson(Course course, DateOnly date, Guid? studentId)
@@ -563,4 +618,20 @@ public record BulkGenerateLessonsResultDto
     public int TotalLessonsCreated { get; init; }
     public int TotalLessonsSkipped { get; init; }
     public List<GenerateLessonsResultDto> CourseResults { get; init; } = new();
+}
+
+public record UpdateGroupLessonStatusDto
+{
+    public Guid CourseId { get; init; }
+    public DateOnly ScheduledDate { get; init; }
+    public required LessonStatus Status { get; init; }
+    public string? CancellationReason { get; init; }
+}
+
+public record UpdateGroupLessonStatusResultDto
+{
+    public Guid CourseId { get; init; }
+    public DateOnly ScheduledDate { get; init; }
+    public LessonStatus Status { get; init; }
+    public int LessonsUpdated { get; init; }
 }

@@ -62,6 +62,8 @@ public record GenerateLessonsDto
 public record CalendarLessonDto
 {
     public Guid Id { get; init; }
+    public Guid CourseId { get; init; }
+    public Guid? StudentId { get; init; }
     public string Title { get; init; } = string.Empty;
     public DateOnly Date { get; init; }
     public TimeOnly StartTime { get; init; }

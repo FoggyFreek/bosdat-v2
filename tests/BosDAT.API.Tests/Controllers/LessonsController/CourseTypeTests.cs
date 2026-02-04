@@ -12,8 +12,7 @@ namespace BosDAT.API.Tests.Controllers.LessonsController;
 
 /// <summary>
 /// Tests for lesson generation behavior across different course types (Individual, Group, Workshop).
-/// Verifies that Individual courses create one lesson per student per date,
-/// while Group and Workshop courses create one lesson per date regardless of student count.
+/// Verifies that all course types create one lesson per enrolled student per date.
 /// </summary>
 public class CourseTypeTests
 {
@@ -30,16 +29,15 @@ public class CourseTypeTests
 
     /// <summary>
     /// Tests that lesson generation creates the correct number of lessons based on course type category.
-    /// Individual courses create one lesson per student per date.
-    /// Group and Workshop courses create one lesson per date regardless of student count.
+    /// All course types (Individual, Group, Workshop) create one lesson per enrolled student per date.
     /// </summary>
     /// <param name="category">The course type category (Individual, Group, or Workshop).</param>
     /// <param name="studentCount">Number of students enrolled in the course.</param>
     /// <param name="expectedLessonCount">Expected total number of lessons to be created.</param>
     [Theory]
     [InlineData(CourseTypeCategory.Individual, 3, 12)] // 4 weeks × 3 students = 12
-    [InlineData(CourseTypeCategory.Group, 5, 4)]       // 4 weeks, 1 per date = 4
-    [InlineData(CourseTypeCategory.Workshop, 10, 5)]   // 5 weeks, 1 per date = 5
+    [InlineData(CourseTypeCategory.Group, 5, 20)]      // 4 weeks × 5 students = 20
+    [InlineData(CourseTypeCategory.Workshop, 10, 50)]  // 5 weeks × 10 students = 50
     public async Task GenerateLessons_CourseType_CreatesCorrectLessonCount(
         CourseTypeCategory category,
         int studentCount,
@@ -94,7 +92,7 @@ public class CourseTypeTests
     }
 
     [Fact]
-    public async Task GenerateLessons_GroupCourse_FiveStudents_CreatesOneLessonPerDate()
+    public async Task GenerateLessons_GroupCourse_FiveStudents_CreatesLessonPerStudentPerDate()
     {
         // Arrange
         var course = CreateTestCourseWithStudents(
@@ -113,12 +111,12 @@ public class CourseTypeTests
         var result = await _controller.GenerateLessons(dto, CancellationToken.None);
 
         // Assert
-        // 4 weeks, group = 4 lessons regardless of student count
-        AssertGenerationResult(result, lessonsCreated: 4, lessonsSkipped: 0);
+        // 4 weeks × 5 students = 20 lessons
+        AssertGenerationResult(result, lessonsCreated: 20, lessonsSkipped: 0);
     }
 
     [Fact]
-    public async Task GenerateLessons_WorkshopCourse_CreatesOneLessonPerDate()
+    public async Task GenerateLessons_WorkshopCourse_TenStudents_CreatesLessonPerStudentPerDate()
     {
         // Arrange
         var course = CreateTestCourseWithStudents(
@@ -137,8 +135,8 @@ public class CourseTypeTests
         var result = await _controller.GenerateLessons(dto, CancellationToken.None);
 
         // Assert
-        // 5 weeks, workshop = 5 lessons
-        AssertGenerationResult(result, lessonsCreated: 5, lessonsSkipped: 0);
+        // 5 weeks × 10 students = 50 lessons
+        AssertGenerationResult(result, lessonsCreated: 50, lessonsSkipped: 0);
     }
 
     [Fact]
@@ -242,6 +240,7 @@ public class CourseTypeTests
                 StudentId = studentId,
                 CourseId = courseId,
                 Status = EnrollmentStatus.Active,
+                EnrolledAt = new DateTime(2024, 1, 1), // Enrolled before test period
                 Student = new Student
                 {
                     Id = studentId,
