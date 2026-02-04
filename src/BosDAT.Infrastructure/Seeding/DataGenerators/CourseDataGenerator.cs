@@ -186,7 +186,9 @@ public class CourseDataGenerator
 
             for (int c = 0; c < coursesPerType; c++)
             {
-                courses.Add(CreateCourse(courseType, eligibleTeacherIds, room));
+                var course = TryCreateCourse(courseType, eligibleTeacherIds, room, courses);
+                if (course != null)
+                    courses.Add(course);
             }
         }
 
@@ -215,44 +217,55 @@ public class CourseDataGenerator
             _ => 2
         };
 
-    private Course CreateCourse(CourseType courseType, List<Guid> eligibleTeacherIds, Room? room)
+    private Course? TryCreateCourse(CourseType courseType, List<Guid> eligibleTeacherIds, Room? room, List<Course> existingCourses)
     {
-        var teacherId = _seederContext.GetRandomItem(eligibleTeacherIds);
-        var dayOfWeek = (DayOfWeek)_seederContext.NextInt(1, 6);
-        var startHour = _seederContext.NextInt(9, 20);
-        var startTime = new TimeOnly(startHour, _seederContext.NextInt(0, 2) * 30);
-        var endTime = startTime.AddMinutes(courseType.DurationMinutes);
+        const int maxAttempts = 20;
 
+        // Properties that don't affect scheduling — generate once.
         var frequency = DetermineFrequency();
         var weekParity = frequency == CourseFrequency.Biweekly
             ? (_seederContext.NextBool() ? WeekParity.Odd : WeekParity.Even)
             : WeekParity.All;
-
         var status = DetermineStatus();
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-_seederContext.NextInt(1, 18)));
         var endDate = DetermineEndDate(status);
         var isTrial = _seederContext.NextBool(10);
 
-        return new Course
+        // Retry teacher + day + time until no teacher/room conflict is found.
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            Id = _seederContext.NextCourseId(),
-            TeacherId = teacherId,
-            CourseTypeId = courseType.Id,
-            RoomId = room?.Id,
-            DayOfWeek = dayOfWeek,
-            StartTime = startTime,
-            EndTime = endTime,
-            Frequency = frequency,
-            WeekParity = weekParity,
-            StartDate = startDate,
-            EndDate = endDate,
-            Status = status,
-            IsWorkshop = courseType.Type == CourseTypeCategory.Workshop,
-            IsTrial = isTrial,
-            Notes = isTrial ? "Trial course for new students" : null,
-            CreatedAt = startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
-            UpdatedAt = DateTime.UtcNow.AddDays(-_seederContext.NextInt(1, 30))
-        };
+            var teacherId = _seederContext.GetRandomItem(eligibleTeacherIds);
+            var dayOfWeek = (DayOfWeek)_seederContext.NextInt(1, 6);
+            var startHour = _seederContext.NextInt(9, 20);
+            var startTime = new TimeOnly(startHour, _seederContext.NextInt(0, 2) * 30);
+            var endTime = startTime.AddMinutes(courseType.DurationMinutes);
+
+            if (HasTeacherOrRoomConflict(teacherId, room?.Id, dayOfWeek, startTime, endTime, weekParity, existingCourses))
+                continue;
+
+            return new Course
+            {
+                Id = _seederContext.NextCourseId(),
+                TeacherId = teacherId,
+                CourseTypeId = courseType.Id,
+                RoomId = room?.Id,
+                DayOfWeek = dayOfWeek,
+                StartTime = startTime,
+                EndTime = endTime,
+                Frequency = frequency,
+                WeekParity = weekParity,
+                StartDate = startDate,
+                EndDate = endDate,
+                Status = status,
+                IsWorkshop = courseType.Type == CourseTypeCategory.Workshop,
+                IsTrial = isTrial,
+                Notes = isTrial ? "Trial course for new students" : null,
+                CreatedAt = startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
+                UpdatedAt = DateTime.UtcNow.AddDays(-_seederContext.NextInt(1, 30))
+            };
+        }
+
+        return null;
     }
 
     private CourseFrequency DetermineFrequency()
@@ -302,11 +315,13 @@ public class CourseDataGenerator
         {
             var coursesToEnroll = _seederContext.NextInt(1, 4);
             var enrolledCourseIds = new HashSet<Guid>();
+            var enrolledCourses = new List<Course>();
 
             for (int i = 0; i < coursesToEnroll; i++)
             {
                 var availableCourses = activeCourses
                     .Where(c => !enrolledCourseIds.Contains(c.Id))
+                    .Where(c => !HasStudentScheduleConflict(c, enrolledCourses))
                     .ToList();
 
                 if (availableCourses.Count == 0) break;
@@ -322,6 +337,7 @@ public class CourseDataGenerator
                 }
 
                 enrolledCourseIds.Add(course.Id);
+                enrolledCourses.Add(course);
 
                 var enrollment = CreateEnrollment(student, course, enrolledCourseIds.Count);
                 enrollments.Add(enrollment);
@@ -370,5 +386,49 @@ public class CourseDataGenerator
             return (DiscountType.Family, 10m);
 
         return (DiscountType.None, 0m);
+    }
+
+    // ── Conflict detection (mirrors ScheduleConflictService + TimeSlot logic) ──
+
+    private static bool HasTeacherOrRoomConflict(
+        Guid teacherId, int? roomId, DayOfWeek dayOfWeek,
+        TimeOnly startTime, TimeOnly endTime, WeekParity weekParity,
+        List<Course> existingCourses)
+    {
+        foreach (var existing in existingCourses)
+        {
+            if (!HasTimeSlotOverlap(dayOfWeek, startTime, endTime, weekParity,
+                    existing.DayOfWeek, existing.StartTime, existing.EndTime, existing.WeekParity))
+                continue;
+
+            if (teacherId == existing.TeacherId)
+                return true;
+
+            if (roomId.HasValue && roomId == existing.RoomId)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasStudentScheduleConflict(Course target, List<Course> studentCourses) =>
+        studentCourses.Any(existing =>
+            HasTimeSlotOverlap(
+                target.DayOfWeek, target.StartTime, target.EndTime, target.WeekParity,
+                existing.DayOfWeek, existing.StartTime, existing.EndTime, existing.WeekParity));
+
+    private static bool HasTimeSlotOverlap(
+        DayOfWeek dayA, TimeOnly startA, TimeOnly endA, WeekParity parityA,
+        DayOfWeek dayB, TimeOnly startB, TimeOnly endB, WeekParity parityB)
+    {
+        if (dayA != dayB) return false;
+        if (startA >= endB || endA <= startB) return false;
+        return HasWeekParityConflict(parityA, parityB);
+    }
+
+    private static bool HasWeekParityConflict(WeekParity a, WeekParity b)
+    {
+        if (a == WeekParity.All || b == WeekParity.All) return true;
+        return a == b;
     }
 }
