@@ -3,7 +3,7 @@ import { courseTypesApi, teachersApi } from '@/services/api'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
-import { getDayName } from '@/lib/utils'
+import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import { RecurrenceType } from '../types'
 
 export const Step2Summary = () => {
@@ -24,7 +24,7 @@ export const Step2Summary = () => {
   const selectedTeacher = teachers.find((t) => t.id === step1.teacherId)
 
   const dayOfWeek = step1.startDate
-    ? getDayName(new Date(step1.startDate).getDay())
+    ? getDayNameFromNumber(new Date(step1.startDate).getDay())
     : null
 
   const getRecurrenceLabel = (recurrence: RecurrenceType) => {

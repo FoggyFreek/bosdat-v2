@@ -13,7 +13,8 @@ import {
 import { enrollmentsApi, coursesApi } from '@/services/api'
 import type { StudentEnrollment } from '@/features/students/types'
 import type { CourseList } from '@/features/courses/types'
-import { formatTime, getDayName, cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatTime } from '@/lib/datetime-helpers'
 
 interface EnrollmentsSectionProps {
   studentId: string
@@ -99,7 +100,7 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
                   ) : (
                     availableCourses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
-                        {course.instrumentName} - {course.teacherName} ({getDayName(course.dayOfWeek).substring(0, 3)} {formatTime(course.startTime)})
+                        {course.instrumentName} - {course.teacherName} ({course.dayOfWeek} {formatTime(course.startTime)})
                       </SelectItem>
                     ))
                   )}
@@ -125,7 +126,7 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
                     <div>
                       <p className="font-medium">{enrollment.instrumentName}</p>
                       <p className="text-sm text-muted-foreground">
-                        {enrollment.teacherName} - {getDayName(enrollment.dayOfWeek)} {formatTime(enrollment.startTime)}
+                        {enrollment.teacherName} - {enrollment.dayOfWeek} {formatTime(enrollment.startTime)}
                       </p>
                       {enrollment.roomName && (
                         <p className="text-xs text-muted-foreground">{enrollment.roomName}</p>

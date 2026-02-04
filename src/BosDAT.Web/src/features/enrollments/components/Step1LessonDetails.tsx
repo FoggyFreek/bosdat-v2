@@ -9,21 +9,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { courseTypesApi, teachersApi } from '@/services/api'
+import { teachersApi } from '@/services/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
-import { getDayName } from '@/lib/utils'
+import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { RecurrenceType } from '../types'
 
-export const Step1LessonDetails = () => {
+interface Step1LessonDetailsProps {
+  courseTypes: CourseType[]
+}
+
+export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => {
   const { formData, updateStep1 } = useEnrollmentForm()
   const { step1 } = formData
-
-  const { data: courseTypes = [] } = useQuery<CourseType[]>({
-    queryKey: ['courseTypes', 'active'],
-    queryFn: () => courseTypesApi.getAll({ activeOnly: true }),
-  })
 
   // Fetch teachers filtered by courseTypeId - only when a courseType is selected
   const { data: filteredTeachers = [] } = useQuery<TeacherList[]>({
@@ -45,7 +44,7 @@ export const Step1LessonDetails = () => {
   const dayOfWeek = useMemo(() => {
     if (!step1.startDate) return null
     const date = new Date(step1.startDate)
-    return getDayName(date.getDay())
+    return getDayNameFromNumber(date.getDay())
   }, [step1.startDate])
 
   // Auto-set end date when Trail recurrence is selected

@@ -85,7 +85,7 @@ const EnrollmentStepperContent = () => {
     setCurrentStep(step)
   }
 
-  const renderStep1 = () => <Step1LessonDetails />
+  const renderStep1 = () => <Step1LessonDetails courseTypes={courseTypes} />
 
   const renderStep2 = () => <Step2StudentSelection />
 

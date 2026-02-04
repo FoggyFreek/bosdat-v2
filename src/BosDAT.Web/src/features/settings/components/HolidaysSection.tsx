@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { holidaysApi } from '@/services/api'
 import { useFormDirty } from '@/context/FormDirtyContext'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/datetime-helpers'
 import type { Holiday } from '@/features/schedule/types'
 
 const DISPLAY_NAME = 'HolidaysSection'

@@ -18,7 +18,7 @@ describe('useCalendarEvents', () => {
     instrumentName: 'Piano',
     roomId: 1,
     roomName: 'Room 1',
-    dayOfWeek: 3, // Wednesday
+    dayOfWeek: 'Wednesday',
     startTime: '10:00',
     endTime: '11:00',
     frequency: 'Weekly',
@@ -36,7 +36,7 @@ describe('useCalendarEvents', () => {
 
   describe('Course transformation', () => {
     it('should transform courses to events with calculated date and local time', () => {
-      const courses = [createMockCourse({ dayOfWeek: 3, startTime: '10:00', endTime: '11:00' })] // Wednesday
+      const courses = [createMockCourse({ dayOfWeek: 'Wednesday', startTime: '10:00', endTime: '11:00' })]
 
       const { result } = renderHook(() =>
         useCalendarEvents({ weekStart: weekStartEven, courses })
@@ -57,9 +57,9 @@ describe('useCalendarEvents', () => {
 
     it('should calculate correct dates for different days of week', () => {
       const courses = [
-        createMockCourse({ id: 'course-1', dayOfWeek: 1, startTime: '09:00' }), // Monday
-        createMockCourse({ id: 'course-2', dayOfWeek: 5, startTime: '11:00' }), // Friday
-        createMockCourse({ id: 'course-3', dayOfWeek: 0, startTime: '13:00' }), // Sunday
+        createMockCourse({ id: 'course-1', dayOfWeek: 'Monday', startTime: '09:00' }),
+        createMockCourse({ id: 'course-2', dayOfWeek: 'Friday', startTime: '11:00' }),
+        createMockCourse({ id: 'course-3', dayOfWeek: 'Sunday', startTime: '13:00' }),
       ]
 
       const { result } = renderHook(() =>
@@ -286,9 +286,9 @@ describe('useCalendarEvents', () => {
   describe('Sorting', () => {
     it('should sort all events by startDateTime', () => {
       const courses = [
-        createMockCourse({ id: 'c1', dayOfWeek: 3, startTime: '16:00' }), // Wednesday
-        createMockCourse({ id: 'c2', dayOfWeek: 1, startTime: '09:00' }), // Monday
-        createMockCourse({ id: 'c3', dayOfWeek: 2, startTime: '11:00' }), // Tuesday
+        createMockCourse({ id: 'c1', dayOfWeek: 'Wednesday', startTime: '16:00' }),
+        createMockCourse({ id: 'c2', dayOfWeek: 'Monday', startTime: '09:00' }),
+        createMockCourse({ id: 'c3', dayOfWeek: 'Tuesday', startTime: '11:00' }),
       ]
 
       const { result } = renderHook(() =>
@@ -441,7 +441,7 @@ describe('useCalendarEvents', () => {
 
   describe('Timezone handling', () => {
     it('should handle course events at 09:00 local time', () => {
-      const courses = [createMockCourse({ dayOfWeek: 1, startTime: '09:00', endTime: '10:00' })] // Monday
+      const courses = [createMockCourse({ dayOfWeek: 'Monday', startTime: '09:00', endTime: '10:00' })]
 
       const { result } = renderHook(() =>
         useCalendarEvents({ weekStart: weekStartEven, courses })

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { Layout } from './components/Layout'
 import { LoadingFallback } from './components/LoadingFallback'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
 
@@ -44,8 +45,9 @@ function App() {
         path="/*"
         element={
           <ProtectedRoute>
-            <Layout>
-              <Routes>
+            <ErrorBoundary>
+              <Layout>
+                <Routes>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/students" element={<Suspense fallback={<LoadingFallback />}><StudentsPage /></Suspense>} />
                 <Route path="/students/new" element={<Suspense fallback={<LoadingFallback />}><StudentFormPage /></Suspense>} />
@@ -60,7 +62,8 @@ function App() {
                 <Route path="/settings" element={<Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense>} />
                 <Route path="/enrollments/new" element={<Suspense fallback={<LoadingFallback />}><EnrollmentPage /></Suspense>} />
               </Routes>
-            </Layout>
+              </Layout>
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />

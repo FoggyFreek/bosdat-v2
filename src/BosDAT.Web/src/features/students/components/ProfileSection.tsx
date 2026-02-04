@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, Calendar, User, CreditCard, CheckCircle, XCircle }
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { studentsApi } from '@/services/api'
 import type { Student, RegistrationFeeStatus } from '@/features/students/types'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/datetime-helpers'
 
 interface ProfileSectionProps {
   readonly studentId: string

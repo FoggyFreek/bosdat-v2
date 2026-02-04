@@ -94,7 +94,7 @@ describe('CorrectionsSection', () => {
     instrumentName: 'Piano',
     courseTypeName: 'Piano Lesson',
     teacherName: 'Jane Teacher',
-    dayOfWeek: 1,
+    dayOfWeek: 'Monday',
     startTime: '10:00',
     endTime: '10:30',
     enrolledAt: '2024-01-01T00:00:00Z',

@@ -40,7 +40,7 @@ export interface CourseList {
   courseTypeName: string
   instrumentName: string
   roomName?: string
-  dayOfWeek: number
+  dayOfWeek: DayOfWeek
   startTime: string
   endTime: string
   frequency: CourseFrequency

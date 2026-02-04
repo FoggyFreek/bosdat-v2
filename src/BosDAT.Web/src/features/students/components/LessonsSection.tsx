@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { lessonsApi } from '@/services/api'
 import type { Lesson } from '@/features/lessons/types'
-import { formatDate, formatTime, cn } from '@/lib/utils'
+import {  cn } from '@/lib/utils'
+import { formatDate, formatTime } from '@/lib/datetime-helpers'
 
 interface LessonsSectionProps {
   studentId: string

@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/datetime-helpers'
 import type { StudentLedgerEntry } from '@/features/students/types'
 import { EntryTypeBadge, StatusBadge, EntryAmount } from './EntryBadges'
 

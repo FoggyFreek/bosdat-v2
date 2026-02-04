@@ -31,17 +31,3 @@ export function validateEmail(email: string): boolean {
   const domainParts = domain.split('.')
   return domainParts.every(part => part.length > 0 && part.length <= 63)
 }
-
-// ============================================================================
-// Date/Time Utilities (Re-exported from datetime-helpers)
-// ============================================================================
-
-/**
- * @deprecated Import directly from '@/lib/datetime-helpers' instead.
- * These exports are maintained for backward compatibility only.
- */
-export {
-  formatDate,
-  formatTime,
-  getDayNameFromNumber as getDayName,
-} from './datetime-helpers'

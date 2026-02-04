@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Course, CourseFrequency } from '@/features/courses/types'
 import type { CalendarEvent, EventType, EventFrequency } from '@/components/calendar/types'
-import { dayNameToNumber, DayOfWeek, getDayNameFromNumber, matchesWeekParity, type WeekParity } from '@/lib/datetime-helpers'
+import { dayNameToNumber, matchesWeekParity, type WeekParity } from '@/lib/datetime-helpers'
 
 interface UseCalendarEventsProps {
   weekStart: Date

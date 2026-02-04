@@ -85,10 +85,10 @@ const mockTeachers: TeacherList[] = [
   },
 ]
 
-const renderWithProvider = (ui: React.ReactElement) => {
+const renderStep1 = (props: Partial<{ courseTypes: typeof mockCourseTypes }> = {}) => {
   return render(
     <EnrollmentFormProvider>
-      {ui}
+      <Step1LessonDetails courseTypes={props.courseTypes ?? mockCourseTypes} />
     </EnrollmentFormProvider>
   )
 }
@@ -111,7 +111,7 @@ describe('Step1LessonDetails', () => {
 
   describe('AC1: CourseType dropdown', () => {
     it('renders CourseType dropdown', async () => {
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByLabelText(/course type/i)).toBeInTheDocument()
@@ -120,7 +120,7 @@ describe('Step1LessonDetails', () => {
 
     it('populates CourseType dropdown with active course types', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByLabelText(/course type/i)).toBeInTheDocument()
@@ -139,7 +139,7 @@ describe('Step1LessonDetails', () => {
 
   describe('AC2: Teacher dropdown filtered by CourseType', () => {
     it('renders Teacher dropdown', async () => {
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByLabelText(/teacher/i)).toBeInTheDocument()
@@ -147,7 +147,7 @@ describe('Step1LessonDetails', () => {
     })
 
     it('disables Teacher dropdown when no CourseType selected', async () => {
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
@@ -157,7 +157,7 @@ describe('Step1LessonDetails', () => {
 
     it('filters teachers by selected CourseType', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -185,7 +185,7 @@ describe('Step1LessonDetails', () => {
 
   describe('AC3: Day of week display', () => {
     it('renders Start Date field', async () => {
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByLabelText(/start date/i)).toBeInTheDocument()
@@ -194,7 +194,7 @@ describe('Step1LessonDetails', () => {
 
     it('shows day of week when start date is selected', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByLabelText(/start date/i)).toBeInTheDocument()
@@ -213,7 +213,7 @@ describe('Step1LessonDetails', () => {
   describe('AC4/AC5: Trail radio button visibility', () => {
     it('shows Trail radio button for Individual course type', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -230,7 +230,7 @@ describe('Step1LessonDetails', () => {
 
     it('shows Trail radio button for Group course type', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -247,7 +247,7 @@ describe('Step1LessonDetails', () => {
 
     it('hides Trail radio button for Workshop course type', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -265,7 +265,7 @@ describe('Step1LessonDetails', () => {
 
   describe('AC6: Recurrence options', () => {
     it('shows recurrence options (weekly/bi-weekly)', async () => {
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('radio', { name: /^weekly$/i })).toBeInTheDocument()
@@ -274,7 +274,7 @@ describe('Step1LessonDetails', () => {
     })
 
     it('defaults to Weekly recurrence', async () => {
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         const weeklyRadio = screen.getByRole('radio', { name: /^weekly$/i })
@@ -284,7 +284,7 @@ describe('Step1LessonDetails', () => {
 
     it('allows switching to Bi-weekly recurrence', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('radio', { name: /bi-weekly/i })).toBeInTheDocument()
@@ -302,7 +302,7 @@ describe('Step1LessonDetails', () => {
   describe('AC7: End date required for Workshop', () => {
     it('requires end date for Workshop', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -322,7 +322,7 @@ describe('Step1LessonDetails', () => {
   describe('AC8: End date optional for Individual/Group', () => {
     it('makes end date optional for Individual', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -340,7 +340,7 @@ describe('Step1LessonDetails', () => {
 
     it('makes end date optional for Group', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -360,7 +360,7 @@ describe('Step1LessonDetails', () => {
   describe('Trail recurrence behavior', () => {
     it('sets end date equal to start date when Trail is selected', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -387,7 +387,7 @@ describe('Step1LessonDetails', () => {
 
     it('disables end date when Trail is selected', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
@@ -411,7 +411,7 @@ describe('Step1LessonDetails', () => {
   describe('AC9: Data persistence', () => {
     it('maintains form data when values are changed', async () => {
       const user = userEvent.setup()
-      renderWithProvider(<Step1LessonDetails />)
+      renderStep1()
 
       await waitFor(() => {
         expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()

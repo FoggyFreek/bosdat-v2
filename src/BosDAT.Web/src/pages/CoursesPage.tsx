@@ -7,13 +7,19 @@ import { Badge } from '@/components/ui/badge'
 import { coursesApi } from '@/services/api'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { CourseList } from '@/features/courses/types'
-import { cn, getDayName } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 export function CoursesPage() {
-  const { data: courses = [], isLoading } = useQuery<CourseList[]>({
+  const { data, isLoading, isFetching } = useQuery<CourseList[]>({
     queryKey: ['courses'],
     queryFn: () => coursesApi.getSummary(),
   })
+
+  // Ensure courses is always an array (API may return null/object)
+  const courses = Array.isArray(data) ? data : []
+
+  // Show loading state on initial load OR when fetching with no data
+  const showLoading = isLoading || (isFetching && courses.length === 0)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -41,13 +47,16 @@ export function CoursesPage() {
     )
   }
 
-  // Group courses by day
+  // Group courses by day name
+  // Note: dayOfWeek can be either a number (from API) or a string (DayOfWeek type)
   const coursesByDay = courses.reduce((acc, course) => {
-    const day = course.dayOfWeek
-    if (!acc[day]) {
-      acc[day] = []
+    const dayName = typeof course.dayOfWeek === 'number'
+      ? getDayNameFromNumber(course.dayOfWeek)
+      : course.dayOfWeek
+    if (!acc[dayName]) {
+      acc[dayName] = []
     }
-    acc[day].push(course)
+    acc[dayName].push(course)
     return acc
   }, {} as Record<string, CourseList[]>)
 
@@ -66,13 +75,13 @@ export function CoursesPage() {
         </Button>
       </div>
 
-      {isLoading && (
+      {showLoading && (
         <div className="flex items-center justify-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       )}
 
-      {!isLoading && courses.length === 0 && (
+      {!showLoading && courses.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">No courses found</p>
@@ -80,7 +89,7 @@ export function CoursesPage() {
         </Card>
       )}
 
-      {!isLoading && courses.length > 0 && (
+      {!showLoading && courses.length > 0 && (
         <div className="grid gap-6">
           {[1, 2, 3, 4, 5, 6, 0].map((day: number) => {
             const dayCourses = coursesByDay[getDayNameFromNumber(day)]  || []
@@ -89,7 +98,7 @@ export function CoursesPage() {
             return (
               <Card key={day}>
                 <CardHeader>
-                  <CardTitle>{getDayName(day)}</CardTitle>
+                  <CardTitle>{getDayNameFromNumber(day)}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="divide-y">

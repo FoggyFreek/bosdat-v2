@@ -3,7 +3,8 @@ import { Wallet, TrendingUp, TrendingDown, CreditCard, FileText } from 'lucide-r
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { studentLedgerApi } from '@/services/api'
 import type { StudentLedgerSummary, StudentLedgerEntry } from '@/features/students/types'
-import { formatDate, cn } from '@/lib/utils'
+import { formatDate } from '@/lib/datetime-helpers'
+import { cn } from '@/lib/utils'
 
 interface BalanceSectionProps {
   studentId: string

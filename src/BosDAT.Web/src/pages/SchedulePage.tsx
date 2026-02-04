@@ -87,7 +87,7 @@ export const SchedulePage = () => {
   const [filterRoom, setFilterRoom] = useState<string>('all')
 
   // Queries
-  const { data: calendarData, isLoading, refetch } = useQuery<WeekCalendar>({
+  const { data: calendarData, isLoading, isFetching, refetch } = useQuery<WeekCalendar>({
     queryKey: ['calendar', formatDateForApi(currentDate), filterTeacher, filterRoom],
     queryFn: () =>
       calendarApi.getWeek({
@@ -96,6 +96,9 @@ export const SchedulePage = () => {
         roomId: filterRoom !== 'all' ? Number.parseInt(filterRoom) : undefined,
       }),
   })
+
+  // Show loading state on initial load OR when fetching with no data
+  const showLoading = isLoading || (isFetching && !calendarData)
 
   const { data: teachers = [] } = useQuery<TeacherList[]>({
     queryKey: ['teachers', 'active'],
@@ -191,13 +194,13 @@ export const SchedulePage = () => {
         </div>
       </div>
 
-      {isLoading && (
+      {showLoading && (
         <div className="flex items-center justify-center py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       )}
 
-      {!isLoading && (
+      {!showLoading && (
         <CalendarComponent
           title={`Week ${Math.ceil((currentDate.getDate() - currentDate.getDay() + 1) / 7)}`}
           events={events}

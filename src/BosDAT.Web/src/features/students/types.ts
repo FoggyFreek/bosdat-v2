@@ -122,6 +122,7 @@ export interface DuplicateCheckResult {
 
 // Student Enrollment view types
 import type { EnrollmentStatus } from '@/features/enrollments/types'
+import { DayOfWeek } from '@/lib/datetime-helpers'
 
 export interface StudentEnrollment {
   id: string
@@ -130,7 +131,7 @@ export interface StudentEnrollment {
   courseTypeName: string
   teacherName: string
   roomName?: string
-  dayOfWeek: number
+  dayOfWeek: DayOfWeek
   startTime: string
   endTime: string
   enrolledAt: string
