@@ -75,7 +75,7 @@ describe('calendar-utils', () => {
     })
 
     it('should pad single-digit months and days', () => {
-      const date = new Date(2024, 2, 5) // March 5, 2024
+      const date = new Date(Date.UTC(2024, 2, 5)) // March 5, 2024 UTC
       const formatted = formatDateForApi(date)
 
       expect(formatted).toBe('2024-03-05')

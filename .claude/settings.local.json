@@ -26,7 +26,11 @@
       "Bash(npm run test:*)",
       "Bash(ls:*)",
       "Bash(npm run lint:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npx vite build)",
+      "Bash(npx eslint .)",
+      "Bash(npx vitest run)",
+      "Bash(npx vitest:*)"
     ]
   }
 }

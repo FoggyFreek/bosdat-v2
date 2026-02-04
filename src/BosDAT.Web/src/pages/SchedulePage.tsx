@@ -16,7 +16,7 @@ import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
-import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime,getHoursFromTimeString, getMinutesFromTimeString } from '@/lib/iso-helpers'
+import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/iso-helpers'
 import { DayAvailability } from '@/components/calendar/types'
 
 // Convert CalendarLesson to Event format for CalendarComponent

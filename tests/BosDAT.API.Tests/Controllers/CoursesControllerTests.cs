@@ -114,7 +114,7 @@ public class CoursesControllerTests
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(null, null, null, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -137,7 +137,7 @@ public class CoursesControllerTests
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(CourseStatus.Active, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(CourseStatus.Active, null, null, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -162,7 +162,7 @@ public class CoursesControllerTests
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(null, teacher1.Id, null, CancellationToken.None);
+        var result = await _controller.GetAll(null, teacher1.Id, null, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -185,7 +185,7 @@ public class CoursesControllerTests
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(null, null, DayOfWeek.Monday, CancellationToken.None);
+        var result = await _controller.GetAll(null, null, DayOfWeek.Monday, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -210,7 +210,7 @@ public class CoursesControllerTests
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(CourseStatus.Active, teacher.Id, DayOfWeek.Monday, CancellationToken.None);
+        var result = await _controller.GetAll(CourseStatus.Active, teacher.Id, DayOfWeek.Monday, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);

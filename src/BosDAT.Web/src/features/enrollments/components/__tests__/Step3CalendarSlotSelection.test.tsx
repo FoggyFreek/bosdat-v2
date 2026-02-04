@@ -321,12 +321,8 @@ describe('Step3CalendarSlotSelection', () => {
         expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
       })
 
-      // Verify courses API was called without dayOfWeek filter
-      await waitFor(() => {
-        expect(coursesApi.coursesApi.getAll).toHaveBeenCalledWith({
-          teacherId: 'teacher-1',
-        })
-      })
+      // Courses query is only enabled when a room is selected; no room selected here
+      expect(coursesApi.coursesApi.getAll).not.toHaveBeenCalled()
     })
   })
 

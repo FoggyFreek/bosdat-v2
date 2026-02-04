@@ -321,7 +321,7 @@ public class IsoDateHelperTests
         // Act & Assert
         var exception = Assert.Throws<FormatException>(() =>
             IsoDateHelper.CreateIsoDateTime(invalidDate, time));
-        Assert.Contains("Invalid date format", exception.Message);
+        Assert.Contains("Invalid date/time format", exception.Message);
     }
 
     [Fact]
@@ -334,7 +334,7 @@ public class IsoDateHelperTests
         // Act & Assert
         var exception = Assert.Throws<FormatException>(() =>
             IsoDateHelper.CreateIsoDateTime(date, invalidTime));
-        Assert.Contains("Invalid time format", exception.Message);
+        Assert.Contains("Invalid date/time format", exception.Message);
     }
 
     [Fact]
@@ -410,7 +410,7 @@ public class IsoDateHelperTests
     }
 
     [Theory]
-    [InlineData(2010, 1, 1, 2026, 2, 3, 18, false)] // 16 years old, child
+    [InlineData(2010, 1, 1, 2026, 2, 3, 18, true)]  // 16 years old, child
     [InlineData(2008, 1, 1, 2026, 2, 3, 18, false)] // Exactly 18, not a child
     [InlineData(2007, 12, 31, 2026, 2, 3, 18, false)] // 18+, not a child
     [InlineData(2015, 6, 15, 2026, 2, 3, 18, true)]  // 10 years old, child

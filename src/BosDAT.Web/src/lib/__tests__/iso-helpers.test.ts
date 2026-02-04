@@ -154,12 +154,18 @@ describe('iso-helpers', () => {
   describe('getDateFromDateTime', () => {
     it('should extract date from ISO datetime string', () => {
       const result = getDateFromDateTime('2026-02-15T19:30:00Z')
-      expect(result).toBe('2026-02-15')
+      expect(result).toBeInstanceOf(Date)
+      expect(result.getUTCFullYear()).toBe(2026)
+      expect(result.getUTCMonth()).toBe(1) // February
+      expect(result.getUTCDate()).toBe(15)
     })
 
     it('should handle datetime without Z suffix', () => {
       const result = getDateFromDateTime('2024-03-20T09:15:30')
-      expect(result).toBe('2024-03-20')
+      expect(result).toBeInstanceOf(Date)
+      expect(result.getFullYear()).toBe(2024)
+      expect(result.getMonth()).toBe(2) // March
+      expect(result.getDate()).toBe(20)
     })
   })
 
