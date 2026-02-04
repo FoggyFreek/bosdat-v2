@@ -9,6 +9,7 @@ const createMockDate = (dateStr: string): Date => {
 }
 
 const createMockEvent = (overrides?: Partial<CalendarEvent>): CalendarEvent => ({
+  id: 'mock-event',
   startDateTime: '2024-01-15T09:00:00',
   endDateTime: '2024-01-15T10:00:00',
   title: 'Piano Lesson',

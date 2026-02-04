@@ -275,19 +275,9 @@ export const getWeekStart = (date: Date): Date => {
   const day = d.getDay();
   // Adjust to Monday: Sunday(0) moves back 6, others move back (day - 1)
   const diff = d.getDate() - (day === 0 ? 6 : day - 1);
-  
-  const monday = new Date(d.setDate(diff));
-  
-  return monday;
-
-  //.toISOString().split('T')[0]
-  //const result = new Date(date)
-  //const day = result.getDay()
-  // Sunday is 0, Monday is 1; ISO weeks start on Monday
-  //const diff = day === 0 ? -6 : 1 - day
-  //result.setDate(result.getDate() + diff)
-  //result.setHours(0, 0, 0, 0)
-  //return result
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 /**

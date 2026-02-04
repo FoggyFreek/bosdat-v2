@@ -97,7 +97,7 @@ describe('ConflictDialog', () => {
   describe('handles undefined conflicts gracefully', () => {
     it('should handle undefined conflicts array', () => {
       const onClose = vi.fn()
-      render(<ConflictDialog open={true} conflicts={undefined as any} onClose={onClose} />)
+      render(<ConflictDialog open={true} conflicts={undefined as unknown as ConflictingCourse[]} onClose={onClose} />)
 
       expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
       expect(screen.getByText('No conflicts to display.')).toBeInTheDocument()
@@ -105,7 +105,7 @@ describe('ConflictDialog', () => {
 
     it('should handle null conflicts array', () => {
       const onClose = vi.fn()
-      render(<ConflictDialog open={true} conflicts={null as any} onClose={onClose} />)
+      render(<ConflictDialog open={true} conflicts={null as unknown as ConflictingCourse[]} onClose={onClose} />)
 
       expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
       expect(screen.getByText('No conflicts to display.')).toBeInTheDocument()

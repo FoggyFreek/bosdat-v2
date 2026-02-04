@@ -78,21 +78,21 @@ export const calculateEventLayout = (events: CalendarEvent[]): Map<string, Event
     // Find the first available column
     // Avoid: 1) columns with overlapping active events, 2) columns already used in overlap group
     let column = 0;
-    while (true) {
+    while (column < sortedEvents.length) {
       const columnEvent = columnMap.get(column);
-      
+
       // Skip if column has an event that overlaps with current event
       if (columnEvent && doEventsOverlap(event, columnEvent)) {
         column++;
         continue;
       }
-      
+
       // Skip if this column is already used by another event in the overlap group
       if (groupColumnsUsed.has(column)) {
         column++;
         continue;
       }
-      
+
       break;
     }
 

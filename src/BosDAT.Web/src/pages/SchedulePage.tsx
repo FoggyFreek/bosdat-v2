@@ -12,36 +12,15 @@ import {
 } from '@/components/ui/select'
 import { CalendarComponent } from '@/components'
 import type { CalendarEvent, ColorScheme } from '@/components'
+import type { DayAvailability } from '@/components/calendar/types'
 import { calendarApi, teachersApi, roomsApi } from '@/services/api'
 import type { CalendarLesson, WeekCalendar } from '@/features/schedule/types'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/iso-helpers'
-import { DayAvailability } from '@/components/calendar/types'
 
-// Convert CalendarLesson to Event format for CalendarComponent
-const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
-  const attendees = []
-  if (lesson.studentName) {
-    attendees.push(lesson.studentName)
-  }
-  if (lesson.teacherName) {
-    attendees.push(lesson.teacherName)
-  }
+// --- Constants ---
 
-  return {
-    id: lesson.id,
-    startDateTime: combineDateAndTime(new Date(lesson.date), lesson.startTime),
-    endDateTime: combineDateAndTime(new Date(lesson.date), lesson.endTime),
-    title: lesson.instrumentName || lesson.title,
-    frequency: 'weekly',
-    eventType: lesson.status,
-    attendees,
-    room: lesson.roomName,
-  }
-}
-
-// Color scheme based on lesson status
 const statusColorScheme: ColorScheme = {
   Scheduled: {
     background: '#dbeafe',
@@ -65,18 +44,44 @@ const statusColorScheme: ColorScheme = {
   },
 }
 
-function formatDateDisplay(date: Date): string {
-  return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
+// --- Helpers ---
+
+const convertLessonToEvent = (lesson: CalendarLesson): CalendarEvent => {
+  const attendees = []
+  if (lesson.studentName) attendees.push(lesson.studentName)
+  if (lesson.teacherName) attendees.push(lesson.teacherName)
+
+  return {
+    id: lesson.id,
+    startDateTime: combineDateAndTime(new Date(lesson.date), lesson.startTime),
+    endDateTime: combineDateAndTime(new Date(lesson.date), lesson.endTime),
+    title: lesson.instrumentName || lesson.title,
+    frequency: 'weekly',
+    eventType: lesson.status,
+    attendees,
+    room: lesson.roomName,
+  }
 }
 
-export function SchedulePage() {
+const formatDateDisplay = (date: Date): string =>
+  date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
+
+const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailability[] =>
+  availability.map((item) => ({
+    dayOfWeek: item.dayOfWeek,
+    fromTime: getHoursFromTimeString(item.fromTime),
+    untilTime: getHoursFromTimeString(item.untilTime),
+  }))
+
+// --- Component ---
+
+export const SchedulePage = () => {
+  // State
   const [currentDate, setCurrentDate] = useState(() => getWeekStart(new Date()))
   const [filterTeacher, setFilterTeacher] = useState<string>('all')
   const [filterRoom, setFilterRoom] = useState<string>('all')
 
-  const weekEnd = new Date(currentDate)
-  weekEnd.setDate(weekEnd.getDate() + 6)
-
+  // Queries
   const { data: calendarData, isLoading, refetch } = useQuery<WeekCalendar>({
     queryKey: ['calendar', formatDateForApi(currentDate), filterTeacher, filterRoom],
     queryFn: () =>
@@ -99,18 +104,30 @@ export function SchedulePage() {
 
   const { data: teacherAvailability = [] } = useQuery<TeacherAvailability[]>({
     queryKey: ['teacher-availability', filterTeacher],
-    queryFn: () => 
+    queryFn: () =>
       filterTeacher === 'all' ? Promise.resolve([]) : teachersApi.getAvailability(filterTeacher),
   })
 
-  const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailability[] => {
-    return availability.map((item) => ({
-      dayOfWeek: item.dayOfWeek,
-      fromTime: getHoursFromTimeString(item.fromTime),
-      untilTime: getHoursFromTimeString(item.untilTime),
-    }))
-  }
+  // Derived state
+  const weekEnd = useMemo(() => {
+    const end = new Date(currentDate)
+    end.setDate(end.getDate() + 6)
+    return end
+  }, [currentDate])
 
+  const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate])
+
+  const events = useMemo(
+    () => (calendarData?.lessons ?? []).map(convertLessonToEvent),
+    [calendarData?.lessons]
+  )
+
+  const availability = useMemo(
+    () => mapToDayAvailability(teacherAvailability),
+    [teacherAvailability]
+  )
+
+  // Handlers
   const goToPreviousWeek = () => {
     const newDate = new Date(currentDate)
     newDate.setDate(newDate.getDate() - 7)
@@ -122,15 +139,6 @@ export function SchedulePage() {
     newDate.setDate(newDate.getDate() + 7)
     setCurrentDate(newDate)
   }
-
-  // Generate the 7 days of the week
-  const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate])
-
-  // Convert lessons to events
-  const events = useMemo(
-    () => (calendarData?.lessons || []).map(convertLessonToEvent),
-    [calendarData?.lessons]
-  )
 
   return (
     <div className="space-y-6">
@@ -177,19 +185,21 @@ export function SchedulePage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading && (
         <div className="flex items-center justify-center py-16">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
-      ) : (
+      )}
+
+      {!isLoading && (
         <CalendarComponent
           title={`Week ${Math.ceil((currentDate.getDate() - currentDate.getDay() + 1) / 7)}`}
           events={events}
           dates={weekDays}
           colorScheme={statusColorScheme}
           onNavigatePrevious={goToPreviousWeek}
-          availability={mapToDayAvailability(teacherAvailability)}
           onNavigateNext={goToNextWeek}
+          availability={availability}
           dayStartTime={8}
           dayEndTime={21}
           hourHeight={100}

@@ -6,6 +6,7 @@ import { userEvent } from '@testing-library/user-event';
 
 describe('EventItem', () => {
   const defaultEvent: CalendarEvent = {
+    id: 'test-event',
     startDateTime: '2024-01-15T09:00:00',
     endDateTime: '2024-01-15T10:00:00',
     title: 'Test Event',

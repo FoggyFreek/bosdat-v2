@@ -40,6 +40,7 @@ export const useCalendarEvents = ({
       }
 
       events.push({
+        id: lesson.id,
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
         title: lesson.title,
@@ -76,6 +77,7 @@ export const useCalendarEvents = ({
         const frequency: EventFrequency = course.frequency === 'Biweekly' ? 'bi-weekly' : 'weekly'
 
         events.push({
+          id: course.id,
           startDateTime: startDateTime.toISOString(),
           endDateTime: endDateTime.toISOString(),
           title: `${course.courseTypeName} - ${course.teacherName}`,
@@ -107,6 +109,7 @@ export const useCalendarEvents = ({
         dayEnd.setHours(23, 59, 59, 999)
 
         events.push({
+          id: `holiday-${holiday.id}-${d.toISOString().split('T')[0]}`,
           startDateTime: dayStart.toISOString(),
           endDateTime: dayEnd.toISOString(),
           title: holiday.name,

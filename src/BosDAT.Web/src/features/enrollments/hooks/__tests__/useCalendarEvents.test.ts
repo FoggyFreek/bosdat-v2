@@ -528,7 +528,7 @@ describe('useCalendarEvents', () => {
   describe('handles undefined arrays gracefully', () => {
     it('should handle undefined lessons array', () => {
       const { result } = renderHook(() =>
-        useCalendarEvents({ weekStart, lessons: undefined as any, courses: [], holidays: [], isTrial: false })
+        useCalendarEvents({ weekStart, lessons: undefined as unknown as CalendarLesson[], courses: [], holidays: [], isTrial: false })
       )
 
       expect(result.current).toEqual([])
@@ -536,7 +536,7 @@ describe('useCalendarEvents', () => {
 
     it('should handle undefined courses array', () => {
       const { result } = renderHook(() =>
-        useCalendarEvents({ weekStart, lessons: [], courses: undefined as any, holidays: [], isTrial: false })
+        useCalendarEvents({ weekStart, lessons: [], courses: undefined as unknown as Course[], holidays: [], isTrial: false })
       )
 
       expect(result.current).toEqual([])
@@ -544,7 +544,7 @@ describe('useCalendarEvents', () => {
 
     it('should handle undefined holidays array', () => {
       const { result } = renderHook(() =>
-        useCalendarEvents({ weekStart, lessons: [], courses: [], holidays: undefined as any, isTrial: false })
+        useCalendarEvents({ weekStart, lessons: [], courses: [], holidays: undefined as unknown as Holiday[], isTrial: false })
       )
 
       expect(result.current).toEqual([])
@@ -554,9 +554,9 @@ describe('useCalendarEvents', () => {
       const { result } = renderHook(() =>
         useCalendarEvents({
           weekStart,
-          lessons: undefined as any,
-          courses: undefined as any,
-          holidays: undefined as any,
+          lessons: undefined as unknown as CalendarLesson[],
+          courses: undefined as unknown as Course[],
+          holidays: undefined as unknown as Holiday[],
           isTrial: false,
         })
       )
@@ -565,7 +565,7 @@ describe('useCalendarEvents', () => {
     })
 
     it('should handle course with undefined enrollments', () => {
-      const courseWithoutEnrollments = createMockCourse({ enrollments: undefined as any })
+      const courseWithoutEnrollments = createMockCourse({ enrollments: undefined })
 
       const { result } = renderHook(() =>
         useCalendarEvents({ weekStart, lessons: [], courses: [courseWithoutEnrollments], holidays: [], isTrial: false })
@@ -576,7 +576,7 @@ describe('useCalendarEvents', () => {
     })
 
     it('should handle null enrollments in course', () => {
-      const courseWithNullEnrollments = createMockCourse({ enrollments: null as any })
+      const courseWithNullEnrollments = createMockCourse({ enrollments: null as unknown as Course['enrollments'] })
 
       const { result } = renderHook(() =>
         useCalendarEvents({ weekStart, lessons: [], courses: [courseWithNullEnrollments], holidays: [], isTrial: false })
@@ -591,7 +591,7 @@ describe('useCalendarEvents', () => {
     it('should skip lessons with null startTime', () => {
       const lessons = [
         createMockLesson({ id: 'valid', startTime: '10:00' }),
-        createMockLesson({ id: 'invalid', startTime: null as any }),
+        createMockLesson({ id: 'invalid', startTime: null as unknown as string }),
       ]
 
       const { result } = renderHook(() =>
@@ -606,7 +606,7 @@ describe('useCalendarEvents', () => {
     it('should skip lessons with undefined startTime', () => {
       const lessons = [
         createMockLesson({ id: 'valid', startTime: '10:00' }),
-        createMockLesson({ id: 'invalid', startTime: undefined as any }),
+        createMockLesson({ id: 'invalid', startTime: undefined }),
       ]
 
       const { result } = renderHook(() =>
@@ -645,7 +645,7 @@ describe('useCalendarEvents', () => {
     it('should skip lessons with null endTime', () => {
       const lessons = [
         createMockLesson({ id: 'valid', endTime: '11:00' }),
-        createMockLesson({ id: 'invalid', endTime: null as any }),
+        createMockLesson({ id: 'invalid', endTime: null as unknown as string }),
       ]
 
       const { result } = renderHook(() =>
@@ -671,7 +671,7 @@ describe('useCalendarEvents', () => {
     it('should skip courses with null startTime', () => {
       const courses = [
         createMockCourse({ id: 'valid', startTime: '10:00' }),
-        createMockCourse({ id: 'invalid', startTime: null as any }),
+        createMockCourse({ id: 'invalid', startTime: null as unknown as string }),
       ]
 
       const { result } = renderHook(() =>
@@ -684,7 +684,7 @@ describe('useCalendarEvents', () => {
     it('should skip courses with undefined endTime', () => {
       const courses = [
         createMockCourse({ id: 'valid', endTime: '11:00' }),
-        createMockCourse({ id: 'invalid', endTime: undefined as any }),
+        createMockCourse({ id: 'invalid', endTime: undefined }),
       ]
 
       const { result } = renderHook(() =>
@@ -710,7 +710,7 @@ describe('useCalendarEvents', () => {
     it('should handle mixed valid and invalid data gracefully', () => {
       const lessons = [
         createMockLesson({ id: 'l1', startTime: '10:00', endTime: '11:00' }),
-        createMockLesson({ id: 'l2-invalid', startTime: null as any }),
+        createMockLesson({ id: 'l2-invalid', startTime: null as unknown as string }),
         createMockLesson({ id: 'l3', startTime: '14:00', endTime: '15:00' }),
       ]
       const courses = [

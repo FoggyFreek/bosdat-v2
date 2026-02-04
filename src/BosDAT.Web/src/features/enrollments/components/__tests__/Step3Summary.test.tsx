@@ -82,7 +82,7 @@ describe('Step3Summary', () => {
 
   describe('handles undefined arrays gracefully', () => {
     it('should render with undefined rooms array', () => {
-      renderWithProvider(<Step3Summary rooms={undefined as any} />)
+      renderWithProvider(<Step3Summary rooms={undefined as unknown as typeof mockRooms} />)
 
       expect(screen.getByText(/selected students/i)).toBeInTheDocument()
       expect(screen.getByText(/room selection/i)).toBeInTheDocument()

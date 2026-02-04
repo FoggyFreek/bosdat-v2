@@ -117,6 +117,7 @@ export const Step3CalendarSlotSelection = ({
       const dateStr = formatDateForApi(date)
       const students = step2.students || []
       return {
+        id: 'placeholder',
         startDateTime: `${dateStr}T${startTime}:00`,
         endDateTime: `${dateStr}T${endTime}:00`,
         title: 'Selected Slot',

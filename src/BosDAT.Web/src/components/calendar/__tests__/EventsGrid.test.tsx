@@ -28,6 +28,7 @@ describe('EventsGrid', () => {
   it('should render overlapping events side-by-side', () => {
     const overlappingEvents: CalendarEvent[] = [
       {
+        id: 'event-1',
         startDateTime: '2024-01-15T09:00:00',
         endDateTime: '2024-01-15T10:00:00',
         title: 'Event 1',
@@ -36,6 +37,7 @@ describe('EventsGrid', () => {
         attendees: [],
       },
       {
+        id: 'event-2',
         startDateTime: '2024-01-15T09:30:00',
         endDateTime: '2024-01-15T10:30:00',
         title: 'Event 2',
@@ -70,6 +72,7 @@ describe('EventsGrid', () => {
   it('should render three overlapping events with equal widths', () => {
     const threeOverlapping: CalendarEvent[] = [
       {
+        id: 'event-1',
         startDateTime: '2024-01-15T09:00:00',
         endDateTime: '2024-01-15T11:00:00',
         title: 'Event 1',
@@ -78,6 +81,7 @@ describe('EventsGrid', () => {
         attendees: [],
       },
       {
+        id: 'event-2',
         startDateTime: '2024-01-15T09:30:00',
         endDateTime: '2024-01-15T10:30:00',
         title: 'Event 2',
@@ -86,6 +90,7 @@ describe('EventsGrid', () => {
         attendees: [],
       },
       {
+        id: 'event-3',
         startDateTime: '2024-01-15T10:00:00',
         endDateTime: '2024-01-15T11:30:00',
         title: 'Event 3',
@@ -116,6 +121,7 @@ describe('EventsGrid', () => {
   it('should render non-overlapping events at full width', () => {
     const nonOverlapping: CalendarEvent[] = [
       {
+        id: 'event-1',
         startDateTime: '2024-01-15T09:00:00',
         endDateTime: '2024-01-15T10:00:00',
         title: 'Event 1',
@@ -124,6 +130,7 @@ describe('EventsGrid', () => {
         attendees: [],
       },
       {
+        id: 'event-2',
         startDateTime: '2024-01-15T10:00:00',
         endDateTime: '2024-01-15T11:00:00',
         title: 'Event 2',
@@ -153,6 +160,7 @@ describe('EventsGrid', () => {
   it('should handle events on different days independently', () => {
     const differentDays: CalendarEvent[] = [
       {
+        id: 'mon-event-1',
         startDateTime: '2024-01-15T09:00:00',
         endDateTime: '2024-01-15T10:00:00',
         title: 'Monday Event 1',
@@ -161,6 +169,7 @@ describe('EventsGrid', () => {
         attendees: [],
       },
       {
+        id: 'mon-event-2',
         startDateTime: '2024-01-15T09:30:00',
         endDateTime: '2024-01-15T10:30:00',
         title: 'Monday Event 2',
@@ -169,6 +178,7 @@ describe('EventsGrid', () => {
         attendees: [],
       },
       {
+        id: 'tue-event-1',
         startDateTime: '2024-01-16T09:00:00',
         endDateTime: '2024-01-16T10:00:00',
         title: 'Tuesday Event',
