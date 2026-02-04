@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { EventItem } from './EventItem';
 import type { CalendarEvent, ColorScheme, TimeSlot, DayAvailability } from './types';
 import { getDateFromDateTime, isSameDay, isValidEventTime, dayNameToNumber } from '@/lib/iso-helpers';
+import { calculateEventLayout } from './eventOverlapUtils';
 
 type EventsGridProps = {
   hours: number[];
@@ -128,6 +129,36 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
     () => events.filter((event) => isValidEventTime(event.startDateTime, event.endDateTime)),
     [events]
   );
+
+  // Calculate layout for overlapping events - grouped by day
+  const eventLayouts = useMemo(() => {
+    // Group events by day
+    const eventsByDay = new Map<number, CalendarEvent[]>();
+
+    validEvents.forEach((event) => {
+      const eventDate = getDateFromDateTime(event.startDateTime);
+      const dayIndex = eventDate.getDay() - 1; // Adjusting so Monday=0, Sunday=6
+
+      if (dayIndex !== -1) {
+        if (!eventsByDay.has(dayIndex)) {
+          eventsByDay.set(dayIndex, []);
+        }
+        eventsByDay.get(dayIndex)?.push(event);
+      }
+    });
+
+    // Calculate layout for each day independently
+    const allLayouts = new Map<string, { column: number; totalColumns: number }>();
+
+    eventsByDay.forEach((dayEvents) => {
+      const dayLayout = calculateEventLayout(dayEvents);
+      dayLayout.forEach((layout, key) => {
+        allLayouts.set(key, layout);
+      });
+    });
+
+    return allLayouts;
+  }, [validEvents]);
 
   // Memoize highlighted column index
   const highlightedDayIndex = useMemo(() => {
@@ -300,14 +331,22 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
         // Skip events that don't fall within the current week's date range
         if (dayIndex === -1) return null;
 
+        // Verify that the event's date actually matches one of the dates in the dates array
+        const isInDateRange = dates.some((date) => isSameDay(date, eventDate));
+        if (!isInDateRange) return null;
+
+        const eventKey = `${e.startDateTime}-${e.title}`;
+        const layout = eventLayouts.get(eventKey);
+
         return (
           <EventItem
-            key={`${e.startDateTime}-${e.title}`}
+            key={eventKey}
             event={e}
             dayIndex={dayIndex}
             hourHeight={hourHeight}
             minHour={minHour}
             colorScheme={colorScheme}
+            layout={layout}
           />
         );
       })}

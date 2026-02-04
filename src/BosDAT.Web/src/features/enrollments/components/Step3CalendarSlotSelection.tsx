@@ -64,14 +64,15 @@ export const Step3CalendarSlotSelection = ({
       }),
   })
 
-  // Fetch all courses for the teacher (for the entire week)
+  // Fetch all courses for the selected room (shows all lessons in the room)
+  // Teacher availability is still checked via the calendar API when selecting a time slot
   const { data: courses = [], isLoading: isLoadingCourses } = useQuery<Course[]>({
-    queryKey: ['courses', { teacherId }],
+    queryKey: ['courses', { roomId: step3.selectedRoomId }],
     queryFn: () =>
       coursesApi.getAll({
-        teacherId,
+        roomId: step3.selectedRoomId || undefined,
       }),
-    enabled: !step1.isTrial,
+    enabled: !step1.isTrial && !!step3.selectedRoomId,
   })
 
   // Transform API data directly to calendar events
