@@ -3,13 +3,13 @@
 ## Naming
 - Components/Types: PascalCase | Functions/vars: camelCase | CSS: kebab-case
 - Structure: `features/[domain]/` → components, types, context
+- Generic components `components/[component]` 
 
-## Immutability (CRITICAL)
-```ts
-// ES2023: Use toSorted/toReversed/toSpliced (returns new array)
-arr.toSorted() // ✅  |  arr.sort() // ❌ Mutates
-return { ...user, name: newName } // ✅  |  user.name = newName // ❌
-```
+## API enum properties
+- API returns enum values as strings, never numbers. Check the relevant API controller before writing code. 
+
+## Immutability
+State should be treated as immutable. Never change existing objects or arrays directly—always create and use a new copy when updating state or data
 
 ## Code Splitting
 ```tsx
@@ -21,52 +21,28 @@ lazy(() => import('./pages').then(m => ({ default: m.StudentsPage })))
 ```
 
 ## Context Memoization (REQUIRED)
+Memoize context values and providers so their references change only when the actual data changes, preventing unnecessary re-renders of consumers.
+
 ```tsx
 const login = useCallback(async (data) => { ... }, [])
 const value = useMemo(() => ({ user, login }), [user, login])
 <AuthContext.Provider value={value}>
 ```
 
-## TanStack Query
-**Keys:** `['students']` → `['students', id]` → `['students', id, 'ledger']`
-**Defaults:** staleTime: 5min, retry: 1
-**Always:** `const { data: items = [] } = useQuery(...)` + `invalidateQueries` after mutations
-
-## Null Safety (CRITICAL)
+## Null Safety
 ```tsx
 // Arrays: Always use fallbacks
 const students = step2.students ?? []
 {students.map(s => <Card key={s.id} />)}
-
-// Query defaults
-const { data: rooms = [] } = useQuery<Room[]>(...)
-
-// Props/destructuring
-const { students = [] } = formData.step2
-const MyComponent = ({ students = [], isLoading = false }) => { ... }
-
-// Nested access
-const courses = student?.enrollments?.[0]?.courses ?? []
-
-// State updates
-students: [...(state.formData.step2.students ?? []), action.payload]
-
-// Prefer ?? over || (preserves 0, '', false)
-const count = data.count ?? 0
 ```
 
 ## Conditional Rendering
+Keep conditional rendering flat and readable—avoid deeply nested conditionals; prefer early returns or simple expression
 ```tsx
-// ✅ Flat (scannable)
+// Flat (scannable)
 {isLoading && <Spinner />}
 {!isLoading && items.length === 0 && <Empty />}
 {!isLoading && items.length > 0 && <List items={items} />}
-
-// ❌ Nested ternaries
-{isLoading ? <Spinner /> : items.length === 0 ? <Empty /> : <List />}
-
-// Extract complex logic
-const getVariant = (s: string) => s === 'Active' ? 'default' : s === 'Trial' ? 'secondary' : 'outline'
 ```
 
 ## Keys & Accessibility
@@ -83,7 +59,6 @@ const getVariant = (s: string) => s === 'Active' ? 'default' : s === 'Trial' ? '
 - Co-locate in `__tests__/` folders
 
 ## Component Rules
-- Named exports, arrow functions: `const Component = () => { }`
 - UI in components, logic in hooks
 - shadcn/ui + Tailwind only (no custom CSS/inline styles)
 - 200-400 lines typical, 800 max
