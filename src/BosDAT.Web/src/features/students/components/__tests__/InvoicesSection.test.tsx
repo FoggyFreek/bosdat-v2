@@ -78,7 +78,7 @@ describe('InvoicesSection', () => {
     },
     lines: [
       {
-        id: 'line-1',
+        id: 1,
         lessonId: 'lesson-1',
         pricingVersionId: 'pricing-1',
         description: 'Piano Individual 30min - 06 Jan 2026',
@@ -90,7 +90,7 @@ describe('InvoicesSection', () => {
         courseName: 'Piano Individual 30min',
       },
       {
-        id: 'line-2',
+        id: 2,
         lessonId: 'lesson-2',
         pricingVersionId: 'pricing-1',
         description: 'Piano Individual 30min - 13 Jan 2026',
@@ -102,7 +102,7 @@ describe('InvoicesSection', () => {
         courseName: 'Piano Individual 30min',
       },
       {
-        id: 'line-3',
+        id: 3,
         lessonId: 'lesson-3',
         pricingVersionId: 'pricing-1',
         description: 'Piano Individual 30min - 20 Jan 2026',
@@ -114,7 +114,7 @@ describe('InvoicesSection', () => {
         courseName: 'Piano Individual 30min',
       },
       {
-        id: 'line-4',
+        id: 4,
         lessonId: 'lesson-4',
         pricingVersionId: 'pricing-1',
         description: 'Piano Individual 30min - 27 Jan 2026',
@@ -306,8 +306,8 @@ describe('InvoicesSection', () => {
     await waitFor(() => {
       // Check that subtotal and VAT are displayed
       expect(screen.getByText('Subtotal')).toBeInTheDocument()
-      expect(screen.getByText('VAT')).toBeInTheDocument()
-      expect(screen.getByText('Total')).toBeInTheDocument()
+      expect(screen.getAllByText('VAT').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Total').length).toBeGreaterThan(0)
     })
   })
 

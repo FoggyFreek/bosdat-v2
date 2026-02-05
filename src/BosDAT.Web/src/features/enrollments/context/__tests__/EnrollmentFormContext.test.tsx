@@ -137,6 +137,7 @@ describe('EnrollmentFormContext', () => {
       enrolledAt: '2024-01-15',
       discountType: 'None',
       discountPercentage: 0,
+      invoicingPreference: 'Monthly',
       note: '',
       isEligibleForCourseDiscount: false,
       ...overrides,

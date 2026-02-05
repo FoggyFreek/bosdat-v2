@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/dialog'
 import { invoicesApi } from '@/services/api'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
-import { formatCurrency, formatDate } from '@/lib/format-helpers'
+import { formatCurrency } from '@/lib/utils'
+import { formatDate } from '@/lib/datetime-helpers'
 
 interface InvoicesSectionProps {
   studentId: string

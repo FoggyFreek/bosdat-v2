@@ -128,6 +128,7 @@ describe('useCalendarEvents', () => {
               discountPercent: 0,
               discountType: 'None',
               status: 'Active',
+              invoicingPreference: 'Monthly',
             },
             {
               id: 'e2',
@@ -138,6 +139,7 @@ describe('useCalendarEvents', () => {
               discountPercent: 0,
               discountType: 'None',
               status: 'Active',
+              invoicingPreference: 'Monthly',
             },
           ],
         }),
