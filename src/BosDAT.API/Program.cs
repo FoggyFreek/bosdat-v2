@@ -81,6 +81,7 @@ builder.Services.AddScoped<IEnrollmentPricingService, EnrollmentPricingService>(
 builder.Services.AddScoped<IStudentLedgerRepository, StudentLedgerRepository>();
 builder.Services.AddScoped<IStudentLedgerService, StudentLedgerService>();
 builder.Services.AddScoped<IScheduleConflictService, ScheduleConflictService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
 // CORS

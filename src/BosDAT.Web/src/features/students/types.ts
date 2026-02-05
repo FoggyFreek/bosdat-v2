@@ -200,3 +200,128 @@ export interface EnrollmentPricing {
   discountAmount: number
   pricePerLesson: number
 }
+
+// Invoice Types
+export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Cancelled'
+export type InvoicingPreference = 'Monthly' | 'Quarterly'
+export type PaymentMethod = 'Cash' | 'Bank' | 'Card' | 'DirectDebit' | 'Other'
+
+export interface BillingContact {
+  name: string
+  email?: string
+  phone?: string
+  address?: string
+  postalCode?: string
+  city?: string
+}
+
+export interface InvoiceLine {
+  id: number
+  lessonId?: string
+  pricingVersionId?: string
+  description: string
+  quantity: number
+  unitPrice: number
+  vatRate: number
+  lineTotal: number
+  lessonDate?: string
+  courseName?: string
+}
+
+export interface InvoiceLedgerApplication {
+  id: string
+  ledgerEntryId: string
+  correctionRefName?: string
+  description?: string
+  appliedAmount: number
+  appliedAt: string
+  entryType: LedgerEntryType
+}
+
+export interface InvoicePayment {
+  id: string
+  invoiceId: string
+  amount: number
+  paymentDate: string
+  method: PaymentMethod
+  reference?: string
+  notes?: string
+}
+
+export interface Invoice {
+  id: string
+  invoiceNumber: string
+  studentId: string
+  enrollmentId?: string
+  studentName: string
+  studentEmail: string
+  issueDate: string
+  dueDate: string
+  description?: string
+  periodStart?: string
+  periodEnd?: string
+  periodType?: InvoicingPreference
+  subtotal: number
+  vatAmount: number
+  total: number
+  discountAmount: number
+  ledgerCreditsApplied: number
+  ledgerDebitsApplied: number
+  status: InvoiceStatus
+  paidAt?: string
+  paymentMethod?: string
+  notes?: string
+  lines: InvoiceLine[]
+  payments: InvoicePayment[]
+  ledgerApplications: InvoiceLedgerApplication[]
+  amountPaid: number
+  balance: number
+  createdAt: string
+  updatedAt: string
+  billingContact?: BillingContact
+}
+
+export interface InvoiceListItem {
+  id: string
+  invoiceNumber: string
+  studentName: string
+  description?: string
+  issueDate: string
+  dueDate: string
+  periodStart?: string
+  periodEnd?: string
+  total: number
+  status: InvoiceStatus
+  balance: number
+}
+
+export interface GenerateInvoice {
+  enrollmentId: string
+  periodStart: string
+  periodEnd: string
+  applyLedgerCorrections?: boolean
+}
+
+export interface GenerateBatchInvoices {
+  periodStart: string
+  periodEnd: string
+  periodType: InvoicingPreference
+  applyLedgerCorrections?: boolean
+}
+
+export interface SchoolBillingInfo {
+  name: string
+  address?: string
+  postalCode?: string
+  city?: string
+  phone?: string
+  email?: string
+  kvkNumber?: string
+  iban?: string
+  vatRate: number
+}
+
+export interface InvoicePrintData {
+  invoice: Invoice
+  schoolInfo: SchoolBillingInfo
+}
