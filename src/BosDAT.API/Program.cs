@@ -168,7 +168,7 @@ using (var scope = app.Services.CreateScope())
         await context.Database.MigrateAsync();
 
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        var roles = new[] { "Admin", "Teacher", "Staff", "User" };
+        var roles = new[] { "Admin", "Teacher", "Staff", "User", "Worker" };
 
         foreach (var role in roles)
         {
@@ -206,6 +206,34 @@ using (var scope = app.Services.CreateScope())
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
+            }
+        }
+
+        // Create worker service account if not exists
+        var workerEmail = builder.Configuration["WorkerSettings:Email"] ?? "worker@bosdat.nl";
+        var workerUser = await userManager.FindByEmailAsync(workerEmail);
+
+        if (workerUser == null)
+        {
+            var workerPassword = builder.Configuration["WorkerSettings:Password"];
+            if (!string.IsNullOrEmpty(workerPassword))
+            {
+                workerUser = new ApplicationUser
+                {
+                    UserName = workerEmail,
+                    Email = workerEmail,
+                    FirstName = "Background",
+                    LastName = "Worker",
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(workerUser, workerPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRolesAsync(workerUser, ["Worker", "Admin"]);
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogInformation("Background worker service account created: {Email}", workerEmail);
                 }
             }
         }
