@@ -37,6 +37,11 @@ public interface IStudentLedgerService
     Task<ApplyCreditResultDto> ApplyCreditsToInvoiceAsync(Guid invoiceId, Guid userId, CancellationToken ct = default);
 
     /// <summary>
+    /// Decouples a ledger application from its invoice, freeing the credit for reuse.
+    /// </summary>
+    Task<DecoupleApplicationResultDto> DecoupleApplicationAsync(Guid applicationId, string reason, Guid userId, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets the available credit balance for a student.
     /// </summary>
     Task<decimal> GetAvailableCreditForStudentAsync(Guid studentId, CancellationToken ct = default);

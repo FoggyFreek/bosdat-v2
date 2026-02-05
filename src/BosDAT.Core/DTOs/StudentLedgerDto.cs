@@ -76,3 +76,21 @@ public record ApplyCreditResultDto
     public decimal RemainingBalance { get; init; }
     public IReadOnlyList<LedgerApplicationDto> Applications { get; init; } = [];
 }
+
+public record DecoupleApplicationDto
+{
+    public required string Reason { get; init; }
+}
+
+public record DecoupleApplicationResultDto
+{
+    public Guid LedgerEntryId { get; init; }
+    public string CorrectionRefName { get; init; } = string.Empty;
+    public Guid InvoiceId { get; init; }
+    public string InvoiceNumber { get; init; } = string.Empty;
+    public decimal DecoupledAmount { get; init; }
+    public LedgerEntryStatus NewEntryStatus { get; init; }
+    public InvoiceStatus NewInvoiceStatus { get; init; }
+    public DateTime DecoupledAt { get; init; }
+    public string DecoupledByName { get; init; } = string.Empty;
+}

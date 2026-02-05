@@ -924,6 +924,200 @@ public class StudentLedgerServiceTests : IDisposable
 
     #endregion
 
+    #region DecoupleApplicationAsync Tests
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithValidApplication_DecouplesSuccessfully()
+    {
+        // Arrange - 50m credit fully applied to 121m invoice (entry becomes FullyApplied, invoice stays Sent)
+        var credit = await _service.CreateEntryAsync(new CreateStudentLedgerEntryDto
+        {
+            StudentId = _testStudentId,
+            Description = "Credit to decouple",
+            Amount = 50m,
+            EntryType = LedgerEntryType.Credit
+        }, _testUserId);
+
+        await _service.ApplyCreditsToInvoiceAsync(_testInvoiceId, _testUserId);
+
+        var entry = await _service.GetEntryAsync(credit.Id);
+        Assert.Equal(LedgerEntryStatus.FullyApplied, entry!.Status);
+        var applicationId = entry.Applications[0].Id;
+
+        // Act
+        var result = await _service.DecoupleApplicationAsync(applicationId, "Applied to wrong invoice", _testUserId);
+
+        // Assert
+        Assert.Equal(credit.Id, result.LedgerEntryId);
+        Assert.Equal(_testInvoiceId, result.InvoiceId);
+        Assert.Equal(50m, result.DecoupledAmount);
+        Assert.Equal(LedgerEntryStatus.Open, result.NewEntryStatus);
+        Assert.Equal(InvoiceStatus.Sent, result.NewInvoiceStatus);
+
+        var updatedEntry = await _service.GetEntryAsync(credit.Id);
+        Assert.Equal(LedgerEntryStatus.Open, updatedEntry!.Status);
+        Assert.Empty(updatedEntry.Applications);
+    }
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithPaidInvoice_RevertsInvoiceStatus()
+    {
+        // Arrange - 200m credit covers 121m invoice fully → invoice becomes Paid
+        await _service.CreateEntryAsync(new CreateStudentLedgerEntryDto
+        {
+            StudentId = _testStudentId,
+            Description = "Large credit",
+            Amount = 200m,
+            EntryType = LedgerEntryType.Credit
+        }, _testUserId);
+
+        var applyResult = await _service.ApplyCreditsToInvoiceAsync(_testInvoiceId, _testUserId);
+        Assert.Equal(0m, applyResult.RemainingBalance);
+
+        var invoice = await _context.Invoices.FindAsync(_testInvoiceId);
+        Assert.Equal(InvoiceStatus.Paid, invoice!.Status);
+
+        var applicationId = applyResult.Applications[0].Id;
+
+        // Act
+        var result = await _service.DecoupleApplicationAsync(applicationId, "Incorrect application", _testUserId);
+
+        // Assert - invoice reverts to Sent (due date is +14 days in SeedTestData)
+        Assert.Equal(InvoiceStatus.Sent, result.NewInvoiceStatus);
+
+        var updatedInvoice = await _context.Invoices.FindAsync(_testInvoiceId);
+        Assert.Equal(InvoiceStatus.Sent, updatedInvoice!.Status);
+        Assert.Null(updatedInvoice.PaidAt);
+    }
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithOverdueInvoice_RevertsToOverdue()
+    {
+        // Arrange - set due date in the past so revert lands on Overdue
+        var invoice = await _context.Invoices.FindAsync(_testInvoiceId);
+        invoice!.DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-5));
+        await _context.SaveChangesAsync();
+
+        await _service.CreateEntryAsync(new CreateStudentLedgerEntryDto
+        {
+            StudentId = _testStudentId,
+            Description = "Credit",
+            Amount = 200m,
+            EntryType = LedgerEntryType.Credit
+        }, _testUserId);
+
+        var applyResult = await _service.ApplyCreditsToInvoiceAsync(_testInvoiceId, _testUserId);
+        var applicationId = applyResult.Applications[0].Id;
+
+        // Act
+        var result = await _service.DecoupleApplicationAsync(applicationId, "Wrong invoice", _testUserId);
+
+        // Assert
+        Assert.Equal(InvoiceStatus.Overdue, result.NewInvoiceStatus);
+    }
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithMultipleApplications_KeepsPartiallyApplied()
+    {
+        // Arrange - 200m credit applied across two invoices
+        await _service.CreateEntryAsync(new CreateStudentLedgerEntryDto
+        {
+            StudentId = _testStudentId,
+            Description = "Credit for two invoices",
+            Amount = 200m,
+            EntryType = LedgerEntryType.Credit
+        }, _testUserId);
+
+        // Apply to invoice 1 (121m)
+        await _service.ApplyCreditsToInvoiceAsync(_testInvoiceId, _testUserId);
+
+        // Create invoice 2 and apply remaining credit
+        var invoice2 = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            InvoiceNumber = "NMI-2026-00002",
+            StudentId = _testStudentId,
+            Status = InvoiceStatus.Sent,
+            IssueDate = DateOnly.FromDateTime(DateTime.Today),
+            DueDate = DateOnly.FromDateTime(DateTime.Today.AddDays(14)),
+            Subtotal = 50m,
+            VatAmount = 0m,
+            Total = 50m
+        };
+        _context.Invoices.Add(invoice2);
+        await _context.SaveChangesAsync();
+
+        await _service.ApplyCreditsToInvoiceAsync(invoice2.Id, _testUserId);
+
+        // Entry now has two applications (121 + 50 = 171 of 200)
+        var entries = await _service.GetStudentLedgerAsync(_testStudentId);
+        var creditEntry = entries.First();
+        Assert.Equal(2, creditEntry.Applications.Count);
+
+        // Act - decouple the application on invoice 1 (121m)
+        var firstAppId = creditEntry.Applications
+            .First(a => a.InvoiceId == _testInvoiceId).Id;
+        var result = await _service.DecoupleApplicationAsync(firstAppId, "Wrong invoice", _testUserId);
+
+        // Assert - 50m still applied out of 200m → PartiallyApplied
+        Assert.Equal(LedgerEntryStatus.PartiallyApplied, result.NewEntryStatus);
+        Assert.Equal(121m, result.DecoupledAmount);
+    }
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithInvalidApplicationId_ThrowsInvalidOperationException()
+    {
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.DecoupleApplicationAsync(Guid.NewGuid(), "Test reason", _testUserId));
+
+        Assert.Contains("not found", exception.Message.ToLower());
+    }
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithEmptyReason_ThrowsArgumentException()
+    {
+        // Arrange
+        await _service.CreateEntryAsync(new CreateStudentLedgerEntryDto
+        {
+            StudentId = _testStudentId,
+            Description = "Credit",
+            Amount = 50m,
+            EntryType = LedgerEntryType.Credit
+        }, _testUserId);
+
+        var applyResult = await _service.ApplyCreditsToInvoiceAsync(_testInvoiceId, _testUserId);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(
+            () => _service.DecoupleApplicationAsync(applyResult.Applications[0].Id, "", _testUserId));
+
+        Assert.Contains("reason", exception.Message.ToLower());
+    }
+
+    [Fact]
+    public async Task DecoupleApplicationAsync_WithWhitespaceReason_ThrowsArgumentException()
+    {
+        // Arrange
+        await _service.CreateEntryAsync(new CreateStudentLedgerEntryDto
+        {
+            StudentId = _testStudentId,
+            Description = "Credit",
+            Amount = 50m,
+            EntryType = LedgerEntryType.Credit
+        }, _testUserId);
+
+        var applyResult = await _service.ApplyCreditsToInvoiceAsync(_testInvoiceId, _testUserId);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentException>(
+            () => _service.DecoupleApplicationAsync(applyResult.Applications[0].Id, "   ", _testUserId));
+
+        Assert.Contains("reason", exception.Message.ToLower());
+    }
+
+    #endregion
+
     #region GetEntryAsync Tests
 
     [Fact]

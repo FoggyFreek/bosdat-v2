@@ -341,6 +341,95 @@ public class StudentLedgerService(
         }
     }
 
+    public async Task<DecoupleApplicationResultDto> DecoupleApplicationAsync(Guid applicationId, string reason, Guid userId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new ArgumentException("Reason is required for decoupling.", nameof(reason));
+        }
+
+        var application = await context.StudentLedgerApplications
+            .Include(a => a.LedgerEntry)
+                .ThenInclude(e => e.Applications)
+            .Include(a => a.Invoice)
+                .ThenInclude(i => i.Payments)
+            .Include(a => a.Invoice)
+                .ThenInclude(i => i.LedgerApplications)
+            .FirstOrDefaultAsync(a => a.Id == applicationId, ct)
+            ?? throw new InvalidOperationException($"Ledger application with ID {applicationId} not found.");
+
+        return await DbOperationRetryHelper.ExecuteWithRetryAsync(async () =>
+        {
+            await unitOfWork.BeginTransactionAsync(ct);
+            try
+            {
+                var entry = application.LedgerEntry;
+                var invoice = application.Invoice;
+                var decoupledAmount = application.AppliedAmount;
+
+                context.StudentLedgerApplications.Remove(application);
+
+                // Recalculate entry status from remaining applications
+                var remainingApplied = entry.Applications
+                    .Where(a => a.Id != applicationId)
+                    .Sum(a => a.AppliedAmount);
+
+                entry.Status = remainingApplied <= 0
+                    ? LedgerEntryStatus.Open
+                    : remainingApplied < entry.Amount
+                        ? LedgerEntryStatus.PartiallyApplied
+                        : LedgerEntryStatus.FullyApplied;
+
+                // If invoice was Paid, check whether it should revert
+                if (invoice.Status == InvoiceStatus.Paid)
+                {
+                    var totalPaid = invoice.Payments.Sum(p => p.Amount)
+                        + invoice.LedgerApplications
+                            .Where(a => a.Id != applicationId)
+                            .Sum(a => a.AppliedAmount);
+
+                    if (totalPaid < invoice.Total)
+                    {
+                        invoice.Status = invoice.DueDate < DateOnly.FromDateTime(DateTime.UtcNow)
+                            ? InvoiceStatus.Overdue
+                            : InvoiceStatus.Sent;
+                        invoice.PaidAt = null;
+                    }
+                }
+
+                await context.SaveChangesAsync(ct);
+                await unitOfWork.CommitTransactionAsync(ct);
+
+                var user = await context.Users.FindAsync([userId], ct);
+                var userName = user != null
+                    ? $"{user.FirstName} {user.LastName}".Trim()
+                    : UnknownUserName;
+                if (string.IsNullOrWhiteSpace(userName))
+                {
+                    userName = user?.Email ?? UnknownUserName;
+                }
+
+                return new DecoupleApplicationResultDto
+                {
+                    LedgerEntryId = entry.Id,
+                    CorrectionRefName = entry.CorrectionRefName,
+                    InvoiceId = invoice.Id,
+                    InvoiceNumber = invoice.InvoiceNumber,
+                    DecoupledAmount = decoupledAmount,
+                    NewEntryStatus = entry.Status,
+                    NewInvoiceStatus = invoice.Status,
+                    DecoupledAt = DateTime.UtcNow,
+                    DecoupledByName = userName
+                };
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync(ct);
+                throw;
+            }
+        }, ct);
+    }
+
     public async Task<decimal> GetAvailableCreditForStudentAsync(Guid studentId, CancellationToken ct = default)
     {
         return await ledgerRepository.GetAvailableCreditAsync(studentId, ct);
