@@ -14,6 +14,7 @@ vi.mock('@/services/api', () => ({
     getByStudent: vi.fn(),
     create: vi.fn(),
     reverse: vi.fn(),
+    decouple: vi.fn(),
   },
   enrollmentsApi: {
     getByStudent: vi.fn(),
@@ -308,6 +309,140 @@ describe('CorrectionsSection', () => {
       // Open and PartiallyApplied should be visible
       expect(screen.getByText('Open')).toBeInTheDocument()
       expect(screen.getByText('PartiallyApplied')).toBeInTheDocument()
+    })
+  })
+
+  it('shows expand toggle only for entries with applications', async () => {
+    const entryWithApp: StudentLedgerEntry = {
+      ...mockPartiallyAppliedEntry,
+      applications: [
+        {
+          id: 'app-1',
+          invoiceId: 'inv-1',
+          invoiceNumber: 'NMI-2026-00001',
+          appliedAmount: 40,
+          appliedAt: '2024-01-15T10:00:00Z',
+          appliedByName: 'Admin User',
+        },
+      ],
+    }
+
+    vi.mocked(studentLedgerApi.getByStudent).mockResolvedValue([mockOpenEntry, entryWithApp])
+
+    render(<CorrectionsSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('COR-001')).toBeInTheDocument()
+      expect(screen.getByText('COR-003')).toBeInTheDocument()
+    })
+
+    // Only the entry with applications should have an expand button
+    const expandButtons = screen.getAllByLabelText(/expand applications/i)
+    expect(expandButtons).toHaveLength(1)
+  })
+
+  it('expands applications and shows decouple button', async () => {
+    const user = userEvent.setup()
+    const entryWithApp: StudentLedgerEntry = {
+      ...mockPartiallyAppliedEntry,
+      applications: [
+        {
+          id: 'app-1',
+          invoiceId: 'inv-1',
+          invoiceNumber: 'NMI-2026-00001',
+          appliedAmount: 40,
+          appliedAt: '2024-01-15T10:00:00Z',
+          appliedByName: 'Admin User',
+        },
+      ],
+    }
+
+    vi.mocked(studentLedgerApi.getByStudent).mockResolvedValue([entryWithApp])
+
+    render(<CorrectionsSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('COR-003')).toBeInTheDocument()
+    })
+
+    // Expand the entry
+    await user.click(screen.getByLabelText(/expand applications/i))
+
+    await waitFor(() => {
+      expect(screen.getByText('NMI-2026-00001')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /decouple/i })).toBeInTheDocument()
+    })
+  })
+
+  it('opens decouple dialog when decouple button is clicked', async () => {
+    const user = userEvent.setup()
+    const entryWithApp: StudentLedgerEntry = {
+      ...mockPartiallyAppliedEntry,
+      applications: [
+        {
+          id: 'app-1',
+          invoiceId: 'inv-1',
+          invoiceNumber: 'NMI-2026-00001',
+          appliedAmount: 40,
+          appliedAt: '2024-01-15T10:00:00Z',
+          appliedByName: 'Admin User',
+        },
+      ],
+    }
+
+    vi.mocked(studentLedgerApi.getByStudent).mockResolvedValue([entryWithApp])
+
+    render(<CorrectionsSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('COR-003')).toBeInTheDocument()
+    })
+
+    // Expand then click Decouple
+    await user.click(screen.getByLabelText(/expand applications/i))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /decouple/i })).toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: /decouple/i }))
+
+    // Dialog should be visible with invoice number (appears in both the row and dialog description)
+    await waitFor(() => {
+      expect(screen.getByText('Decouple Correction')).toBeInTheDocument()
+      expect(screen.getAllByText(/NMI-2026-00001/)).toHaveLength(2)
+    })
+  })
+
+  it('decouple dialog submit is disabled without reason', async () => {
+    const user = userEvent.setup()
+    const entryWithApp: StudentLedgerEntry = {
+      ...mockPartiallyAppliedEntry,
+      applications: [
+        {
+          id: 'app-1',
+          invoiceId: 'inv-1',
+          invoiceNumber: 'NMI-2026-00001',
+          appliedAmount: 40,
+          appliedAt: '2024-01-15T10:00:00Z',
+          appliedByName: 'Admin User',
+        },
+      ],
+    }
+
+    vi.mocked(studentLedgerApi.getByStudent).mockResolvedValue([entryWithApp])
+
+    render(<CorrectionsSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('COR-003')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByLabelText(/expand applications/i))
+    await user.click(screen.getByRole('button', { name: /decouple/i }))
+
+    await waitFor(() => {
+      // Decouple submit button should be disabled (no reason entered)
+      const decoupleSubmit = screen.getByRole('button', { name: /^decouple$/i })
+      expect(decoupleSubmit).toBeDisabled()
     })
   })
 })

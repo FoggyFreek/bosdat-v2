@@ -7,10 +7,11 @@ import { studentLedgerApi, enrollmentsApi } from '@/services/api'
 import type {
   StudentLedgerEntry,
   LedgerEntryType,
+  LedgerApplication,
   StudentEnrollment,
   EnrollmentPricing,
 } from '@/features/students/types'
-import { CorrectionForm, LedgerEntryRow, ReverseDialog } from './corrections'
+import { CorrectionForm, LedgerEntryRow, ReverseDialog, DecoupleDialog } from './corrections'
 
 interface CorrectionsSectionProps {
   studentId: string
@@ -26,6 +27,11 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
     open: false,
   })
   const [reverseReason, setReverseReason] = useState('')
+  const [decoupleDialog, setDecoupleDialog] = useState<{ open: boolean; application: LedgerApplication | null }>({
+    open: false,
+    application: null,
+  })
+  const [decoupleReason, setDecoupleReason] = useState('')
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active')
@@ -107,6 +113,17 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
     },
   })
 
+  const decoupleMutation = useMutation({
+    mutationFn: ({ applicationId, reason }: { applicationId: string; reason: string }) =>
+      studentLedgerApi.decouple(applicationId, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-ledger', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['student-ledger-summary', studentId] })
+      setDecoupleDialog({ open: false, application: null })
+      setDecoupleReason('')
+    },
+  })
+
   const resetForm = () => {
     setShowAddForm(false)
     setDescription('')
@@ -129,6 +146,12 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
   const handleReverse = () => {
     if (reverseDialog.entryId && reverseReason.trim()) {
       reverseMutation.mutate({ id: reverseDialog.entryId, reason: reverseReason })
+    }
+  }
+
+  const handleDecouple = () => {
+    if (decoupleDialog.application && decoupleReason.trim()) {
+      decoupleMutation.mutate({ applicationId: decoupleDialog.application.id, reason: decoupleReason })
     }
   }
 
@@ -210,6 +233,7 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
                   key={entry.id}
                   entry={entry}
                   onReverse={(entryId) => setReverseDialog({ open: true, entryId })}
+                  onDecouple={(application) => setDecoupleDialog({ open: true, application })}
                 />
               ))}
             </div>
@@ -224,6 +248,16 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
         onOpenChange={(open) => setReverseDialog({ open })}
         onReasonChange={setReverseReason}
         onConfirm={handleReverse}
+      />
+
+      <DecoupleDialog
+        open={decoupleDialog.open}
+        application={decoupleDialog.application}
+        reason={decoupleReason}
+        isPending={decoupleMutation.isPending}
+        onOpenChange={(open) => setDecoupleDialog({ open, application: open ? decoupleDialog.application : null })}
+        onReasonChange={setDecoupleReason}
+        onConfirm={handleDecouple}
       />
     </div>
   )

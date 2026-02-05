@@ -461,6 +461,105 @@ public class StudentLedgerControllerTests
 
     #endregion
 
+    #region DecoupleApplication Tests
+
+    [Fact]
+    public async Task DecoupleApplication_WithValidApplication_ReturnsResult()
+    {
+        // Arrange
+        var applicationId = Guid.NewGuid();
+        var dto = new DecoupleApplicationDto { Reason = "Wrong invoice" };
+        var expectedResult = new DecoupleApplicationResultDto
+        {
+            LedgerEntryId = _testEntryId,
+            CorrectionRefName = "CR-2026-0001",
+            InvoiceId = _testInvoiceId,
+            InvoiceNumber = "NMI-2026-00001",
+            DecoupledAmount = 50m,
+            NewEntryStatus = LedgerEntryStatus.Open,
+            NewInvoiceStatus = InvoiceStatus.Sent,
+            DecoupledAt = DateTime.UtcNow,
+            DecoupledByName = "Test User"
+        };
+
+        _mockLedgerService
+            .Setup(s => s.DecoupleApplicationAsync(applicationId, dto.Reason, _testUserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.DecoupleApplication(applicationId, dto, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedResult = Assert.IsType<DecoupleApplicationResultDto>(okResult.Value);
+        Assert.Equal(50m, returnedResult.DecoupledAmount);
+        Assert.Equal(LedgerEntryStatus.Open, returnedResult.NewEntryStatus);
+    }
+
+    [Fact]
+    public async Task DecoupleApplication_WithMissingReason_ReturnsBadRequest()
+    {
+        // Arrange
+        var dto = new DecoupleApplicationDto { Reason = "" };
+
+        // Act
+        var result = await _controller.DecoupleApplication(Guid.NewGuid(), dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task DecoupleApplication_WithWhitespaceReason_ReturnsBadRequest()
+    {
+        // Arrange
+        var dto = new DecoupleApplicationDto { Reason = "   " };
+
+        // Act
+        var result = await _controller.DecoupleApplication(Guid.NewGuid(), dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task DecoupleApplication_WithInvalidApplicationId_ReturnsBadRequest()
+    {
+        // Arrange
+        var dto = new DecoupleApplicationDto { Reason = "Test reason" };
+
+        _mockLedgerService
+            .Setup(s => s.DecoupleApplicationAsync(It.IsAny<Guid>(), dto.Reason, _testUserId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Ledger application not found."));
+
+        // Act
+        var result = await _controller.DecoupleApplication(Guid.NewGuid(), dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task DecoupleApplication_WithNoAuthenticatedUser_ReturnsUnauthorized()
+    {
+        // Arrange
+        _mockCurrentUserService.Setup(s => s.UserId).Returns((Guid?)null);
+
+        var controller = new StudentLedgerController(
+            _mockLedgerService.Object,
+            _mockCurrentUserService.Object);
+
+        var dto = new DecoupleApplicationDto { Reason = "Test reason" };
+
+        // Act
+        var result = await controller.DecoupleApplication(Guid.NewGuid(), dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<UnauthorizedResult>(result.Result);
+    }
+
+    #endregion
+
     #region GetAvailableCredit Tests
 
     [Fact]

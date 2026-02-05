@@ -179,6 +179,46 @@ public class StudentLedgerController(
     }
 
     /// <summary>
+    /// Decouples a ledger application from its invoice, freeing the credit for reuse.
+    /// </summary>
+    /// <remarks>
+    /// Requires Admin role. The correction can then be adjusted and manually re-coupled later.
+    /// </remarks>
+    [HttpPost("applications/{applicationId:guid}/decouple")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<DecoupleApplicationResultDto>> DecoupleApplication(
+        Guid applicationId,
+        [FromBody] DecoupleApplicationDto dto,
+        CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.UserId;
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.Reason))
+        {
+            return BadRequest(new { message = "Reason is required for decoupling." });
+        }
+
+        try
+        {
+            var result = await _ledgerService.DecoupleApplicationAsync(
+                applicationId, dto.Reason, userId.Value, cancellationToken);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Gets the available credit balance for a student.
     /// </summary>
     /// <remarks>

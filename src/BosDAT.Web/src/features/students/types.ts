@@ -187,6 +187,18 @@ export interface CreateStudentLedgerEntry {
   entryType: LedgerEntryType
 }
 
+export interface DecoupleApplicationResult {
+  ledgerEntryId: string
+  correctionRefName: string
+  invoiceId: string
+  invoiceNumber: string
+  decoupledAmount: number
+  newEntryStatus: LedgerEntryStatus
+  newInvoiceStatus: string
+  decoupledAt: string
+  decoupledByName: string
+}
+
 // Enrollment Pricing Types
 export interface EnrollmentPricing {
   enrollmentId: string

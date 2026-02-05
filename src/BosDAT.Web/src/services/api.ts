@@ -9,6 +9,7 @@ import type {
   StudentLedgerEntry,
   StudentLedgerSummary,
   CreateStudentLedgerEntry,
+  DecoupleApplicationResult,
   EnrollmentPricing,
 } from '@/features/students/types'
 
@@ -559,6 +560,14 @@ export const studentLedgerApi = {
 
   getAvailableCredit: async (studentId: string): Promise<{ availableCredit: number }> => {
     const response = await api.get<{ availableCredit: number }>(`/studentledger/student/${studentId}/available-credit`)
+    return response.data
+  },
+
+  decouple: async (applicationId: string, reason: string): Promise<DecoupleApplicationResult> => {
+    const response = await api.post<DecoupleApplicationResult>(
+      `/studentledger/applications/${applicationId}/decouple`,
+      { reason },
+    )
     return response.data
   },
 }
