@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { coursesApi } from '@/services/api'
+import { coursesApi } from '@/features/courses/api'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { CourseList, CourseStatus } from '@/features/courses/types'
 

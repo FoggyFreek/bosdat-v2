@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { teachersApi } from '@/services/api'
+import { teachersApi } from '@/features/teachers/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { CourseType } from '@/features/course-types/types'

@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor, within } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { SchedulePage } from '../SchedulePage'
-import { calendarApi, teachersApi, roomsApi } from '@/services/api'
+import { calendarApi } from '@/features/schedule/api'
+import { teachersApi } from '@/features/teachers/api'
+import { roomsApi } from '@/features/rooms/api'
 import type { WeekCalendar, CalendarLesson, Holiday } from '@/features/schedule/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
@@ -10,13 +12,19 @@ import type { SchedulerProps } from '@/components'
 
 
 // Mock API modules
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/schedule/api', () => ({
   calendarApi: {
     getWeek: vi.fn(),
   },
+}))
+
+vi.mock('@/features/teachers/api', () => ({
   teachersApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/rooms/api', () => ({
   roomsApi: {
     getAll: vi.fn(),
   },

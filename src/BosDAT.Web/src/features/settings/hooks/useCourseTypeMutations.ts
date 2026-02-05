@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { courseTypesApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
 import type { CreateCourseTypePricingVersion } from '@/features/course-types/types'
 import type { CourseTypeFormData } from './useCourseTypeForm'
 

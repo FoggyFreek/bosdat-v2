@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { invoicesApi } from '@/services/api'
+import { invoicesApi } from '@/features/students/api'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
 import { formatDate } from '@/lib/datetime-helpers'

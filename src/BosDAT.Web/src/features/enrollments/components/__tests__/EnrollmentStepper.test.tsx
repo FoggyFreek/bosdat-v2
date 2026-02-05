@@ -2,21 +2,33 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { EnrollmentStepper } from '../EnrollmentStepper'
-import { courseTypesApi, teachersApi, settingsApi, studentsApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
+import { teachersApi } from '@/features/teachers/api'
+import { settingsApi } from '@/features/settings/api'
+import { studentsApi } from '@/features/students/api'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList, Teacher } from '@/features/teachers/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/teachers/api', () => ({
   teachersApi: {
     getAll: vi.fn(),
     getById: vi.fn(),
   },
+}))
+
+vi.mock('@/features/settings/api', () => ({
   settingsApi: {
     getByKey: vi.fn(),
   },
+}))
+
+vi.mock('@/features/students/api', () => ({
   studentsApi: {
     getAll: vi.fn(),
     hasActiveEnrollments: vi.fn(),

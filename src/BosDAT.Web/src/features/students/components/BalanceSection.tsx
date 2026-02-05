@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Wallet, TrendingUp, TrendingDown, CreditCard, FileText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { studentLedgerApi } from '@/services/api'
+import { studentLedgerApi } from '@/features/students/api'
 import type { StudentLedgerSummary, StudentLedgerEntry } from '@/features/students/types'
 import { formatDate } from '@/lib/datetime-helpers'
 import { cn } from '@/lib/utils'

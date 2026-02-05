@@ -2,20 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { CorrectionsSection } from '../CorrectionsSection'
-import { studentLedgerApi, enrollmentsApi } from '@/services/api'
+import { studentLedgerApi } from '@/features/students/api'
+import { enrollmentsApi } from '@/features/enrollments/api'
 import type {
   StudentLedgerEntry,
   StudentEnrollment,
   EnrollmentPricing,
 } from '@/features/students/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/students/api', () => ({
   studentLedgerApi: {
     getByStudent: vi.fn(),
     create: vi.fn(),
     reverse: vi.fn(),
     decouple: vi.fn(),
   },
+}))
+
+vi.mock('@/features/enrollments/api', () => ({
   enrollmentsApi: {
     getByStudent: vi.fn(),
     getEnrollmentPricing: vi.fn(),

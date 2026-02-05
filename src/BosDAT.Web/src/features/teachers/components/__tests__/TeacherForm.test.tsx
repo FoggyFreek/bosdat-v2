@@ -8,7 +8,7 @@ import type { Teacher } from '@/features/teachers/types'
 import type { Instrument } from '@/features/instruments/types'
 import type { User } from '@/features/auth/types'
 
-import { instrumentsApi } from '@/services/api'
+import { instrumentsApi } from '@/features/instruments/api'
 
 const mockNavigate = vi.fn()
 
@@ -20,7 +20,7 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/instruments/api', () => ({
   instrumentsApi: {
     getAll: vi.fn(),
   },

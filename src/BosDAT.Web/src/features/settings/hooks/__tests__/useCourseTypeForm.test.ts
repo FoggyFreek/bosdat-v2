@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useCourseTypeForm, DEFAULT_FORM_DATA, DURATION_OPTIONS } from '../useCourseTypeForm'
-import { courseTypesApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
 import type { CourseType } from '@/features/course-types/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getTeacherCountForInstrument: vi.fn(),
   },

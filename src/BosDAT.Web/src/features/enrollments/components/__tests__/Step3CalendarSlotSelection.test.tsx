@@ -3,18 +3,24 @@ import { render, screen, waitFor } from '@/test/utils'
 import { Step3CalendarSlotSelection } from '../Step3CalendarSlotSelection'
 import { EnrollmentFormProvider } from '../../context/EnrollmentFormContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import * as roomsApi from '@/services/api'
-import * as calendarApi from '@/services/api'
-import * as coursesApi from '@/services/api'
+import { roomsApi } from '@/features/rooms/api'
+import { calendarApi } from '@/features/schedule/api'
+import { coursesApi } from '@/features/courses/api'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/rooms/api', () => ({
   roomsApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/schedule/api', () => ({
   calendarApi: {
     getWeek: vi.fn(),
     checkAvailability: vi.fn(),
   },
+}))
+
+vi.mock('@/features/courses/api', () => ({
   coursesApi: {
     getAll: vi.fn(),
   },
@@ -47,7 +53,7 @@ describe('Step3CalendarSlotSelection', () => {
     vi.clearAllMocks()
 
     // Default mock implementations
-    vi.mocked(roomsApi.roomsApi.getAll).mockResolvedValue([
+    vi.mocked(roomsApi.getAll).mockResolvedValue([
       {
         id: 1,
         name: 'Room 1',
@@ -65,14 +71,14 @@ describe('Step3CalendarSlotSelection', () => {
       },
     ])
 
-    vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+    vi.mocked(calendarApi.getWeek).mockResolvedValue({
       weekStart: '2024-03-18',
       weekEnd: '2024-03-24',
       lessons: [],
       holidays: [],
     })
 
-    vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([])
+    vi.mocked(coursesApi.getAll).mockResolvedValue([])
   })
 
   it('should render loading state initially', () => {
@@ -105,7 +111,7 @@ describe('Step3CalendarSlotSelection', () => {
     renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
     await waitFor(() => {
-      expect(roomsApi.roomsApi.getAll).toHaveBeenCalledWith({ activeOnly: true })
+      expect(roomsApi.getAll).toHaveBeenCalledWith({ activeOnly: true })
     })
   })
 
@@ -119,7 +125,7 @@ describe('Step3CalendarSlotSelection', () => {
   })
 
   it('should handle errors gracefully', async () => {
-    vi.mocked(roomsApi.roomsApi.getAll).mockRejectedValue(new Error('Failed to fetch rooms'))
+    vi.mocked(roomsApi.getAll).mockRejectedValue(new Error('Failed to fetch rooms'))
 
     renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
@@ -133,13 +139,13 @@ describe('Step3CalendarSlotSelection', () => {
       // The component now uses coursesApi.getAll to fetch courses
       // and transforms them into calendar events using useCalendarEvents hook
       // Courses query is enabled when: !step1.isTrial && !!step3.selectedRoomId
-      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([])
+      vi.mocked(coursesApi.getAll).mockResolvedValue([])
 
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
         // Rooms are always fetched
-        expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
+        expect(roomsApi.getAll).toHaveBeenCalled()
       })
 
       // The calendar data comes from courses, not from a dedicated week calendar endpoint
@@ -148,7 +154,7 @@ describe('Step3CalendarSlotSelection', () => {
     })
 
     it('should handle lessons on multiple dates in a week', async () => {
-      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+      vi.mocked(calendarApi.getWeek).mockResolvedValue({
         weekStart: '2024-03-18',
         weekEnd: '2024-03-24',
         lessons: [
@@ -203,23 +209,23 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
+        expect(roomsApi.getAll).toHaveBeenCalled()
       })
 
       // Verify week data structure is correct
-      const mockCall = vi.mocked(calendarApi.calendarApi.getWeek)
+      const mockCall = vi.mocked(calendarApi.getWeek)
       expect(mockCall).toBeDefined()
     })
 
     it('should include courses from multiple days of the week', async () => {
-      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+      vi.mocked(calendarApi.getWeek).mockResolvedValue({
         weekStart: '2024-03-18',
         weekEnd: '2024-03-24',
         lessons: [],
         holidays: [],
       })
 
-      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([
+      vi.mocked(coursesApi.getAll).mockResolvedValue([
         {
           id: 'course-mon',
           teacherId: 'teacher-1',
@@ -299,19 +305,19 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
+        expect(roomsApi.getAll).toHaveBeenCalled()
       })
 
       // Courses are fetched regardless of room selection (room is an optional filter)
       await waitFor(() => {
-        expect(coursesApi.coursesApi.getAll).toHaveBeenCalled()
+        expect(coursesApi.getAll).toHaveBeenCalled()
       })
     })
   })
 
   describe('handles empty and missing data gracefully', () => {
     it('should handle empty lessons array in calendar response', async () => {
-      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+      vi.mocked(calendarApi.getWeek).mockResolvedValue({
         weekStart: '2024-03-18',
         weekEnd: '2024-03-24',
         lessons: [],
@@ -326,7 +332,7 @@ describe('Step3CalendarSlotSelection', () => {
     })
 
     it('should handle empty holidays array in calendar response', async () => {
-      vi.mocked(calendarApi.calendarApi.getWeek).mockResolvedValue({
+      vi.mocked(calendarApi.getWeek).mockResolvedValue({
         weekStart: '2024-03-18',
         weekEnd: '2024-03-24',
         lessons: [],
@@ -341,7 +347,7 @@ describe('Step3CalendarSlotSelection', () => {
     })
 
     it('should handle empty courses array', async () => {
-      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([])
+      vi.mocked(coursesApi.getAll).mockResolvedValue([])
 
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
@@ -351,7 +357,7 @@ describe('Step3CalendarSlotSelection', () => {
     })
 
     it('should handle empty rooms array', async () => {
-      vi.mocked(roomsApi.roomsApi.getAll).mockResolvedValue([])
+      vi.mocked(roomsApi.getAll).mockResolvedValue([])
 
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
@@ -361,7 +367,7 @@ describe('Step3CalendarSlotSelection', () => {
     })
 
     it('should handle course with empty enrollments', async () => {
-      vi.mocked(coursesApi.coursesApi.getAll).mockResolvedValue([
+      vi.mocked(coursesApi.getAll).mockResolvedValue([
         {
           id: 'course-1',
           teacherId: 'teacher-1',

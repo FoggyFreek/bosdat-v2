@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import MockAdapter from 'axios-mock-adapter'
-import { api, roomsApi } from '../api'
+import { api } from '../api'
+import { roomsApi } from '@/features/rooms/api'
 
 describe('roomsApi', () => {
   let mock: MockAdapter

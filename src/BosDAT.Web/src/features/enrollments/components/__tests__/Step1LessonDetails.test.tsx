@@ -3,14 +3,18 @@ import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { Step1LessonDetails } from '../Step1LessonDetails'
 import { EnrollmentFormProvider } from '../../context/EnrollmentFormContext'
-import { courseTypesApi, teachersApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
+import { teachersApi } from '@/features/teachers/api'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/teachers/api', () => ({
   teachersApi: {
     getAll: vi.fn(),
   },

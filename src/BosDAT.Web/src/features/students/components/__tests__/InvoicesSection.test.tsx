@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { InvoicesSection } from '../InvoicesSection'
-import { invoicesApi } from '@/services/api'
+import { invoicesApi } from '@/features/students/api'
 import type { Invoice, InvoiceListItem, SchoolBillingInfo } from '@/features/students/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/students/api', () => ({
   invoicesApi: {
     getByStudent: vi.fn(),
     getById: vi.fn(),

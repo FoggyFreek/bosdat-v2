@@ -5,11 +5,13 @@ import { BrowserRouter } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { CourseTypesSection } from '../CourseTypesSection'
 import { FormDirtyProvider } from '@/context/FormDirtyContext'
-import { courseTypesApi, instrumentsApi, settingsApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
+import { instrumentsApi } from '@/features/instruments/api'
+import { settingsApi } from '@/features/settings/api'
 import type { CourseType } from '@/features/course-types/types'
 import type { Instrument } from '@/features/instruments/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getAll: vi.fn(),
     create: vi.fn(),
@@ -20,9 +22,15 @@ vi.mock('@/services/api', () => ({
     createPricingVersion: vi.fn(),
     getTeacherCountForInstrument: vi.fn(),
   },
+}))
+
+vi.mock('@/features/instruments/api', () => ({
   instrumentsApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/settings/api', () => ({
   settingsApi: {
     getAll: vi.fn(),
   },

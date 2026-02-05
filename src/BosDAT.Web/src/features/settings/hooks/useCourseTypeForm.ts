@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { courseTypesApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
 import type { CourseType, CourseTypeCategory } from '@/features/course-types/types'
 
 export const DURATION_OPTIONS = ['20', '30', '40', '45', '50', '60', '90', '120'] as const

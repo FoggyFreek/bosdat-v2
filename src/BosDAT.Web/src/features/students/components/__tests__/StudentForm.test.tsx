@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { StudentForm } from '../StudentForm'
 import type { Student, DuplicateCheckResult } from '@/features/students/types'
-import { studentsApi } from '@/services/api'
+import { studentsApi } from '@/features/students/api'
 
 const mockNavigate = vi.fn()
 
@@ -15,7 +15,7 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/students/api', () => ({
   studentsApi: {
     checkDuplicates: vi.fn(),
   },

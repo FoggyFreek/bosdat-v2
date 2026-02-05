@@ -25,7 +25,7 @@ import {
   CorrectionsSection,
   BalanceSection,
 } from '@/features/students/components'
-import { studentsApi } from '@/services/api'
+import { studentsApi } from '@/features/students/api'
 import type { Student, StudentSectionKey } from '@/features/students/types'
 
 function StudentDetailContent() {

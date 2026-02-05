@@ -10,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { enrollmentsApi, coursesApi } from '@/services/api'
+import { enrollmentsApi } from '@/features/enrollments/api'
+import { coursesApi } from '@/features/courses/api'
 import type { StudentEnrollment } from '@/features/students/types'
 import type { CourseList } from '@/features/courses/types'
 import { cn } from '@/lib/utils'

@@ -27,3 +27,16 @@ export interface SystemSetting {
   type?: string
   description?: string
 }
+
+export interface SeederStatusResponse {
+  isSeeded: boolean
+  environment: string
+  canSeed: boolean
+  canReset: boolean
+}
+
+export interface SeederActionResponse {
+  success: boolean
+  message: string
+  action: string
+}

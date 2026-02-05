@@ -14,7 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { seederApi, type SeederStatusResponse, type SeederActionResponse } from '@/services/api'
+import { seederApi } from '@/features/settings/api'
+import type { SeederStatusResponse, SeederActionResponse } from '@/features/settings/types'
 
 type SeederAction = 'seed' | 'reset' | 'reseed'
 

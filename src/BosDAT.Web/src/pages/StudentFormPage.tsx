@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StudentForm } from '@/features/students/components/StudentForm'
-import { studentsApi } from '@/services/api'
+import { studentsApi } from '@/features/students/api'
 import type { Student, CreateStudent } from '@/features/students/types'
 import { AxiosError } from 'axios'
 

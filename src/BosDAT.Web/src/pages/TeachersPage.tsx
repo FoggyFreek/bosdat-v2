@@ -5,7 +5,7 @@ import { Plus, Search, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { teachersApi } from '@/services/api'
+import { teachersApi } from '@/features/teachers/api'
 import type { TeacherList } from '@/features/teachers/types'
 import { cn } from '@/lib/utils'
 

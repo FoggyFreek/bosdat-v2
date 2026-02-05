@@ -2,20 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, within } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { SettingsPage } from '../SettingsPage'
-import { instrumentsApi, roomsApi, courseTypesApi, holidaysApi, settingsApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
+import { instrumentsApi } from '@/features/instruments/api'
+import { roomsApi } from '@/features/rooms/api'
+import { holidaysApi, settingsApi } from '@/features/settings/api'
 
 // Mock all API modules
-vi.mock('@/services/api', () => ({
-  instrumentsApi: {
-    getAll: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-  },
-  roomsApi: {
-    getAll: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-  },
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getAll: vi.fn(),
     create: vi.fn(),
@@ -24,6 +17,25 @@ vi.mock('@/services/api', () => ({
     reactivate: vi.fn(),
     getTeacherCountForInstrument: vi.fn(),
   },
+}))
+
+vi.mock('@/features/instruments/api', () => ({
+  instrumentsApi: {
+    getAll: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+}))
+
+vi.mock('@/features/rooms/api', () => ({
+  roomsApi: {
+    getAll: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+}))
+
+vi.mock('@/features/settings/api', () => ({
   holidaysApi: {
     getAll: vi.fn(),
     create: vi.fn(),

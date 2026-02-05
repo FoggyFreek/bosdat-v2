@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { Users, GraduationCap, Music } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { studentsApi, teachersApi, coursesApi } from '@/services/api'
+import { studentsApi } from '@/features/students/api'
+import { teachersApi } from '@/features/teachers/api'
+import { coursesApi } from '@/features/courses/api'
 import type { StudentList } from '@/features/students/types'
 import type { TeacherList } from '@/features/teachers/types'
 

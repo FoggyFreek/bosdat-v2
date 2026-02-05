@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { coursesApi, lessonsApi } from '@/services/api'
+import { coursesApi } from '@/features/courses/api'
+import { lessonsApi } from '@/features/lessons/api'
 import type { Course } from '@/features/courses/types'
 import type { Lesson } from '@/features/lessons/types'
 

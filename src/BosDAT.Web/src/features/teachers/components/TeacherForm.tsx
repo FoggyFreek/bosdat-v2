@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { instrumentsApi, courseTypesApi } from '@/services/api'
+import { instrumentsApi } from '@/features/instruments/api'
+import { courseTypesApi } from '@/features/course-types/api'
 import { useAuth } from '@/context/AuthContext'
 import { validateEmail } from '@/lib/utils'
 import type { Teacher, TeacherRole, CreateTeacher } from '@/features/teachers/types'

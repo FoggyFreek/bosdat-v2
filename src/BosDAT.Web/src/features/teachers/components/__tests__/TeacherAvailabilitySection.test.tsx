@@ -7,9 +7,9 @@ import { TeacherAvailabilitySection } from '../TeacherAvailabilitySection'
 import type { TeacherAvailability } from '@/features/teachers/types'
 import type { User } from '@/features/auth/types'
 
-import { teachersApi } from '@/services/api'
+import { teachersApi } from '@/features/teachers/api'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/teachers/api', () => ({
   teachersApi: {
     getAvailability: vi.fn(),
     updateAvailability: vi.fn(),

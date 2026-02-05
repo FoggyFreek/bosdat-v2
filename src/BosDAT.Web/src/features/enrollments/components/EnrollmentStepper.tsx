@@ -11,7 +11,7 @@ import { Step1LessonDetails } from './Step1LessonDetails'
 import { Step2StudentSelection } from './Step2StudentSelection'
 import { Step3CalendarSlotSelection } from './Step3CalendarSlotSelection'
 import { Step4Summary } from './Step4Summary'
-import { courseTypesApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
 import type { CourseType } from '@/features/course-types/types'
 
 const DISPLAY_NAME = 'EnrollmentStepper'

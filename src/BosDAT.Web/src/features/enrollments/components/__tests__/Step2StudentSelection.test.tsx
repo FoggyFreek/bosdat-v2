@@ -2,22 +2,34 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import { Step2StudentSelection } from '../Step2StudentSelection'
 import { EnrollmentFormProvider, useEnrollmentForm } from '../../context/EnrollmentFormContext'
-import { courseTypesApi, settingsApi, studentsApi, teachersApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
+import { settingsApi } from '@/features/settings/api'
+import { studentsApi } from '@/features/students/api'
+import { teachersApi } from '@/features/teachers/api'
 import type { CourseType } from '@/features/course-types/types'
 import type { StudentList } from '@/features/students/types'
 import { useEffect } from 'react'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/settings/api', () => ({
   settingsApi: {
     getByKey: vi.fn(),
   },
+}))
+
+vi.mock('@/features/students/api', () => ({
   studentsApi: {
     getAll: vi.fn(),
     hasActiveEnrollments: vi.fn(),
   },
+}))
+
+vi.mock('@/features/teachers/api', () => ({
   teachersApi: {
     getAll: vi.fn(),
   },

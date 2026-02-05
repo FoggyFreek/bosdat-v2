@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { StudentForm } from '@/features/students/components/StudentForm'
-import { studentsApi } from '@/services/api'
+import { studentsApi } from '@/features/students/api'
 import type { CreateStudent, Student } from '@/features/students/types'
 
 interface AddStudentModalProps {

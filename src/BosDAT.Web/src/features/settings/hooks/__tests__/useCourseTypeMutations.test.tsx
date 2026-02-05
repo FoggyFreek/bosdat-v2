@@ -3,10 +3,10 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useCourseTypeMutations } from '../useCourseTypeMutations'
-import { courseTypesApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
 import type { CourseTypeFormData } from '../useCourseTypeForm'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     create: vi.fn(),
     update: vi.fn(),

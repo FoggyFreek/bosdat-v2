@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/test/utils'
 import { CoursesPage } from '../CoursesPage'
-import { coursesApi } from '@/services/api'
+import { coursesApi } from '@/features/courses/api'
 import type { CourseList } from '@/features/courses/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/courses/api', () => ({
   coursesApi: {
     getSummary: vi.fn(),
   },

@@ -4,7 +4,7 @@ import { Pencil, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { settingsApi } from '@/services/api'
+import { settingsApi } from '@/features/settings/api'
 import { useFormDirty } from '@/context/FormDirtyContext'
 import type { SystemSetting } from '@/features/settings/types'
 

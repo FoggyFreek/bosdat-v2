@@ -3,17 +3,25 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useCourseTypesData } from '../useCourseTypesData'
-import { courseTypesApi, instrumentsApi, settingsApi } from '@/services/api'
+import { courseTypesApi } from '@/features/course-types/api'
+import { instrumentsApi } from '@/features/instruments/api'
+import { settingsApi } from '@/features/settings/api'
 import type { CourseType } from '@/features/course-types/types'
 import type { Instrument } from '@/features/instruments/types'
 
-vi.mock('@/services/api', () => ({
+vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/instruments/api', () => ({
   instrumentsApi: {
     getAll: vi.fn(),
   },
+}))
+
+vi.mock('@/features/settings/api', () => ({
   settingsApi: {
     getAll: vi.fn(),
   },
