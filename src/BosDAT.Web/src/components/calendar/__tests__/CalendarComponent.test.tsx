@@ -105,7 +105,7 @@ describe('CalendarComponent', () => {
   })
 
   describe('Time Grid', () => {
-    it('renders time column with hours 6-22', () => {
+    it('renders time column with hours 8-22', () => {
       render(
         <CalendarComponent
           title="Weekly Schedule"
@@ -114,8 +114,8 @@ describe('CalendarComponent', () => {
         />
       )
 
-      // Check that hours 6-22 are displayed
-      const expectedHours = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+      // Check that hours 8-22 are displayed
+      const expectedHours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
       expectedHours.forEach(hour => {
         const hourLabel = hour < 10 ? `0${hour}:00` : `${hour}:00`
         expect(screen.getByText(hourLabel)).toBeInTheDocument()
@@ -736,8 +736,8 @@ describe('CalendarComponent', () => {
       )
 
       const grid = screen.getByRole('grid')
-      // Grid height should be 17 hours (6-22) * 120px = 2040px
-      expect(grid).toHaveStyle({ height: '2040px' })
+      // Grid height should be 15 hours (8-22) * 120px = 1800px
+      expect(grid).toHaveStyle({ height: '1800px' })
     })
 
     it('renders with default hourHeight when not provided', () => {
@@ -750,8 +750,8 @@ describe('CalendarComponent', () => {
       )
 
       const grid = screen.getByRole('grid')
-      // Grid height should be 17 hours (6-22) * 100px (default) = 1700px
-      expect(grid).toHaveStyle({ height: '1700px' })
+      // Grid height should be 15 hours (8-22) * 100px (default) = 1500px
+      expect(grid).toHaveStyle({ height: '1500px' })
     })
   })
 })

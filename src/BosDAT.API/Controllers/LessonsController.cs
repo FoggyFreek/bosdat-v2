@@ -447,17 +447,6 @@ public class LessonsController : ControllerBase
         return existingLessons.Any(l => l.ScheduledDate == date && l.StudentId == studentId);
     }
 
-    private static DateOnly GetNextOccurrenceDate(DateOnly currentDate, CourseFrequency frequency)
-    {
-        return frequency switch
-        {
-            CourseFrequency.Weekly => currentDate.AddDays(7),
-            CourseFrequency.Biweekly => currentDate.AddDays(14),
-            CourseFrequency.Monthly => currentDate.AddMonths(1),
-            _ => currentDate.AddDays(7)
-        };
-    }
-
     private static DateOnly GetNextOccurrenceDate(DateOnly currentDate, Course course)
     {
         // For biweekly with specific parity, we need to find the next occurrence in a matching week

@@ -302,8 +302,10 @@ describe('Step3CalendarSlotSelection', () => {
         expect(roomsApi.roomsApi.getAll).toHaveBeenCalled()
       })
 
-      // Courses query is only enabled when a room is selected; no room selected here
-      expect(coursesApi.coursesApi.getAll).not.toHaveBeenCalled()
+      // Courses are fetched regardless of room selection (room is an optional filter)
+      await waitFor(() => {
+        expect(coursesApi.coursesApi.getAll).toHaveBeenCalled()
+      })
     })
   })
 
