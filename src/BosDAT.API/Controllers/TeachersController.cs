@@ -103,6 +103,8 @@ public class TeachersController : ControllerBase
             DayOfWeek = c.DayOfWeek,
             StartTime = c.StartTime,
             EndTime = c.EndTime,
+            Frequency = c.Frequency,
+            WeekParity = c.WeekParity,
             Status = c.Status,
             EnrollmentCount = c.Enrollments.Count
         });

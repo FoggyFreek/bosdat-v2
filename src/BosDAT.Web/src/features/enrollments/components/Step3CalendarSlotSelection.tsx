@@ -68,14 +68,33 @@ export const Step3CalendarSlotSelection = ({
     [teacherAvailability]
   )
 
-  // Fetch all courses (filter by selected room if applicable)
-  const { data: courses = [],  isLoading: isLoadingCourses } = useQuery<Course[]>({
-    queryKey: ['courses', { roomId: step3.selectedRoomId, selectedDate }],
+  // Fetch all courses (unfiltered) when no room selected, or room-specific when room selected
+  const { data: allCourses = [], isLoading: isLoadingAllCourses } = useQuery<Course[]>({
+    queryKey: ['courses', { roomId: step3.selectedRoomId ?? 'all', selectedDate }],
+    queryFn: () =>
+      coursesApi.getAll(
+        step3.selectedRoomId ? { roomId: step3.selectedRoomId } : undefined
+      ),
+  })
+
+  // Fetch all courses for the selected teacher (to show commitments in other rooms)
+  const { data: teacherCourses = [], isLoading: isLoadingTeacherCourses } = useQuery<Course[]>({
+    queryKey: ['courses', { teacherId: step1.teacherId, selectedDate }],
     queryFn: () =>
       coursesApi.getAll({
-        roomId: step3.selectedRoomId || undefined,
+        teacherId: step1.teacherId ?? undefined,
       }),
+    enabled: !!step1.teacherId && !!step3.selectedRoomId,
   })
+
+  // Combine: when room selected, add teacher courses from other rooms (no duplicates)
+  const courses = useMemo(() => {
+    if (!step3.selectedRoomId) return allCourses
+    const teacherCoursesElsewhere = teacherCourses.filter(
+      (c) => c.roomId !== step3.selectedRoomId
+    )
+    return [...allCourses, ...teacherCoursesElsewhere]
+  }, [allCourses, teacherCourses, step3.selectedRoomId])
 
   // Transform courses into calendar events, filtering by week parity
   const courseEvents = useCalendarEvents({ weekStart, courses })
@@ -87,8 +106,7 @@ export const Step3CalendarSlotSelection = ({
     return courseEvents
   }, [courseEvents, placeholderEvent])
 
-
-  const isLoading = isLoadingRooms || isLoadingCourses || isLoadingTeacherAvailability
+  const isLoading = isLoadingRooms || isLoadingAllCourses || isLoadingTeacherCourses || isLoadingTeacherAvailability
 
   const handleWeekChange = (days: number) => {
     const newDate = new Date(selectedDate)

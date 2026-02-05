@@ -27,7 +27,7 @@ export function DashboardPage() {
   })
 
   const { data: courses = 0 } = useQuery<number>({
-    queryKey: ['courses'],
+    queryKey: ['courses', 'count', { status: 'Active' }],
     queryFn: () => coursesApi.getCount(
       { status: 'Active' }
     ),

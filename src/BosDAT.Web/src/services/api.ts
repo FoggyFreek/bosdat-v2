@@ -405,8 +405,10 @@ export const lessonsApi = {
     endDate?: string
     teacherId?: string
     studentId?: string
+    courseId?: string
     roomId?: number
     status?: string
+    top?: number
   }) => {
     const response = await api.get('/lessons', { params })
     return response.data

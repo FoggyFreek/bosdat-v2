@@ -1,10 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import { courseTypesApi, teachersApi } from '@/services/api'
+import { SummaryCard, type SummaryItem } from '@/components/SummaryCard'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import { RecurrenceType } from '../types'
+
+const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
+  Trail: 'Trial Lesson',
+  Weekly: 'Once per week',
+  Biweekly: 'Every two weeks',
+}
+
+const formatDate = (date: string | null) => {
+  if (!date) return '-'
+  return new Date(date).toLocaleDateString('nl-NL')
+}
 
 export const Step2Summary = () => {
   const { formData } = useEnrollmentForm()
@@ -27,67 +39,44 @@ export const Step2Summary = () => {
     ? getDayNameFromNumber(new Date(step1.startDate).getDay())
     : null
 
-  const getRecurrenceLabel = (recurrence: RecurrenceType) => {
-  const labels: Record<RecurrenceType, string> = {
-    Trail: 'Trial Lesson',
-    Weekly: 'Once per week',
-    Biweekly: 'Every two weeks',
-  }
-  return labels[recurrence]
-}
-  const formatDate = (date: string | null) => {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('nl-NL')
-  }
+  const items: SummaryItem[] = [
+    {
+      label: 'Course Type:',
+      value: (
+        <>
+          {selectedCourseType?.name || '-'}{' '}
+          {selectedCourseType?.type && (
+            <span className="text-muted-foreground">({selectedCourseType.type})</span>
+          )}
+        </>
+      ),
+    },
+    {
+      label: 'Teacher:',
+      value: selectedTeacher?.fullName || '-',
+    },
+    {
+      label: 'Start Date:',
+      value: (
+        <>
+          {formatDate(step1.startDate)} {dayOfWeek && `(${dayOfWeek})`}
+        </>
+      ),
+    },
+    ...(step1.endDate
+      ? [{ label: 'End Date:', value: formatDate(step1.endDate) }]
+      : []),
+    ...(step1.isTrial
+      ? [{ label: 'Type:', value: <span className="text-amber-600">Trial Lesson</span> }]
+      : []),
+    {
+      label: 'Recurrence:',
+      value: RECURRENCE_LABELS[step1.recurrence],
+    },
+    ...(selectedCourseType
+      ? [{ label: 'Max Students:', value: String(selectedCourseType.maxStudents) }]
+      : []),
+  ]
 
-  return (
-    <div className="rounded-lg border bg-muted/50 p-4">
-      <h3 className="font-medium mb-3 text-sm">Lesson Configuration</h3>
-      <div className="grid gap-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Course Type:</span>
-          <span className="font-medium">
-            {selectedCourseType?.name || '-'}{' '}
-            {selectedCourseType?.type && (
-              <span className="text-muted-foreground">({selectedCourseType.type})</span>
-            )}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Teacher:</span>
-          <span className="font-medium">{selectedTeacher?.fullName || '-'}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Start Date:</span>
-          <span className="font-medium">
-            {formatDate(step1.startDate)} {dayOfWeek && `(${dayOfWeek})`}
-          </span>
-        </div>
-        {step1.endDate && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">End Date:</span>
-            <span className="font-medium">{formatDate(step1.endDate)}</span>
-          </div>
-        )}
-        {step1.isTrial && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Type:</span>
-            <span className="font-medium text-amber-600">Trial Lesson</span>
-          </div>
-        )}
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Recurrence:</span>
-          <span className="font-medium">
-            {getRecurrenceLabel(step1.recurrence)}
-          </span>
-        </div>
-        {selectedCourseType && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Max Students:</span>
-            <span className="font-medium">{selectedCourseType.maxStudents}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
+  return <SummaryCard title="Lesson Configuration" items={items} />
 }

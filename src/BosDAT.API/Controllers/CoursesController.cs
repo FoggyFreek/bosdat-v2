@@ -68,6 +68,7 @@ public class CoursesController : ControllerBase
                 EndTime = c.EndTime,
                 Frequency = c.Frequency,
                 WeekParity = c.WeekParity,
+                EnrollmentCount = c.Enrollments.Count(e => e.Status == EnrollmentStatus.Active),
                 Status = c.Status
             })
             .ToListAsync(cancellationToken);

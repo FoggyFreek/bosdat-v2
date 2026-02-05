@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { teachersApi } from '@/services/api'
 import { useAuth } from '@/context/AuthContext'
 import type { Teacher } from '@/features/teachers/types'
+import type { CourseList } from '@/features/courses/types'
 import { formatCurrency } from '@/lib/utils'
 import { TeacherAvailabilitySection } from '@/features/teachers/components/TeacherAvailabilitySection'
+import { CourseListItem } from '@/features/courses/components/CourseListItem'
 
 const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'
 
@@ -22,6 +24,14 @@ export function TeacherDetailPage() {
     queryFn: () => teachersApi.getById(id!),
     enabled: !!id,
   })
+
+  const { data: coursesData } = useQuery<{ teacher: Teacher; courses: CourseList[] }>({
+    queryKey: ['teacher', id, 'courses'],
+    queryFn: () => teachersApi.getWithCourses(id!),
+    enabled: !!id,
+  })
+
+  const courses = coursesData?.courses ?? []
 
   if (isLoading) {
     return (
@@ -155,7 +165,18 @@ export function TeacherDetailPage() {
           <CardTitle>Courses</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No courses assigned yet</p>
+          {courses.length === 0 && (
+            <p className="text-muted-foreground">No courses assigned yet</p>
+          )}
+          {courses.length > 0 && (
+            <div className="divide-y">
+              {courses
+                .toSorted((a, b) => a.startTime.localeCompare(b.startTime))
+                .map((course) => (
+                  <CourseListItem key={course.id} course={course} />
+                ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

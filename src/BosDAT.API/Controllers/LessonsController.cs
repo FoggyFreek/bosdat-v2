@@ -27,8 +27,10 @@ public class LessonsController : ControllerBase
         [FromQuery] DateOnly? endDate,
         [FromQuery] Guid? teacherId,
         [FromQuery] Guid? studentId,
+        [FromQuery] Guid? courseId,
         [FromQuery] int? roomId,
         [FromQuery] LessonStatus? status,
+        [FromQuery] int? top,
         CancellationToken cancellationToken)
     {
         IQueryable<Lesson> query = _unitOfWork.Lessons.Query()
@@ -59,6 +61,11 @@ public class LessonsController : ControllerBase
             query = query.Where(l => l.StudentId == studentId.Value);
         }
 
+        if (courseId.HasValue)
+        {
+            query = query.Where(l => l.CourseId == courseId.Value);
+        }
+
         if (roomId.HasValue)
         {
             query = query.Where(l => l.RoomId == roomId.Value);
@@ -69,11 +76,25 @@ public class LessonsController : ControllerBase
             query = query.Where(l => l.Status == status.Value);
         }
 
-        var lessons = await query
-            .OrderBy(l => l.ScheduledDate)
-            .ThenBy(l => l.StartTime)
-            .Select(l => MapToDto(l))
-            .ToListAsync(cancellationToken);
+        IQueryable<LessonDto> orderedQuery;
+
+        if (top.HasValue)
+        {
+            orderedQuery = query
+                .OrderByDescending(l => l.ScheduledDate)
+                .ThenByDescending(l => l.StartTime)
+                .Take(top.Value)
+                .Select(l => MapToDto(l));
+        }
+        else
+        {
+            orderedQuery = query
+                .OrderBy(l => l.ScheduledDate)
+                .ThenBy(l => l.StartTime)
+                .Select(l => MapToDto(l));
+        }
+
+        var lessons = await orderedQuery.ToListAsync(cancellationToken);
 
         return Ok(lessons);
     }

@@ -30,7 +30,12 @@
       "Bash(npx vite build)",
       "Bash(npx eslint .)",
       "Bash(npx vitest run)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm view:*)",
+      "WebSearch"
     ]
   }
 }

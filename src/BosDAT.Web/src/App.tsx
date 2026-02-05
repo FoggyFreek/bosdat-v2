@@ -15,6 +15,7 @@ const TeachersPage = lazy(() => import('./pages/TeachersPage').then(m => ({ defa
 const TeacherDetailPage = lazy(() => import('./pages/TeacherDetailPage').then(m => ({ default: m.TeacherDetailPage })))
 const TeacherFormPage = lazy(() => import('./pages/TeacherFormPage').then(m => ({ default: m.TeacherFormPage })))
 const CoursesPage = lazy(() => import('./pages/CoursesPage').then(m => ({ default: m.CoursesPage })))
+const CourseDetailPage = lazy(() => import('./pages/CourseDetailPage').then(m => ({ default: m.CourseDetailPage })))
 const SchedulePage = lazy(() => import('./pages/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const EnrollmentPage = lazy(() => import('./pages/EnrollmentPage').then(m => ({ default: m.EnrollmentPage })))
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/teachers/:id" element={<Suspense fallback={<LoadingFallback />}><TeacherDetailPage /></Suspense>} />
                 <Route path="/teachers/:id/edit" element={<Suspense fallback={<LoadingFallback />}><TeacherFormPage /></Suspense>} />
                 <Route path="/courses" element={<Suspense fallback={<LoadingFallback />}><CoursesPage /></Suspense>} />
+                <Route path="/courses/:id" element={<Suspense fallback={<LoadingFallback />}><CourseDetailPage /></Suspense>} />
                 <Route path="/schedule" element={<Suspense fallback={<LoadingFallback />}><SchedulePage /></Suspense>} />
                 <Route path="/settings" element={<Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense>} />
                 <Route path="/enrollments/new" element={<Suspense fallback={<LoadingFallback />}><EnrollmentPage /></Suspense>} />
