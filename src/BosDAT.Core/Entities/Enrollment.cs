@@ -1,3 +1,5 @@
+using BosDAT.Core.Enums;
+
 namespace BosDAT.Core.Entities;
 
 public enum EnrollmentStatus
@@ -25,6 +27,7 @@ public class Enrollment : BaseEntity
     public decimal DiscountPercent { get; set; }
     public DiscountType DiscountType { get; set; } = DiscountType.None;
     public EnrollmentStatus Status { get; set; } = EnrollmentStatus.Active;
+    public InvoicingPreference InvoicingPreference { get; set; } = InvoicingPreference.Monthly;
 
     public string? Notes { get; set; }
 

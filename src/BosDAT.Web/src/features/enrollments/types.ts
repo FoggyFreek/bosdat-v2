@@ -1,8 +1,11 @@
 // Enrollment Domain Types
+import type { InvoicingPreference } from '@/features/students/types'
 
 export type EnrollmentStatus = 'Trail' | 'Active' | 'Withdrawn' | 'Completed' | 'Suspended'
 
 export type DiscountType = 'None' | 'Family' | 'Course'
+
+export type { InvoicingPreference } from '@/features/students/types'
 
 // Enrollment Stepper Form Types
 
@@ -41,6 +44,7 @@ export interface EnrollmentGroupMember {
   enrolledAt: string // ISO date, defaults to course start date
   discountType: DiscountType
   discountPercentage: number // from settings
+  invoicingPreference: InvoicingPreference // Monthly or Quarterly
   note: string
   isEligibleForCourseDiscount: boolean // determined by checking active enrollments
 }
@@ -97,6 +101,7 @@ export interface Enrollment {
   discountPercent: number
   discountType: DiscountType
   status: EnrollmentStatus
+  invoicingPreference: InvoicingPreference
   notes?: string
 }
 
@@ -105,12 +110,14 @@ export interface CreateEnrollment {
   courseId: string
   discountPercent?: number
   discountType?: DiscountType
+  invoicingPreference?: InvoicingPreference
   notes?: string
 }
 
 export interface UpdateEnrollment {
   discountPercent: number
   status: EnrollmentStatus
+  invoicingPreference: InvoicingPreference
   notes?: string
 }
 

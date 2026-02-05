@@ -79,6 +79,7 @@ export const StudentSearchPanel = ({
         enrolledAt: courseStartDate,
         discountType: 'None',
         discountPercentage: 0,
+        invoicingPreference: 'Monthly',
         note: '',
         isEligibleForCourseDiscount,
       }

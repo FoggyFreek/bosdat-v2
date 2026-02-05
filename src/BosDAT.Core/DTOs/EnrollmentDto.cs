@@ -1,4 +1,5 @@
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 
 namespace BosDAT.Core.DTOs;
 
@@ -12,6 +13,7 @@ public record EnrollmentDto
     public decimal DiscountPercent { get; init; }
     public DiscountType DiscountType { get; init; }
     public EnrollmentStatus Status { get; init; }
+    public InvoicingPreference InvoicingPreference { get; init; }
     public string? Notes { get; init; }
 }
 
@@ -21,6 +23,7 @@ public record CreateEnrollmentDto
     public Guid CourseId { get; init; }
     public decimal DiscountPercent { get; init; }
     public DiscountType DiscountType { get; init; }
+    public InvoicingPreference InvoicingPreference { get; init; } = InvoicingPreference.Monthly;
     public string? Notes { get; init; }
 }
 
@@ -28,5 +31,6 @@ public record UpdateEnrollmentDto
 {
     public decimal DiscountPercent { get; init; }
     public EnrollmentStatus Status { get; init; }
+    public InvoicingPreference InvoicingPreference { get; init; }
     public string? Notes { get; init; }
 }

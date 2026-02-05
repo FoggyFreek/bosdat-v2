@@ -62,26 +62,60 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
     public async Task<string> GenerateInvoiceNumberAsync(CancellationToken cancellationToken = default)
     {
         var year = DateTime.UtcNow.Year;
-        var prefix = await _context.Settings
-            .Where(s => s.Key == "invoice_prefix")
-            .Select(s => s.Value)
-            .FirstOrDefaultAsync(cancellationToken) ?? "NMI";
+        var yearPrefix = year.ToString();
 
         var lastInvoice = await _dbSet
-            .Where(i => i.InvoiceNumber.StartsWith($"{prefix}-{year}-"))
+            .Where(i => i.InvoiceNumber.StartsWith(yearPrefix))
             .OrderByDescending(i => i.InvoiceNumber)
             .FirstOrDefaultAsync(cancellationToken);
 
         int nextNumber = 1;
         if (lastInvoice != null)
         {
-            var parts = lastInvoice.InvoiceNumber.Split('-');
-            if (parts.Length == 3 && int.TryParse(parts[2], out var lastNumber))
+            // Invoice number format: YYYYNN (e.g., 202601, 202602)
+            var numberPart = lastInvoice.InvoiceNumber[4..];
+            if (int.TryParse(numberPart, out var lastNumber))
             {
                 nextNumber = lastNumber + 1;
             }
         }
 
-        return $"{prefix}-{year}-{nextNumber:D5}";
+        // Format: YYYYNN with at least 2 digits for the sequence number
+        return $"{year}{nextNumber:D2}";
+    }
+
+    public async Task<IReadOnlyList<Invoice>> GetByEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(i => i.EnrollmentId == enrollmentId)
+            .Include(i => i.Lines)
+            .Include(i => i.Payments)
+            .OrderByDescending(i => i.IssueDate)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Invoice?> GetByPeriodAsync(Guid studentId, Guid enrollmentId, DateOnly periodStart, DateOnly periodEnd, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(i => i.StudentId == studentId &&
+                        i.EnrollmentId == enrollmentId &&
+                        i.PeriodStart == periodStart &&
+                        i.PeriodEnd == periodEnd)
+            .Include(i => i.Lines)
+            .Include(i => i.Payments)
+            .Include(i => i.LedgerApplications)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Invoice>> GetUnpaidInvoicesAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(i => i.StudentId == studentId &&
+                        (i.Status == InvoiceStatus.Draft || i.Status == InvoiceStatus.Sent || i.Status == InvoiceStatus.Overdue))
+            .Include(i => i.Lines)
+            .Include(i => i.Payments)
+            .Include(i => i.LedgerApplications)
+            .OrderBy(i => i.IssueDate)
+            .ToListAsync(cancellationToken);
     }
 }

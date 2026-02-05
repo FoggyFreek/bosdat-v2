@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
 
 namespace BosDAT.API.Controllers;
@@ -62,6 +63,7 @@ public class EnrollmentsController(
                 DiscountPercent = e.DiscountPercent,
                 DiscountType = e.DiscountType,
                 Status = e.Status,
+                InvoicingPreference = e.InvoicingPreference,
                 Notes = e.Notes
             })
             .ToListAsync(cancellationToken);
@@ -103,6 +105,7 @@ public class EnrollmentsController(
             EnrolledAt = enrollment.EnrolledAt,
             DiscountPercent = enrollment.DiscountPercent,
             Status = enrollment.Status,
+            InvoicingPreference = enrollment.InvoicingPreference,
             Notes = enrollment.Notes
         });
     }
@@ -137,7 +140,8 @@ public class EnrollmentsController(
                 EndTime = e.Course.EndTime,
                 EnrolledAt = e.EnrolledAt,
                 DiscountPercent = e.DiscountPercent,
-                Status = e.Status
+                Status = e.Status,
+                InvoicingPreference = e.InvoicingPreference
             })
             .ToListAsync(cancellationToken);
 
@@ -211,6 +215,7 @@ public class EnrollmentsController(
             CourseId = dto.CourseId,
             DiscountPercent = dto.DiscountPercent,
             DiscountType = dto.DiscountType,
+            InvoicingPreference = dto.InvoicingPreference,
             Notes = dto.Notes,
             Status = enrollmentStatus
         };
@@ -234,6 +239,7 @@ public class EnrollmentsController(
             DiscountPercent = enrollment.DiscountPercent,
             DiscountType = enrollment.DiscountType,
             Status = enrollment.Status,
+            InvoicingPreference = enrollment.InvoicingPreference,
             Notes = enrollment.Notes
         });
     }
@@ -254,6 +260,7 @@ public class EnrollmentsController(
 
         enrollment.DiscountPercent = dto.DiscountPercent;
         enrollment.Status = dto.Status;
+        enrollment.InvoicingPreference = dto.InvoicingPreference;
         enrollment.Notes = dto.Notes;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -268,6 +275,7 @@ public class EnrollmentsController(
             DiscountPercent = enrollment.DiscountPercent,
             DiscountType = enrollment.DiscountType,
             Status = enrollment.Status,
+            InvoicingPreference = enrollment.InvoicingPreference,
             Notes = enrollment.Notes
         });
     }
@@ -310,6 +318,7 @@ public class EnrollmentsController(
             DiscountPercent = enrollment.DiscountPercent,
             DiscountType = enrollment.DiscountType,
             Status = enrollment.Status,
+            InvoicingPreference = enrollment.InvoicingPreference,
             Notes = enrollment.Notes
         });
     }
@@ -348,6 +357,7 @@ public record EnrollmentDetailDto
     public DateTime EnrolledAt { get; init; }
     public decimal DiscountPercent { get; init; }
     public EnrollmentStatus Status { get; init; }
+    public InvoicingPreference InvoicingPreference { get; init; }
     public string? Notes { get; init; }
 }
 
@@ -365,4 +375,5 @@ public record StudentEnrollmentDto
     public DateTime EnrolledAt { get; init; }
     public decimal DiscountPercent { get; init; }
     public EnrollmentStatus Status { get; init; }
+    public InvoicingPreference InvoicingPreference { get; init; }
 }

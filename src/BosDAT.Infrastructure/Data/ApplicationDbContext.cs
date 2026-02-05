@@ -234,6 +234,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.DiscountPercent).HasPrecision(5, 2);
+            entity.Property(e => e.InvoicingPreference)
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .HasDefaultValue(InvoicingPreference.Monthly);
 
             entity.HasOne(e => e.Student)
                 .WithMany(s => s.Enrollments)
@@ -283,16 +287,30 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasKey(e => e.Id);
             entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(50);
             entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+            entity.Property(e => e.Description).HasMaxLength(100);
             entity.Property(e => e.Subtotal).HasPrecision(10, 2);
             entity.Property(e => e.VatAmount).HasPrecision(10, 2);
             entity.Property(e => e.Total).HasPrecision(10, 2);
             entity.Property(e => e.DiscountAmount).HasPrecision(10, 2);
+            entity.Property(e => e.LedgerCreditsApplied).HasPrecision(10, 2);
+            entity.Property(e => e.LedgerDebitsApplied).HasPrecision(10, 2);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+            entity.Property(e => e.PeriodType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
 
             entity.HasOne(e => e.Student)
                 .WithMany(s => s.Invoices)
                 .HasForeignKey(e => e.StudentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Enrollment)
+                .WithMany()
+                .HasForeignKey(e => e.EnrollmentId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => new { e.StudentId, e.PeriodStart, e.PeriodEnd });
+            entity.HasIndex(e => e.Status);
         });
 
         // InvoiceLine configuration
@@ -516,6 +534,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             new Setting { Key = "invoice_prefix", Value = "NMI", Type = "string", Description = "Prefix for invoice numbers" },
             new Setting { Key = "payment_due_days", Value = "14", Type = "int", Description = "Days until payment is due" },
             new Setting { Key = "school_name", Value = "Nieuwe Muziekschool Ittersum", Type = "string", Description = "School name" },
+            new Setting { Key = "school_address", Value = "Muziekstraat 1", Type = "string", Description = "School address" },
+            new Setting { Key = "school_postal_code", Value = "8000 AB", Type = "string", Description = "School postal code" },
+            new Setting { Key = "school_city", Value = "Zwolle", Type = "string", Description = "School city" },
+            new Setting { Key = "school_phone", Value = "+31 38 123 4567", Type = "string", Description = "School phone number" },
+            new Setting { Key = "school_email", Value = "info@nmi-zwolle.nl", Type = "string", Description = "School email" },
+            new Setting { Key = "school_kvk", Value = "12345678", Type = "string", Description = "School KvK (Chamber of Commerce) number" },
+            new Setting { Key = "school_iban", Value = "NL00 BANK 0000 0000 00", Type = "string", Description = "School IBAN bank account" },
             new Setting { Key = "child_discount_percent", Value = "10", Type = "decimal", Description = "Default percentage discount for child pricing" },
             new Setting { Key = "group_max_students", Value = "6", Type = "int", Description = "Default maximum students for group lessons" },
             new Setting { Key = "workshop_max_students", Value = "12", Type = "int", Description = "Default maximum students for workshops" },

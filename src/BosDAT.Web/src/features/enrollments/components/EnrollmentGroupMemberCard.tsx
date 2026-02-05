@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import type { EnrollmentGroupMember, DiscountType } from '../types'
+import type { EnrollmentGroupMember, DiscountType, InvoicingPreference } from '../types'
 
 interface EnrollmentGroupMemberCardProps {
   readonly member: Readonly<EnrollmentGroupMember>
@@ -54,6 +54,10 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
     onUpdate({ note: e.target.value })
   }
 
+  const handleInvoicingPreferenceChange = (value: InvoicingPreference) => {
+    onUpdate({ invoicingPreference: value })
+  }
+
   const isStartingOnCourseStart = member.enrolledAt === courseStartDate
 
   return (
@@ -93,7 +97,7 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor={`enrolledAt-${member.studentId}`}>Enrollment Date</Label>
           <Input
@@ -133,6 +137,27 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
               {member.discountPercentage}% discount will be applied
             </p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor={`invoicing-${member.studentId}`}>Invoice Frequency</Label>
+          <Select
+            value={member.invoicingPreference}
+            onValueChange={handleInvoicingPreferenceChange}
+          >
+            <SelectTrigger id={`invoicing-${member.studentId}`}>
+              <SelectValue placeholder="Select frequency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Monthly">Monthly</SelectItem>
+              <SelectItem value="Quarterly">Quarterly</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {member.invoicingPreference === 'Monthly'
+              ? 'Invoiced each month (e.g., jan26)'
+              : 'Invoiced each quarter (e.g., jan-mar26)'}
+          </p>
         </div>
       </div>
 

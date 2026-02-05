@@ -10,6 +10,13 @@ import type {
   StudentLedgerSummary,
   CreateStudentLedgerEntry,
   EnrollmentPricing,
+  Invoice,
+  InvoiceListItem,
+  GenerateInvoice,
+  GenerateBatchInvoices,
+  SchoolBillingInfo,
+  InvoicePrintData,
+  InvoiceStatus,
 } from '@/features/students/types'
 
 const API_URL = import.meta.env.VITE_API_URL || ''
@@ -596,6 +603,62 @@ export const seederApi = {
 
   reseed: async (): Promise<SeederActionResponse> => {
     const response = await api.post<SeederActionResponse>('/admin/seeder/reseed')
+    return response.data
+  },
+}
+
+// Invoices API
+export const invoicesApi = {
+  getById: async (id: string): Promise<Invoice> => {
+    const response = await api.get<Invoice>(`/invoices/${id}`)
+    return response.data
+  },
+
+  getByNumber: async (invoiceNumber: string): Promise<Invoice> => {
+    const response = await api.get<Invoice>(`/invoices/number/${invoiceNumber}`)
+    return response.data
+  },
+
+  getByStudent: async (studentId: string): Promise<InvoiceListItem[]> => {
+    const response = await api.get<InvoiceListItem[]>(`/invoices/student/${studentId}`)
+    return response.data
+  },
+
+  getByStatus: async (status: InvoiceStatus): Promise<InvoiceListItem[]> => {
+    const response = await api.get<InvoiceListItem[]>(`/invoices/status/${status}`)
+    return response.data
+  },
+
+  generate: async (data: GenerateInvoice): Promise<Invoice> => {
+    const response = await api.post<Invoice>('/invoices/generate', data)
+    return response.data
+  },
+
+  generateBatch: async (data: GenerateBatchInvoices): Promise<Invoice[]> => {
+    const response = await api.post<Invoice[]>('/invoices/generate-batch', data)
+    return response.data
+  },
+
+  recalculate: async (id: string): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${id}/recalculate`)
+    return response.data
+  },
+
+  applyCorrection: async (invoiceId: string, ledgerEntryId: string, amount: number): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${invoiceId}/apply-correction`, {
+      ledgerEntryId,
+      amount,
+    })
+    return response.data
+  },
+
+  getSchoolBillingInfo: async (): Promise<SchoolBillingInfo> => {
+    const response = await api.get<SchoolBillingInfo>('/invoices/school-billing-info')
+    return response.data
+  },
+
+  getPrintData: async (id: string): Promise<InvoicePrintData> => {
+    const response = await api.get<InvoicePrintData>(`/invoices/${id}/print`)
     return response.data
   },
 }
