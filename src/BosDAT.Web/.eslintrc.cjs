@@ -32,15 +32,6 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/ban-types': [
-      'error',
-      {
-        types: {
-          '{}': false,
-        },
-        extendDefaults: true,
-      },
-    ],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
   settings: {

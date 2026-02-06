@@ -64,28 +64,28 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
   const navigate = useNavigate()
   const isEditMode = !!student
 
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    prefix: '',
-    email: '',
-    phone: '',
-    phoneAlt: '',
-    address: '',
-    postalCode: '',
-    city: '',
-    dateOfBirth: '',
-    gender: '',
-    status: 'Active',
-    billingContactName: '',
-    billingContactEmail: '',
-    billingContactPhone: '',
-    billingAddress: '',
-    billingPostalCode: '',
-    billingCity: '',
-    autoDebit: false,
-    notes: '',
-  })
+  const [formData, setFormData] = useState<FormData>(() => ({
+    firstName: student?.firstName ?? '',
+    lastName: student?.lastName ?? '',
+    prefix: student?.prefix ?? '',
+    email: student?.email ?? '',
+    phone: student?.phone ?? '',
+    phoneAlt: student?.phoneAlt ?? '',
+    address: student?.address ?? '',
+    postalCode: student?.postalCode ?? '',
+    city: student?.city ?? '',
+    dateOfBirth: student?.dateOfBirth ?? '',
+    gender: student?.gender ?? '',
+    status: student?.status ?? 'Active',
+    billingContactName: student?.billingContactName ?? '',
+    billingContactEmail: student?.billingContactEmail ?? '',
+    billingContactPhone: student?.billingContactPhone ?? '',
+    billingAddress: student?.billingAddress ?? '',
+    billingPostalCode: student?.billingPostalCode ?? '',
+    billingCity: student?.billingCity ?? '',
+    autoDebit: student?.autoDebit ?? false,
+    notes: student?.notes ?? '',
+  }))
 
   const [errors, setErrors] = useState<FormErrors>({})
 
@@ -119,32 +119,6 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
     }
   }, [formData.firstName, formData.lastName, formData.email, formData.phone, formData.dateOfBirth, checkDuplicates])
 
-  useEffect(() => {
-    if (student) {
-      setFormData({
-        firstName: student.firstName,
-        lastName: student.lastName,
-        prefix: student.prefix || '',
-        email: student.email,
-        phone: student.phone || '',
-        phoneAlt: student.phoneAlt || '',
-        address: student.address || '',
-        postalCode: student.postalCode || '',
-        city: student.city || '',
-        dateOfBirth: student.dateOfBirth || '',
-        gender: student.gender || '',
-        status: student.status,
-        billingContactName: student.billingContactName || '',
-        billingContactEmail: student.billingContactEmail || '',
-        billingContactPhone: student.billingContactPhone || '',
-        billingAddress: student.billingAddress || '',
-        billingPostalCode: student.billingPostalCode || '',
-        billingCity: student.billingCity || '',
-        autoDebit: student.autoDebit,
-        notes: student.notes || '',
-      })
-    }
-  }, [student])
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
@@ -241,7 +215,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
         <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
           <div className="flex items-start gap-3">
             <svg
-              className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0"
+              className="h-5 w-5 text-amber-600 mt-0.5 shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
@@ -264,7 +238,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                 {duplicates.map((duplicate) => (
                   <li
                     key={duplicate.id}
-                    className="flex items-center justify-between rounded-md bg-white p-3 shadow-sm"
+                    className="flex items-center justify-between rounded-md bg-white p-3 shadow-xs"
                   >
                     <div>
                       <Link

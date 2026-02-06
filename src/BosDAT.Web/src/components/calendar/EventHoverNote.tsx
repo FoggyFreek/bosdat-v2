@@ -31,7 +31,7 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
   return (
     <div
       className={cn(
-        'absolute top-0 z-[9999] bg-white rounded-lg shadow-lg border border-slate-200 p-3 min-w-[200px]',
+        'absolute top-0 z-9999 bg-white rounded-lg shadow-lg border border-slate-200 p-3 min-w-[200px]',
         isLastColumn ? 'right-full mr-2' : 'left-full ml-2'
       )}
       onMouseEnter={onMouseEnter}

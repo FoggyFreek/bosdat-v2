@@ -81,8 +81,8 @@ describe('EventsGrid - Availability Overlays', () => {
       const { container } = render(<EventsGrid {...defaultProps} availability={availability} />)
 
       // Should have overlays for before 10:00 and after 16:00
-      // Check for overlay elements with z-[2] class (availability overlays)
-      const availabilityOverlays = container.querySelectorAll('.z-\\[2\\]')
+      // Check for overlay elements with z-2 class (availability overlays)
+      const availabilityOverlays = container.querySelectorAll('.z-2')
       expect(availabilityOverlays.length).toBe(2) // before and after
     })
 
@@ -94,7 +94,7 @@ describe('EventsGrid - Availability Overlays', () => {
       const { container } = render(<EventsGrid {...defaultProps} availability={availability} />)
 
       // Should only have one overlay (after 16:00)
-      const availabilityOverlays = container.querySelectorAll('.z-\\[2\\]')
+      const availabilityOverlays = container.querySelectorAll('.z-2')
       expect(availabilityOverlays.length).toBe(1)
     })
 
@@ -106,7 +106,7 @@ describe('EventsGrid - Availability Overlays', () => {
       const { container } = render(<EventsGrid {...defaultProps} availability={availability} />)
 
       // Should only have one overlay (before 10:00)
-      const availabilityOverlays = container.querySelectorAll('.z-\\[2\\]')
+      const availabilityOverlays = container.querySelectorAll('.z-2')
       expect(availabilityOverlays.length).toBe(1)
     })
   })

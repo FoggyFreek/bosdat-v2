@@ -114,17 +114,6 @@ describe('Step3Summary', () => {
   })
 
   it('should render student initials when students are in context', async () => {
-    const TestWrapper = () => {
-      const { addStudent } = require('../../context/EnrollmentFormContext').useEnrollmentForm?.() ?? {}
-      return null
-    }
-
-    // Use a component that pre-populates students via the provider
-    const PrePopulatedStep3 = () => {
-      const context = require('../../context/EnrollmentFormContext')
-      return <Step3Summary rooms={mockRooms} />
-    }
-
     // We mock useEnrollmentForm to return students
     vi.spyOn(
       await import('../../context/EnrollmentFormContext'),

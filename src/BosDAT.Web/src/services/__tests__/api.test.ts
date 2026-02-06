@@ -129,7 +129,7 @@ describe('API Configuration and Interceptors', () => {
 
       try {
         await api.get('/protected')
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
 
@@ -173,7 +173,7 @@ describe('API Configuration and Interceptors', () => {
         await api.get('/protected', {
           headers: { 'X-Retry': 'true' },
         })
-      } catch (error) {
+      } catch {
         // Expected to fail without retry
       }
 

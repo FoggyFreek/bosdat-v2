@@ -1,6 +1,6 @@
 # BosDAT v2 - Modern Music School Management System
 
-> A comprehensive web-based application for managing music schools, built with .NET 8, React 18, and PostgreSQL 16.
+> A comprehensive web-based application for managing music schools, built with .NET 8, React 19, and PostgreSQL 16.
 
 ## 🎯 Overview
 
@@ -109,11 +109,11 @@ src/
 | Backend Framework | .NET / C# | 8.0 / 12.0 |
 | ORM | Entity Framework Core | 8.0 |
 | Database | PostgreSQL | 16 |
-| Frontend Framework | React + TypeScript | 18.2 |
-| Build Tool | Vite | 5.0 |
-| State Management | TanStack Query (React Query) | 5.8 |
-| HTTP Client | Axios | 1.6 |
-| UI Components | shadcn/ui + Tailwind CSS | 3.3 |
+| Frontend Framework | React + TypeScript | 19.2 |
+| Build Tool | Vite | 7.3 |
+| State Management | TanStack Query (React Query) | 5.90 |
+| HTTP Client | Axios | 1.13 |
+| UI Components | shadcn/ui + Tailwind CSS | 4.1 |
 | Forms | React Hook Form + Zod | 7.48 |
 | Authentication | ASP.NET Core Identity + JWT | 8.0 |
 | Backend Testing | xUnit | 2.6 |

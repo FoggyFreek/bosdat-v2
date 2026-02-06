@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
@@ -76,22 +76,22 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     queryFn: () => instrumentsApi.getAll({ activeOnly: true }),
   })
 
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    prefix: '',
-    email: '',
-    phone: '',
-    address: '',
-    postalCode: '',
-    city: '',
-    hourlyRate: '',
-    role: 'Teacher',
-    notes: '',
-    isActive: true,
-    instrumentIds: [],
-    courseTypeIds: [],
-  })
+  const [formData, setFormData] = useState<FormData>(() => ({
+    firstName: teacher?.firstName ?? '',
+    lastName: teacher?.lastName ?? '',
+    prefix: teacher?.prefix ?? '',
+    email: teacher?.email ?? '',
+    phone: teacher?.phone ?? '',
+    address: teacher?.address ?? '',
+    postalCode: teacher?.postalCode ?? '',
+    city: teacher?.city ?? '',
+    hourlyRate: teacher?.hourlyRate?.toString() ?? '',
+    role: teacher?.role ?? 'Teacher',
+    notes: teacher?.notes ?? '',
+    isActive: teacher?.isActive ?? true,
+    instrumentIds: teacher?.instruments?.map((i) => i.id) ?? [],
+    courseTypeIds: teacher?.courseTypes?.map((lt) => lt.id) ?? [],
+  }))
 
   // Query all active lesson types, filter by selected instruments client-side
   const { data: allCourseTypes = [] } = useQuery<CourseTypeSimple[]>({
@@ -106,39 +106,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
 
   const [errors, setErrors] = useState<FormErrors>({})
 
-  useEffect(() => {
-    if (teacher) {
-      setFormData({
-        firstName: teacher.firstName,
-        lastName: teacher.lastName,
-        prefix: teacher.prefix || '',
-        email: teacher.email,
-        phone: teacher.phone || '',
-        address: teacher.address || '',
-        postalCode: teacher.postalCode || '',
-        city: teacher.city || '',
-        hourlyRate: teacher.hourlyRate?.toString() || '',
-        role: teacher.role,
-        notes: teacher.notes || '',
-        isActive: teacher.isActive,
-        instrumentIds: teacher.instruments?.map((i) => i.id) || [],
-        courseTypeIds: teacher.courseTypes?.map((lt) => lt.id) || [],
-      })
-    }
-  }, [teacher])
 
-  // Remove lesson types when their instrument is removed
-  useEffect(() => {
-    if (allCourseTypes.length > 0 && formData.courseTypeIds.length > 0) {
-      const validCourseTypeIds = formData.courseTypeIds.filter((ltId) => {
-        const courseType = allCourseTypes.find((lt) => lt.id === ltId)
-        return courseType && formData.instrumentIds.includes(courseType.instrumentId)
-      })
-      if (validCourseTypeIds.length !== formData.courseTypeIds.length) {
-        setFormData((prev) => ({ ...prev, courseTypeIds: validCourseTypeIds }))
-      }
-    }
-  }, [formData.instrumentIds, formData.courseTypeIds, allCourseTypes])
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
@@ -208,10 +176,21 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
   }
 
   const handleInstrumentToggle = (instrumentId: number, checked: boolean) => {
-    const newIds = checked
+    const newInstrumentIds = checked
       ? [...formData.instrumentIds, instrumentId]
       : formData.instrumentIds.filter((id) => id !== instrumentId)
-    handleChange('instrumentIds', newIds)
+
+    // When removing an instrument, also remove its associated course types
+    const validCourseTypeIds = formData.courseTypeIds.filter((ltId) => {
+      const courseType = allCourseTypes.find((lt) => lt.id === ltId)
+      return courseType && newInstrumentIds.includes(courseType.instrumentId)
+    })
+
+    setFormData((prev) => ({
+      ...prev,
+      instrumentIds: newInstrumentIds,
+      courseTypeIds: validCourseTypeIds,
+    }))
   }
 
   const handleCourseTypeToggle = (courseTypeId: string, checked: boolean) => {
