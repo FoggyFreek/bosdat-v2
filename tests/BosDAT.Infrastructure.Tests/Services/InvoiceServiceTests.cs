@@ -29,10 +29,11 @@ public class InvoiceServiceTests : IDisposable
 
         SetupMockInvoiceRepository();
 
-        _service = new InvoiceService(
-            _context,
-            _mockUnitOfWork.Object,
-            _mockPricingService.Object);
+        var queryService = new InvoiceQueryService(_context);
+        var ledgerService = new InvoiceLedgerService(_context, _mockUnitOfWork.Object, queryService);
+        var generationService = new InvoiceGenerationService(
+            _context, _mockUnitOfWork.Object, _mockPricingService.Object, ledgerService, queryService);
+        _service = new InvoiceService(generationService, ledgerService, queryService);
 
         SeedBaseData();
     }
