@@ -229,13 +229,13 @@ public class IsoDateHelperTests
     #region Date/Time Conversion Tests
 
     [Fact]
-    public void ToDateTimeUtc_DateOnly_ShouldConvertToMidnightUtc()
+    public void ToDateTime_DateOnly_ShouldConvertToMidnight()
     {
         // Arrange
         var date = new DateOnly(2026, 2, 15);
 
         // Act
-        var dateTime = IsoDateHelper.ToDateTimeUtc(date);
+        var dateTime = IsoDateHelper.ToDateTime(date);
 
         // Assert
         Assert.Equal(2026, dateTime.Year);
@@ -244,18 +244,18 @@ public class IsoDateHelperTests
         Assert.Equal(0, dateTime.Hour);
         Assert.Equal(0, dateTime.Minute);
         Assert.Equal(0, dateTime.Second);
-        Assert.Equal(DateTimeKind.Utc, dateTime.Kind);
+        Assert.Equal(DateTimeKind.Unspecified, dateTime.Kind);
     }
 
     [Fact]
-    public void ToDateTimeUtc_DateOnlyAndTimeOnly_ShouldConvertCorrectly()
+    public void ToDateTime_DateOnlyAndTimeOnly_ShouldConvertCorrectly()
     {
         // Arrange
         var date = new DateOnly(2026, 2, 15);
         var time = new TimeOnly(19, 30, 0);
 
         // Act
-        var dateTime = IsoDateHelper.ToDateTimeUtc(date, time);
+        var dateTime = IsoDateHelper.ToDateTime(date, time);
 
         // Assert
         Assert.Equal(2026, dateTime.Year);
@@ -264,17 +264,17 @@ public class IsoDateHelperTests
         Assert.Equal(19, dateTime.Hour);
         Assert.Equal(30, dateTime.Minute);
         Assert.Equal(0, dateTime.Second);
-        Assert.Equal(DateTimeKind.Utc, dateTime.Kind);
+        Assert.Equal(DateTimeKind.Unspecified, dateTime.Kind);
     }
 
     [Fact]
-    public void TodayUtc_ShouldReturnCurrentDateInUtc()
+    public void Today_ShouldReturnCurrentLocalDate()
     {
         // Arrange
-        var expectedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var expectedDate = DateOnly.FromDateTime(DateTime.Now);
 
         // Act
-        var actualDate = IsoDateHelper.TodayUtc();
+        var actualDate = IsoDateHelper.Today();
 
         // Assert
         Assert.Equal(expectedDate, actualDate);
@@ -295,24 +295,24 @@ public class IsoDateHelperTests
 
     #endregion
 
-    #region ISO DateTime String Formatting Tests
+    #region Local DateTime String Formatting Tests
 
     [Theory]
-    [InlineData("02-15-2026", "19:30:00", "2026-02-15T19:30:00Z")]
-    [InlineData("02-15-2026", "19:30:00:00", "2026-02-15T19:30:00Z")]
-    [InlineData("01-01-2024", "00:00:00", "2024-01-01T00:00:00Z")]
-    [InlineData("12-31-2025", "23:59:59", "2025-12-31T23:59:59Z")]
-    public void CreateIsoDateTime_StringDateAndTime_ShouldFormatCorrectly(string date, string time, string expected)
+    [InlineData("02-15-2026", "19:30:00", "2026-02-15T19:30:00")]
+    [InlineData("02-15-2026", "19:30:00:00", "2026-02-15T19:30:00")]
+    [InlineData("01-01-2024", "00:00:00", "2024-01-01T00:00:00")]
+    [InlineData("12-31-2025", "23:59:59", "2025-12-31T23:59:59")]
+    public void CreateLocalDateTime_StringDateAndTime_ShouldFormatCorrectly(string date, string time, string expected)
     {
         // Act
-        var result = IsoDateHelper.CreateIsoDateTime(date, time);
+        var result = IsoDateHelper.CreateLocalDateTime(date, time);
 
         // Assert
         Assert.Equal(expected, result);
     }
 
     [Fact]
-    public void CreateIsoDateTime_InvalidDateFormat_ShouldThrowFormatException()
+    public void CreateLocalDateTime_InvalidDateFormat_ShouldThrowFormatException()
     {
         // Arrange
         var invalidDate = "2026-02-15"; // Wrong format
@@ -320,12 +320,12 @@ public class IsoDateHelperTests
 
         // Act & Assert
         var exception = Assert.Throws<FormatException>(() =>
-            IsoDateHelper.CreateIsoDateTime(invalidDate, time));
+            IsoDateHelper.CreateLocalDateTime(invalidDate, time));
         Assert.Contains("Invalid date/time format", exception.Message);
     }
 
     [Fact]
-    public void CreateIsoDateTime_InvalidTimeFormat_ShouldThrowFormatException()
+    public void CreateLocalDateTime_InvalidTimeFormat_ShouldThrowFormatException()
     {
         // Arrange
         var date = "02-15-2026";
@@ -333,36 +333,36 @@ public class IsoDateHelperTests
 
         // Act & Assert
         var exception = Assert.Throws<FormatException>(() =>
-            IsoDateHelper.CreateIsoDateTime(date, invalidTime));
+            IsoDateHelper.CreateLocalDateTime(date, invalidTime));
         Assert.Contains("Invalid date/time format", exception.Message);
     }
 
     [Fact]
-    public void CreateIsoDateTime_DateOnlyAndTimeString_ShouldFormatCorrectly()
+    public void CreateLocalDateTime_DateOnlyAndTimeString_ShouldFormatCorrectly()
     {
         // Arrange
         var date = new DateOnly(2026, 2, 15);
         var time = "19:30:00";
 
         // Act
-        var result = IsoDateHelper.CreateIsoDateTime(date, time);
+        var result = IsoDateHelper.CreateLocalDateTime(date, time);
 
         // Assert
-        Assert.Equal("2026-02-15T19:30:00Z", result);
+        Assert.Equal("2026-02-15T19:30:00", result);
     }
 
     [Fact]
-    public void CreateIsoDateTime_DateOnlyAndTimeOnly_ShouldFormatCorrectly()
+    public void CreateLocalDateTime_DateOnlyAndTimeOnly_ShouldFormatCorrectly()
     {
         // Arrange
         var date = new DateOnly(2026, 2, 15);
         var time = new TimeOnly(19, 30, 0);
 
         // Act
-        var result = IsoDateHelper.CreateIsoDateTime(date, time);
+        var result = IsoDateHelper.CreateLocalDateTime(date, time);
 
         // Assert
-        Assert.Equal("2026-02-15T19:30:00Z", result);
+        Assert.Equal("2026-02-15T19:30:00", result);
     }
 
     #endregion
@@ -390,14 +390,15 @@ public class IsoDateHelperTests
     }
 
     [Fact]
-    public void CalculateAge_WithoutReferenceDate_ShouldUseTodayUtc()
+    public void CalculateAge_WithoutReferenceDate_ShouldUseToday()
     {
         // Arrange
         var dateOfBirth = new DateOnly(2000, 1, 1);
-        var expectedAge = DateTime.UtcNow.Year - 2000;
+        var now = DateTime.Now;
+        var expectedAge = now.Year - 2000;
 
         // Adjust for birthday not yet occurred this year
-        if (DateTime.UtcNow.Month == 1 && DateTime.UtcNow.Day < 1)
+        if (now.Month == 1 && now.Day < 1)
         {
             expectedAge--;
         }

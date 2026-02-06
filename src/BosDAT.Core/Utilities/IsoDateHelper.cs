@@ -5,7 +5,8 @@ namespace BosDAT.Core.Utilities;
 
 /// <summary>
 /// Utility class for ISO 8601 date/time operations including week-based calculations,
-/// date conversions, and ISO datetime string formatting.
+/// date conversions, and local datetime string formatting.
+/// All dates/times use local time — no UTC conversions.
 /// </summary>
 public static class IsoDateHelper
 {
@@ -73,33 +74,33 @@ public static class IsoDateHelper
     #region Date/Time Conversions
 
     /// <summary>
-    /// Converts a DateOnly to DateTime with UTC kind at midnight.
+    /// Converts a DateOnly to DateTime at midnight (local).
     /// </summary>
     /// <param name="date">The date to convert.</param>
-    /// <returns>DateTime with UTC kind at 00:00:00.</returns>
-    public static DateTime ToDateTimeUtc(DateOnly date)
+    /// <returns>DateTime at 00:00:00.</returns>
+    public static DateTime ToDateTime(DateOnly date)
     {
-        return date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        return date.ToDateTime(TimeOnly.MinValue);
     }
 
     /// <summary>
-    /// Converts a DateOnly and TimeOnly to DateTime with UTC kind.
+    /// Converts a DateOnly and TimeOnly to DateTime (local).
     /// </summary>
     /// <param name="date">The date component.</param>
     /// <param name="time">The time component.</param>
-    /// <returns>DateTime with UTC kind.</returns>
-    public static DateTime ToDateTimeUtc(DateOnly date, TimeOnly time)
+    /// <returns>DateTime with the specified date and time.</returns>
+    public static DateTime ToDateTime(DateOnly date, TimeOnly time)
     {
-        return date.ToDateTime(time, DateTimeKind.Utc);
+        return date.ToDateTime(time);
     }
 
     /// <summary>
-    /// Gets the current date as DateOnly in UTC.
+    /// Gets the current date as DateOnly in local time.
     /// </summary>
-    /// <returns>Today's date in UTC as DateOnly.</returns>
-    public static DateOnly TodayUtc()
+    /// <returns>Today's date as DateOnly.</returns>
+    public static DateOnly Today()
     {
-        return DateOnly.FromDateTime(DateTime.UtcNow);
+        return DateOnly.FromDateTime(DateTime.Now);
     }
 
     /// <summary>
@@ -114,20 +115,18 @@ public static class IsoDateHelper
 
     #endregion
 
-    #region ISO DateTime String Formatting
+    #region Local DateTime String Formatting
 
     /// <summary>
-    /// Creates an ISO 8601 datetime string from date and time components.
+    /// Creates a local datetime string from date and time components.
     /// Supports time formats: 'HH:mm:ss', 'HH:mm:ss:ff' (with fractional seconds treated as milliseconds).
-    /// Uses native DateTime.ParseExact for parsing and formatting.
     /// </summary>
     /// <param name="date">The date in MM-dd-yyyy format (e.g., "02-15-2026").</param>
     /// <param name="time">The time in HH:mm:ss or HH:mm:ss:ff format (e.g., "19:30:00" or "19:30:00:00").</param>
-    /// <returns>ISO 8601 formatted datetime string (e.g., "2026-02-15T19:30:00Z").</returns>
+    /// <returns>Local datetime string (e.g., "2026-02-15T19:30:00").</returns>
     /// <exception cref="FormatException">Thrown when date or time format is invalid.</exception>
-    public static string CreateIsoDateTime(string date, string time)
+    public static string CreateLocalDateTime(string date, string time)
     {
-        // Combine date and time for native parsing
         var combinedFormats = new[]
         {
             "MM-dd-yyyyTHH:mm:ss",
@@ -144,33 +143,31 @@ public static class IsoDateHelper
                 $"Expected formats: MM-dd-yyyy and HH:mm:ss or HH:mm:ss:ff");
         }
 
-        // Specify UTC kind and format as ISO 8601
-        var utcDateTime = DateTime.SpecifyKind(parsedDateTime, DateTimeKind.Utc);
-        return utcDateTime.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture);
+        return parsedDateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
     }
 
     /// <summary>
-    /// Creates an ISO 8601 datetime string from DateOnly and time string.
+    /// Creates a local datetime string from DateOnly and time string.
     /// </summary>
     /// <param name="date">The date component.</param>
     /// <param name="time">The time in HH:mm:ss or HH:mm:ss:ff format.</param>
-    /// <returns>ISO 8601 formatted datetime string.</returns>
-    public static string CreateIsoDateTime(DateOnly date, string time)
+    /// <returns>Local datetime string.</returns>
+    public static string CreateLocalDateTime(DateOnly date, string time)
     {
         var dateString = date.ToString("MM-dd-yyyy", CultureInfo.InvariantCulture);
-        return CreateIsoDateTime(dateString, time);
+        return CreateLocalDateTime(dateString, time);
     }
 
     /// <summary>
-    /// Creates an ISO 8601 datetime string from DateOnly and TimeOnly.
+    /// Creates a local datetime string from DateOnly and TimeOnly.
     /// </summary>
     /// <param name="date">The date component.</param>
     /// <param name="time">The time component.</param>
-    /// <returns>ISO 8601 formatted datetime string.</returns>
-    public static string CreateIsoDateTime(DateOnly date, TimeOnly time)
+    /// <returns>Local datetime string.</returns>
+    public static string CreateLocalDateTime(DateOnly date, TimeOnly time)
     {
-        var dateTime = date.ToDateTime(time, DateTimeKind.Utc);
-        return dateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+        var dateTime = date.ToDateTime(time);
+        return dateTime.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
     }
 
     #endregion
@@ -181,11 +178,11 @@ public static class IsoDateHelper
     /// Calculates age in years from a date of birth.
     /// </summary>
     /// <param name="dateOfBirth">The date of birth.</param>
-    /// <param name="referenceDate">The reference date to calculate age from (defaults to today in UTC).</param>
+    /// <param name="referenceDate">The reference date to calculate age from (defaults to today).</param>
     /// <returns>Age in completed years.</returns>
     public static int CalculateAge(DateOnly dateOfBirth, DateOnly? referenceDate = null)
     {
-        var reference = referenceDate ?? TodayUtc();
+        var reference = referenceDate ?? Today();
         var age = reference.Year - dateOfBirth.Year;
 
         // Subtract one year if birthday hasn't occurred yet this year
@@ -203,7 +200,7 @@ public static class IsoDateHelper
     /// </summary>
     /// <param name="dateOfBirth">The date of birth (null returns false).</param>
     /// <param name="ageLimit">The age limit to check against (default 18).</param>
-    /// <param name="referenceDate">The reference date to calculate age from (defaults to today in UTC).</param>
+    /// <param name="referenceDate">The reference date to calculate age from (defaults to today).</param>
     /// <returns>True if age is less than the limit, false otherwise.</returns>
     public static bool IsChild(DateOnly? dateOfBirth, int ageLimit = 18, DateOnly? referenceDate = null)
     {
