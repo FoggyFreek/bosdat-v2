@@ -262,14 +262,7 @@ public class StudentLedgerService(
             var totalApplied = 0m;
 
             // HIGH-4: Move user lookup outside the loop
-            var appliedByUser = await context.Users.FindAsync([userId], ct);
-            var appliedByName = appliedByUser != null
-                ? $"{appliedByUser.FirstName} {appliedByUser.LastName}".Trim()
-                : UnknownUserName;
-            if (string.IsNullOrWhiteSpace(appliedByName))
-            {
-                appliedByName = appliedByUser?.Email ?? UnknownUserName;
-            }
+            var appliedByName = await ResolveUserNameAsync(userId, ct);
 
             foreach (var credit in openCredits)
             {
@@ -369,45 +362,13 @@ public class StudentLedgerService(
 
                 context.StudentLedgerApplications.Remove(application);
 
-                // Recalculate entry status from remaining applications
-                var remainingApplied = entry.Applications
-                    .Where(a => a.Id != applicationId)
-                    .Sum(a => a.AppliedAmount);
-
-                entry.Status = remainingApplied <= 0
-                    ? LedgerEntryStatus.Open
-                    : remainingApplied < entry.Amount
-                        ? LedgerEntryStatus.PartiallyApplied
-                        : LedgerEntryStatus.FullyApplied;
-
-                // If invoice was Paid, check whether it should revert
-                if (invoice.Status == InvoiceStatus.Paid)
-                {
-                    var totalPaid = invoice.Payments.Sum(p => p.Amount)
-                        + invoice.LedgerApplications
-                            .Where(a => a.Id != applicationId)
-                            .Sum(a => a.AppliedAmount);
-
-                    if (totalPaid < invoice.Total)
-                    {
-                        invoice.Status = invoice.DueDate < DateOnly.FromDateTime(DateTime.UtcNow)
-                            ? InvoiceStatus.Overdue
-                            : InvoiceStatus.Sent;
-                        invoice.PaidAt = null;
-                    }
-                }
+                RecalculateEntryStatus(entry, applicationId);
+                RevertInvoiceStatusIfUnderpaid(invoice, applicationId);
 
                 await context.SaveChangesAsync(ct);
                 await unitOfWork.CommitTransactionAsync(ct);
 
-                var user = await context.Users.FindAsync([userId], ct);
-                var userName = user != null
-                    ? $"{user.FirstName} {user.LastName}".Trim()
-                    : UnknownUserName;
-                if (string.IsNullOrWhiteSpace(userName))
-                {
-                    userName = user?.Email ?? UnknownUserName;
-                }
+                var userName = await ResolveUserNameAsync(userId, ct);
 
                 return new DecoupleApplicationResultDto
                 {
@@ -438,6 +399,56 @@ public class StudentLedgerService(
     public async Task<string> GenerateCorrectionRefNameAsync(CancellationToken ct = default)
     {
         return await ledgerRepository.GenerateCorrectionRefNameAsync(ct);
+    }
+
+    private static void RecalculateEntryStatus(StudentLedgerEntry entry, Guid excludedApplicationId)
+    {
+        var remainingApplied = entry.Applications
+            .Where(a => a.Id != excludedApplicationId)
+            .Sum(a => a.AppliedAmount);
+
+        if (remainingApplied <= 0)
+            entry.Status = LedgerEntryStatus.Open;
+        else if (remainingApplied < entry.Amount)
+            entry.Status = LedgerEntryStatus.PartiallyApplied;
+        else
+            entry.Status = LedgerEntryStatus.FullyApplied;
+    }
+
+    private static void RevertInvoiceStatusIfUnderpaid(Invoice invoice, Guid excludedApplicationId)
+    {
+        if (invoice.Status != InvoiceStatus.Paid)
+            return;
+
+        var totalPaid = invoice.Payments.Sum(p => p.Amount)
+            + invoice.LedgerApplications
+                .Where(a => a.Id != excludedApplicationId)
+                .Sum(a => a.AppliedAmount);
+
+        if (totalPaid >= invoice.Total)
+            return;
+
+        invoice.Status = invoice.DueDate < DateOnly.FromDateTime(DateTime.UtcNow)
+            ? InvoiceStatus.Overdue
+            : InvoiceStatus.Sent;
+        invoice.PaidAt = null;
+    }
+
+    private async Task<string> ResolveUserNameAsync(Guid userId, CancellationToken ct)
+    {
+        var user = await context.Users.FindAsync([userId], ct);
+        return ResolveUserName(user);
+    }
+
+    private static string ResolveUserName(ApplicationUser? user)
+    {
+        if (user == null)
+            return UnknownUserName;
+
+        var name = $"{user.FirstName} {user.LastName}".Trim();
+        return string.IsNullOrWhiteSpace(name)
+            ? user.Email ?? UnknownUserName
+            : name;
     }
 
     private async Task<StudentLedgerEntryDto> LoadEntryAndMapToDtoAsync(Guid entryId, CancellationToken ct)
@@ -476,15 +487,7 @@ public class StudentLedgerService(
             courseName = name;
         }
 
-        var createdByName = UnknownUserName;
-        if (entry.CreatedBy != null)
-        {
-            createdByName = $"{entry.CreatedBy.FirstName} {entry.CreatedBy.LastName}".Trim();
-            if (string.IsNullOrWhiteSpace(createdByName))
-            {
-                createdByName = entry.CreatedBy.Email ?? UnknownUserName;
-            }
-        }
+        var createdByName = ResolveUserName(entry.CreatedBy);
 
         var applications = entry.Applications.Select(a => new LedgerApplicationDto
         {
@@ -493,9 +496,7 @@ public class StudentLedgerService(
             InvoiceNumber = a.Invoice?.InvoiceNumber ?? string.Empty,
             AppliedAmount = a.AppliedAmount,
             AppliedAt = a.CreatedAt,
-            AppliedByName = a.AppliedBy != null
-                ? $"{a.AppliedBy.FirstName} {a.AppliedBy.LastName}".Trim()
-                : UnknownUserName
+            AppliedByName = ResolveUserName(a.AppliedBy)
         }).ToList();
 
         return new StudentLedgerEntryDto

@@ -11,8 +11,7 @@ namespace BosDAT.Infrastructure.Services;
 public class InvoiceService(
     ApplicationDbContext context,
     IUnitOfWork unitOfWork,
-    ICourseTypePricingService pricingService,
-    IStudentLedgerRepository ledgerRepository) : IInvoiceService
+    ICourseTypePricingService pricingService) : IInvoiceService
 {
     private static readonly string[] MonthAbbreviations =
     [
@@ -55,14 +54,8 @@ public class InvoiceService(
             ?? await pricingService.GetCurrentPricingAsync(enrollment.Course.CourseTypeId, ct)
             ?? throw new InvalidOperationException($"No pricing found for course type {enrollment.Course.CourseType.Name}.");
 
-        // Get VAT rate
         var vatRate = await GetVatRateAsync(ct);
-
-        // Calculate if student is child for pricing
-        var isChild = IsChildStudent(enrollment.Student.DateOfBirth);
-        var basePrice = isChild ? pricing.PriceChild : pricing.PriceAdult;
-        var discountAmount = basePrice * (enrollment.DiscountPercent / 100m);
-        var pricePerLesson = basePrice - discountAmount;
+        var pricePerLesson = CalculatePricePerLesson(pricing, enrollment);
 
         await unitOfWork.BeginTransactionAsync(ct);
         try
@@ -70,7 +63,7 @@ public class InvoiceService(
             var invoiceNumber = await unitOfWork.Invoices.GenerateInvoiceNumberAsync(ct);
             var periodType = enrollment.InvoicingPreference;
             var description = GeneratePeriodDescription(dto.PeriodStart, dto.PeriodEnd, periodType);
-            var courseName = $"{enrollment.Course.CourseType.Name}";
+            var courseName = enrollment.Course.CourseType.Name;
 
             var paymentDueDays = await GetPaymentDueDaysAsync(ct);
             var dueDate = invoiceDate.AddDays(paymentDueDays);
@@ -90,37 +83,12 @@ public class InvoiceService(
                 Status = InvoiceStatus.Draft
             };
 
-            // Create invoice lines for each lesson
-            var lineNumber = 0;
-            foreach (var lesson in lessons)
-            {
-                lineNumber++;
-                var lineTotal = pricePerLesson * (1 + vatRate / 100m);
+            AddInvoiceLines(invoice, lessons, pricing.Id, pricePerLesson, vatRate, courseName);
 
-                var line = new InvoiceLine
-                {
-                    InvoiceId = invoice.Id,
-                    LessonId = lesson.Id,
-                    PricingVersionId = pricing.Id,
-                    Description = $"{courseName} - {lesson.ScheduledDate:dd MMM yyyy}",
-                    Quantity = 1,
-                    UnitPrice = pricePerLesson,
-                    VatRate = vatRate,
-                    LineTotal = lineTotal
-                };
-
-                invoice.Lines.Add(line);
-
-                // Mark lesson as invoiced
-                lesson.IsInvoiced = true;
-            }
-
-            // Calculate totals
             invoice.Subtotal = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity);
             invoice.VatAmount = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity * (l.VatRate / 100m));
             invoice.Total = invoice.Subtotal + invoice.VatAmount;
 
-            // Apply ledger corrections if requested
             if (dto.ApplyLedgerCorrections)
             {
                 await ApplyLedgerCorrectionsToInvoiceAsync(invoice, enrollment.StudentId, userId, ct);
@@ -204,108 +172,36 @@ public class InvoiceService(
         await unitOfWork.BeginTransactionAsync(ct);
         try
         {
-            // Remove existing ledger applications (they will be re-applied)
-            foreach (var application in invoice.LedgerApplications.ToList())
-            {
-                var ledgerEntry = await context.StudentLedgerEntries
-                    .Include(e => e.Applications)
-                    .FirstOrDefaultAsync(e => e.Id == application.LedgerEntryId, ct);
+            await RevertLedgerApplicationsAsync(invoice, ct);
+            UnInvoiceAndClearLines(invoice);
 
-                if (ledgerEntry != null)
-                {
-                    var remainingApplied = ledgerEntry.Applications
-                        .Where(a => a.Id != application.Id)
-                        .Sum(a => a.AppliedAmount);
-
-                    ledgerEntry.Status = remainingApplied >= ledgerEntry.Amount
-                        ? LedgerEntryStatus.FullyApplied
-                        : remainingApplied > 0
-                            ? LedgerEntryStatus.PartiallyApplied
-                            : LedgerEntryStatus.Open;
-                }
-
-                context.StudentLedgerApplications.Remove(application);
-            }
-
-            // Un-invoice existing lessons
-            foreach (var line in invoice.Lines.Where(l => l.Lesson != null))
-            {
-                line.Lesson!.IsInvoiced = false;
-            }
-
-            // Clear existing lines
-            context.InvoiceLines.RemoveRange(invoice.Lines);
-            invoice.Lines.Clear();
-
-            // Get current invoiceable lessons
             var lessons = await GetInvoiceableLessonsAsync(
                 invoice.Enrollment, invoice.PeriodStart.Value, invoice.PeriodEnd.Value, ct);
 
             if (lessons.Count == 0)
             {
-                // No lessons - cancel the invoice
-                invoice.Status = InvoiceStatus.Cancelled;
-                invoice.Subtotal = 0;
-                invoice.VatAmount = 0;
-                invoice.Total = 0;
-                invoice.LedgerCreditsApplied = 0;
-                invoice.LedgerDebitsApplied = 0;
-
-                await context.SaveChangesAsync(ct);
-                await unitOfWork.CommitTransactionAsync(ct);
-
-                return await GetInvoiceAsync(invoice.Id, ct)!;
+                CancelInvoice(invoice);
             }
-
-            // Get pricing
-            var pricing = await pricingService.GetPricingForDateAsync(
-                invoice.Enrollment.Course.CourseTypeId, invoice.IssueDate, ct)
-                ?? await pricingService.GetCurrentPricingAsync(invoice.Enrollment.Course.CourseTypeId, ct)
-                ?? throw new InvalidOperationException("No pricing found.");
-
-            var vatRate = await GetVatRateAsync(ct);
-            var isChild = IsChildStudent(invoice.Enrollment.Student.DateOfBirth);
-            var basePrice = isChild ? pricing.PriceChild : pricing.PriceAdult;
-            var discountAmount = basePrice * (invoice.Enrollment.DiscountPercent / 100m);
-            var pricePerLesson = basePrice - discountAmount;
-
-            var courseName = invoice.Enrollment.Course.CourseType.Name;
-
-            // Create new lines
-            foreach (var lesson in lessons)
+            else
             {
-                var lineTotal = pricePerLesson * (1 + vatRate / 100m);
+                var pricing = await pricingService.GetPricingForDateAsync(
+                    invoice.Enrollment.Course.CourseTypeId, invoice.IssueDate, ct)
+                    ?? await pricingService.GetCurrentPricingAsync(invoice.Enrollment.Course.CourseTypeId, ct)
+                    ?? throw new InvalidOperationException("No pricing found.");
 
-                var line = new InvoiceLine
-                {
-                    InvoiceId = invoice.Id,
-                    LessonId = lesson.Id,
-                    PricingVersionId = pricing.Id,
-                    Description = $"{courseName} - {lesson.ScheduledDate:dd MMM yyyy}",
-                    Quantity = 1,
-                    UnitPrice = pricePerLesson,
-                    VatRate = vatRate,
-                    LineTotal = lineTotal
-                };
+                var pricePerLesson = CalculatePricePerLesson(pricing, invoice.Enrollment);
+                var vatRate = await GetVatRateAsync(ct);
+                var courseName = invoice.Enrollment.Course.CourseType.Name;
 
-                invoice.Lines.Add(line);
-                lesson.IsInvoiced = true;
+                AddInvoiceLines(invoice, lessons, pricing.Id, pricePerLesson, vatRate, courseName);
+                RecalculateInvoiceTotals(invoice);
+                await ApplyLedgerCorrectionsToInvoiceAsync(invoice, invoice.StudentId, userId, ct);
             }
-
-            // Recalculate totals
-            invoice.Subtotal = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity);
-            invoice.VatAmount = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity * (l.VatRate / 100m));
-            invoice.Total = invoice.Subtotal + invoice.VatAmount;
-            invoice.LedgerCreditsApplied = 0;
-            invoice.LedgerDebitsApplied = 0;
-
-            // Re-apply ledger corrections
-            await ApplyLedgerCorrectionsToInvoiceAsync(invoice, invoice.StudentId, userId, ct);
 
             await context.SaveChangesAsync(ct);
             await unitOfWork.CommitTransactionAsync(ct);
 
-            return await GetInvoiceAsync(invoice.Id, ct)!;
+            return await GetInvoiceAsync(invoice.Id, ct) ?? throw new InvalidOperationException("Failed to retrieve recalculated invoice.");
         }
         catch
         {
@@ -457,7 +353,7 @@ public class InvoiceService(
             await context.SaveChangesAsync(ct);
             await unitOfWork.CommitTransactionAsync(ct);
 
-            return await GetInvoiceAsync(invoiceId, ct)!;
+            return await GetInvoiceAsync(invoiceId, ct) ?? throw new InvalidOperationException("Failed to retrieve invoice after applying ledger correction.");
         }
         catch
         {
@@ -499,6 +395,98 @@ public class InvoiceService(
             Iban = settings.GetValueOrDefault("school_iban"),
             VatRate = decimal.TryParse(settings.GetValueOrDefault("vat_rate", "21"), out var vat) ? vat : 21m
         };
+    }
+
+    private async Task RevertLedgerApplicationsAsync(Invoice invoice, CancellationToken ct)
+    {
+        foreach (var application in invoice.LedgerApplications.ToList())
+        {
+            var ledgerEntry = await context.StudentLedgerEntries
+                .Include(e => e.Applications)
+                .FirstOrDefaultAsync(e => e.Id == application.LedgerEntryId, ct);
+
+            if (ledgerEntry != null)
+            {
+                RecalculateLedgerEntryStatus(ledgerEntry, application.Id);
+            }
+
+            context.StudentLedgerApplications.Remove(application);
+        }
+    }
+
+    private static void RecalculateLedgerEntryStatus(StudentLedgerEntry entry, Guid excludedApplicationId)
+    {
+        var remainingApplied = entry.Applications
+            .Where(a => a.Id != excludedApplicationId)
+            .Sum(a => a.AppliedAmount);
+
+        if (remainingApplied <= 0)
+            entry.Status = LedgerEntryStatus.Open;
+        else if (remainingApplied < entry.Amount)
+            entry.Status = LedgerEntryStatus.PartiallyApplied;
+        else
+            entry.Status = LedgerEntryStatus.FullyApplied;
+    }
+
+    private void UnInvoiceAndClearLines(Invoice invoice)
+    {
+        foreach (var line in invoice.Lines.Where(l => l.Lesson != null))
+        {
+            line.Lesson!.IsInvoiced = false;
+        }
+
+        context.InvoiceLines.RemoveRange(invoice.Lines);
+        invoice.Lines.Clear();
+    }
+
+    private static void CancelInvoice(Invoice invoice)
+    {
+        invoice.Status = InvoiceStatus.Cancelled;
+        invoice.Subtotal = 0;
+        invoice.VatAmount = 0;
+        invoice.Total = 0;
+        invoice.LedgerCreditsApplied = 0;
+        invoice.LedgerDebitsApplied = 0;
+    }
+
+    private static decimal CalculatePricePerLesson(CourseTypePricingVersion pricing, Enrollment enrollment)
+    {
+        var isChild = IsChildStudent(enrollment.Student.DateOfBirth);
+        var basePrice = isChild ? pricing.PriceChild : pricing.PriceAdult;
+        var discountAmount = basePrice * (enrollment.DiscountPercent / 100m);
+        return basePrice - discountAmount;
+    }
+
+    private static void AddInvoiceLines(
+        Invoice invoice, List<Lesson> lessons, Guid pricingVersionId,
+        decimal pricePerLesson, decimal vatRate, string courseName)
+    {
+        foreach (var lesson in lessons)
+        {
+            var line = new InvoiceLine
+            {
+                InvoiceId = invoice.Id,
+                LessonId = lesson.Id,
+                PricingVersionId = pricingVersionId,
+                Description = $"{courseName} - {lesson.ScheduledDate:dd MMM yyyy}",
+                Quantity = 1,
+                UnitPrice = pricePerLesson,
+                VatRate = vatRate,
+                LineTotal = pricePerLesson * (1 + vatRate / 100m)
+            };
+
+            invoice.Lines.Add(line);
+            lesson.IsInvoiced = true;
+        }
+    }
+
+    private static void RecalculateInvoiceTotals(Invoice invoice)
+    {
+        invoice.Subtotal = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity);
+        invoice.VatAmount = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity * (l.VatRate / 100m));
+        invoice.Total = invoice.Subtotal + invoice.VatAmount;
+        invoice.LedgerCreditsApplied = 0;
+        invoice.LedgerDebitsApplied = 0;
     }
 
     private async Task<List<Lesson>> GetInvoiceableLessonsAsync(

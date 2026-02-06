@@ -2,43 +2,41 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 using BosDAT.API.Controllers;
+using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Utilities;
 using BosDAT.API.Tests.Helpers;
 
 namespace BosDAT.API.Tests.Controllers;
 
 public class CalendarControllerTests
 {
+    private readonly Mock<ICalendarService> _mockCalendarService;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly CalendarController _controller;
 
     public CalendarControllerTests()
     {
+        _mockCalendarService = new Mock<ICalendarService>();
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new CalendarController(_mockUnitOfWork.Object);
+        _controller = new CalendarController(_mockCalendarService.Object, _mockUnitOfWork.Object);
     }
 
     [Fact]
     public async Task GetWeek_WithNoDate_ReturnsCurrentWeek()
     {
         // Arrange
-        var today = DateTime.Today;
-        var daysFromMonday = ((int)today.DayOfWeek - 1 + 7) % 7;
-        var expectedWeekStart = DateOnly.FromDateTime(today.AddDays(-daysFromMonday));
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var expectedWeekStart = IsoDateHelper.GetWeekStart(today);
         var expectedWeekEnd = expectedWeekStart.AddDays(6);
 
-        var lessons = new List<Lesson>();
-        var holidays = new List<Holiday>();
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.GetLessonsForRangeAsync(expectedWeekStart, expectedWeekEnd, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CalendarLessonDto>());
+        _mockCalendarService
+            .Setup(s => s.GetHolidaysForRangeAsync(expectedWeekStart, expectedWeekEnd, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HolidayDto>());
 
         // Act
         var result = await _controller.GetWeek(null, null, null, CancellationToken.None);
@@ -58,17 +56,12 @@ public class CalendarControllerTests
         var expectedWeekStart = new DateOnly(2024, 3, 11); // Monday
         var expectedWeekEnd = new DateOnly(2024, 3, 17); // Sunday
 
-        var lessons = new List<Lesson>();
-        var holidays = new List<Holiday>();
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.GetLessonsForRangeAsync(expectedWeekStart, expectedWeekEnd, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CalendarLessonDto>());
+        _mockCalendarService
+            .Setup(s => s.GetHolidaysForRangeAsync(expectedWeekStart, expectedWeekEnd, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HolidayDto>());
 
         // Act
         var result = await _controller.GetWeek(targetDate, null, null, CancellationToken.None);
@@ -81,60 +74,31 @@ public class CalendarControllerTests
     }
 
     [Fact]
-    public async Task GetWeek_WithLessons_ReturnsLessonsInRange()
+    public async Task GetWeek_WithLessons_ReturnsLessonsFromService()
     {
         // Arrange
         var targetDate = new DateOnly(2024, 3, 15);
         var weekStart = new DateOnly(2024, 3, 11);
+        var weekEnd = new DateOnly(2024, 3, 17);
 
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
-        var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var student = new Student { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
-
-        var lessons = new List<Lesson>
+        var lessons = new List<CalendarLessonDto>
         {
-            new Lesson
+            new CalendarLessonDto
             {
                 Id = Guid.NewGuid(),
-                CourseId = course.Id,
-                StudentId = student.Id,
-                TeacherId = teacher.Id,
-                ScheduledDate = new DateOnly(2024, 3, 12), // Tuesday, within week
+                Date = new DateOnly(2024, 3, 12),
+                Title = "Piano - John Doe",
                 StartTime = new TimeOnly(10, 0),
-                EndTime = new TimeOnly(10, 30),
-                Status = LessonStatus.Scheduled,
-                Course = course,
-                Student = student,
-                Teacher = teacher
-            },
-            new Lesson
-            {
-                Id = Guid.NewGuid(),
-                CourseId = course.Id,
-                StudentId = student.Id,
-                TeacherId = teacher.Id,
-                ScheduledDate = new DateOnly(2024, 3, 20), // Outside week
-                StartTime = new TimeOnly(10, 0),
-                EndTime = new TimeOnly(10, 30),
-                Status = LessonStatus.Scheduled,
-                Course = course,
-                Student = student,
-                Teacher = teacher
+                EndTime = new TimeOnly(10, 30)
             }
         };
 
-        var holidays = new List<Holiday>();
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.GetLessonsForRangeAsync(weekStart, weekEnd, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lessons);
+        _mockCalendarService
+            .Setup(s => s.GetHolidaysForRangeAsync(weekStart, weekEnd, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HolidayDto>());
 
         // Act
         var result = await _controller.GetWeek(targetDate, null, null, CancellationToken.None);
@@ -147,15 +111,16 @@ public class CalendarControllerTests
     }
 
     [Fact]
-    public async Task GetWeek_WithHolidays_ReturnsHolidaysInRange()
+    public async Task GetWeek_WithHolidays_ReturnsHolidaysFromService()
     {
         // Arrange
         var targetDate = new DateOnly(2024, 3, 15);
+        var weekStart = new DateOnly(2024, 3, 11);
+        var weekEnd = new DateOnly(2024, 3, 17);
 
-        var lessons = new List<Lesson>();
-        var holidays = new List<Holiday>
+        var holidays = new List<HolidayDto>
         {
-            new Holiday
+            new HolidayDto
             {
                 Id = 1,
                 Name = "Spring Break",
@@ -164,14 +129,12 @@ public class CalendarControllerTests
             }
         };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.GetLessonsForRangeAsync(weekStart, weekEnd, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CalendarLessonDto>());
+        _mockCalendarService
+            .Setup(s => s.GetHolidaysForRangeAsync(weekStart, weekEnd, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(holidays);
 
         // Act
         var result = await _controller.GetWeek(targetDate, null, null, CancellationToken.None);
@@ -190,41 +153,33 @@ public class CalendarControllerTests
         var teacherId = Guid.NewGuid();
         var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
 
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
-        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
-
-        var lessons = new List<Lesson>
-        {
-            new Lesson
-            {
-                Id = Guid.NewGuid(),
-                CourseId = course.Id,
-                TeacherId = teacherId,
-                ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
-                StartTime = new TimeOnly(10, 0),
-                EndTime = new TimeOnly(10, 30),
-                Status = LessonStatus.Scheduled,
-                Course = course,
-                Teacher = teacher
-            }
-        };
-
-        var holidays = new List<Holiday>();
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var weekStart = IsoDateHelper.GetWeekStart(today);
+        var weekEnd = weekStart.AddDays(6);
 
         var mockTeacherRepo = new Mock<ITeacherRepository>();
         mockTeacherRepo.Setup(r => r.GetByIdAsync(teacherId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(teacher);
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
         _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+
+        var lessons = new List<CalendarLessonDto>
+        {
+            new CalendarLessonDto
+            {
+                Id = Guid.NewGuid(),
+                Date = today,
+                Title = "Piano - Student",
+                StartTime = new TimeOnly(10, 0),
+                EndTime = new TimeOnly(10, 30)
+            }
+        };
+
+        _mockCalendarService
+            .Setup(s => s.GetLessonsForRangeAsync(weekStart, weekEnd, teacherId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lessons);
+        _mockCalendarService
+            .Setup(s => s.GetHolidaysForRangeAsync(weekStart, weekEnd, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HolidayDto>());
 
         // Act
         var result = await _controller.GetTeacherSchedule(teacherId, null, CancellationToken.None);
@@ -244,7 +199,6 @@ public class CalendarControllerTests
         var mockTeacherRepo = new Mock<ITeacherRepository>();
         mockTeacherRepo.Setup(r => r.GetByIdAsync(teacherId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Teacher?)null);
-
         _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
 
         // Act
@@ -263,17 +217,9 @@ public class CalendarControllerTests
         var startTime = new TimeOnly(14, 0);
         var endTime = new TimeOnly(15, 0);
 
-        var lessons = new List<Lesson>(); // No existing lessons
-        var holidays = new List<Holiday>(); // No holidays
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.CheckConflictsAsync(date, startTime, endTime, teacherId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ConflictDto>());
 
         // Act
         var result = await _controller.CheckAvailability(date, startTime, endTime, teacherId, null, CancellationToken.None);
@@ -294,27 +240,18 @@ public class CalendarControllerTests
         var startTime = new TimeOnly(10, 0);
         var endTime = new TimeOnly(11, 0);
 
-        var existingLesson = new Lesson
+        var conflicts = new List<ConflictDto>
         {
-            Id = Guid.NewGuid(),
-            TeacherId = teacherId,
-            ScheduledDate = date,
-            StartTime = new TimeOnly(10, 30),
-            EndTime = new TimeOnly(11, 30),
-            Status = LessonStatus.Scheduled
+            new ConflictDto
+            {
+                Type = "Teacher",
+                Description = "Teacher has another lesson from 10:30 to 11:30"
+            }
         };
 
-        var lessons = new List<Lesson> { existingLesson };
-        var holidays = new List<Holiday>();
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.CheckConflictsAsync(date, startTime, endTime, teacherId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conflicts);
 
         // Act
         var result = await _controller.CheckAvailability(date, startTime, endTime, teacherId, null, CancellationToken.None);
@@ -335,26 +272,18 @@ public class CalendarControllerTests
         var startTime = new TimeOnly(10, 0);
         var endTime = new TimeOnly(11, 0);
 
-        var lessons = new List<Lesson>();
-        var holidays = new List<Holiday>
+        var conflicts = new List<ConflictDto>
         {
-            new Holiday
+            new ConflictDto
             {
-                Id = 1,
-                Name = "Christmas",
-                StartDate = new DateOnly(2024, 12, 24),
-                EndDate = new DateOnly(2024, 12, 26)
+                Type = "Holiday",
+                Description = "Date falls within holiday: Christmas"
             }
         };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
-
-        var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.CheckConflictsAsync(date, startTime, endTime, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(conflicts);
 
         // Act
         var result = await _controller.CheckAvailability(date, startTime, endTime, null, null, CancellationToken.None);

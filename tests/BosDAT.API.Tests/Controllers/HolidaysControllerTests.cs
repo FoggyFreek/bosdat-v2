@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 using BosDAT.API.Controllers;
+using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.API.Tests.Helpers;

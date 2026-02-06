@@ -14,7 +14,6 @@ public class InvoiceServiceTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ICourseTypePricingService> _mockPricingService;
-    private readonly Mock<IStudentLedgerRepository> _mockLedgerRepository;
     private readonly InvoiceService _service;
     private readonly Guid _userId = Guid.NewGuid();
 
@@ -27,15 +26,13 @@ public class InvoiceServiceTests : IDisposable
         _context = new ApplicationDbContext(options);
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockPricingService = new Mock<ICourseTypePricingService>();
-        _mockLedgerRepository = new Mock<IStudentLedgerRepository>();
 
         SetupMockInvoiceRepository();
 
         _service = new InvoiceService(
             _context,
             _mockUnitOfWork.Object,
-            _mockPricingService.Object,
-            _mockLedgerRepository.Object);
+            _mockPricingService.Object);
 
         SeedBaseData();
     }
