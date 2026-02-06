@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Utilities;
 using BosDAT.Infrastructure.Data;
 
 namespace BosDAT.Infrastructure.Services;
@@ -9,8 +10,6 @@ public class EnrollmentPricingService(
     ApplicationDbContext context,
     ICourseTypePricingService pricingService) : IEnrollmentPricingService
 {
-    private const int ChildAgeThreshold = 18;
-
     public async Task<EnrollmentPricingDto?> GetEnrollmentPricingAsync(
         Guid studentId,
         Guid courseId,
@@ -37,7 +36,7 @@ public class EnrollmentPricingService(
             return null;
         }
 
-        var isChildPricing = IsChildStudent(enrollment.Student.DateOfBirth);
+        var isChildPricing = IsoDateHelper.IsChild(enrollment.Student.DateOfBirth);
         var applicableBasePrice = isChildPricing
             ? currentPricing.PriceChild
             : currentPricing.PriceAdult;
@@ -60,23 +59,5 @@ public class EnrollmentPricingService(
             DiscountAmount = discountAmount,
             PricePerLesson = pricePerLesson
         };
-    }
-
-    private static bool IsChildStudent(DateOnly? dateOfBirth)
-    {
-        if (!dateOfBirth.HasValue)
-        {
-            return false;
-        }
-
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        var age = today.Year - dateOfBirth.Value.Year;
-
-        if (dateOfBirth.Value > today.AddYears(-age))
-        {
-            age--;
-        }
-
-        return age < ChildAgeThreshold;
     }
 }

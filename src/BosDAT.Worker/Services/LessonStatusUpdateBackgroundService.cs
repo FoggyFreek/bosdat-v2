@@ -68,7 +68,9 @@ public class LessonStatusUpdateBackgroundService(
         if (_hasRunToday)
             return false;
 
-        return currentTime >= _settings.LessonStatusUpdateJob.ExecutionTime;
+        var elapsed = currentTime.ToTimeSpan() - _settings.LessonStatusUpdateJob.ExecutionTime.ToTimeSpan();
+
+        return elapsed >= TimeSpan.Zero && elapsed < TimeSpan.FromHours(23);
     }
 
     private async Task RunLessonStatusUpdateJobAsync(DateOnly today, CancellationToken stoppingToken)

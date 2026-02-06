@@ -76,61 +76,49 @@ public class CalendarService(IUnitOfWork unitOfWork) : ICalendarService
         var conflicts = new List<ConflictDto>();
 
         if (teacherId.HasValue)
-        {
-            var teacherLessons = await unitOfWork.Lessons.Query()
-                .Where(l => l.TeacherId == teacherId.Value &&
-                           l.ScheduledDate == date &&
-                           l.Status != LessonStatus.Cancelled)
-                .ToListAsync(ct);
-
-            foreach (var lesson in teacherLessons)
-            {
-                if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
-                {
-                    conflicts.Add(new ConflictDto
-                    {
-                        Type = "Teacher",
-                        Description = $"Teacher has another lesson from {lesson.StartTime} to {lesson.EndTime}"
-                    });
-                }
-            }
-        }
+            conflicts.AddRange(await FindLessonConflictsAsync(
+                l => l.TeacherId == teacherId.Value,
+                date, startTime, endTime,
+                "Teacher", l => $"Teacher has another lesson from {l.StartTime} to {l.EndTime}", ct));
 
         if (roomId.HasValue)
-        {
-            var roomLessons = await unitOfWork.Lessons.Query()
-                .Where(l => l.RoomId == roomId.Value &&
-                           l.ScheduledDate == date &&
-                           l.Status != LessonStatus.Cancelled)
-                .ToListAsync(ct);
+            conflicts.AddRange(await FindLessonConflictsAsync(
+                l => l.RoomId == roomId.Value,
+                date, startTime, endTime,
+                "Room", l => $"Room is occupied from {l.StartTime} to {l.EndTime}", ct));
 
-            foreach (var lesson in roomLessons)
-            {
-                if (TimesOverlap(startTime, endTime, lesson.StartTime, lesson.EndTime))
-                {
-                    conflicts.Add(new ConflictDto
-                    {
-                        Type = "Room",
-                        Description = $"Room is occupied from {lesson.StartTime} to {lesson.EndTime}"
-                    });
-                }
-            }
-        }
-
-        var holidays = await unitOfWork.Repository<Holiday>().Query()
-            .Where(h => date >= h.StartDate && date <= h.EndDate)
-            .ToListAsync(ct);
-
-        foreach (var holiday in holidays)
-        {
-            conflicts.Add(new ConflictDto
-            {
-                Type = "Holiday",
-                Description = $"Date falls within holiday: {holiday.Name}"
-            });
-        }
+        conflicts.AddRange(await FindHolidayConflictsAsync(date, ct));
 
         return conflicts;
+    }
+
+    private async Task<List<ConflictDto>> FindLessonConflictsAsync(
+        System.Linq.Expressions.Expression<Func<Lesson, bool>> filter,
+        DateOnly date, TimeOnly startTime, TimeOnly endTime,
+        string conflictType, Func<Lesson, string> descriptionFactory,
+        CancellationToken ct)
+    {
+        var lessons = await unitOfWork.Lessons.Query()
+            .Where(filter)
+            .Where(l => l.ScheduledDate == date && l.Status != LessonStatus.Cancelled)
+            .ToListAsync(ct);
+
+        return lessons
+            .Where(l => TimesOverlap(startTime, endTime, l.StartTime, l.EndTime))
+            .Select(l => new ConflictDto { Type = conflictType, Description = descriptionFactory(l) })
+            .ToList();
+    }
+
+    private async Task<List<ConflictDto>> FindHolidayConflictsAsync(DateOnly date, CancellationToken ct)
+    {
+        return await unitOfWork.Repository<Holiday>().Query()
+            .Where(h => date >= h.StartDate && date <= h.EndDate)
+            .Select(h => new ConflictDto
+            {
+                Type = "Holiday",
+                Description = $"Date falls within holiday: {h.Name}"
+            })
+            .ToListAsync(ct);
     }
 
     private static bool TimesOverlap(TimeOnly start1, TimeOnly end1, TimeOnly start2, TimeOnly end2)

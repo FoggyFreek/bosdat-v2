@@ -108,6 +108,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStudentLedgerRepository, StudentLedgerRepository>();
         services.AddScoped<IStudentLedgerService, StudentLedgerService>();
         services.AddScoped<IScheduleConflictService, ScheduleConflictService>();
+        services.AddScoped<IInvoiceQueryService, InvoiceQueryService>();
+        services.AddScoped<IInvoiceLedgerService, InvoiceLedgerService>();
+        services.AddScoped<IInvoiceGenerationService, InvoiceGenerationService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ICourseService, CourseService>();

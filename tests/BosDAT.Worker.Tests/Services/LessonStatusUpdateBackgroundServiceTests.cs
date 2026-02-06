@@ -135,7 +135,9 @@ public class LessonStatusUpdateBackgroundServiceTests
         if (hasRunToday)
             return false;
 
-        return currentTime >= executionTime;
+        var elapsed = currentTime.ToTimeSpan() - executionTime.ToTimeSpan();
+
+        return elapsed >= TimeSpan.Zero && elapsed < TimeSpan.FromHours(23);
     }
 
     private LessonStatusUpdateBackgroundService CreateService(WorkerSettings settings)
