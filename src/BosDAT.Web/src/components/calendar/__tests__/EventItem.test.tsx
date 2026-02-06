@@ -167,13 +167,13 @@ describe('EventItem', () => {
     const button = container.querySelector('button');
 
     // Default z-index
-    expect(button?.className).toContain('z-[5]');
+    expect(button?.className).toContain('z-5');
 
     await user.hover(button!);
 
     // Wait for hover state
     await waitFor(() => {
-      expect(button?.className).toContain('z-[9999]');
+      expect(button?.className).toContain('z-9999');
     });
   });
 });

@@ -126,8 +126,8 @@ const EventItemComponent: React.FC<EventItemProps> = ({
       type="button"
       className={cn(
         'absolute mx-1 p-2 rounded-md border-l-4 text-left overflow-visible',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
-        isHovered ? 'z-[9999]' : 'z-[5]'
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+        isHovered ? 'z-9999' : 'z-5'
       )}
       style={{
         top: `${top}px`,

@@ -184,7 +184,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
       {/* Highlighted Date Column Background */}
       {highlightedDayIndex >= 0 && (
         <div
-          className="absolute bg-sky-100 opacity-60 z-[4] h-full"
+          className="absolute bg-sky-100 opacity-60 z-4 h-full"
           style={{
             left: `${(highlightedDayIndex / DAYS_IN_WEEK) * 100}%`,
             width: `${columnWidthPercent}%`,
@@ -222,7 +222,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
       {/* Hover Indicator */}
       {hoveredSlot && (
         <div
-          className="absolute bg-blue-200 opacity-50 pointer-events-none z-[3]"
+          className="absolute bg-blue-200 opacity-50 pointer-events-none z-3"
           style={{
             left: `${(hoveredSlot.day / DAYS_IN_WEEK) * 100}%`,
             width: `${columnWidthPercent}%`,
@@ -271,7 +271,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
           return (
             <div
               key={`unavail-full-${dayAvail.dayOfWeek}`}
-              className="absolute bg-gray-300 opacity-60 pointer-events-none z-[2]"
+              className="absolute bg-gray-300 opacity-60 pointer-events-none z-2"
               style={{
                 left: `${(columnIndex / DAYS_IN_WEEK) * 100}%`,
                 width: `${columnWidthPercent}%`,
@@ -291,7 +291,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
           overlays.push(
             <div
               key={`unavail-before-${dayAvail.dayOfWeek}`}
-              className="absolute bg-gray-300 opacity-60 pointer-events-none z-[2]"
+              className="absolute bg-gray-300 opacity-60 pointer-events-none z-2"
               style={{
                 left: `${(columnIndex / DAYS_IN_WEEK) * 100}%`,
                 width: `${columnWidthPercent}%`,
@@ -308,7 +308,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
           overlays.push(
             <div
               key={`unavail-after-${dayAvail.dayOfWeek}`}
-              className="absolute bg-gray-300 opacity-60 pointer-events-none z-[2]"
+              className="absolute bg-gray-300 opacity-60 pointer-events-none z-2"
               style={{
                 left: `${(columnIndex / DAYS_IN_WEEK) * 100}%`,
                 width: `${columnWidthPercent}%`,

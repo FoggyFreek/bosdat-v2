@@ -17,7 +17,7 @@ const NavigationButton: React.FC<{
     type="button"
     className={cn(
       'w-8 h-8 flex items-center justify-center border-0 rounded',
-      'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+      'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
       'transition-colors',
       onClick
         ? 'cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-slate-100'
