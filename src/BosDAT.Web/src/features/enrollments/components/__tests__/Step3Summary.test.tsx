@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@/test/utils'
+import userEvent from '@testing-library/user-event'
 import { Step3Summary } from '../Step3Summary'
 import { EnrollmentFormProvider } from '../../context/EnrollmentFormContext'
 
@@ -51,6 +52,38 @@ const mockRooms = [
   },
 ]
 
+const mockStudents = [
+  {
+    studentId: 's1',
+    studentName: 'Alice Johnson',
+    enrolledAt: '2025-09-01',
+    discountType: 'None' as const,
+    discountPercentage: 0,
+    invoicingPreference: 'Monthly' as const,
+    note: '',
+    isEligibleForCourseDiscount: false,
+  },
+  {
+    studentId: 's2',
+    studentName: 'Bob Williams',
+    enrolledAt: '2025-09-01',
+    discountType: 'None' as const,
+    discountPercentage: 0,
+    invoicingPreference: 'Monthly' as const,
+    note: '',
+    isEligibleForCourseDiscount: false,
+  },
+]
+
+const mockUpdateStep3 = vi.fn()
+
+vi.mock('../../context/EnrollmentFormContext', async () => {
+  const actual = await vi.importActual('../../context/EnrollmentFormContext')
+  return {
+    ...actual,
+  }
+})
+
 const renderWithProvider = (ui: React.ReactElement) => {
   return render(<EnrollmentFormProvider>{ui}</EnrollmentFormProvider>)
 }
@@ -78,6 +111,112 @@ describe('Step3Summary', () => {
     renderWithProvider(<Step3Summary rooms={mockRooms} />)
 
     expect(screen.getByRole('combobox')).toBeInTheDocument()
+  })
+
+  it('should render student initials when students are in context', async () => {
+    const TestWrapper = () => {
+      const { addStudent } = require('../../context/EnrollmentFormContext').useEnrollmentForm?.() ?? {}
+      return null
+    }
+
+    // Use a component that pre-populates students via the provider
+    const PrePopulatedStep3 = () => {
+      const context = require('../../context/EnrollmentFormContext')
+      return <Step3Summary rooms={mockRooms} />
+    }
+
+    // We mock useEnrollmentForm to return students
+    vi.spyOn(
+      await import('../../context/EnrollmentFormContext'),
+      'useEnrollmentForm'
+    ).mockReturnValue({
+      formData: {
+        step1: {
+          courseTypeId: null,
+          teacherId: null,
+          startDate: null,
+          endDate: null,
+          isTrial: false,
+          recurrence: 'Weekly',
+        },
+        step2: { students: mockStudents },
+        step3: {
+          selectedRoomId: null,
+          selectedDayOfWeek: null,
+          selectedDate: null,
+          selectedStartTime: null,
+          selectedEndTime: null,
+        },
+        step4: {},
+      },
+      currentStep: 2,
+      updateStep1: vi.fn(),
+      updateStep2: vi.fn(),
+      updateStep3: mockUpdateStep3,
+      addStudent: vi.fn(),
+      removeStudent: vi.fn(),
+      updateStudent: vi.fn(),
+      setCurrentStep: vi.fn(),
+      resetForm: vi.fn(),
+      isStep1Valid: vi.fn(() => false),
+      isStep2Valid: vi.fn(() => ({ isValid: true, errors: [] })),
+      isStep3Valid: vi.fn(() => ({ isValid: true, errors: [] })),
+    })
+
+    render(<Step3Summary rooms={mockRooms} />)
+
+    // AJ = Alice Johnson, BW = Bob Williams
+    expect(screen.getByText('AJ')).toBeInTheDocument()
+    expect(screen.getByText('BW')).toBeInTheDocument()
+  })
+
+  it('should call updateStep3 when room is selected', async () => {
+    vi.spyOn(
+      await import('../../context/EnrollmentFormContext'),
+      'useEnrollmentForm'
+    ).mockReturnValue({
+      formData: {
+        step1: {
+          courseTypeId: null,
+          teacherId: null,
+          startDate: null,
+          endDate: null,
+          isTrial: false,
+          recurrence: 'Weekly',
+        },
+        step2: { students: [] },
+        step3: {
+          selectedRoomId: null,
+          selectedDayOfWeek: null,
+          selectedDate: null,
+          selectedStartTime: null,
+          selectedEndTime: null,
+        },
+        step4: {},
+      },
+      currentStep: 2,
+      updateStep1: vi.fn(),
+      updateStep2: vi.fn(),
+      updateStep3: mockUpdateStep3,
+      addStudent: vi.fn(),
+      removeStudent: vi.fn(),
+      updateStudent: vi.fn(),
+      setCurrentStep: vi.fn(),
+      resetForm: vi.fn(),
+      isStep1Valid: vi.fn(() => false),
+      isStep2Valid: vi.fn(() => ({ isValid: true, errors: [] })),
+      isStep3Valid: vi.fn(() => ({ isValid: true, errors: [] })),
+    })
+
+    render(<Step3Summary rooms={mockRooms} />)
+
+    const user = userEvent.setup()
+    const combobox = screen.getByRole('combobox')
+    await user.click(combobox)
+    const option = screen.getByText('Room 1')
+    await user.click(option)
+
+    expect(mockUpdateStep3).toHaveBeenCalledWith({ selectedRoomId: 1 })
   })
 
   describe('handles undefined arrays gracefully', () => {

@@ -423,7 +423,7 @@ public class InvoiceServiceTests : IDisposable
             LastName = "Teacher",
             Email = "teacher@test.com",
             Phone = "0612345679",
-            Status = TeacherStatus.Active
+            IsActive = true
         };
         _context.Teachers.Add(teacher);
 

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { SummaryCard, type SummaryItem } from '@/components/SummaryCard'
+import { EnrollmentSummaryCard } from './EnrollmentSummaryCard'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { courseTypesApi } from '@/features/course-types/api'
 import { teachersApi } from '@/features/teachers/api'
@@ -19,7 +19,7 @@ const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
 }
 
 const formatDate = (date: string | null) => {
-  if (!date) return '-'
+  if (!date) return undefined
   return new Date(date).toLocaleDateString('nl-NL')
 }
 
@@ -49,50 +49,15 @@ export function Step4Summary() {
 
   const dayOfWeek = step3.selectedDayOfWeek !== null
     ? getDayNameFromNumber(step3.selectedDayOfWeek)
-    : null
+    : undefined
 
-  const courseItems: SummaryItem[] = [
-    {
-      label: 'Course Type:',
-      value: (
-        <>
-          {selectedCourseType?.name ?? '-'}{' '}
-          {selectedCourseType?.type && (
-            <span className="text-muted-foreground">({selectedCourseType.type})</span>
-          )}
-        </>
-      ),
-    },
-    {
-      label: 'Teacher:',
-      value: selectedTeacher?.fullName ?? '-',
-    },
-    {
-      label: 'Start Date:',
-      value: formatDate(step1.startDate),
-    },
-    ...(step1.endDate
-      ? [{ label: 'End Date:', value: formatDate(step1.endDate) }]
-      : []),
-    {
-      label: 'Frequency:',
-      value: RECURRENCE_LABELS[step1.recurrence],
-    },
-    ...(step1.isTrial
-      ? [{ label: 'Type:', value: <span className="text-amber-600">Trial Lesson</span> }]
-      : []),
-  ]
+  const timeDisplay = step3.selectedStartTime && step3.selectedEndTime
+    ? formatTime(step3.selectedStartTime)
+    : undefined
 
-  const scheduleItems: SummaryItem[] = [
-    { label: 'Day:', value: dayOfWeek ?? '-' },
-    {
-      label: 'Time:',
-      value: step3.selectedStartTime && step3.selectedEndTime
-        ? `${formatTime(step3.selectedStartTime)} – ${formatTime(step3.selectedEndTime)}`
-        : '-',
-    },
-    { label: 'Room:', value: selectedRoom?.name ?? '-' },
-  ]
+  const endTimeDisplay = step3.selectedStartTime && step3.selectedEndTime
+    ? formatTime(step3.selectedEndTime)
+    : undefined
 
   return (
     <div className="space-y-6">
@@ -104,11 +69,26 @@ export function Step4Summary() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <SummaryCard title="Course Details" items={courseItems} />
-        <SummaryCard title="Schedule & Room" items={scheduleItems} />
+        <EnrollmentSummaryCard
+          title="Course Details"
+          courseTypeName={selectedCourseType?.name}
+          courseTypeLabel={selectedCourseType?.type}
+          teacherName={selectedTeacher?.fullName}
+          startDate={formatDate(step1.startDate)}
+          endDate={formatDate(step1.endDate)}
+          frequency={RECURRENCE_LABELS[step1.recurrence]}
+          isTrial={step1.isTrial || undefined}
+        />
+        <EnrollmentSummaryCard
+          title="Schedule & Room"
+          dayOfWeek={dayOfWeek}
+          startTime={timeDisplay}
+          endTime={endTimeDisplay}
+          roomName={selectedRoom?.name}
+        />
       </div>
 
-      <SummaryCard title={`Enrolled Students (${students.length})`}>
+      <EnrollmentSummaryCard title={`Enrolled Students (${students.length})`}>
         {students.length === 0 && (
           <p className="text-sm text-muted-foreground">No students selected</p>
         )}
@@ -122,7 +102,7 @@ export function Step4Summary() {
                 <div>
                   <p className="font-medium">{student.studentName}</p>
                   <p className="text-xs text-muted-foreground">
-                    Starts {formatDate(student.enrolledAt)}
+                    Starts {formatDate(student.enrolledAt) ?? '-'}
                     {student.discountPercentage > 0 && (
                       <> &middot; {student.discountPercentage}% discount ({student.discountType})</>
                     )}
@@ -135,7 +115,7 @@ export function Step4Summary() {
             ))}
           </div>
         )}
-      </SummaryCard>
+      </EnrollmentSummaryCard>
 
       <Alert className="border-green-200 bg-green-50">
         <CheckCircle className="h-4 w-4 text-green-600" />

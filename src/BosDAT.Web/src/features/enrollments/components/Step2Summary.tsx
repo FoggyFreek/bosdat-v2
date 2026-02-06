@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { courseTypesApi } from '@/features/course-types/api'
 import { teachersApi } from '@/features/teachers/api'
-import { SummaryCard, type SummaryItem } from '@/components/SummaryCard'
+import { EnrollmentSummaryCard } from './EnrollmentSummaryCard'
 import type { CourseType } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
-import { RecurrenceType } from '../types'
+import type { RecurrenceType } from '../types'
 
 const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
   Trail: 'Trial Lesson',
@@ -15,7 +15,7 @@ const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
 }
 
 const formatDate = (date: string | null) => {
-  if (!date) return '-'
+  if (!date) return undefined
   return new Date(date).toLocaleDateString('nl-NL')
 }
 
@@ -38,46 +38,20 @@ export const Step2Summary = () => {
 
   const dayOfWeek = step1.startDate
     ? getDayNameFromNumber(new Date(step1.startDate).getDay())
-    : null
+    : undefined
 
-  const items: SummaryItem[] = [
-    {
-      label: 'Course Type:',
-      value: (
-        <>
-          {selectedCourseType?.name || '-'}{' '}
-          {selectedCourseType?.type && (
-            <span className="text-muted-foreground">({selectedCourseType.type})</span>
-          )}
-        </>
-      ),
-    },
-    {
-      label: 'Teacher:',
-      value: selectedTeacher?.fullName || '-',
-    },
-    {
-      label: 'Start Date:',
-      value: (
-        <>
-          {formatDate(step1.startDate)} {dayOfWeek && `(${dayOfWeek})`}
-        </>
-      ),
-    },
-    ...(step1.endDate
-      ? [{ label: 'End Date:', value: formatDate(step1.endDate) }]
-      : []),
-    ...(step1.isTrial
-      ? [{ label: 'Type:', value: <span className="text-amber-600">Trial Lesson</span> }]
-      : []),
-    {
-      label: 'Recurrence:',
-      value: RECURRENCE_LABELS[step1.recurrence],
-    },
-    ...(selectedCourseType
-      ? [{ label: 'Max Students:', value: String(selectedCourseType.maxStudents) }]
-      : []),
-  ]
-
-  return <SummaryCard title="Lesson Configuration" items={items} />
+  return (
+    <EnrollmentSummaryCard
+      title="Lesson Configuration"
+      courseTypeName={selectedCourseType?.name}
+      courseTypeLabel={selectedCourseType?.type}
+      teacherName={selectedTeacher?.fullName}
+      startDate={formatDate(step1.startDate)}
+      dayOfWeek={dayOfWeek ?? undefined}
+      endDate={formatDate(step1.endDate)}
+      isTrial={step1.isTrial || undefined}
+      frequency={RECURRENCE_LABELS[step1.recurrence]}
+      maxStudents={selectedCourseType?.maxStudents}
+    />
+  )
 }

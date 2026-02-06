@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/datetime-helpers'
-import { SummaryCard } from '@/components/SummaryCard'
 import type { Enrollment } from '@/features/enrollments/types'
 
 const ENROLLMENT_STATUS_COLORS: Record<string, string> = {
@@ -17,7 +16,8 @@ interface CourseEnrollmentsCardProps {
 
 export function CourseEnrollmentsCard({ enrollments }: CourseEnrollmentsCardProps) {
   return (
-    <SummaryCard title={`Enrolled Students (${enrollments.length})`}>
+    <div className="rounded-lg border bg-muted/50 p-4">
+      <h3 className="font-medium mb-3 text-sm">{`Enrolled Students (${enrollments.length})`}</h3>
       {enrollments.length === 0 && (
         <p className="text-sm text-muted-foreground">No students enrolled</p>
       )}
@@ -49,6 +49,6 @@ export function CourseEnrollmentsCard({ enrollments }: CourseEnrollmentsCardProp
           ))}
         </div>
       )}
-    </SummaryCard>
+    </div>
   )
 }

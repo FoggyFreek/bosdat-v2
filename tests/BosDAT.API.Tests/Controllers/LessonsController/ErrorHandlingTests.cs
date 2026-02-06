@@ -215,7 +215,7 @@ public class ErrorHandlingTests
 
         // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-            await _controller.GetAll(null, null, null, null, null, null, cancellationTokenSource.Token));
+            await _controller.GetAll(null, null, null, null, null, null, null, null, cancellationTokenSource.Token));
     }
 
     #endregion

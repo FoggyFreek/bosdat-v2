@@ -379,7 +379,7 @@ public class LessonsControllerTests
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(null, null, null, null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(null, null, null, null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -400,7 +400,7 @@ public class LessonsControllerTests
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(startDate, null, null, null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(startDate, null, null, null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -421,7 +421,7 @@ public class LessonsControllerTests
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(null, null, teacherId, null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(null, null, teacherId, null, null, null, null, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -441,7 +441,7 @@ public class LessonsControllerTests
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
 
         // Act
-        var result = await _controller.GetAll(null, null, null, null, null, LessonStatus.Completed, CancellationToken.None);
+        var result = await _controller.GetAll(null, null, null, null, null, null, LessonStatus.Completed, null, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);

@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { SummaryCard } from '@/components/SummaryCard'
+import { EnrollmentSummaryCard } from './EnrollmentSummaryCard'
 import { getInitials } from '@/lib/string-utils'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { Step2Summary } from './Step2Summary'
@@ -24,7 +24,7 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
     <div className="space-y-4">
       <Step2Summary />
 
-      <SummaryCard title="Selected Students">
+      <EnrollmentSummaryCard title="Selected Students">
         <div className="flex flex-wrap gap-2">
           {students.map((student) => (
             <Badge
@@ -36,7 +36,7 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
             </Badge>
           ))}
         </div>
-      </SummaryCard>
+      </EnrollmentSummaryCard>
 
       <div className="rounded-lg border bg-muted/50 p-4">
         <h3 className="font-medium mb-3 text-sm">Room Selection</h3>
