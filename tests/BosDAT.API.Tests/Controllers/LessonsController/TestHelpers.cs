@@ -5,6 +5,7 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
 using Xunit;
 
@@ -360,7 +361,8 @@ public abstract class LessonGenerationTestBase
     protected LessonGenerationTestBase()
     {
         MockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        Controller = new API.Controllers.LessonsController(MockUnitOfWork.Object);
+        var lessonGenerationService = new LessonGenerationService(MockUnitOfWork.Object);
+        Controller = new API.Controllers.LessonsController(MockUnitOfWork.Object, lessonGenerationService);
     }
 
     /// <summary>

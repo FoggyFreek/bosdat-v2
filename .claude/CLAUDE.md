@@ -11,7 +11,7 @@ Music school management system. **Core:** Course blueprints → automated lesson
 - `BosDAT.Core` → Entities, Interfaces, DTOs, Enums (zero dependencies)
 - `BosDAT.Infrastructure` → Repositories, Services, Migrations
 
-**Frontend:** Bulletproof React (React 18, TS, Vite)
+**Frontend:** Bulletproof React (React 19, TS, Vite)
 - `features/[domain]/` → components, types, context
 - TanStack Query (5min cache) + React Context (memoized)
 - shadcn/ui + Tailwind exclusively

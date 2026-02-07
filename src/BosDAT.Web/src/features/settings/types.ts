@@ -7,6 +7,7 @@ export type SettingKey =
   | 'course-types'
   | 'rooms'
   | 'holidays'
+  | 'scheduling'
   | 'system'
   | 'seeding'
 
@@ -39,4 +40,41 @@ export interface SeederActionResponse {
   success: boolean
   message: string
   action: string
+}
+
+export interface SchedulingStatus {
+  lastScheduledDate: string | null
+  daysAhead: number
+  activeCourseCount: number
+}
+
+export interface ScheduleRun {
+  id: string
+  startDate: string
+  endDate: string
+  totalCoursesProcessed: number
+  totalLessonsCreated: number
+  totalLessonsSkipped: number
+  skipHolidays: boolean
+  status: string
+  errorMessage: string | null
+  initiatedBy: string
+  createdAt: string
+}
+
+export interface ScheduleRunsResponse {
+  items: ScheduleRun[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export interface ManualRunResult {
+  scheduleRunId: string
+  startDate: string
+  endDate: string
+  totalCoursesProcessed: number
+  totalLessonsCreated: number
+  totalLessonsSkipped: number
+  status: string
 }

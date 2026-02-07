@@ -114,6 +114,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ICourseService, CourseService>();
+        services.AddScoped<ILessonGenerationService, LessonGenerationService>();
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
         return services;

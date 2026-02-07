@@ -5,6 +5,7 @@ using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
 
 namespace BosDAT.API.Tests.Controllers;
@@ -17,7 +18,8 @@ public class LessonsControllerTests
     public LessonsControllerTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object);
+        var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object, lessonGenerationService);
     }
 
     [Fact]

@@ -1,5 +1,12 @@
 import { api } from '@/services/api'
-import type { SystemSetting, SeederStatusResponse, SeederActionResponse } from '@/features/settings/types'
+import type {
+  SystemSetting,
+  SeederStatusResponse,
+  SeederActionResponse,
+  SchedulingStatus,
+  ScheduleRunsResponse,
+  ManualRunResult,
+} from '@/features/settings/types'
 
 export const settingsApi = {
   getAll: async (): Promise<SystemSetting[]> => {
@@ -57,6 +64,25 @@ export const seederApi = {
 
   reseed: async (): Promise<SeederActionResponse> => {
     const response = await api.post<SeederActionResponse>('/admin/seeder/reseed')
+    return response.data
+  },
+}
+
+export const schedulingApi = {
+  getStatus: async (): Promise<SchedulingStatus> => {
+    const response = await api.get<SchedulingStatus>('/admin/scheduling/status')
+    return response.data
+  },
+
+  getRuns: async (page = 1, pageSize = 5): Promise<ScheduleRunsResponse> => {
+    const response = await api.get<ScheduleRunsResponse>('/admin/scheduling/runs', {
+      params: { page, pageSize },
+    })
+    return response.data
+  },
+
+  runManual: async (): Promise<ManualRunResult> => {
+    const response = await api.post<ManualRunResult>('/admin/scheduling/run')
     return response.data
   },
 }

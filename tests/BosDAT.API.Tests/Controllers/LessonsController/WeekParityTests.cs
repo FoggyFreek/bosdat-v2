@@ -7,6 +7,7 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Infrastructure.Services;
 
 namespace BosDAT.API.Tests.Controllers;
 
@@ -30,7 +31,8 @@ public class WeekParityTests
     public WeekParityTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object);
+        var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object, lessonGenerationService);
         _createdLessons = new List<Lesson>();
     }
 

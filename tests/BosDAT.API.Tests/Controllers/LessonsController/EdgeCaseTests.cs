@@ -6,6 +6,7 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
 
 namespace BosDAT.API.Tests.Controllers.LessonsController;
@@ -23,7 +24,8 @@ public class EdgeCaseTests
     public EdgeCaseTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object);
+        var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object, lessonGenerationService);
         _createdLessons = new List<Lesson>();
     }
 

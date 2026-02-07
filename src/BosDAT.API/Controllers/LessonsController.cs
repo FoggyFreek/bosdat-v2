@@ -5,7 +5,6 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
-using BosDAT.Core.Utilities;
 
 namespace BosDAT.API.Controllers;
 
@@ -15,10 +14,12 @@ namespace BosDAT.API.Controllers;
 public class LessonsController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILessonGenerationService _lessonGenerationService;
 
-    public LessonsController(IUnitOfWork unitOfWork)
+    public LessonsController(IUnitOfWork unitOfWork, ILessonGenerationService lessonGenerationService)
     {
         _unitOfWork = unitOfWork;
+        _lessonGenerationService = lessonGenerationService;
     }
 
     [HttpGet]
@@ -298,34 +299,24 @@ public class LessonsController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<GenerateLessonsResultDto>> GenerateLessons([FromBody] GenerateLessonsDto dto, CancellationToken cancellationToken)
     {
-        var course = await _unitOfWork.Courses.Query()
-            .Where(c => c.Id == dto.CourseId)
-            .Include(c => c.CourseType)
-            .Include(c => c.Enrollments.Where(e => e.Status == EnrollmentStatus.Active))
-                .ThenInclude(e => e.Student)
-            .FirstOrDefaultAsync(cancellationToken);
+        var courseExists = await _unitOfWork.Courses.Query()
+            .AnyAsync(c => c.Id == dto.CourseId, cancellationToken);
 
-        if (course == null)
+        if (!courseExists)
         {
             return BadRequest(new { message = "Course not found" });
         }
 
-        var (lessonsCreated, lessonsSkipped) = await GenerateLessonsForCourseAsync(
-            course,
-            dto.StartDate,
-            dto.EndDate,
-            dto.SkipHolidays,
-            cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var result = await _lessonGenerationService.GenerateForCourseAsync(
+            dto.CourseId, dto.StartDate, dto.EndDate, dto.SkipHolidays, cancellationToken);
 
         return Ok(new GenerateLessonsResultDto
         {
             CourseId = dto.CourseId,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
-            LessonsCreated = lessonsCreated,
-            LessonsSkipped = lessonsSkipped
+            LessonsCreated = result.LessonsCreated,
+            LessonsSkipped = result.LessonsSkipped
         });
     }
 
@@ -333,226 +324,25 @@ public class LessonsController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<BulkGenerateLessonsResultDto>> GenerateLessonsBulk([FromBody] BulkGenerateLessonsDto dto, CancellationToken cancellationToken)
     {
-        var activeCourses = await _unitOfWork.Courses.Query()
-            .Where(c => c.Status == CourseStatus.Active)
-            .Include(c => c.Enrollments.Where(e => e.Status == EnrollmentStatus.Active))
-            .Include(c => c.CourseType)
-            .ToListAsync(cancellationToken);
-
-        var totalCreated = 0;
-        var totalSkipped = 0;
-        var courseResults = new List<GenerateLessonsResultDto>();
-
-        foreach (var course in activeCourses)
-        {
-            var (lessonsCreated, lessonsSkipped) = await GenerateLessonsForCourseAsync(
-                course,
-                dto.StartDate,
-                dto.EndDate,
-                dto.SkipHolidays,
-                cancellationToken);
-
-            totalCreated += lessonsCreated;
-            totalSkipped += lessonsSkipped;
-
-            if (lessonsCreated > 0)
-            {
-                courseResults.Add(new GenerateLessonsResultDto
-                {
-                    CourseId = course.Id,
-                    StartDate = dto.StartDate,
-                    EndDate = dto.EndDate,
-                    LessonsCreated = lessonsCreated,
-                    LessonsSkipped = lessonsSkipped
-                });
-            }
-        }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        var result = await _lessonGenerationService.GenerateBulkAsync(
+            dto.StartDate, dto.EndDate, dto.SkipHolidays, cancellationToken);
 
         return Ok(new BulkGenerateLessonsResultDto
         {
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
-            TotalCoursesProcessed = activeCourses.Count,
-            TotalLessonsCreated = totalCreated,
-            TotalLessonsSkipped = totalSkipped,
-            CourseResults = courseResults
+            TotalCoursesProcessed = result.TotalCoursesProcessed,
+            TotalLessonsCreated = result.TotalLessonsCreated,
+            TotalLessonsSkipped = result.TotalLessonsSkipped,
+            CourseResults = result.CourseResults.Select(r => new GenerateLessonsResultDto
+            {
+                CourseId = r.CourseId,
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                LessonsCreated = r.LessonsCreated,
+                LessonsSkipped = r.LessonsSkipped
+            }).ToList()
         });
-    }
-
-    private async Task<(int Created, int Skipped)> GenerateLessonsForCourseAsync(
-        Course course,
-        DateOnly startDate,
-        DateOnly endDate,
-        bool skipHolidays,
-        CancellationToken cancellationToken)
-    {
-        var holidays = await GetHolidaysAsync(startDate, endDate, skipHolidays, cancellationToken);
-        var existingLessons = await GetExistingLessonsAsync(course.Id, startDate, endDate, cancellationToken);
-
-        var lessonsCreated = 0;
-        var lessonsSkipped = 0;
-        var currentDate = FindFirstOccurrenceDate(startDate, course, endDate);
-
-        while (currentDate <= endDate)
-        {
-            if (IsHoliday(currentDate, holidays))
-            {
-                lessonsSkipped++;
-            }
-            else
-            {
-                var (created, skipped) = await CreateLessonsForDate(course, currentDate, existingLessons);
-                lessonsCreated += created;
-                lessonsSkipped += skipped;
-            }
-
-            currentDate = GetNextOccurrenceDate(currentDate, course);
-        }
-
-        return (lessonsCreated, lessonsSkipped);
-    }
-
-    private async Task<List<Holiday>> GetHolidaysAsync(DateOnly startDate, DateOnly endDate, bool skipHolidays, CancellationToken cancellationToken)
-    {
-        if (!skipHolidays)
-            return new List<Holiday>();
-
-        return await _unitOfWork.Repository<Holiday>().Query()
-            .Where(h => h.EndDate >= startDate && h.StartDate <= endDate)
-            .ToListAsync(cancellationToken);
-    }
-
-    private async Task<List<Lesson>> GetExistingLessonsAsync(
-        Guid courseId,
-        DateOnly startDate,
-        DateOnly endDate,
-        CancellationToken cancellationToken)
-    {
-        return await _unitOfWork.Lessons.Query()
-            .Where(l => l.CourseId == courseId && l.ScheduledDate >= startDate && l.ScheduledDate <= endDate)
-            .ToListAsync(cancellationToken);
-    }
-
-    private static DateOnly FindFirstOccurrenceDate(DateOnly startDate, Course course, DateOnly endDate)
-    {
-        var currentDate = startDate;
-
-        // Find first occurrence of the target day of week
-        while (currentDate.DayOfWeek != course.DayOfWeek && currentDate <= endDate)
-        {
-            currentDate = currentDate.AddDays(1);
-        }
-
-        // For biweekly with specific parity, ensure we start on correct week
-        if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
-        {
-            while (!IsoDateHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
-                   && currentDate <= endDate)
-            {
-                currentDate = currentDate.AddDays(7);
-            }
-        }
-
-        return currentDate;
-    }
-
-    private static bool IsHoliday(DateOnly date, List<Holiday> holidays)
-    {
-        return holidays.Any(h => date >= h.StartDate && date <= h.EndDate);
-    }
-
-    private static bool HasExistingLesson(DateOnly date, Guid? studentId, List<Lesson> existingLessons)
-    {
-        return existingLessons.Any(l => l.ScheduledDate == date && l.StudentId == studentId);
-    }
-
-    private static DateOnly GetNextOccurrenceDate(DateOnly currentDate, Course course)
-    {
-        // For biweekly with specific parity, we need to find the next occurrence in a matching week
-        if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
-        {
-            // Start by adding 7 days (1 week)
-            var nextDate = currentDate.AddDays(7);
-
-            // Keep adding weeks until we find one that matches the parity
-            while (!IsoDateHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
-            {
-                nextDate = nextDate.AddDays(7);
-            }
-
-            return nextDate;
-        }
-
-        // For other frequencies, use simple date arithmetic
-        return course.Frequency switch
-        {
-            CourseFrequency.Weekly => currentDate.AddDays(7),
-            CourseFrequency.Biweekly => currentDate.AddDays(14),
-            CourseFrequency.Monthly => currentDate.AddMonths(1),
-            _ => currentDate.AddDays(7)
-        };
-    }
-
-    private async Task<(int Created, int Skipped)> CreateLessonsForDate(Course course, DateOnly date, List<Lesson> existingLessons)
-    {
-        var created = 0;
-        var skipped = 0;
-
-        // Filter enrollments to only include students enrolled by this date (mid-enrollment support)
-        var enrolledStudents = course.Enrollments
-            .Where(e => DateOnly.FromDateTime(e.EnrolledAt) <= date)
-            .ToList();
-
-        if (enrolledStudents.Count == 0)
-        {
-            // No enrollments: create a placeholder lesson with null StudentId
-            if (!HasExistingLesson(date, null, existingLessons))
-            {
-                await CreateLesson(course, date, null);
-                created++;
-            }
-            else
-            {
-                skipped++;
-            }
-        }
-        else
-        {
-            // All course types: one lesson per enrolled student
-            foreach (var enrollment in enrolledStudents)
-            {
-                if (!HasExistingLesson(date, enrollment.StudentId, existingLessons))
-                {
-                    await CreateLesson(course, date, enrollment.StudentId);
-                    created++;
-                }
-                else
-                {
-                    skipped++;
-                }
-            }
-        }
-
-        return (created, skipped);
-    }
-
-    private async Task CreateLesson(Course course, DateOnly date, Guid? studentId)
-    {
-        var lesson = new Lesson
-        {
-            Id = Guid.NewGuid(),
-            CourseId = course.Id,
-            StudentId = studentId,
-            TeacherId = course.TeacherId,
-            RoomId = course.RoomId,
-            ScheduledDate = date,
-            StartTime = course.StartTime,
-            EndTime = course.EndTime,
-            Status = LessonStatus.Scheduled
-        };
-        await _unitOfWork.Lessons.AddAsync(lesson, CancellationToken.None);
     }
 
     private async Task<LessonDto?> GetLessonDto(Guid id, CancellationToken cancellationToken)

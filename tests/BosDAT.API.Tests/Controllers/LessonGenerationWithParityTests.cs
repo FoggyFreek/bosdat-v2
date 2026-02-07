@@ -1,13 +1,14 @@
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Utilities;
+using BosDAT.Infrastructure.Services;
 using Xunit;
 
 namespace BosDAT.API.Tests.Controllers;
 
 /// <summary>
 /// Tests for lesson generation logic with ISO week parity support.
-/// These test the static helper methods that will be used in LessonsController.
+/// These test the static helper methods in LessonGenerationService.
 /// </summary>
 public class LessonGenerationWithParityTests
 {
@@ -25,7 +26,7 @@ public class LessonGenerationWithParityTests
         var currentDate = new DateOnly(2024, 1, 1);
 
         // Act
-        var nextDate = LessonGenerationHelper.GetNextOccurrenceDate(currentDate, course);
+        var nextDate = LessonGenerationService.GetNextOccurrenceDate(currentDate, course);
 
         // Assert
         // Should jump to Week 3 (next odd week), which is Monday, Jan 15, 2024
@@ -50,7 +51,7 @@ public class LessonGenerationWithParityTests
         var currentDate = new DateOnly(2024, 1, 8);
 
         // Act
-        var nextDate = LessonGenerationHelper.GetNextOccurrenceDate(currentDate, course);
+        var nextDate = LessonGenerationService.GetNextOccurrenceDate(currentDate, course);
 
         // Assert
         // Should jump to Week 4 (next even week), which is Monday, Jan 22, 2024
@@ -74,7 +75,7 @@ public class LessonGenerationWithParityTests
         var currentDate = new DateOnly(2024, 1, 1);
 
         // Act
-        var nextDate = LessonGenerationHelper.GetNextOccurrenceDate(currentDate, course);
+        var nextDate = LessonGenerationService.GetNextOccurrenceDate(currentDate, course);
 
         // Assert
         // Should simply add 14 days
@@ -94,7 +95,7 @@ public class LessonGenerationWithParityTests
         var currentDate = new DateOnly(2024, 1, 1);
 
         // Act
-        var nextDate = LessonGenerationHelper.GetNextOccurrenceDate(currentDate, course);
+        var nextDate = LessonGenerationService.GetNextOccurrenceDate(currentDate, course);
 
         // Assert
         Assert.Equal(currentDate.AddDays(7), nextDate);
@@ -116,7 +117,7 @@ public class LessonGenerationWithParityTests
         var endDate = new DateOnly(2024, 12, 31);
 
         // Act
-        var firstDate = LessonGenerationHelper.FindFirstOccurrenceDate(startDate, course, endDate);
+        var firstDate = LessonGenerationService.FindFirstOccurrenceDate(startDate, course, endDate);
 
         // Assert
         Assert.Equal(new DateOnly(2024, 1, 1), firstDate);
@@ -138,7 +139,7 @@ public class LessonGenerationWithParityTests
         var endDate = new DateOnly(2024, 12, 31);
 
         // Act
-        var firstDate = LessonGenerationHelper.FindFirstOccurrenceDate(startDate, course, endDate);
+        var firstDate = LessonGenerationService.FindFirstOccurrenceDate(startDate, course, endDate);
 
         // Assert
         // Should jump to Week 3 (odd week) - Monday, Jan 15, 2024
@@ -164,7 +165,7 @@ public class LessonGenerationWithParityTests
         var endDate = new DateOnly(2024, 12, 31);
 
         // Act
-        var firstDate = LessonGenerationHelper.FindFirstOccurrenceDate(startDate, course, endDate);
+        var firstDate = LessonGenerationService.FindFirstOccurrenceDate(startDate, course, endDate);
 
         // Assert
         // Should jump to Week 2 (even week) - Monday, Jan 8, 2024
@@ -175,7 +176,7 @@ public class LessonGenerationWithParityTests
     }
 
     [Fact]
-    public void GenerateLessons_BiweeklyOdd_ShouldOnlyCreateInOddWeeks()
+    public void GenerateLessonDates_BiweeklyOdd_ShouldOnlyCreateInOddWeeks()
     {
         // Arrange
         var course = new Course
@@ -189,7 +190,7 @@ public class LessonGenerationWithParityTests
         var endDate = new DateOnly(2024, 2, 29);   // ~8 weeks
 
         // Act
-        var lessonDates = LessonGenerationHelper.GenerateLessonDates(startDate, endDate, course);
+        var lessonDates = GenerateLessonDates(startDate, endDate, course);
 
         // Assert
         Assert.NotEmpty(lessonDates);
@@ -206,7 +207,7 @@ public class LessonGenerationWithParityTests
     }
 
     [Fact]
-    public void GenerateLessons_BiweeklyEven_ShouldOnlyCreateInEvenWeeks()
+    public void GenerateLessonDates_BiweeklyEven_ShouldOnlyCreateInEvenWeeks()
     {
         // Arrange
         var course = new Course
@@ -220,7 +221,7 @@ public class LessonGenerationWithParityTests
         var endDate = new DateOnly(2024, 2, 29);   // ~8 weeks
 
         // Act
-        var lessonDates = LessonGenerationHelper.GenerateLessonDates(startDate, endDate, course);
+        var lessonDates = GenerateLessonDates(startDate, endDate, course);
 
         // Assert
         Assert.NotEmpty(lessonDates);
@@ -237,7 +238,7 @@ public class LessonGenerationWithParityTests
     }
 
     [Fact]
-    public void GenerateLessons_Across53WeekYear_ShouldHandleCorrectly()
+    public void GenerateLessonDates_Across53WeekYear_ShouldHandleCorrectly()
     {
         // 2026 is a 53-week year. Week 53 of 2026 and Week 1 of 2027 are both odd.
         // This test verifies the system handles this edge case.
@@ -255,7 +256,7 @@ public class LessonGenerationWithParityTests
         var endDate = new DateOnly(2027, 1, 31);
 
         // Act
-        var lessonDates = LessonGenerationHelper.GenerateLessonDates(startDate, endDate, course);
+        var lessonDates = GenerateLessonDates(startDate, endDate, course);
 
         // Assert
         Assert.NotEmpty(lessonDates);
@@ -272,73 +273,19 @@ public class LessonGenerationWithParityTests
         Assert.Contains(new DateOnly(2026, 12, 28), lessonDates);
         Assert.Contains(new DateOnly(2027, 1, 4), lessonDates);
     }
-}
 
-/// <summary>
-/// Helper class to encapsulate lesson generation logic for testing.
-/// This will be moved into LessonsController as static methods.
-/// </summary>
-public static class LessonGenerationHelper
-{
-    public static DateOnly GetNextOccurrenceDate(DateOnly currentDate, Course course)
-    {
-        // For biweekly with specific parity, we need to find the next occurrence in a matching week
-        if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
-        {
-            // Start by adding 7 days (1 week)
-            var nextDate = currentDate.AddDays(7);
-
-            // Keep adding weeks until we find one that matches the parity
-            while (!IsoDateHelper.MatchesWeekParity(nextDate.ToDateTime(TimeOnly.MinValue), course.WeekParity))
-            {
-                nextDate = nextDate.AddDays(7);
-            }
-
-            return nextDate;
-        }
-
-        // For other frequencies, use simple date arithmetic
-        return course.Frequency switch
-        {
-            CourseFrequency.Weekly => currentDate.AddDays(7),
-            CourseFrequency.Biweekly => currentDate.AddDays(14),
-            CourseFrequency.Monthly => currentDate.AddMonths(1),
-            _ => currentDate.AddDays(7)
-        };
-    }
-
-    public static DateOnly FindFirstOccurrenceDate(DateOnly startDate, Course course, DateOnly endDate)
-    {
-        var currentDate = startDate;
-
-        // Find first occurrence of the target day of week
-        while (currentDate.DayOfWeek != course.DayOfWeek && currentDate <= endDate)
-        {
-            currentDate = currentDate.AddDays(1);
-        }
-
-        // For biweekly with specific parity, ensure we start on correct week
-        if (course.Frequency == CourseFrequency.Biweekly && course.WeekParity != WeekParity.All)
-        {
-            while (!IsoDateHelper.MatchesWeekParity(currentDate.ToDateTime(TimeOnly.MinValue), course.WeekParity)
-                   && currentDate <= endDate)
-            {
-                currentDate = currentDate.AddDays(7);
-            }
-        }
-
-        return currentDate;
-    }
-
-    public static List<DateOnly> GenerateLessonDates(DateOnly startDate, DateOnly endDate, Course course)
+    /// <summary>
+    /// Helper that uses the service's static methods to generate lesson dates for testing.
+    /// </summary>
+    private static List<DateOnly> GenerateLessonDates(DateOnly startDate, DateOnly endDate, Course course)
     {
         var dates = new List<DateOnly>();
-        var currentDate = FindFirstOccurrenceDate(startDate, course, endDate);
+        var currentDate = LessonGenerationService.FindFirstOccurrenceDate(startDate, course, endDate);
 
         while (currentDate <= endDate)
         {
             dates.Add(currentDate);
-            currentDate = GetNextOccurrenceDate(currentDate, course);
+            currentDate = LessonGenerationService.GetNextOccurrenceDate(currentDate, course);
         }
 
         return dates;

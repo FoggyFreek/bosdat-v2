@@ -48,6 +48,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<StudentLedgerEntry> StudentLedgerEntries => Set<StudentLedgerEntry>();
     public DbSet<StudentLedgerApplication> StudentLedgerApplications => Set<StudentLedgerApplication>();
     public DbSet<TeacherAvailability> TeacherAvailabilities => Set<TeacherAvailability>();
+    public DbSet<ScheduleRun> ScheduleRuns => Set<ScheduleRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +76,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<StudentLedgerEntry>().ToTable("student_ledger_entries");
         modelBuilder.Entity<StudentLedgerApplication>().ToTable("student_ledger_applications");
         modelBuilder.Entity<TeacherAvailability>().ToTable("teacher_availability");
+        modelBuilder.Entity<ScheduleRun>().ToTable("schedule_runs");
 
         // Student configuration
         modelBuilder.Entity<Student>(entity =>
@@ -125,6 +127,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.TeacherId, e.DayOfWeek }).IsUnique();
+        });
+
+        // ScheduleRun configuration
+        modelBuilder.Entity<ScheduleRun>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.InitiatedBy).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
+            entity.HasIndex(e => e.CreatedAt);
         });
 
         // Instrument configuration
