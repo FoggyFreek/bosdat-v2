@@ -9,6 +9,7 @@ import type { WeekCalendar, CalendarLesson, Holiday } from '@/features/schedule/
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import type { SchedulerProps } from '@/components'
+import { fa } from 'zod/v4/locales'
 
 
 // Mock API modules
@@ -113,6 +114,8 @@ describe('SchedulePage', () => {
       frequency: 'Weekly',
       studentName: 'Alice Johnson',
       teacherName: 'John Doe',
+      isTrial: false,
+      isWorkshop: false,
       roomName: 'Room A',
       instrumentName: 'Piano',
       status: 'Scheduled',
@@ -127,6 +130,8 @@ describe('SchedulePage', () => {
       frequency: 'Weekly',
       studentName: 'Bob Smith',
       teacherName: 'Jane Smith',
+      isTrial: false,
+      isWorkshop: false,
       roomName: 'Room B',
       instrumentName: 'Guitar',
       status: 'Completed',
@@ -140,6 +145,8 @@ describe('SchedulePage', () => {
       endTime: '17:00',
       frequency: 'Weekly',
       teacherName: 'John Doe',
+      isTrial: false,
+      isWorkshop: false,
       roomName: 'Room B',
       instrumentName: 'Drums',
       status: 'Cancelled',
