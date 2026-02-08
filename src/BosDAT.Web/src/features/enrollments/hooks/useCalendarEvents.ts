@@ -47,7 +47,8 @@ export const useCalendarEvents = ({
         endDateTime: endDateTime.toISOString(),
         title: `${course.courseTypeName} - ${course.teacherName}`,
         frequency,
-        eventType: determineEventType(course.isWorkshop),
+        eventType: determineEventType(course),
+        status: 'Scheduled',
         attendees: studentNames,
         room: course.roomId?.toString(),
       })
@@ -105,16 +106,7 @@ const matchesCourseFrequency = (
       // For biweekly courses, check if the week's parity matches the course's weekParity
       return matchesWeekParity(weekStart, weekParity)
 
-    case 'Monthly':
-      // Monthly courses: simplified logic - show if any day in the week is in the first 7 days of a month
-      // This is a simplified approach; actual monthly logic may vary based on business rules
-      for (let i = 0; i < 7; i++) {
-        const day = new Date(weekStart)
-        day.setDate(weekStart.getDate() + i)
-        if (day.getDate() <= 7) {
-          return true
-        }
-      }
+    case 'Once':
       return false
 
     default:
@@ -138,8 +130,8 @@ const getCourseDate = (weekStart: Date, dayOfWeek: number): Date => {
 /**
  * Determines the event type based on workshop flag
  */
-const determineEventType = (isWorkshop: boolean): EventType => {
-  return isWorkshop ? 'workshop' : 'course'
+const determineEventType = (course: Course): EventType => {
+  return course.isWorkshop ? 'workshop' : course.isTrial ? 'trial' : 'course'
 }
 
 /**
@@ -147,10 +139,11 @@ const determineEventType = (isWorkshop: boolean): EventType => {
  */
 const mapFrequency = (frequency: CourseFrequency): EventFrequency => {
   switch (frequency) {
+    case 'Once':
+      return 'once'
     case 'Biweekly':
       return 'bi-weekly'
     case 'Weekly':
-    case 'Monthly':
     default:
       return 'weekly'
   }

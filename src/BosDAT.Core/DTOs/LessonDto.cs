@@ -68,6 +68,9 @@ public record CalendarLessonDto
     public DateOnly Date { get; init; }
     public TimeOnly StartTime { get; init; }
     public TimeOnly EndTime { get; init; }
+    public CourseFrequency Frequency { get; init; }
+    public bool IsTrial { get; init; }
+    public bool IsWorkshop { get; init; }
     public string? StudentName { get; init; }
     public string TeacherName { get; init; } = string.Empty;
     public string? RoomName { get; init; }

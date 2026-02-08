@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BosDAT.API.Controllers;
 
@@ -82,6 +83,66 @@ public class SchedulingController(
         });
     }
 
+    [HttpPost("run/{id}")]
+    public async Task<ActionResult<ManualRunResultDto>> RunSingle(Guid id, CancellationToken ct)
+    {
+        //FUTURE: get nr day ahead from settings
+        var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var endDate = startDate.AddDays(90);
+
+        ScheduleRun scheduleRun;
+
+        try
+        {
+            var result = await lessonGenerationService.GenerateForCourseAsync(
+                id, startDate, endDate, skipHolidays: true, ct);
+
+            scheduleRun = new ScheduleRun
+            {
+                Id = Guid.NewGuid(),
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalCoursesProcessed = 1,
+                TotalLessonsCreated = result.LessonsCreated,
+                TotalLessonsSkipped = result.LessonsSkipped,
+                SkipHolidays = true,
+                Status = ScheduleRunStatus.Success,
+                InitiatedBy = "RunManualSingle"
+            };
+        }
+        catch (Exception ex)
+        {
+            scheduleRun = new ScheduleRun
+            {
+                Id = Guid.NewGuid(),
+                StartDate = startDate,
+                EndDate = endDate,
+                TotalCoursesProcessed = 1,
+                TotalLessonsCreated = 0,
+                TotalLessonsSkipped = 0,
+                SkipHolidays = true,
+                Status = ScheduleRunStatus.Failed,
+                ErrorMessage = ex.Message,
+                InitiatedBy = "ManualSingle"
+            };
+        }
+
+        await unitOfWork.Repository<ScheduleRun>().AddAsync(scheduleRun, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return Ok(new ManualRunResultDto
+        {
+            ScheduleRunId = scheduleRun.Id,
+            StartDate = scheduleRun.StartDate,
+            EndDate = scheduleRun.EndDate,
+            TotalCoursesProcessed = scheduleRun.TotalCoursesProcessed,
+            TotalLessonsCreated = scheduleRun.TotalLessonsCreated,
+            TotalLessonsSkipped = scheduleRun.TotalLessonsSkipped,
+            Status = scheduleRun.Status
+        });
+        
+    }
+
     [HttpPost("run")]
     public async Task<ActionResult<ManualRunResultDto>> RunManual(CancellationToken ct)
     {
@@ -139,6 +200,8 @@ public class SchedulingController(
             Status = scheduleRun.Status
         });
     }
+
+    
 }
 
 public record SchedulingStatusDto

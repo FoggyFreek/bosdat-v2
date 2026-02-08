@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, UnfoldHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -12,15 +12,16 @@ import {
 } from '@/components/ui/select'
 import { CalendarComponent } from '@/components'
 import type { CalendarEvent, ColorScheme } from '@/components'
-import type { DayAvailability } from '@/components/calendar/types'
+import type { DayAvailability, EventFrequency } from '@/components/calendar/types'
 import { calendarApi } from '@/features/schedule/api'
 import { teachersApi } from '@/features/teachers/api'
 import { roomsApi } from '@/features/rooms/api'
-import type { WeekCalendar } from '@/features/schedule/types'
+import type { Holiday, WeekCalendar } from '@/features/schedule/types'
 import { groupLessonsByCourseAndDate, type GroupedLesson } from '@/features/schedule/utils/groupLessons'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/datetime-helpers'
+import { en } from 'zod/v4/locales'
 
 // --- Constants ---
 
@@ -48,6 +49,68 @@ const statusColorScheme: ColorScheme = {
 }
 
 // --- Helpers ---
+function splitHolidays(holiday: Holiday): Holiday[] {
+  const flattenedHolidays: Holiday[] = [];
+
+    const start = new Date(holiday.startDate);
+    const end = new Date(holiday.endDate);
+
+    // Create a tracking date starting at the holiday's beginning
+    let current = new Date(start);
+
+    while (current <= end) {
+      const dayStart = new Date(current);
+      const dayEnd = new Date(current);
+
+      // 1. Determine the start time for THIS specific day
+      // If it's the first day, use the original start time. Otherwise, 00:00:00.
+      if (current.toDateString() === start.toDateString()) {
+        dayStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds());
+      } else {
+        dayStart.setHours(0, 0, 0, 0);
+      }
+
+      // 2. Determine the end time for THIS specific day
+      // If it's the last day, use the original end time. Otherwise, 23:59:59.
+      if (current.toDateString() === end.toDateString()) {
+        dayEnd.setHours(end.getHours(), end.getMinutes(), end.getSeconds());
+      } else {
+        dayEnd.setHours(23, 59, 59, 999);
+      }
+
+      flattenedHolidays.push({
+        ...holiday,
+        id: new Date(current).getDate(),
+        startDate: formatDateForApi(dayStart),
+        endDate: formatDateForApi(dayEnd),
+      });
+
+      // Move to the next day
+      current.setDate(current.getDate() + 1);
+      current.setHours(0, 0, 0, 0); // Reset to start of next day for comparison
+    }
+
+  return flattenedHolidays;
+}
+
+const convertHolidaysToEvents = (holidays: Holiday[]): CalendarEvent[] => {
+
+  const allHolidays = holidays.flatMap(splitHolidays)
+
+  const holidayEvents: CalendarEvent[] = allHolidays.map(holiday => ({
+    id: holiday.id.toString(),
+    startDateTime: combineDateAndTime(new Date(holiday.startDate), '08:00'),
+    endDateTime: combineDateAndTime(new Date(holiday.endDate), '22:00'),
+    title: holiday.name,
+    frequency: 'once',
+    attendees: [],
+    eventType: 'holiday',
+    status: 'Scheduled',
+    roomId: undefined,
+  }))
+
+  return holidayEvents
+}
 
 const convertGroupedLessonToEvent = (group: GroupedLesson): CalendarEvent => {
   const attendees = [...group.studentNames]
@@ -62,9 +125,10 @@ const convertGroupedLessonToEvent = (group: GroupedLesson): CalendarEvent => {
     id: eventId,
     startDateTime: combineDateAndTime(new Date(group.date), group.startTime),
     endDateTime: combineDateAndTime(new Date(group.date), group.endTime),
-    title: group.instrumentName || group.title,
-    frequency: 'weekly',
-    eventType: group.status,
+    title: group.title + (group.isTrial ? ' (Trail)' : ''),
+    frequency: group.frequency,
+    eventType: group.isTrial? 'trial' : group.isWorkshop? 'workshop' : 'course',
+    status: group.status,  
     attendees,
     room: group.roomName,
   }
@@ -129,8 +193,10 @@ export const SchedulePage = () => {
 
   const events = useMemo(() => {
     const lessons = calendarData?.lessons ?? []
+    const holidays = convertHolidaysToEvents(calendarData?.holidays ?? [])
     const grouped = groupLessonsByCourseAndDate(lessons)
-    return grouped.map(convertGroupedLessonToEvent)
+
+    return [... holidays, ...grouped.map(convertGroupedLessonToEvent)]
   }, [calendarData?.lessons])
 
   const availability = useMemo(

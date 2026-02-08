@@ -1,3 +1,4 @@
+import { EventFrequency } from '@/components/calendar'
 import type { CalendarLesson } from '../types'
 import type { LessonStatus } from '@/features/lessons/types'
 
@@ -10,6 +11,9 @@ export interface GroupedLesson {
   teacherName: string
   roomName?: string
   instrumentName: string
+  frequency: EventFrequency
+  isTrial: boolean
+  isWorkshop: boolean
   status: LessonStatus
   lessons: CalendarLesson[]
   studentNames: string[]
@@ -37,9 +41,12 @@ export const groupLessonsByCourseAndDate = (lessons: CalendarLesson[]): GroupedL
       date: first.date,
       startTime: first.startTime,
       endTime: first.endTime,
-      title: first.instrumentName,
+      title: first.title,
       teacherName: first.teacherName,
       roomName: first.roomName,
+      frequency: first.frequency as EventFrequency,
+      isTrial: first.isTrial,
+      isWorkshop: first.isWorkshop,
       instrumentName: first.instrumentName,
       status: deriveGroupStatus(groupLessons),
       lessons: groupLessons,

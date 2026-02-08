@@ -125,9 +125,8 @@ describe('Step4Summary', () => {
           courseTypeId: 'ct1',
           teacherId: 't1',
           startDate: '2025-09-01',
-          endDate: '2026-06-30',
-          isTrial: true,
-          recurrence: 'Weekly',
+          endDate: '2025-09-01',
+          recurrence: 'Trial',
         },
         step2: {
           students: [

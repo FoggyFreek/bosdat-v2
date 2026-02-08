@@ -13,7 +13,7 @@ describe('useCalendarEvents', () => {
     id: 'course-1',
     teacherId: 'teacher-1',
     teacherName: 'Jane Smith',
-    courseTypeId: 1,
+    courseTypeId: 'ct-1',
     courseTypeName: 'Individual Piano',
     instrumentName: 'Piano',
     roomId: 1,

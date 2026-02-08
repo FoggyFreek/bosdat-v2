@@ -13,7 +13,7 @@ import type { Room } from '@/features/rooms/types'
 import type { RecurrenceType } from '../types'
 
 const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
-  Trail: 'Trial Lesson',
+  Trial: 'Once',
   Weekly: 'Once per week',
   Biweekly: 'Every two weeks',
 }
@@ -77,7 +77,7 @@ export function Step4Summary() {
           startDate={formatDate(step1.startDate)}
           endDate={formatDate(step1.endDate)}
           frequency={RECURRENCE_LABELS[step1.recurrence]}
-          isTrial={step1.isTrial || undefined}
+          isTrial={step1.recurrence === 'Trial'}
         />
         <EnrollmentSummaryCard
           title="Schedule & Room"

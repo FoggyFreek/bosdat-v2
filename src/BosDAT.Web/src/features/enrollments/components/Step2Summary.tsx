@@ -9,7 +9,7 @@ import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { RecurrenceType } from '../types'
 
 const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
-  Trail: 'Trial Lesson',
+  Trial: 'Once',
   Weekly: 'Once per week',
   Biweekly: 'Every two weeks',
 }
@@ -49,7 +49,7 @@ export const Step2Summary = () => {
       startDate={formatDate(step1.startDate)}
       dayOfWeek={dayOfWeek ?? undefined}
       endDate={formatDate(step1.endDate)}
-      isTrial={step1.isTrial || undefined}
+      isTrial={step1.recurrence === 'Trial'}
       frequency={RECURRENCE_LABELS[step1.recurrence]}
       maxStudents={selectedCourseType?.maxStudents}
     />

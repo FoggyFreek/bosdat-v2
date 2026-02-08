@@ -2,6 +2,7 @@ using Moq;
 using Xunit;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
@@ -493,6 +494,7 @@ public class CourseServiceTests
                     StartTime = new TimeOnly(9, 0),
                     EndTime = new TimeOnly(10, 0),
                     Frequency = CourseFrequency.Weekly,
+                    WeekParity = WeekParity.Odd,
                     StartDate = DateOnly.FromDateTime(DateTime.Today),
                     Status = CourseStatus.Active,
                     Enrollments = new List<Enrollment>()
@@ -507,6 +509,7 @@ public class CourseServiceTests
             StartTime = new TimeOnly(9, 0),
             EndTime = new TimeOnly(10, 0),
             Frequency = CourseFrequency.Weekly,
+            WeekParity = WeekParity.Odd,
             StartDate = DateOnly.FromDateTime(DateTime.Today)
         };
 
@@ -517,6 +520,7 @@ public class CourseServiceTests
         Assert.NotNull(course);
         Assert.Null(error);
         Assert.Equal(teacher.Id, course.TeacherId);
+        Assert.Equal(WeekParity.Odd, course.WeekParity);
     }
 
     [Fact]
@@ -718,6 +722,8 @@ public class CourseServiceTests
         {
             StudentId = student.Id,
             DiscountPercent = 10,
+            DiscountType = DiscountType.Family,
+            InvoicingPreference = InvoicingPreference.Quarterly,
             Notes = "Test enrollment"
         };
 
@@ -730,6 +736,8 @@ public class CourseServiceTests
         Assert.Null(error);
         Assert.Equal(student.Id, enrollment.StudentId);
         Assert.Equal(course.Id, enrollment.CourseId);
+        Assert.Equal(DiscountType.Family, enrollment.DiscountType);
+        Assert.Equal(InvoicingPreference.Quarterly, enrollment.InvoicingPreference);
     }
 
     [Fact]

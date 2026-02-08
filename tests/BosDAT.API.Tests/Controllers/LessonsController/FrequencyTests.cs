@@ -96,7 +96,7 @@ public class FrequencyTests : LessonGenerationTestBase
     {
         // Arrange
         var course = new CourseBuilder()
-            .WithFrequency(CourseFrequency.Monthly)
+            .WithFrequency(CourseFrequency.Once)
             .WithDayOfWeek(DayOfWeek.Friday)
             .Build();
 
@@ -120,7 +120,7 @@ public class FrequencyTests : LessonGenerationTestBase
     {
         // Arrange - Course on 31st day
         var course = new CourseBuilder()
-            .WithFrequency(CourseFrequency.Monthly)
+            .WithFrequency(CourseFrequency.Once)
             .WithDayOfWeek(DayOfWeek.Wednesday)
             .Build();
 

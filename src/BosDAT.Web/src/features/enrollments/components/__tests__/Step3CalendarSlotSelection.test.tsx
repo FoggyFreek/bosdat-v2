@@ -230,7 +230,7 @@ describe('Step3CalendarSlotSelection', () => {
           id: 'course-mon',
           teacherId: 'teacher-1',
           teacherName: 'Teacher A',
-          courseTypeId: 1,
+          courseTypeId: 'ct-1',
           courseTypeName: 'Individual Piano',
           instrumentName: 'Piano',
           dayOfWeek: 1, // Monday
@@ -262,7 +262,7 @@ describe('Step3CalendarSlotSelection', () => {
           id: 'course-wed',
           teacherId: 'teacher-1',
           teacherName: 'Teacher A',
-          courseTypeId: 2,
+          courseTypeId: 'ct-2',
           courseTypeName: 'Group Guitar',
           instrumentName: 'Guitar',
           dayOfWeek: 3, // Wednesday
@@ -372,7 +372,7 @@ describe('Step3CalendarSlotSelection', () => {
           id: 'course-1',
           teacherId: 'teacher-1',
           teacherName: 'Teacher A',
-          courseTypeId: 1,
+          courseTypeId: 'ct-1',
           courseTypeName: 'Individual Piano',
           instrumentName: 'Piano',
           dayOfWeek: 1,
