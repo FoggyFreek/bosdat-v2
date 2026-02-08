@@ -55,7 +55,10 @@ describe('useSchoolName', () => {
   })
 
   it('returns empty string when data is undefined', async () => {
-    vi.mocked(settingsApi.getByKey).mockResolvedValue(undefined as never)
+    vi.mocked(settingsApi.getByKey).mockResolvedValue({
+      key: 'school_name',
+      value: '',
+    })
 
     const { result } = renderHook(() => useSchoolName(), {
       wrapper: createWrapper(),

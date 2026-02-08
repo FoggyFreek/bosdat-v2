@@ -15,6 +15,7 @@ const createMockEvent = (overrides?: Partial<CalendarEvent>): CalendarEvent => (
   title: 'Piano Lesson',
   frequency: 'weekly' as EventFrequency,
   eventType: 'course' as EventType,
+  status: 'Scheduled',
   attendees: ['John Doe', 'Jane Smith'],
   room: 'Room 101',
   ...overrides,
@@ -406,6 +407,7 @@ describe('CalendarComponent', () => {
       const event = createMockEvent({
         eventType: 'course',
         frequency: 'weekly',
+        status: 'Scheduled',
       })
 
       render(
@@ -417,7 +419,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      expect(screen.getByText('course')).toBeInTheDocument()
+      expect(screen.getByText('course/Scheduled')).toBeInTheDocument()
       expect(screen.getByText('weekly')).toBeInTheDocument()
     })
   })

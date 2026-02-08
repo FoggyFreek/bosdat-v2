@@ -235,6 +235,12 @@ describe('SchedulePage', () => {
 
   describe('Data Conversion', () => {
     it('converts lessons to calendar events correctly', async () => {
+      // Use calendar data without holidays to isolate lesson conversion
+      vi.mocked(calendarApi.getWeek).mockResolvedValue({
+        ...mockCalendarData,
+        holidays: [],
+      })
+
       render(<SchedulePage />)
 
       await waitFor(() => {
@@ -247,6 +253,7 @@ describe('SchedulePage', () => {
       vi.mocked(calendarApi.getWeek).mockResolvedValue({
         ...mockCalendarData,
         lessons: [],
+        holidays: [],
       })
 
       render(<SchedulePage />)

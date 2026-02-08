@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test/utils'
 import { Step4Summary } from '../Step4Summary'
 import { EnrollmentFormProvider } from '../../context/EnrollmentFormContext'
@@ -33,6 +33,16 @@ const renderWithProvider = (ui: React.ReactElement) => {
 }
 
 describe('Step4Summary', () => {
+  beforeEach(async () => {
+    const { courseTypesApi } = await import('@/features/course-types/api')
+    const { teachersApi } = await import('@/features/teachers/api')
+    const { roomsApi } = await import('@/features/rooms/api')
+
+    // Set up default mock implementations to avoid undefined query data
+    vi.mocked(courseTypesApi.getAll).mockResolvedValue([])
+    vi.mocked(teachersApi.getAll).mockResolvedValue([])
+    vi.mocked(roomsApi.getAll).mockResolvedValue([])
+  })
   it('renders confirmation step title', () => {
     renderWithProvider(<Step4Summary />)
 
