@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -56,7 +55,6 @@ export const NewPricingVersionDialog = ({
     register,
     handleSubmit,
     reset,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<PricingVersionFormData>({
@@ -68,22 +66,14 @@ export const NewPricingVersionDialog = ({
     },
   })
 
-  const priceAdult = watch('priceAdult')
-  const prevPriceAdultRef = useRef<number | undefined>(currentPricing?.priceAdult ?? 0)
-
-  useEffect(() => {
-    // Only auto-calculate when adult price changes from user input (not on initial mount)
-    if (
-      priceAdult !== undefined &&
-      priceAdult >= 0 &&
-      priceAdult !== prevPriceAdultRef.current
-    ) {
+  const handlePriceAdultChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const adultPrice = Number.parseFloat(e.target.value)
+    if (!Number.isNaN(adultPrice) && adultPrice >= 0) {
       const discountRate = 1 - (childDiscountPercent ?? 10) / 100
-      const calculatedChildPrice = Number.parseFloat((priceAdult * discountRate).toFixed(2))
+      const calculatedChildPrice = Number.parseFloat((adultPrice * discountRate).toFixed(2))
       setValue('priceChild', calculatedChildPrice)
     }
-    prevPriceAdultRef.current = priceAdult
-  }, [priceAdult, childDiscountPercent, setValue])
+  }
 
   const handleFormSubmit = async (data: PricingVersionFormData) => {
     await onSubmit({
@@ -125,7 +115,9 @@ export const NewPricingVersionDialog = ({
                 type="number"
                 step="0.01"
                 min="0"
-                {...register('priceAdult')}
+                {...register('priceAdult', {
+                  onChange: handlePriceAdultChange,
+                })}
                 disabled={isLoading}
               />
               {errors.priceAdult && (

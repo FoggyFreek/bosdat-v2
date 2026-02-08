@@ -29,7 +29,7 @@ export const useCoursesData = () => {
     queryFn: () => coursesApi.getSummary(),
   })
 
-  const courses = Array.isArray(data) ? data : []
+  const courses = useMemo(() => (Array.isArray(data) ? data : []), [data])
   const showLoading = isLoading || (isFetching && courses.length === 0)
 
   const dayGroups = useMemo(() => {
