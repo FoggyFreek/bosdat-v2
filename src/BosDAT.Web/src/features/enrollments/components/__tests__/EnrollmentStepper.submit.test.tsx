@@ -59,6 +59,7 @@ const mockCreatedCourse: Course = {
   courseTypeId: 'ct-1',
   courseTypeName: 'Piano Individual',
   instrumentName: 'Piano',
+  roomId: 1,
   dayOfWeek: 'Monday',
   startTime: '10:00:00',
   endTime: '10:30:00',
@@ -183,6 +184,7 @@ describe('EnrollmentStepper - Submit', () => {
         startTime: '10:00',
         endTime: '10:30',
         isTrial: false,
+        roomId: 1,
         frequency: 'Weekly',
         weekParity: 'All',
         dayOfWeek: 'Monday',
@@ -519,8 +521,7 @@ describe('EnrollmentStepper - Submit', () => {
           teacherId: 't-1',
           startDate: '2025-09-01',
           endDate: '2025-09-01',
-          isTrial: true,
-          recurrence: 'Trail',
+          recurrence: 'Weekly',
         },
         step2: {
           students: [
@@ -553,7 +554,6 @@ describe('EnrollmentStepper - Submit', () => {
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          isTrial: true,
           frequency: 'Weekly',
           weekParity: 'All',
         })

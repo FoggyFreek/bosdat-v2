@@ -4,7 +4,7 @@ import type { Enrollment } from '@/features/enrollments/types'
 import { DayOfWeek } from '@/lib/datetime-helpers'
 
 export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
-export type CourseFrequency = 'Weekly' | 'Biweekly' | 'Monthly'
+export type CourseFrequency = 'Once' | 'Weekly' | 'Biweekly'
 export type WeekParity = 'All' | 'Odd' | 'Even'
 
 export interface Course {

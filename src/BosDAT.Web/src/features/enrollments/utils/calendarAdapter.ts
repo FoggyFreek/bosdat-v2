@@ -17,7 +17,7 @@ export const createEnrollmentColorScheme = (): ColorScheme => {
       border: '#22c55e',
       textBackground: '#dcfce7',
     },
-    trail: {
+    trial: {
       background: '#fef3c7',
       border: '#f59e0b',
       textBackground: '#fde68a',

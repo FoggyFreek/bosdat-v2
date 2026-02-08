@@ -35,15 +35,26 @@ export const Step3CalendarSlotSelection = ({
   const { formData, updateStep3 } = useEnrollmentForm()
   const { step1, step2, step3 } = formData
   const { toast } = useToast()
-
+  
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     if (step1.startDate) {
       return new Date(step1.startDate)
     }
+
     return new Date()
   })
 
   const [placeholderEvent, setPlaceholderEvent] = useState<CalendarEvent | null>(null)
+
+  const handleDateChange = (date: Date) => {
+    if(step1.startDate !== formatDateForApi(date)) {
+      // If end date is same as start date, keep them in sync when changing the start date
+      if(step1.endDate === step1.startDate){
+        step1.endDate = formatDateForApi(date)
+      }
+      step1.startDate = formatDateForApi(date)
+    }
+  }
 
   const weekStart = useMemo(() => {
     return getWeekStart(selectedDate)
@@ -119,13 +130,14 @@ export const Step3CalendarSlotSelection = ({
   }
 
   const handleDateSelect = (date: Date) => {
-    setSelectedDate(date)
+    //setSelectedDate(date)
     updateStep3({
       selectedDate: formatDateForApi(date),
       selectedDayOfWeek: date.getDay(),
       selectedStartTime: null,
       selectedEndTime: null,
     })
+    handleDateChange(date)
   }
 
   const createPlaceholderEvent = useCallback(
@@ -192,8 +204,10 @@ export const Step3CalendarSlotSelection = ({
           selectedEndTime: endTime,
         })
 
+        handleDateChange(targetDate)
+
         // Update local state to reflect the selected date
-        setSelectedDate(targetDate)
+        //setSelectedDate(targetDate)
 
         toast({
           title: 'Time Slot Selected',

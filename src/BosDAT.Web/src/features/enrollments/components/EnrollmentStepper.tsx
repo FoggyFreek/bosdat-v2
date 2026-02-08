@@ -88,7 +88,7 @@ const EnrollmentStepperContent = () => {
     setIsSubmitting(true)
     try {
       const frequency: CourseFrequency =
-        formData.step1.recurrence === 'Biweekly' ? 'Biweekly' : 'Weekly'
+        formData.step1.recurrence === 'Biweekly' ? 'Biweekly' : formData.step1.recurrence === 'Weekly' ? 'Weekly' : 'Once'
 
       const weekParity: WeekParity =
         formData.step1.recurrence === 'Biweekly'
@@ -105,7 +105,7 @@ const EnrollmentStepperContent = () => {
         endDate: formData.step1.endDate ?? undefined,
         startTime: formData.step3.selectedStartTime!,
         endTime: formData.step3.selectedEndTime!,
-        isTrial: formData.step1.isTrial,
+        isTrial: formData.step1.recurrence === 'Trial',
         frequency,
         weekParity,
         dayOfWeek,
@@ -127,6 +127,7 @@ const EnrollmentStepperContent = () => {
         title: 'Enrollment created',
         description: 'Course, enrollments and lessons have been created successfully.',
       })
+
       resetForm()
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unexpected error occurred'

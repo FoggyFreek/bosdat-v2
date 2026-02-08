@@ -9,14 +9,13 @@ export type { InvoicingPreference } from '@/features/students/types'
 
 // Enrollment Stepper Form Types
 
-export type RecurrenceType = 'Trail' | 'Weekly' | 'Biweekly'
+export type RecurrenceType = 'Trial' | 'Weekly' | 'Biweekly'
 
 export interface Step1LessonDetailsData {
   courseTypeId: string | null
   teacherId: string | null
   startDate: string | null
   endDate: string | null
-  isTrial: boolean
   recurrence: RecurrenceType
 }
 
@@ -32,7 +31,6 @@ export const initialStep1Data: Step1LessonDetailsData = {
   teacherId: null,
   startDate: null,
   endDate: null,
-  isTrial: false,
   recurrence: 'Weekly',
 }
 

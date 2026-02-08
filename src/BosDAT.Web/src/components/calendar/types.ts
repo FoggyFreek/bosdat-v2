@@ -9,7 +9,7 @@ export type { DayOfWeek }
 export type EventType =
   | 'course'
   | 'workshop'
-  | 'trail'
+  | 'trial'
   | 'holiday'
   | 'absence'
   | 'placeholder';
@@ -28,7 +28,8 @@ export type CalendarEvent = {
   endDateTime: string;   // ISO 8601 datetime string (e.g., "2024-01-15T10:00:00")
   title: string;
   frequency: EventFrequency;
-  eventType: EventCategory;
+  eventType: EventType;
+  status: LessonStatus;
   attendees: string[]; // persons attending the event
   room?: string;
 };

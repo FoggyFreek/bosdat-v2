@@ -110,6 +110,7 @@ describe('SchedulePage', () => {
       date: '2026-01-27', // Monday of current week
       startTime: '10:00',
       endTime: '11:00',
+      frequency: 'Weekly',
       studentName: 'Alice Johnson',
       teacherName: 'John Doe',
       roomName: 'Room A',
@@ -123,6 +124,7 @@ describe('SchedulePage', () => {
       date: '2026-01-28', // Tuesday
       startTime: '14:00',
       endTime: '15:00',
+      frequency: 'Weekly',
       studentName: 'Bob Smith',
       teacherName: 'Jane Smith',
       roomName: 'Room B',
@@ -136,6 +138,7 @@ describe('SchedulePage', () => {
       date: '2026-01-29', // Wednesday
       startTime: '16:00',
       endTime: '17:00',
+      frequency: 'Weekly',
       teacherName: 'John Doe',
       roomName: 'Room B',
       instrumentName: 'Drums',

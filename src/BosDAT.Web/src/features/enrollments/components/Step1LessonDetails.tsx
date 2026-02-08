@@ -36,7 +36,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
   }, [courseTypes, step1.courseTypeId])
 
   const isWorkshop = selectedCourseType?.type === 'Workshop'
-  const isTrail = step1.recurrence === 'Trail'
+  const isTrail = step1.recurrence === 'Trial'
   const isIndividualOrGroup = selectedCourseType?.type === 'Individual' || selectedCourseType?.type === 'Group'
   const isEndDateRequired = isWorkshop
   const isEndDateDisabled = isTrail
@@ -186,8 +186,8 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
               type="radio"
               name="recurrence"
               value="Trail"
-              checked={step1.recurrence === 'Trail'}
-              onChange={() => handleRecurrenceChange('Trail')}
+              checked={step1.recurrence === 'Trial'}
+              onChange={() => handleRecurrenceChange('Trial')}
               className="h-4 w-4"
               disabled={isWorkshop}
             />

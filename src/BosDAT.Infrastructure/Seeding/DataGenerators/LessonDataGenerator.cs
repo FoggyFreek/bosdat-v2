@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Data;
+using System.Reflection.Metadata.Ecma335;
 
 namespace BosDAT.Infrastructure.Seeding.DataGenerators;
 
@@ -100,9 +101,7 @@ public class LessonDataGenerator
     }
 
     private static DateOnly AdvanceDate(Course course, DateOnly currentDate) =>
-        course.Frequency == CourseFrequency.Monthly
-            ? currentDate.AddMonths(1)
-            : currentDate.AddDays(1);
+        currentDate.AddDays(1);
 
     private Lesson CreateLesson(Course course, DateOnly date, Guid? studentId, CourseType? courseType)
     {

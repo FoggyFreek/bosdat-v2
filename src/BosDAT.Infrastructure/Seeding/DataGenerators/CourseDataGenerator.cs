@@ -273,7 +273,7 @@ public class CourseDataGenerator
         var roll = _seederContext.NextInt(0, 100);
         return roll < 70 ? CourseFrequency.Weekly :
                roll < 90 ? CourseFrequency.Biweekly :
-               CourseFrequency.Monthly;
+               CourseFrequency.Once;
     }
 
     private CourseStatus DetermineStatus()

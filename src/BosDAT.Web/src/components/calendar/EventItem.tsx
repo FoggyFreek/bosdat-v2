@@ -25,7 +25,7 @@ const LAST_DAY_INDEX = 6;
 const DEFAULT_COLOR_SCHEME: Partial<Record<EventCategory, EventColors>> = {
   course: { background: '#eff6ff', border: '#3b82f6', textBackground: '#dbeafe' },
   workshop: { background: '#f0fdf4', border: '#22c55e', textBackground: '#dcfce7' },
-  trail: { background: '#fff7ed', border: '#f97316', textBackground: '#ffedd5' },
+  trial: { background: '#fff7ed', border: '#f97316', textBackground: '#ffedd5' },
   holiday: { background: '#fee2e2', border: '#991b1b', textBackground: '#fecaca' },
   absence: { background: '#fefce8', border: '#ca8a04', textBackground: '#fef08a' },
 };
@@ -144,10 +144,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
       aria-expanded={isHovered}
     >
       <h3 className="text-xs text-left  font-bold text-slate-800 truncate">
-        {event.eventType === 'holiday' && (
-          <span className="uppercase text-[10px] mr-1">Deadline -</span>
-        )}
-        {event.title}
+        {event.title} 
       </h3>
 
       {duration > 0.5 && (
@@ -156,7 +153,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
             className="inline-block px-2 py-0.5 rounded mr-2"
             style={{ backgroundColor: colors.textBackground }}
           >
-            {event.eventType}
+            {event.eventType}/{event.status}
           </span>
           <span
             className="inline-block px-2 py-0.5 rounded"

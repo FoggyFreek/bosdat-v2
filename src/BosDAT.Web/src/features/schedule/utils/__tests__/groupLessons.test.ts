@@ -13,6 +13,7 @@ const createLesson = (overrides: Partial<CalendarLesson> = {}): CalendarLesson =
   title: 'Piano - Student1',
   date: '2024-03-07',
   startTime: '10:00',
+  frequency: 'Weekly',
   endTime: '10:30',
   studentName: 'Student1 Test',
   teacherName: 'Teacher Test',

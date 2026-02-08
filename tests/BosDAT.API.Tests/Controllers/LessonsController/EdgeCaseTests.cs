@@ -337,7 +337,7 @@ public class EdgeCaseTests
     public async Task GenerateLessons_MonthlyFrequency_WithHolidayAndMismatchedStartDay_SkipsCorrectly()
     {
         // Arrange - Course on first Monday, start date is Wednesday
-        var course = CreateTestCourse(CourseFrequency.Monthly, DayOfWeek.Monday);
+        var course = CreateTestCourse(CourseFrequency.Once, DayOfWeek.Monday);
         var holidays = new List<Holiday>
         {
             new Holiday
