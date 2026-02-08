@@ -1,4 +1,5 @@
 import { api } from '@/services/api'
+import type { Course, CreateCourse } from './types'
 
 export const coursesApi = {
   getCount: async (params?: { status?: string; teacherId?: string; dayOfWeek?: number; roomId?: number }) => {
@@ -21,8 +22,8 @@ export const coursesApi = {
     return response.data
   },
 
-  create: async (data: unknown) => {
-    const response = await api.post('/courses', data)
+  create: async (data: CreateCourse): Promise<Course> => {
+    const response = await api.post<Course>('/courses', data)
     return response.data
   },
 
@@ -31,7 +32,13 @@ export const coursesApi = {
     return response.data
   },
 
-  enroll: async (courseId: string, data: { studentId: string; discountPercent?: number; notes?: string }) => {
+  enroll: async (courseId: string, data: {
+    studentId: string
+    discountPercent?: number
+    discountType?: string
+    invoicingPreference?: string
+    notes?: string
+  }) => {
     const response = await api.post(`/courses/${courseId}/enroll`, data)
     return response.data
   },

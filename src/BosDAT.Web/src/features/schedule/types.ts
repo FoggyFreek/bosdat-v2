@@ -8,10 +8,13 @@ export interface CalendarLesson {
   studentId?: string
   title: string
   date: string
+  frequency: string
   startTime: string
   endTime: string
   studentName?: string
   teacherName: string
+  isTrial: boolean
+  isWorkshop: boolean
   roomName?: string
   instrumentName: string
   status: LessonStatus

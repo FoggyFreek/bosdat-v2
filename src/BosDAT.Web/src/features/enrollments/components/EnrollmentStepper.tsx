@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +13,12 @@ import { Step3CalendarSlotSelection } from './Step3CalendarSlotSelection'
 import { Step4Summary } from './Step4Summary'
 import { courseTypesApi } from '@/features/course-types/api'
 import type { CourseType } from '@/features/course-types/types'
+import type { CourseFrequency } from '@/features/courses/types'
+import type { WeekParity } from '@/lib/datetime-helpers'
+import { coursesApi } from '@/features/courses/api'
+import { schedulingApi } from '@/features/settings/api'
+import { getDayNameFromNumber, getWeekParity, type DayOfWeek } from '@/lib/datetime-helpers'
+import { useToast } from '@/hooks/use-toast'
 
 const DISPLAY_NAME = 'EnrollmentStepper'
 const CONTENT_DISPLAY_NAME = 'EnrollmentStepperContent'
@@ -36,7 +42,10 @@ const EnrollmentStepperContent = () => {
     isStep2Valid,
     isStep3Valid,
     formData,
+    resetForm,
   } = useEnrollmentForm()
+
+  const { toast } = useToast()
 
   const { data: courseTypes = [] } = useQuery<CourseType[]>({
     queryKey: ['courseTypes', 'active'],
@@ -68,10 +77,67 @@ const EnrollmentStepperContent = () => {
   }, [currentStep, isStep1Valid, isStep2Valid, isStep3Valid, selectedCourseType])
 
   const isLastStep = currentStep === STEPS.length - 1
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleNext = () => {
-    if (currentStep < STEPS.length - 1) {
+  const handleNext = async () => {
+    if (!isLastStep) {
       setCurrentStep(currentStep + 1)
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const frequency: CourseFrequency =
+        formData.step1.recurrence === 'Biweekly' ? 'Biweekly' : formData.step1.recurrence === 'Weekly' ? 'Weekly' : 'Once'
+
+      const weekParity: WeekParity =
+        formData.step1.recurrence === 'Biweekly'
+          ? getWeekParity(new Date(formData.step1.startDate!))
+          : 'All'
+
+      const dayOfWeek = getDayNameFromNumber(formData.step3.selectedDayOfWeek!) as DayOfWeek
+
+      const course = await coursesApi.create({
+        courseTypeId: formData.step1.courseTypeId!,
+        teacherId: formData.step1.teacherId!,
+        startDate: formData.step1.startDate!,
+        roomId: formData.step3.selectedRoomId!,
+        endDate: formData.step1.endDate ?? undefined,
+        startTime: formData.step3.selectedStartTime!,
+        endTime: formData.step3.selectedEndTime!,
+        isTrial: formData.step1.recurrence === 'Trial',
+        frequency,
+        weekParity,
+        dayOfWeek,
+      })
+
+      for (const student of formData.step2.students) {
+        await coursesApi.enroll(course.id, {
+          studentId: student.studentId,
+          discountPercent: student.discountPercentage,
+          discountType: student.discountType,
+          invoicingPreference: student.invoicingPreference,
+          notes: student.note || undefined,
+        })
+      }
+
+      await schedulingApi.runSingle(course.id)
+
+      toast({
+        title: 'Enrollment created',
+        description: 'Course, enrollments and lessons have been created successfully.',
+      })
+
+      resetForm()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+      toast({
+        variant: 'destructive',
+        title: 'Enrollment failed',
+        description: message,
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -146,10 +212,10 @@ const EnrollmentStepperContent = () => {
 
   const renderNextButton = () => (
     <Button
-      disabled={isNextButtonDisabled || isLastStep}
+      disabled={isNextButtonDisabled || isSubmitting}
       onClick={handleNext}
     >
-      {getNextButtonLabel(currentStep, STEPS.length)}
+      {isSubmitting ? 'Submitting...' : getNextButtonLabel(currentStep, STEPS.length)}
     </Button>
   )
 

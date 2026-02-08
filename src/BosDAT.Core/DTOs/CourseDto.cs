@@ -35,7 +35,7 @@ public record CreateCourseDto
 {
     public Guid TeacherId { get; init; }
     public Guid CourseTypeId { get; init; }
-    public int? RoomId { get; init; }
+    public int RoomId { get; init; }
     public DayOfWeek DayOfWeek { get; init; }
     public TimeOnly StartTime { get; init; }
     public TimeOnly EndTime { get; init; }
@@ -43,9 +43,7 @@ public record CreateCourseDto
     public WeekParity WeekParity { get; init; } = WeekParity.All;
     public DateOnly StartDate { get; init; }
     public DateOnly? EndDate { get; init; }
-    public bool IsWorkshop { get; init; }
     public bool IsTrial { get; init; }
-    public string? Notes { get; init; }
 }
 
 public record UpdateCourseDto

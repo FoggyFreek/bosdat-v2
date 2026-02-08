@@ -95,7 +95,7 @@ describe('EventsGrid', () => {
         endDateTime: '2024-01-15T11:30:00',
         title: 'Event 3',
         frequency: 'once',
-        eventType: 'trail',
+        eventType: 'trial',
         attendees: [],
       },
     ];
@@ -183,7 +183,7 @@ describe('EventsGrid', () => {
         endDateTime: '2024-01-16T10:00:00',
         title: 'Tuesday Event',
         frequency: 'once',
-        eventType: 'trail',
+        eventType: 'trial',
         attendees: [],
       },
     ];

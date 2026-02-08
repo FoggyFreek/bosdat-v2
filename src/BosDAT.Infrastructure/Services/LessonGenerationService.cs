@@ -82,7 +82,7 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
         var lessonsSkipped = 0;
         var currentDate = FindFirstOccurrenceDate(startDate, course, endDate);
 
-        while (currentDate <= endDate)
+        while (currentDate <= course.EndDate)
         {
             if (IsHoliday(currentDate, holidays))
             {
@@ -167,7 +167,6 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
         {
             CourseFrequency.Weekly => currentDate.AddDays(7),
             CourseFrequency.Biweekly => currentDate.AddDays(14),
-            CourseFrequency.Monthly => currentDate.AddMonths(1),
             _ => currentDate.AddDays(7)
         };
     }

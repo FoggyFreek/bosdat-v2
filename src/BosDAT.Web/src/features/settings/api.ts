@@ -85,4 +85,9 @@ export const schedulingApi = {
     const response = await api.post<ManualRunResult>('/admin/scheduling/run')
     return response.data
   },
+
+  runSingle: async (id: string): Promise<ManualRunResult> => {
+    const response = await api.post<ManualRunResult>(`/admin/scheduling/run/${id}`)
+    return response.data
+  },
 }

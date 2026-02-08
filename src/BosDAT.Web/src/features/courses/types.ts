@@ -4,14 +4,14 @@ import type { Enrollment } from '@/features/enrollments/types'
 import { DayOfWeek } from '@/lib/datetime-helpers'
 
 export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
-export type CourseFrequency = 'Weekly' | 'Biweekly' | 'Monthly'
+export type CourseFrequency = 'Once' | 'Weekly' | 'Biweekly'
 export type WeekParity = 'All' | 'Odd' | 'Even'
 
 export interface Course {
   id: string
   teacherId: string
   teacherName: string
-  courseTypeId: number
+  courseTypeId: string
   courseTypeName: string
   instrumentName: string
   roomId?: number
@@ -47,4 +47,18 @@ export interface CourseList {
   weekParity: WeekParity
   status: CourseStatus
   enrollmentCount: number
+}
+
+export interface CreateCourse {
+  teacherId: string
+  courseTypeId: string
+  roomId: number
+  dayOfWeek: DayOfWeek
+  startTime: string
+  endTime: string
+  frequency: CourseFrequency
+  weekParity?: WeekParity
+  startDate: string
+  endDate?: string
+  isTrial: boolean
 }

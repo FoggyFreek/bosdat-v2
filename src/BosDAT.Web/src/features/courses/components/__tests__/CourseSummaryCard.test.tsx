@@ -7,7 +7,7 @@ const baseCourse: Course = {
   id: '1',
   teacherId: 't1',
   teacherName: 'John Doe',
-  courseTypeId: 1,
+  courseTypeId: 'ct-1',
   courseTypeName: 'Piano Beginner',
   instrumentName: 'Piano',
   dayOfWeek: 'Monday',

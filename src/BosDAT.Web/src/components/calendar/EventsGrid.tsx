@@ -137,7 +137,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
 
     validEvents.forEach((event) => {
       const eventDate = getDateFromDateTime(event.startDateTime);
-      const dayIndex = eventDate.getDay() - 1; // Adjusting so Monday=0, Sunday=6
+      const dayIndex = eventDate.getDay() - 1 === -1 ? 6 : eventDate.getDay() - 1; // Adjusting so Monday=0, Sunday=6
 
       if (dayIndex !== -1) {
         if (!eventsByDay.has(dayIndex)) {
@@ -326,7 +326,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
       {/* Events */}
       {validEvents.map((e) => {
         const eventDate = getDateFromDateTime(e.startDateTime);
-        const dayIndex = eventDate.getDay() - 1; // Adjusting so Monday=0, Sunday=6
+        const dayIndex = eventDate.getDay() - 1 === -1 ? 6 : eventDate.getDay() - 1; // Adjusting so Monday=0, Sunday=6
 
         // Skip events that don't fall within the current week's date range
         if (dayIndex === -1) return null;

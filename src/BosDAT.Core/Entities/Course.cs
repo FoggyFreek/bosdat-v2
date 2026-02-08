@@ -12,10 +12,10 @@ public enum CourseStatus
 
 public enum CourseFrequency
 {
+    Once,
     Weekly,
     Biweekly,
-    Monthly
-}
+} 
 
 public class Course : BaseEntity
 {

@@ -9,14 +9,14 @@ describe('calendarAdapter', () => {
 
       expect(colorScheme).toHaveProperty('course')
       expect(colorScheme).toHaveProperty('workshop')
-      expect(colorScheme).toHaveProperty('trail')
+      expect(colorScheme).toHaveProperty('trial')
       expect(colorScheme).toHaveProperty('holiday')
       expect(colorScheme).toHaveProperty('absence')
     })
 
     it('should have valid color properties for each type', () => {
       const colorScheme = createEnrollmentColorScheme()
-      const eventTypes: EventType[] = ['course', 'workshop', 'trail', 'holiday', 'absence']
+      const eventTypes: EventType[] = ['course', 'workshop', 'trial', 'holiday', 'absence']
 
       eventTypes.forEach((eventType) => {
         const colors = colorScheme[eventType]

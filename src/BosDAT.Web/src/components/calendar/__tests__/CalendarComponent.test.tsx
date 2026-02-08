@@ -23,7 +23,7 @@ const createMockEvent = (overrides?: Partial<CalendarEvent>): CalendarEvent => (
 const mockColorScheme: ColorScheme = {
   course: { background: '#eff6ff', border: '#3b82f6', textBackground: '#dbeafe' },
   workshop: { background: '#f0fdf4', border: '#22c55e', textBackground: '#dcfce7' },
-  trail: { background: '#fff7ed', border: '#f97316', textBackground: '#ffedd5' },
+  trial: { background: '#fff7ed', border: '#f97316', textBackground: '#ffedd5' },
 }
 
 describe('CalendarComponent', () => {
