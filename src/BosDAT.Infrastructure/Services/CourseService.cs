@@ -120,11 +120,10 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
             Frequency = dto.Frequency,
+            WeekParity = dto.WeekParity,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
-            IsWorkshop = dto.IsWorkshop,
             IsTrial = dto.IsTrial,
-            Notes = dto.Notes,
             Status = CourseStatus.Active
         };
 
@@ -148,6 +147,7 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
         course.StartTime = dto.StartTime;
         course.EndTime = dto.EndTime;
         course.Frequency = dto.Frequency;
+        course.WeekParity = dto.WeekParity;
         course.StartDate = dto.StartDate;
         course.EndDate = dto.EndDate;
         course.Status = dto.Status;
@@ -184,6 +184,8 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
             StudentId = dto.StudentId,
             CourseId = courseId,
             DiscountPercent = dto.DiscountPercent,
+            DiscountType = dto.DiscountType,
+            InvoicingPreference = dto.InvoicingPreference,
             Notes = dto.Notes,
             Status = EnrollmentStatus.Active
         };
@@ -199,6 +201,8 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
             CourseId = enrollment.CourseId,
             EnrolledAt = enrollment.EnrolledAt,
             DiscountPercent = enrollment.DiscountPercent,
+            DiscountType = enrollment.DiscountType,
+            InvoicingPreference = enrollment.InvoicingPreference,
             Status = enrollment.Status,
             Notes = enrollment.Notes
         }, false, null);
@@ -251,6 +255,7 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
             StartTime = course.StartTime,
             EndTime = course.EndTime,
             Frequency = course.Frequency,
+            WeekParity = course.WeekParity,
             StartDate = course.StartDate,
             EndDate = course.EndDate,
             Status = course.Status,
@@ -266,6 +271,8 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
                 CourseId = e.CourseId,
                 EnrolledAt = e.EnrolledAt,
                 DiscountPercent = e.DiscountPercent,
+                DiscountType = e.DiscountType,
+                InvoicingPreference = e.InvoicingPreference,
                 Status = e.Status,
                 Notes = e.Notes
             }).ToList(),

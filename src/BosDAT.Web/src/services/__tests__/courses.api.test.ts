@@ -48,7 +48,16 @@ describe('coursesApi', () => {
   })
 
   it('create posts course data', async () => {
-    const newCourse = { name: 'Guitar 101' }
+    const newCourse = {
+      teacherId: 'teacher-1',
+      courseTypeId: 'ct-1',
+      dayOfWeek: 'Monday' as const,
+      startTime: '09:00',
+      endTime: '10:00',
+      frequency: 'Weekly' as const,
+      startDate: '2026-02-01',
+      isTrial: false,
+    }
     const created = { id: '2', ...newCourse }
     mock.onPost('/courses').reply(200, created)
 

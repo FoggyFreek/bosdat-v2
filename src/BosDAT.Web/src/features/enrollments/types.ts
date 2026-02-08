@@ -136,3 +136,4 @@ export interface ValidateEnrollmentRequest {
   studentId: string
   courseId: string
 }
+
