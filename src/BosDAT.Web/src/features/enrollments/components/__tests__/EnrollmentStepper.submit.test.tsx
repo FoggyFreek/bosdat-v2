@@ -47,6 +47,12 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
 }))
 
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
 vi.mock('../../context/EnrollmentFormContext', async () => {
   const actual = await vi.importActual('../../context/EnrollmentFormContext')
   return { ...actual }
@@ -156,6 +162,7 @@ const mockContextAtStep4 = async (overrides: Record<string, unknown> = {}) => {
 describe('EnrollmentStepper - Submit', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockNavigate.mockClear()
     vi.mocked(coursesApi.create).mockResolvedValue(mockCreatedCourse)
     vi.mocked(coursesApi.enroll).mockResolvedValue({})
     vi.mocked(schedulingApi.runSingle).mockResolvedValue(mockRunResult)
@@ -305,10 +312,9 @@ describe('EnrollmentStepper - Submit', () => {
     })
   })
 
-  it('shows success toast and resets form on successful submit', async () => {
+  it('shows success toast and navigates to course detail on successful submit', async () => {
     const user = userEvent.setup()
-    const mockResetForm = vi.fn()
-    await mockContextAtStep4({ resetForm: mockResetForm })
+    await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
     await user.click(screen.getByRole('button', { name: /submit/i }))
@@ -319,7 +325,7 @@ describe('EnrollmentStepper - Submit', () => {
       )
     })
 
-    expect(mockResetForm).toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith('/courses/new-course-1')
   })
 
   it('handles course creation error gracefully', async () => {

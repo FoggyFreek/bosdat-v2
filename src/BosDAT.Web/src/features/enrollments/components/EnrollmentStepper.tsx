@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,9 +43,9 @@ const EnrollmentStepperContent = () => {
     isStep2Valid,
     isStep3Valid,
     formData,
-    resetForm,
   } = useEnrollmentForm()
 
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   const { data: courseTypes = [] } = useQuery<CourseType[]>({
@@ -128,7 +129,7 @@ const EnrollmentStepperContent = () => {
         description: 'Course, enrollments and lessons have been created successfully.',
       })
 
-      resetForm()
+      navigate(`/courses/${course.id}`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unexpected error occurred'
       toast({
