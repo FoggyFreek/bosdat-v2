@@ -597,5 +597,129 @@ describe('EnrollmentFormContext', () => {
         expect(result.current.formData.step3.selectedEndTime).toBe(null)
       })
     })
+
+    describe('syncStartDate', () => {
+      const createTestMember = (overrides: Partial<EnrollmentGroupMember> = {}): EnrollmentGroupMember => ({
+        studentId: 'student-1',
+        studentName: 'John Doe',
+        enrolledAt: '2024-01-15',
+        discountType: 'None',
+        discountPercentage: 0,
+        invoicingPreference: 'Monthly',
+        note: '',
+        isEligibleForCourseDiscount: false,
+        ...overrides,
+      })
+
+      it('should update step1 startDate', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15' })
+        })
+
+        act(() => {
+          result.current.syncStartDate('2024-02-01')
+        })
+
+        expect(result.current.formData.step1.startDate).toBe('2024-02-01')
+      })
+
+      it('should update step1 endDate when it matches old startDate', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15', endDate: '2024-01-15' })
+        })
+
+        act(() => {
+          result.current.syncStartDate('2024-02-01')
+        })
+
+        expect(result.current.formData.step1.startDate).toBe('2024-02-01')
+        expect(result.current.formData.step1.endDate).toBe('2024-02-01')
+      })
+
+      it('should not update step1 endDate when it differs from old startDate', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15', endDate: '2024-06-30' })
+        })
+
+        act(() => {
+          result.current.syncStartDate('2024-02-01')
+        })
+
+        expect(result.current.formData.step1.startDate).toBe('2024-02-01')
+        expect(result.current.formData.step1.endDate).toBe('2024-06-30')
+      })
+
+      it('should update enrolledAt for students matching old startDate', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15' })
+          result.current.addStudent(createTestMember({ studentId: 'student-1', enrolledAt: '2024-01-15' }))
+          result.current.addStudent(createTestMember({ studentId: 'student-2', enrolledAt: '2024-01-15' }))
+        })
+
+        act(() => {
+          result.current.syncStartDate('2024-02-01')
+        })
+
+        expect(result.current.formData.step2.students[0].enrolledAt).toBe('2024-02-01')
+        expect(result.current.formData.step2.students[1].enrolledAt).toBe('2024-02-01')
+      })
+
+      it('should not update enrolledAt for students with different dates', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15' })
+          result.current.addStudent(createTestMember({ studentId: 'student-1', enrolledAt: '2024-01-15' }))
+          result.current.addStudent(createTestMember({ studentId: 'student-2', enrolledAt: '2024-03-01' }))
+        })
+
+        act(() => {
+          result.current.syncStartDate('2024-02-01')
+        })
+
+        expect(result.current.formData.step2.students[0].enrolledAt).toBe('2024-02-01')
+        expect(result.current.formData.step2.students[1].enrolledAt).toBe('2024-03-01')
+      })
+
+      it('should be a no-op when new date matches current startDate', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15' })
+          result.current.addStudent(createTestMember({ studentId: 'student-1', enrolledAt: '2024-01-15' }))
+        })
+
+        const formDataBefore = result.current.formData
+
+        act(() => {
+          result.current.syncStartDate('2024-01-15')
+        })
+
+        expect(result.current.formData).toBe(formDataBefore)
+      })
+
+      it('should handle empty students array', () => {
+        const { result } = renderHook(() => useEnrollmentForm(), { wrapper })
+
+        act(() => {
+          result.current.updateStep1({ startDate: '2024-01-15' })
+        })
+
+        act(() => {
+          result.current.syncStartDate('2024-02-01')
+        })
+
+        expect(result.current.formData.step1.startDate).toBe('2024-02-01')
+        expect(result.current.formData.step2.students).toEqual([])
+      })
+    })
   })
 })
