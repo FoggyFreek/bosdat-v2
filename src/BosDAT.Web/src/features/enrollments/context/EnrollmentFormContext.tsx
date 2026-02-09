@@ -20,6 +20,7 @@ type Action =
   | { type: 'ADD_STUDENT'; payload: EnrollmentGroupMember }
   | { type: 'REMOVE_STUDENT'; payload: string }
   | { type: 'UPDATE_STUDENT'; payload: { studentId: string; updates: Partial<EnrollmentGroupMember> } }
+  | { type: 'SYNC_START_DATE'; payload: string }
   | { type: 'SET_STEP'; payload: number }
   | { type: 'RESET' }
 
@@ -107,6 +108,29 @@ const enrollmentFormReducer = (
           },
         },
       }
+    case 'SYNC_START_DATE': {
+      const newDate = action.payload
+      const oldDate = state.formData.step1.startDate
+      if (newDate === oldDate) return state
+
+      const step1Updates: Partial<Step1LessonDetailsData> = { startDate: newDate }
+      if (state.formData.step1.endDate === oldDate) {
+        step1Updates.endDate = newDate
+      }
+
+      const updatedStudents = (state.formData.step2.students ?? []).map((s) =>
+        s.enrolledAt === oldDate ? { ...s, enrolledAt: newDate } : s
+      )
+
+      return {
+        ...state,
+        formData: {
+          ...state.formData,
+          step1: { ...state.formData.step1, ...step1Updates },
+          step2: { ...state.formData.step2, students: updatedStudents },
+        },
+      }
+    }
     case 'SET_STEP':
       return {
         ...state,
@@ -129,6 +153,7 @@ interface EnrollmentFormContextType {
   addStudent: (student: EnrollmentGroupMember) => void
   removeStudent: (studentId: string) => void
   updateStudent: (studentId: string, updates: Partial<EnrollmentGroupMember>) => void
+  syncStartDate: (newDate: string) => void
   setCurrentStep: (step: number) => void
   resetForm: () => void
   isStep1Valid: () => boolean
@@ -173,6 +198,10 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
     },
     []
   )
+
+  const syncStartDate = useCallback((newDate: string) => {
+    dispatch({ type: 'SYNC_START_DATE', payload: newDate })
+  }, [])
 
   const setCurrentStep = useCallback((step: number) => {
     dispatch({ type: 'SET_STEP', payload: step })
@@ -268,6 +297,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
       addStudent,
       removeStudent,
       updateStudent,
+      syncStartDate,
       setCurrentStep,
       resetForm,
       isStep1Valid,
@@ -283,6 +313,7 @@ export const EnrollmentFormProvider = ({ children }: EnrollmentFormProviderProps
       addStudent,
       removeStudent,
       updateStudent,
+      syncStartDate,
       setCurrentStep,
       resetForm,
       isStep1Valid,

@@ -32,10 +32,10 @@ export const Step3CalendarSlotSelection = ({
   teacherId,
   durationMinutes,
 }: Step3CalendarSlotSelectionProps) => {
-  const { formData, updateStep3 } = useEnrollmentForm()
+  const { formData, updateStep3, syncStartDate } = useEnrollmentForm()
   const { step1, step2, step3 } = formData
   const { toast } = useToast()
-  
+
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     if (step1.startDate) {
       return new Date(step1.startDate)
@@ -47,12 +47,9 @@ export const Step3CalendarSlotSelection = ({
   const [placeholderEvent, setPlaceholderEvent] = useState<CalendarEvent | null>(null)
 
   const handleDateChange = (date: Date) => {
-    if(step1.startDate !== formatDateForApi(date)) {
-      // If end date is same as start date, keep them in sync when changing the start date
-      if(step1.endDate === step1.startDate){
-        step1.endDate = formatDateForApi(date)
-      }
-      step1.startDate = formatDateForApi(date)
+    const newDate = formatDateForApi(date)
+    if (step1.startDate !== newDate) {
+      syncStartDate(newDate)
     }
   }
 
