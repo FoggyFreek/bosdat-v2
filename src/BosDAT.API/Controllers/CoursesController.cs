@@ -79,19 +79,6 @@ public class CoursesController(ICourseService courseService) : ControllerBase
         return Ok(course);
     }
 
-    [HttpPost("{id:guid}/enroll")]
-    [Authorize(Policy = "TeacherOrAdmin")]
-    public async Task<ActionResult<EnrollmentDto>> EnrollStudent(Guid id, [FromBody] CreateEnrollmentDto dto, CancellationToken cancellationToken)
-    {
-        var (enrollment, notFound, error) = await courseService.EnrollStudentAsync(id, dto, cancellationToken);
-        if (notFound)
-            return NotFound();
-        if (error != null)
-            return BadRequest(new { message = error });
-
-        return Ok(enrollment);
-    }
-
     [HttpDelete("{id:guid}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)

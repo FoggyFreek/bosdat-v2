@@ -30,16 +30,5 @@ export const coursesApi = {
   update: async (id: string, data: unknown) => {
     const response = await api.put(`/courses/${id}`, data)
     return response.data
-  },
-
-  enroll: async (courseId: string, data: {
-    studentId: string
-    discountPercent?: number
-    discountType?: string
-    invoicingPreference?: string
-    notes?: string
-  }) => {
-    const response = await api.post(`/courses/${courseId}/enroll`, data)
-    return response.data
-  },
+  }, 
 }

@@ -23,8 +23,5 @@ public interface ICourseService
 
     Task<(CourseDto? Course, bool NotFound)> UpdateAsync(Guid id, UpdateCourseDto dto, CancellationToken ct = default);
 
-    Task<(EnrollmentDto? Enrollment, bool NotFound, string? Error)> EnrollStudentAsync(
-        Guid courseId, CreateEnrollmentDto dto, CancellationToken ct = default);
-
     Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
 }

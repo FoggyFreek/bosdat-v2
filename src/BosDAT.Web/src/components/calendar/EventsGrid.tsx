@@ -124,9 +124,11 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
     [onTimeslotClick, hoveredSlot, dates]
   );
 
-  // Filter valid events
+  // filter unique and valid events
   const validEvents = useMemo(
-    () => events.filter((event) => isValidEventTime(event.startDateTime, event.endDateTime)),
+    () => events
+      .filter((event) => isValidEventTime(event.startDateTime, event.endDateTime))
+      .filter((value, index, self) => index === self.findIndex((t) => t.id === value.id)),
     [events]
   );
 

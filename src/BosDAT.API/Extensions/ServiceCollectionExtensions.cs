@@ -100,6 +100,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<ILessonRepository, LessonRepository>();
+        services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IDuplicateDetectionService, DuplicateDetectionService>();
         services.AddScoped<ICourseTypePricingService, CourseTypePricingService>();
@@ -112,6 +113,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInvoiceLedgerService, InvoiceLedgerService>();
         services.AddScoped<IInvoiceGenerationService, InvoiceGenerationService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IEnrollmentService, EnrollmentService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<ILessonGenerationService, LessonGenerationService>();

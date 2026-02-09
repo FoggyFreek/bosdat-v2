@@ -39,7 +39,9 @@ public class CalendarService(IUnitOfWork unitOfWork) : ICalendarService
                 Id = l.Id,
                 CourseId = l.CourseId,
                 StudentId = l.StudentId,
-                Title = l.Course.CourseType.Name,
+                Title = l.Student != null
+                    ? l.Course.CourseType.Instrument.Name + " - " + l.Student.FirstName + " " + l.Student.LastName
+                    : l.Course.CourseType.Instrument.Name + " - Group",
                 Date = l.ScheduledDate,
                 StartTime = l.StartTime,
                 EndTime = l.EndTime,

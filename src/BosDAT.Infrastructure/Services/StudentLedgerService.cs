@@ -17,7 +17,6 @@ public class StudentLedgerService(
 
     public async Task<StudentLedgerEntryDto> CreateEntryAsync(CreateStudentLedgerEntryDto dto, Guid userId, CancellationToken ct = default)
     {
-        // HIGH-1: Validate input
         if (dto.Amount <= 0)
         {
             throw new ArgumentException("Amount must be greater than zero.", nameof(dto));
@@ -517,21 +516,5 @@ public class StudentLedgerService(
             CreatedByName = createdByName,
             Applications = applications
         };
-    }
-
-    [Obsolete("Use MapToDtoSync instead to avoid N+1 queries")]
-    private async Task<StudentLedgerEntryDto> MapToDto(StudentLedgerEntry entry, CancellationToken cancellationToken)
-    {
-        string? courseName = null;
-        if (entry.Course != null)
-        {
-            var courseType = await context.CourseTypes
-                .FirstOrDefaultAsync(c => c.Id == entry.Course.CourseTypeId, cancellationToken);
-            courseName = courseType?.Name;
-        }
-
-        return MapToDtoSync(entry, entry.Course != null && courseName != null
-            ? new Dictionary<Guid, string> { { entry.Course.CourseTypeId, courseName } }
-            : new Dictionary<Guid, string>());
     }
 }

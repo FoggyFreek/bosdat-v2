@@ -4,387 +4,41 @@ using Xunit;
 using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
-using BosDAT.API.Tests.Helpers;
 
 namespace BosDAT.API.Tests.Controllers;
 
 public class EnrollmentsControllerTests
 {
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly Mock<IRegistrationFeeService> _mockRegistrationFeeService;
+    private readonly Mock<IEnrollmentService> _mockEnrollmentService;
     private readonly Mock<IEnrollmentPricingService> _mockEnrollmentPricingService;
     private readonly EnrollmentsController _controller;
 
     public EnrollmentsControllerTests()
     {
-        _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _mockRegistrationFeeService = new Mock<IRegistrationFeeService>();
+        _mockEnrollmentService = new Mock<IEnrollmentService>();
         _mockEnrollmentPricingService = new Mock<IEnrollmentPricingService>();
-        var mockScheduleConflictService = new Mock<IScheduleConflictService>();
-
-        // Setup default behavior - no conflicts
-        mockScheduleConflictService.Setup(s => s.HasConflictAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
-            .ReturnsAsync(new ConflictCheckResult { HasConflict = false, ConflictingCourses = new List<ConflictingCourse>() });
-
-        _controller = new EnrollmentsController(_mockUnitOfWork.Object, mockScheduleConflictService.Object, _mockRegistrationFeeService.Object, _mockEnrollmentPricingService.Object);
-    }
-
-    [Fact]
-    public async Task GetByStudent_WithValidStudentId_ReturnsEnrollments()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-        var teacherId = Guid.NewGuid();
-        var instrumentId = 1;
-
-        var student = new Student
-        {
-            Id = studentId,
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@test.com"
-        };
-
-        var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType
-        {
-            Id = Guid.NewGuid(),
-            InstrumentId = instrumentId,
-            Name = "Piano 30 min",
-            Instrument = instrument
-        };
-
-        var teacher = new Teacher
-        {
-            Id = teacherId,
-            FirstName = "Jane",
-            LastName = "Smith",
-            Email = "jane@test.com"
-        };
-
-        var room = new Room { Id = 1, Name = "Room A" };
-
-        var course = new Course
-        {
-            Id = courseId,
-            TeacherId = teacherId,
-            CourseTypeId = courseType.Id,
-            RoomId = 1,
-            DayOfWeek = DayOfWeek.Monday,
-            StartTime = new TimeOnly(10, 0),
-            EndTime = new TimeOnly(10, 30),
-            Teacher = teacher,
-            CourseType = courseType,
-            Room = room
-        };
-
-        var enrollments = new List<Enrollment>
-        {
-            new Enrollment
-            {
-                Id = Guid.NewGuid(),
-                StudentId = studentId,
-                CourseId = courseId,
-                Status = EnrollmentStatus.Active,
-                Student = student,
-                Course = course
-            }
-        };
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        // Act
-        var result = await _controller.GetByStudent(studentId, CancellationToken.None);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedEnrollments = Assert.IsAssignableFrom<IEnumerable<StudentEnrollmentDto>>(okResult.Value);
-        Assert.Single(returnedEnrollments);
-    }
-
-    [Fact]
-    public async Task GetByStudent_WithInvalidStudentId_ReturnsNotFound()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Student?)null);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-
-        // Act
-        var result = await _controller.GetByStudent(studentId, CancellationToken.None);
-
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task Create_WithValidData_ReturnsCreatedEnrollment()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student
-        {
-            Id = studentId,
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@test.com"
-        };
-
-        var course = new Course
-        {
-            Id = courseId,
-            TeacherId = Guid.NewGuid(),
-            CourseTypeId = Guid.NewGuid(),
-            Status = CourseStatus.Active
-        };
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(new List<Enrollment>());
-        mockEnrollmentRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Enrollment, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Enrollment?)null);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        var dto = new CreateEnrollmentDto
-        {
-            StudentId = studentId,
-            CourseId = courseId,
-            DiscountPercent = 10
-        };
-
-        // Act
-        var result = await _controller.Create(dto, CancellationToken.None);
-
-        // Assert
-        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-        var enrollment = Assert.IsType<EnrollmentDto>(createdResult.Value);
-        Assert.Equal(studentId, enrollment.StudentId);
-        Assert.Equal(courseId, enrollment.CourseId);
-        Assert.Equal(10, enrollment.DiscountPercent);
-    }
-
-    [Fact]
-    public async Task Create_WithNonExistentStudent_ReturnsBadRequest()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Student?)null);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-
-        var dto = new CreateEnrollmentDto
-        {
-            StudentId = studentId,
-            CourseId = courseId
-        };
-
-        // Act
-        var result = await _controller.Create(dto, CancellationToken.None);
-
-        // Assert
-        Assert.IsType<BadRequestObjectResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task Create_WithAlreadyEnrolledStudent_ReturnsBadRequest()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student
-        {
-            Id = studentId,
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@test.com"
-        };
-
-        var course = new Course
-        {
-            Id = courseId,
-            TeacherId = Guid.NewGuid(),
-            CourseTypeId = Guid.NewGuid()
-        };
-
-        var existingEnrollment = new Enrollment
-        {
-            Id = Guid.NewGuid(),
-            StudentId = studentId,
-            CourseId = courseId
-        };
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockEnrollmentRepo = new Mock<IRepository<Enrollment>>();
-        mockEnrollmentRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Enrollment, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(existingEnrollment);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        var dto = new CreateEnrollmentDto
-        {
-            StudentId = studentId,
-            CourseId = courseId
-        };
-
-        // Act
-        var result = await _controller.Create(dto, CancellationToken.None);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task Delete_WithValidId_ReturnsNoContent()
-    {
-        // Arrange
-        var enrollmentId = Guid.NewGuid();
-        var enrollment = new Enrollment
-        {
-            Id = enrollmentId,
-            StudentId = Guid.NewGuid(),
-            CourseId = Guid.NewGuid(),
-            Status = EnrollmentStatus.Active
-        };
-
-        var mockEnrollmentRepo = new Mock<IRepository<Enrollment>>();
-        mockEnrollmentRepo.Setup(r => r.GetByIdAsync(enrollmentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(enrollment);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        // Act
-        var result = await _controller.Delete(enrollmentId, CancellationToken.None);
-
-        // Assert
-        Assert.IsType<NoContentResult>(result);
-        Assert.Equal(EnrollmentStatus.Withdrawn, enrollment.Status);
-    }
-
-    [Fact]
-    public async Task Delete_WithInvalidId_ReturnsNotFound()
-    {
-        // Arrange
-        var enrollmentId = Guid.NewGuid();
-
-        var mockEnrollmentRepo = new Mock<IRepository<Enrollment>>();
-        mockEnrollmentRepo.Setup(r => r.GetByIdAsync(enrollmentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Enrollment?)null);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        // Act
-        var result = await _controller.Delete(enrollmentId, CancellationToken.None);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result);
+        _controller = new EnrollmentsController(
+            _mockEnrollmentService.Object,
+            _mockEnrollmentPricingService.Object);
     }
 
     #region GetAll Tests
 
     [Fact]
-    public async Task GetAll_WithNoFilters_ReturnsAllEnrollments()
+    public async Task GetAll_ReturnsOkWithEnrollments()
     {
         // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-        var instrumentId = 1;
-
-        var student = new Student
+        var enrollments = new List<EnrollmentDto>
         {
-            Id = studentId,
-            FirstName = "John",
-            LastName = "Doe",
-            Email = "john@test.com"
+            new() { Id = Guid.NewGuid(), StudentName = "Jane Smith", Status = EnrollmentStatus.Active },
+            new() { Id = Guid.NewGuid(), StudentName = "John Doe", Status = EnrollmentStatus.Trail }
         };
 
-        var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType
-        {
-            Id = Guid.NewGuid(),
-            InstrumentId = instrumentId,
-            Name = "Piano 30 min",
-            Instrument = instrument
-        };
-
-        var teacher = new Teacher
-        {
-            Id = Guid.NewGuid(),
-            FirstName = "Jane",
-            LastName = "Smith",
-            Email = "jane@test.com"
-        };
-
-        var course = new Course
-        {
-            Id = courseId,
-            TeacherId = teacher.Id,
-            CourseTypeId = courseType.Id,
-            Teacher = teacher,
-            CourseType = courseType
-        };
-
-        var enrollments = new List<Enrollment>
-        {
-            new Enrollment
-            {
-                Id = Guid.NewGuid(),
-                StudentId = studentId,
-                CourseId = courseId,
-                Status = EnrollmentStatus.Active,
-                Student = student,
-                Course = course
-            },
-            new Enrollment
-            {
-                Id = Guid.NewGuid(),
-                StudentId = studentId,
-                CourseId = courseId,
-                Status = EnrollmentStatus.Trail,
-                Student = student,
-                Course = course
-            }
-        };
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        _mockEnrollmentService
+            .Setup(s => s.GetAllAsync(null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollments);
 
         // Act
         var result = await _controller.GetAll(null, null, null, CancellationToken.None);
@@ -396,108 +50,77 @@ public class EnrollmentsControllerTests
     }
 
     [Fact]
-    public async Task GetAll_WithStudentIdFilter_ReturnsFilteredEnrollments()
+    public async Task GetAll_WithStudentFilter_PassesFilterToService()
     {
         // Arrange
-        var studentId1 = Guid.NewGuid();
-        var studentId2 = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-        var instrumentId = 1;
-
-        var student1 = new Student { Id = studentId1, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var student2 = new Student { Id = studentId2, FirstName = "Jane", LastName = "Doe", Email = "jane@test.com" };
-
-        var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), InstrumentId = instrumentId, Name = "Piano 30 min", Instrument = instrument };
-        var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Teacher", LastName = "One", Email = "teacher@test.com" };
-        var course = new Course { Id = courseId, TeacherId = teacher.Id, CourseTypeId = courseType.Id, Teacher = teacher, CourseType = courseType };
-
-        var enrollments = new List<Enrollment>
-        {
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId1, CourseId = courseId, Status = EnrollmentStatus.Active, Student = student1, Course = course },
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId2, CourseId = courseId, Status = EnrollmentStatus.Active, Student = student2, Course = course }
-        };
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        var studentId = Guid.NewGuid();
+        _mockEnrollmentService
+            .Setup(s => s.GetAllAsync(studentId, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<EnrollmentDto>());
 
         // Act
-        var result = await _controller.GetAll(studentId1, null, null, CancellationToken.None);
+        await _controller.GetAll(studentId, null, null, CancellationToken.None);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedEnrollments = Assert.IsAssignableFrom<IEnumerable<EnrollmentDto>>(okResult.Value);
-        Assert.Single(returnedEnrollments);
-        Assert.All(returnedEnrollments, e => Assert.Equal(studentId1, e.StudentId));
+        _mockEnrollmentService.Verify(
+            s => s.GetAllAsync(studentId, null, null, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task GetAll_WithStatusFilter_ReturnsFilteredEnrollments()
+    public async Task GetAll_WithCourseFilter_PassesFilterToService()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        _mockEnrollmentService
+            .Setup(s => s.GetAllAsync(null, courseId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<EnrollmentDto>());
+
+        // Act
+        await _controller.GetAll(null, courseId, null, CancellationToken.None);
+
+        // Assert
+        _mockEnrollmentService.Verify(
+            s => s.GetAllAsync(null, courseId, null, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAll_WithStatusFilter_PassesFilterToService()
+    {
+        // Arrange
+        var status = EnrollmentStatus.Active;
+        _mockEnrollmentService
+            .Setup(s => s.GetAllAsync(null, null, status, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<EnrollmentDto>());
+
+        // Act
+        await _controller.GetAll(null, null, status, CancellationToken.None);
+
+        // Assert
+        _mockEnrollmentService.Verify(
+            s => s.GetAllAsync(null, null, status, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAll_WithMultipleFilters_PassesAllFiltersToService()
     {
         // Arrange
         var studentId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
-        var instrumentId = 1;
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), InstrumentId = instrumentId, Name = "Piano 30 min", Instrument = instrument };
-        var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Teacher", LastName = "One", Email = "teacher@test.com" };
-        var course = new Course { Id = courseId, TeacherId = teacher.Id, CourseTypeId = courseType.Id, Teacher = teacher, CourseType = courseType };
-
-        var enrollments = new List<Enrollment>
-        {
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId, CourseId = courseId, Status = EnrollmentStatus.Active, Student = student, Course = course },
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId, CourseId = courseId, Status = EnrollmentStatus.Trail, Student = student, Course = course },
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId, CourseId = courseId, Status = EnrollmentStatus.Withdrawn, Student = student, Course = course }
-        };
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        var status = EnrollmentStatus.Active;
+        _mockEnrollmentService
+            .Setup(s => s.GetAllAsync(studentId, courseId, status, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<EnrollmentDto>());
 
         // Act
-        var result = await _controller.GetAll(null, null, EnrollmentStatus.Active, CancellationToken.None);
+        await _controller.GetAll(studentId, courseId, status, CancellationToken.None);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedEnrollments = Assert.IsAssignableFrom<IEnumerable<EnrollmentDto>>(okResult.Value);
-        Assert.Single(returnedEnrollments);
-        Assert.All(returnedEnrollments, e => Assert.Equal(EnrollmentStatus.Active, e.Status));
-    }
-
-    [Fact]
-    public async Task GetAll_WithCourseIdFilter_ReturnsFilteredEnrollments()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId1 = Guid.NewGuid();
-        var courseId2 = Guid.NewGuid();
-        var instrumentId = 1;
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), InstrumentId = instrumentId, Name = "Piano 30 min", Instrument = instrument };
-        var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Teacher", LastName = "One", Email = "teacher@test.com" };
-        var course1 = new Course { Id = courseId1, TeacherId = teacher.Id, CourseTypeId = courseType.Id, Teacher = teacher, CourseType = courseType };
-        var course2 = new Course { Id = courseId2, TeacherId = teacher.Id, CourseTypeId = courseType.Id, Teacher = teacher, CourseType = courseType };
-
-        var enrollments = new List<Enrollment>
-        {
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId, CourseId = courseId1, Status = EnrollmentStatus.Active, Student = student, Course = course1 },
-            new Enrollment { Id = Guid.NewGuid(), StudentId = studentId, CourseId = courseId2, Status = EnrollmentStatus.Active, Student = student, Course = course2 }
-        };
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        // Act
-        var result = await _controller.GetAll(null, courseId1, null, CancellationToken.None);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedEnrollments = Assert.IsAssignableFrom<IEnumerable<EnrollmentDto>>(okResult.Value);
-        Assert.Single(returnedEnrollments);
-        Assert.All(returnedEnrollments, e => Assert.Equal(courseId1, e.CourseId));
+        _mockEnrollmentService.Verify(
+            s => s.GetAllAsync(studentId, courseId, status, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     #endregion
@@ -505,48 +128,20 @@ public class EnrollmentsControllerTests
     #region GetById Tests
 
     [Fact]
-    public async Task GetById_WithValidId_ReturnsEnrollmentDetail()
+    public async Task GetById_WithValidId_ReturnsOkWithEnrollment()
     {
         // Arrange
         var enrollmentId = Guid.NewGuid();
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-        var instrumentId = 1;
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var instrument = new Instrument { Id = instrumentId, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), InstrumentId = instrumentId, Name = "Piano 30 min", Instrument = instrument };
-        var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Teacher", LastName = "One", Email = "teacher@test.com" };
-        var room = new Room { Id = 1, Name = "Room A" };
-        var course = new Course
-        {
-            Id = courseId,
-            TeacherId = teacher.Id,
-            CourseTypeId = courseType.Id,
-            RoomId = 1,
-            DayOfWeek = DayOfWeek.Monday,
-            StartTime = new TimeOnly(10, 0),
-            EndTime = new TimeOnly(10, 30),
-            Teacher = teacher,
-            CourseType = courseType,
-            Room = room
-        };
-
-        var enrollment = new Enrollment
+        var enrollment = new EnrollmentDetailDto
         {
             Id = enrollmentId,
-            StudentId = studentId,
-            CourseId = courseId,
-            Status = EnrollmentStatus.Active,
-            DiscountPercent = 10,
-            Notes = "Test note",
-            Student = student,
-            Course = course
+            StudentName = "Jane Smith",
+            Status = EnrollmentStatus.Active
         };
 
-        var enrollments = new List<Enrollment> { enrollment };
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        _mockEnrollmentService
+            .Setup(s => s.GetByIdAsync(enrollmentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollment);
 
         // Act
         var result = await _controller.GetById(enrollmentId, CancellationToken.None);
@@ -555,22 +150,18 @@ public class EnrollmentsControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedEnrollment = Assert.IsType<EnrollmentDetailDto>(okResult.Value);
         Assert.Equal(enrollmentId, returnedEnrollment.Id);
-        Assert.Equal(studentId, returnedEnrollment.StudentId);
-        Assert.Equal(courseId, returnedEnrollment.CourseId);
-        Assert.Equal("Room A", returnedEnrollment.RoomName);
     }
 
     [Fact]
     public async Task GetById_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var enrollmentId = Guid.NewGuid();
-        var enrollments = new List<Enrollment>();
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        _mockEnrollmentService
+            .Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((EnrollmentDetailDto?)null);
 
         // Act
-        var result = await _controller.GetById(enrollmentId, CancellationToken.None);
+        var result = await _controller.GetById(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result.Result);
@@ -578,31 +169,66 @@ public class EnrollmentsControllerTests
 
     #endregion
 
+    #region GetByStudent Tests
+
+    [Fact]
+    public async Task GetByStudent_WithValidStudent_ReturnsOkWithEnrollments()
+    {
+        // Arrange
+        var studentId = Guid.NewGuid();
+        var enrollments = new List<StudentEnrollmentDto>
+        {
+            new() { Id = Guid.NewGuid(), CourseTypeName = "Piano", Status = EnrollmentStatus.Active }
+        };
+
+        _mockEnrollmentService
+            .Setup(s => s.GetByStudentAsync(studentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollments);
+
+        // Act
+        var result = await _controller.GetByStudent(studentId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedEnrollments = Assert.IsAssignableFrom<IEnumerable<StudentEnrollmentDto>>(okResult.Value);
+        Assert.Single(returnedEnrollments);
+    }
+
+    [Fact]
+    public async Task GetByStudent_WithInvalidStudent_ReturnsNotFound()
+    {
+        // Arrange
+        _mockEnrollmentService
+            .Setup(s => s.GetByStudentAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<StudentEnrollmentDto>());
+
+        // Act
+        var result = await _controller.GetByStudent(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+        Assert.NotNull(notFoundResult.Value);
+    }
+
+    #endregion
+
     #region GetEnrollmentPricing Tests
 
     [Fact]
-    public async Task GetEnrollmentPricing_WithValidIds_ReturnsPricing()
+    public async Task GetEnrollmentPricing_WithValidData_ReturnsOkWithPricing()
     {
         // Arrange
         var studentId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
-        var enrollmentId = Guid.NewGuid();
-        var expectedPricing = new EnrollmentPricingDto
+        var pricing = new EnrollmentPricingDto
         {
-            EnrollmentId = enrollmentId,
-            CourseId = courseId,
-            CourseName = "Piano 30 min",
-            BasePriceAdult = 50m,
-            BasePriceChild = 40m,
-            IsChildPricing = true,
-            ApplicableBasePrice = 40m,
-            DiscountPercent = 10m,
-            DiscountAmount = 4m,
-            PricePerLesson = 36m
+            ApplicableBasePrice = 50m,
+            PricePerLesson = 45m
         };
 
-        _mockEnrollmentPricingService.Setup(s => s.GetEnrollmentPricingAsync(studentId, courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedPricing);
+        _mockEnrollmentPricingService
+            .Setup(s => s.GetEnrollmentPricingAsync(studentId, courseId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pricing);
 
         // Act
         var result = await _controller.GetEnrollmentPricing(studentId, courseId, CancellationToken.None);
@@ -610,176 +236,107 @@ public class EnrollmentsControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedPricing = Assert.IsType<EnrollmentPricingDto>(okResult.Value);
-        Assert.Equal(enrollmentId, returnedPricing.EnrollmentId);
-        Assert.Equal(courseId, returnedPricing.CourseId);
-        Assert.Equal(36m, returnedPricing.PricePerLesson);
+        Assert.Equal(50m, returnedPricing.ApplicableBasePrice);
     }
 
     [Fact]
-    public async Task GetEnrollmentPricing_WhenNotFound_ReturnsNotFound()
+    public async Task GetEnrollmentPricing_WithInvalidData_ReturnsNotFound()
     {
         // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        _mockEnrollmentPricingService.Setup(s => s.GetEnrollmentPricingAsync(studentId, courseId, It.IsAny<CancellationToken>()))
+        _mockEnrollmentPricingService
+            .Setup(s => s.GetEnrollmentPricingAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((EnrollmentPricingDto?)null);
 
         // Act
-        var result = await _controller.GetEnrollmentPricing(studentId, courseId, CancellationToken.None);
+        var result = await _controller.GetEnrollmentPricing(Guid.NewGuid(), Guid.NewGuid(), CancellationToken.None);
 
         // Assert
-        Assert.IsType<NotFoundObjectResult>(result.Result);
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+        Assert.NotNull(notFoundResult.Value);
     }
 
     #endregion
 
-    #region Create Additional Tests
+    #region Create Tests
 
     [Fact]
-    public async Task Create_WithNonExistentCourse_ReturnsBadRequest()
+    public async Task Create_WithValidData_ReturnsOkWithEnrollment()
     {
         // Arrange
         var studentId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
+        var enrollment = new EnrollmentDto
+        {
+            Id = Guid.NewGuid(),
+            StudentId = studentId,
+            CourseId = courseId,
+            Status = EnrollmentStatus.Active
+        };
 
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
+        _mockEnrollmentService
+            .Setup(s => s.CreateAsync(courseId, It.IsAny<CreateEnrollmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((enrollment, false, (string?)null));
 
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
+        var dto = new CreateEnrollmentDto
+        {
+            StudentId = studentId,
+            CourseId = courseId,
+            InvoicingPreference = InvoicingPreference.Monthly
+        };
 
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Course?)null);
+        // Act
+        var result = await _controller.Create(dto, CancellationToken.None);
 
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedEnrollment = Assert.IsType<EnrollmentDto>(okResult.Value);
+        Assert.Equal(enrollment.Id, returnedEnrollment.Id);
+    }
 
-        var dto = new CreateEnrollmentDto { StudentId = studentId, CourseId = courseId };
+    [Fact]
+    public async Task Create_WithNotFoundError_ReturnsNotFound()
+    {
+        // Arrange
+        _mockEnrollmentService
+            .Setup(s => s.CreateAsync(It.IsAny<Guid>(), It.IsAny<CreateEnrollmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((EnrollmentDto?)null, true, (string?)null));
+
+        var dto = new CreateEnrollmentDto
+        {
+            StudentId = Guid.NewGuid(),
+            CourseId = Guid.NewGuid(),
+            InvoicingPreference = InvoicingPreference.Monthly
+        };
+
+        // Act
+        var result = await _controller.Create(dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task Create_WithValidationError_ReturnsBadRequest()
+    {
+        // Arrange
+        var errorMessage = "Student is already enrolled in this course";
+        _mockEnrollmentService
+            .Setup(s => s.CreateAsync(It.IsAny<Guid>(), It.IsAny<CreateEnrollmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((EnrollmentDto?)null, false, errorMessage));
+
+        var dto = new CreateEnrollmentDto
+        {
+            StudentId = Guid.NewGuid(),
+            CourseId = Guid.NewGuid(),
+            InvoicingPreference = InvoicingPreference.Monthly
+        };
 
         // Act
         var result = await _controller.Create(dto, CancellationToken.None);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task Create_WithTrialCourse_SetsStatusToTrial()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var course = new Course { Id = courseId, TeacherId = Guid.NewGuid(), CourseTypeId = Guid.NewGuid(), IsTrial = true };
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(new List<Enrollment>());
-        mockEnrollmentRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Enrollment, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Enrollment?)null);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        var dto = new CreateEnrollmentDto { StudentId = studentId, CourseId = courseId };
-
-        // Act
-        var result = await _controller.Create(dto, CancellationToken.None);
-
-        // Assert
-        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-        var enrollment = Assert.IsType<EnrollmentDto>(createdResult.Value);
-        Assert.Equal(EnrollmentStatus.Trail, enrollment.Status);
-    }
-
-    [Fact]
-    public async Task Create_WithNonTrialCourse_WhenStudentEligible_AppliesRegistrationFee()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var course = new Course { Id = courseId, TeacherId = Guid.NewGuid(), CourseTypeId = Guid.NewGuid(), IsTrial = false };
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(new List<Enrollment>());
-        mockEnrollmentRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Enrollment, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Enrollment?)null);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockRegistrationFeeService.Setup(s => s.IsStudentEligibleForFeeAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        var dto = new CreateEnrollmentDto { StudentId = studentId, CourseId = courseId };
-
-        // Act
-        var result = await _controller.Create(dto, CancellationToken.None);
-
-        // Assert
-        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-        var enrollment = Assert.IsType<EnrollmentDto>(createdResult.Value);
-        Assert.Equal(EnrollmentStatus.Active, enrollment.Status);
-        _mockRegistrationFeeService.Verify(s => s.ApplyRegistrationFeeAsync(studentId, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Create_WithNonTrialCourse_WhenStudentNotEligible_DoesNotApplyRegistrationFee()
-    {
-        // Arrange
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var course = new Course { Id = courseId, TeacherId = Guid.NewGuid(), CourseTypeId = Guid.NewGuid(), IsTrial = false };
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(new List<Enrollment>());
-        mockEnrollmentRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Enrollment, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Enrollment?)null);
-
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockRegistrationFeeService.Setup(s => s.IsStudentEligibleForFeeAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-
-        var dto = new CreateEnrollmentDto { StudentId = studentId, CourseId = courseId };
-
-        // Act
-        var result = await _controller.Create(dto, CancellationToken.None);
-
-        // Assert
-        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-        _mockRegistrationFeeService.Verify(s => s.ApplyRegistrationFeeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.NotNull(badRequestResult.Value);
     }
 
     #endregion
@@ -787,34 +344,26 @@ public class EnrollmentsControllerTests
     #region Update Tests
 
     [Fact]
-    public async Task Update_WithValidId_ReturnsUpdatedEnrollment()
+    public async Task Update_WithValidData_ReturnsOkWithUpdatedEnrollment()
     {
         // Arrange
         var enrollmentId = Guid.NewGuid();
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var enrollment = new Enrollment
+        var enrollment = new EnrollmentDto
         {
             Id = enrollmentId,
-            StudentId = studentId,
-            CourseId = courseId,
             Status = EnrollmentStatus.Active,
-            DiscountPercent = 0,
-            Notes = "Old note",
-            Student = student
+            DiscountPercent = 15
         };
 
-        var enrollments = new List<Enrollment> { enrollment };
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        _mockEnrollmentService
+            .Setup(s => s.UpdateAsync(enrollmentId, It.IsAny<UpdateEnrollmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollment);
 
         var dto = new UpdateEnrollmentDto
         {
             DiscountPercent = 15,
-            Status = EnrollmentStatus.Completed,
-            Notes = "New note"
+            Status = EnrollmentStatus.Active,
+            InvoicingPreference = InvoicingPreference.Monthly
         };
 
         // Act
@@ -824,28 +373,25 @@ public class EnrollmentsControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedEnrollment = Assert.IsType<EnrollmentDto>(okResult.Value);
         Assert.Equal(15, returnedEnrollment.DiscountPercent);
-        Assert.Equal(EnrollmentStatus.Completed, returnedEnrollment.Status);
-        Assert.Equal("New note", returnedEnrollment.Notes);
     }
 
     [Fact]
     public async Task Update_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var enrollmentId = Guid.NewGuid();
-        var enrollments = new List<Enrollment>();
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        _mockEnrollmentService
+            .Setup(s => s.UpdateAsync(It.IsAny<Guid>(), It.IsAny<UpdateEnrollmentDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((EnrollmentDto?)null);
 
         var dto = new UpdateEnrollmentDto
         {
-            DiscountPercent = 15,
-            Status = EnrollmentStatus.Completed,
-            Notes = "New note"
+            DiscountPercent = 10,
+            Status = EnrollmentStatus.Active,
+            InvoicingPreference = InvoicingPreference.Monthly
         };
 
         // Act
-        var result = await _controller.Update(enrollmentId, dto, CancellationToken.None);
+        var result = await _controller.Update(Guid.NewGuid(), dto, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result.Result);
@@ -856,29 +402,19 @@ public class EnrollmentsControllerTests
     #region PromoteFromTrail Tests
 
     [Fact]
-    public async Task PromoteFromTrail_WithValidTrialEnrollment_ReturnsActiveEnrollment()
+    public async Task PromoteFromTrail_WithValidTrailEnrollment_ReturnsOkWithPromotedEnrollment()
     {
         // Arrange
         var enrollmentId = Guid.NewGuid();
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var enrollment = new Enrollment
+        var enrollment = new EnrollmentDto
         {
             Id = enrollmentId,
-            StudentId = studentId,
-            CourseId = courseId,
-            Status = EnrollmentStatus.Trail,
-            Student = student
+            Status = EnrollmentStatus.Active
         };
 
-        var enrollments = new List<Enrollment> { enrollment };
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockRegistrationFeeService.Setup(s => s.IsStudentEligibleForFeeAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockEnrollmentService
+            .Setup(s => s.PromoteFromTrailAsync(enrollmentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(enrollment);
 
         // Act
         var result = await _controller.PromoteFromTrail(enrollmentId, CancellationToken.None);
@@ -893,80 +429,68 @@ public class EnrollmentsControllerTests
     public async Task PromoteFromTrail_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var enrollmentId = Guid.NewGuid();
-        var enrollments = new List<Enrollment>();
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        _mockEnrollmentService
+            .Setup(s => s.PromoteFromTrailAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((EnrollmentDto?)null);
 
         // Act
-        var result = await _controller.PromoteFromTrail(enrollmentId, CancellationToken.None);
+        var result = await _controller.PromoteFromTrail(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result.Result);
     }
 
     [Fact]
-    public async Task PromoteFromTrail_WithNonTrialEnrollment_ReturnsBadRequest()
+    public async Task PromoteFromTrail_WithNonTrailEnrollment_ReturnsBadRequest()
     {
         // Arrange
         var enrollmentId = Guid.NewGuid();
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var enrollment = new Enrollment
-        {
-            Id = enrollmentId,
-            StudentId = studentId,
-            CourseId = courseId,
-            Status = EnrollmentStatus.Active,
-            Student = student
-        };
-
-        var enrollments = new List<Enrollment> { enrollment };
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
+        var errorMessage = "Only trial enrollments can be promoted";
+        _mockEnrollmentService
+            .Setup(s => s.PromoteFromTrailAsync(enrollmentId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException(errorMessage));
 
         // Act
         var result = await _controller.PromoteFromTrail(enrollmentId, CancellationToken.None);
 
         // Assert
-        Assert.IsType<BadRequestObjectResult>(result.Result);
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
     }
 
+    #endregion
+
+    #region Delete Tests
+
     [Fact]
-    public async Task PromoteFromTrail_WhenStudentEligible_AppliesRegistrationFee()
+    public async Task Delete_WithValidId_ReturnsNoContent()
     {
         // Arrange
         var enrollmentId = Guid.NewGuid();
-        var studentId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var enrollment = new Enrollment
-        {
-            Id = enrollmentId,
-            StudentId = studentId,
-            CourseId = courseId,
-            Status = EnrollmentStatus.Trail,
-            Student = student
-        };
-
-        var enrollments = new List<Enrollment> { enrollment };
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockRegistrationFeeService.Setup(s => s.IsStudentEligibleForFeeAsync(studentId, It.IsAny<CancellationToken>()))
+        _mockEnrollmentService
+            .Setup(s => s.DeleteAsync(enrollmentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         // Act
-        var result = await _controller.PromoteFromTrail(enrollmentId, CancellationToken.None);
+        var result = await _controller.Delete(enrollmentId, CancellationToken.None);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedEnrollment = Assert.IsType<EnrollmentDto>(okResult.Value);
-        Assert.Equal(EnrollmentStatus.Active, returnedEnrollment.Status);
-        _mockRegistrationFeeService.Verify(s => s.ApplyRegistrationFeeAsync(studentId, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task Delete_WithInvalidId_ReturnsNotFound()
+    {
+        // Arrange
+        _mockEnrollmentService
+            .Setup(s => s.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _controller.Delete(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
     }
 
     #endregion

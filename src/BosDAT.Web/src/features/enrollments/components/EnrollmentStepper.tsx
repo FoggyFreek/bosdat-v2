@@ -20,6 +20,7 @@ import { coursesApi } from '@/features/courses/api'
 import { schedulingApi } from '@/features/settings/api'
 import { getDayNameFromNumber, getWeekParity, type DayOfWeek } from '@/lib/datetime-helpers'
 import { useToast } from '@/hooks/use-toast'
+import { enrollmentsApi } from '../api'
 
 const DISPLAY_NAME = 'EnrollmentStepper'
 const CONTENT_DISPLAY_NAME = 'EnrollmentStepperContent'
@@ -113,8 +114,9 @@ const EnrollmentStepperContent = () => {
       })
 
       for (const student of formData.step2.students) {
-        await coursesApi.enroll(course.id, {
+        await enrollmentsApi.create({
           studentId: student.studentId,
+          courseId: course.id,
           discountPercent: student.discountPercentage,
           discountType: student.discountType,
           invoicingPreference: student.invoicingPreference,

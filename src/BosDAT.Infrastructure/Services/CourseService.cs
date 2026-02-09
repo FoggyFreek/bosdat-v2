@@ -5,7 +5,8 @@ using BosDAT.Core.Interfaces;
 
 namespace BosDAT.Infrastructure.Services;
 
-public class CourseService(IUnitOfWork unitOfWork) : ICourseService
+public class CourseService(
+    IUnitOfWork unitOfWork) : ICourseService
 {
     public async Task<List<CourseListDto>> GetSummaryAsync(
         CourseStatus? status, Guid? teacherId, DayOfWeek? dayOfWeek, int? roomId,
@@ -159,53 +160,6 @@ public class CourseService(IUnitOfWork unitOfWork) : ICourseService
 
         var updated = await unitOfWork.Courses.GetWithEnrollmentsAsync(id, ct);
         return (MapToDto(updated!), false);
-    }
-
-    public async Task<(EnrollmentDto? Enrollment, bool NotFound, string? Error)> EnrollStudentAsync(
-        Guid courseId, CreateEnrollmentDto dto, CancellationToken ct = default)
-    {
-        var course = await unitOfWork.Courses.GetByIdAsync(courseId, ct);
-        if (course == null)
-            return (null, true, null);
-
-        var student = await unitOfWork.Students.GetByIdAsync(dto.StudentId, ct);
-        if (student == null)
-            return (null, false, "Student not found");
-
-        var existing = await unitOfWork.Repository<Enrollment>()
-            .FirstOrDefaultAsync(e => e.StudentId == dto.StudentId && e.CourseId == courseId, ct);
-
-        if (existing != null)
-            return (null, false, "Student is already enrolled in this course");
-
-        var enrollment = new Enrollment
-        {
-            Id = Guid.NewGuid(),
-            StudentId = dto.StudentId,
-            CourseId = courseId,
-            DiscountPercent = dto.DiscountPercent,
-            DiscountType = dto.DiscountType,
-            InvoicingPreference = dto.InvoicingPreference,
-            Notes = dto.Notes,
-            Status = EnrollmentStatus.Active
-        };
-
-        await unitOfWork.Repository<Enrollment>().AddAsync(enrollment, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-
-        return (new EnrollmentDto
-        {
-            Id = enrollment.Id,
-            StudentId = enrollment.StudentId,
-            StudentName = student.FullName,
-            CourseId = enrollment.CourseId,
-            EnrolledAt = enrollment.EnrolledAt,
-            DiscountPercent = enrollment.DiscountPercent,
-            DiscountType = enrollment.DiscountType,
-            InvoicingPreference = enrollment.InvoicingPreference,
-            Status = enrollment.Status,
-            Notes = enrollment.Notes
-        }, false, null);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
