@@ -19,6 +19,8 @@ const CourseDetailPage = lazy(() => import('./pages/CourseDetailPage').then(m =>
 const SchedulePage = lazy(() => import('./pages/SchedulePage').then(m => ({ default: m.SchedulePage })))
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const EnrollmentPage = lazy(() => import('./pages/EnrollmentPage').then(m => ({ default: m.EnrollmentPage })))
+const MoveLessonPage = lazy(() => import('./pages/MoveLessonPage').then(m => ({ default: m.MoveLessonPage })))
+const AddLessonPage = lazy(() => import('./pages/AddLessonPage').then(m => ({ default: m.AddLessonPage })))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -60,6 +62,8 @@ function App() {
                 <Route path="/teachers/:id/edit" element={<Suspense fallback={<LoadingFallback />}><TeacherFormPage /></Suspense>} />
                 <Route path="/courses" element={<Suspense fallback={<LoadingFallback />}><CoursesPage /></Suspense>} />
                 <Route path="/courses/:id" element={<Suspense fallback={<LoadingFallback />}><CourseDetailPage /></Suspense>} />
+                <Route path="/courses/:id/lessons/:lessonId/move" element={<Suspense fallback={<LoadingFallback />}><MoveLessonPage /></Suspense>} />
+                <Route path="/courses/:id/add-lesson" element={<Suspense fallback={<LoadingFallback />}><AddLessonPage /></Suspense>} />
                 <Route path="/schedule" element={<Suspense fallback={<LoadingFallback />}><SchedulePage /></Suspense>} />
                 <Route path="/settings" element={<Suspense fallback={<LoadingFallback />}><SettingsPage /></Suspense>} />
                 <Route path="/enrollments/new" element={<Suspense fallback={<LoadingFallback />}><EnrollmentPage /></Suspense>} />

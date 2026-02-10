@@ -1,16 +1,22 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useCourseDetailData } from '@/features/courses/hooks/useCourseDetailData'
+import type { LessonFilters } from '@/features/courses/hooks/useCourseDetailData'
 import { getStatusColor } from '@/features/courses/hooks/useCoursesData'
 import { CourseSummaryCard } from '@/features/courses/components/CourseSummaryCard'
 import { CourseEnrollmentsCard } from '@/features/courses/components/CourseEnrollmentsCard'
 import { CourseLessonHistoryCard } from '@/features/courses/components/CourseLessonHistoryCard'
+import { CancelLessonDialog } from '@/features/lessons/components/CancelLessonDialog'
+import type { Lesson } from '@/features/lessons/types'
 
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { course, lessons, isLoading, isError } = useCourseDetailData(id!)
+  const [lessonFilters, setLessonFilters] = useState<LessonFilters>({})
+  const [cancelLesson, setCancelLesson] = useState<Lesson | null>(null)
+  const { course, lessons, isLoading, isError } = useCourseDetailData(id!, lessonFilters)
 
   if (isLoading) {
     return (
@@ -59,7 +65,19 @@ export function CourseDetailPage() {
         <CourseEnrollmentsCard enrollments={course.enrollments ?? []} />
       </div>
 
-      <CourseLessonHistoryCard lessons={lessons} />
+      <CourseLessonHistoryCard
+        lessons={lessons}
+        courseId={id!}
+        filters={lessonFilters}
+        onFiltersChange={setLessonFilters}
+        onCancelLesson={setCancelLesson}
+      />
+
+      <CancelLessonDialog
+        lesson={cancelLesson}
+        courseId={id!}
+        onClose={() => setCancelLesson(null)}
+      />
     </div>
   )
 }

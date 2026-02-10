@@ -4,7 +4,14 @@ import { lessonsApi } from '@/features/lessons/api'
 import type { Course } from '@/features/courses/types'
 import type { Lesson } from '@/features/lessons/types'
 
-export const useCourseDetailData = (courseId: string) => {
+export interface LessonFilters {
+  startDate?: string
+  endDate?: string
+}
+
+export const useCourseDetailData = (courseId: string, filters?: LessonFilters) => {
+  const hasDateFilters = !!filters?.startDate || !!filters?.endDate
+
   const {
     data: course,
     isLoading: isCourseLoading,
@@ -20,8 +27,14 @@ export const useCourseDetailData = (courseId: string) => {
     isLoading: isLessonsLoading,
     isError: isLessonsError,
   } = useQuery<Lesson[]>({
-    queryKey: ['course', courseId, 'lessons'],
-    queryFn: () => lessonsApi.getAll({ courseId, top: 10 }),
+    queryKey: ['course', courseId, 'lessons', filters?.startDate, filters?.endDate],
+    queryFn: () =>
+      lessonsApi.getAll({
+        courseId,
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        ...(hasDateFilters ? {} : { top: 10 }),
+      }),
     enabled: !!courseId,
   })
 
