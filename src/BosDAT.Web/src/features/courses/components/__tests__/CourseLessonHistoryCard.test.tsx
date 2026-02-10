@@ -126,18 +126,17 @@ describe('CourseLessonHistoryCard', () => {
     })
   })
 
-  it('shows move and cancel action buttons for scheduled lessons', () => {
-    render(<CourseLessonHistoryCard {...defaultProps} />)
+  it('shows enabled move and cancel buttons for scheduled lessons', () => {
+    render(<CourseLessonHistoryCard {...defaultProps} lessons={[baseLesson]} />)
 
-    const moveButtons = screen.getAllByTitle('Move lesson')
-    const cancelButtons = screen.getAllByTitle('Cancel lesson')
+    const moveButton = screen.getByTitle('Move lesson')
+    const cancelButton = screen.getByTitle('Cancel lesson')
 
-    // Only the scheduled lesson should have action buttons
-    expect(moveButtons).toHaveLength(1)
-    expect(cancelButtons).toHaveLength(1)
+    expect(moveButton).not.toBeDisabled()
+    expect(cancelButton).not.toBeDisabled()
   })
 
-  it('does not show action buttons for cancelled lessons', () => {
+  it('shows disabled move and cancel buttons for non-scheduled lessons', () => {
     render(
       <CourseLessonHistoryCard
         {...defaultProps}
@@ -145,12 +144,15 @@ describe('CourseLessonHistoryCard', () => {
       />
     )
 
-    expect(screen.queryByTitle('Move lesson')).not.toBeInTheDocument()
-    expect(screen.queryByTitle('Cancel lesson')).not.toBeInTheDocument()
+    const moveButton = screen.getByTitle('Move lesson')
+    const cancelButton = screen.getByTitle('Cancel lesson')
+
+    expect(moveButton).toBeDisabled()
+    expect(cancelButton).toBeDisabled()
   })
 
   it('navigates to move lesson page when move button is clicked', () => {
-    render(<CourseLessonHistoryCard {...defaultProps} />)
+    render(<CourseLessonHistoryCard {...defaultProps} lessons={[baseLesson]} />)
 
     fireEvent.click(screen.getByTitle('Move lesson'))
 
@@ -164,6 +166,7 @@ describe('CourseLessonHistoryCard', () => {
     render(
       <CourseLessonHistoryCard
         {...defaultProps}
+        lessons={[baseLesson]}
         onCancelLesson={onCancelLesson}
       />
     )

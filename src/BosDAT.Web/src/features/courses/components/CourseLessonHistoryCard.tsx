@@ -148,30 +148,30 @@ export function CourseLessonHistoryCard({
                     )}
                   </td>
                   <td className="py-2 text-right">
-                    {lesson.status === 'Scheduled' && (
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2"
-                          title="Move lesson"
-                          onClick={() =>
-                            navigate(`/courses/${courseId}/lessons/${lesson.id}/move`)
-                          }
-                        >
-                          <ArrowRightLeft className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-destructive hover:text-destructive"
-                          title="Cancel lesson"
-                          onClick={() => onCancelLesson(lesson)}
-                        >
-                          <Ban className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        title="Move lesson"
+                        disabled={lesson.status !== 'Scheduled'}
+                        onClick={() =>
+                          navigate(`/courses/${courseId}/lessons/${lesson.id}/move`)
+                        }
+                      >
+                        <ArrowRightLeft className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-destructive hover:text-destructive"
+                        title="Cancel lesson"
+                        disabled={lesson.status !== 'Scheduled'}
+                        onClick={() => onCancelLesson(lesson)}
+                      >
+                        <Ban className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
