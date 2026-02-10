@@ -6,6 +6,9 @@ import type {
   SchedulingStatus,
   ScheduleRunsResponse,
   ManualRunResult,
+  InvoiceRunsResponse,
+  InvoiceRunResult,
+  StartInvoiceRunRequest,
 } from '@/features/settings/types'
 
 export const settingsApi = {
@@ -88,6 +91,20 @@ export const schedulingApi = {
 
   runSingle: async (id: string): Promise<ManualRunResult> => {
     const response = await api.post<ManualRunResult>(`/admin/scheduling/run/${id}`)
+    return response.data
+  },
+}
+
+export const invoiceRunApi = {
+  getRuns: async (page = 1, pageSize = 5): Promise<InvoiceRunsResponse> => {
+    const response = await api.get<InvoiceRunsResponse>('/admin/invoice-runs/runs', {
+      params: { page, pageSize },
+    })
+    return response.data
+  },
+
+  runBulk: async (data: StartInvoiceRunRequest): Promise<InvoiceRunResult> => {
+    const response = await api.post<InvoiceRunResult>('/admin/invoice-runs/run', data)
     return response.data
   },
 }

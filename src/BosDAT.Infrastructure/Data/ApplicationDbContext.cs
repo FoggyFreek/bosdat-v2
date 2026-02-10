@@ -49,6 +49,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<StudentLedgerApplication> StudentLedgerApplications => Set<StudentLedgerApplication>();
     public DbSet<TeacherAvailability> TeacherAvailabilities => Set<TeacherAvailability>();
     public DbSet<ScheduleRun> ScheduleRuns => Set<ScheduleRun>();
+    public DbSet<InvoiceRun> InvoiceRuns => Set<InvoiceRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<StudentLedgerApplication>().ToTable("student_ledger_applications");
         modelBuilder.Entity<TeacherAvailability>().ToTable("teacher_availability");
         modelBuilder.Entity<ScheduleRun>().ToTable("schedule_runs");
+        modelBuilder.Entity<InvoiceRun>().ToTable("invoice_runs");
 
         // Student configuration
         modelBuilder.Entity<Student>(entity =>
@@ -135,6 +137,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.HasKey(e => e.Id);
             entity.Property(e => e.InitiatedBy).IsRequired().HasMaxLength(50);
             entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // InvoiceRun configuration
+        modelBuilder.Entity<InvoiceRun>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.InitiatedBy).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
+            entity.Property(e => e.TotalAmount).HasPrecision(10, 2);
+            entity.Property(e => e.PeriodType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
             entity.HasIndex(e => e.CreatedAt);
         });
 
