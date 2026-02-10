@@ -3,24 +3,20 @@ using Moq;
 using Xunit;
 using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.Core.Utilities;
-using BosDAT.API.Tests.Helpers;
 
 namespace BosDAT.API.Tests.Controllers;
 
 public class CalendarControllerTests
 {
     private readonly Mock<ICalendarService> _mockCalendarService;
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly CalendarController _controller;
 
     public CalendarControllerTests()
     {
         _mockCalendarService = new Mock<ICalendarService>();
-        _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new CalendarController(_mockCalendarService.Object, _mockUnitOfWork.Object);
+        _controller = new CalendarController(_mockCalendarService.Object);
     }
 
     [Fact]
@@ -151,16 +147,9 @@ public class CalendarControllerTests
     {
         // Arrange
         var teacherId = Guid.NewGuid();
-        var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-
         var today = DateOnly.FromDateTime(DateTime.Today);
         var weekStart = IsoDateHelper.GetWeekStart(today);
         var weekEnd = weekStart.AddDays(6);
-
-        var mockTeacherRepo = new Mock<ITeacherRepository>();
-        mockTeacherRepo.Setup(r => r.GetByIdAsync(teacherId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(teacher);
-        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
 
         var lessons = new List<CalendarLessonDto>
         {
@@ -174,12 +163,17 @@ public class CalendarControllerTests
             }
         };
 
+        var expectedSchedule = new WeekCalendarDto
+        {
+            WeekStart = weekStart,
+            WeekEnd = weekEnd,
+            Lessons = lessons,
+            Holidays = new List<HolidayDto>()
+        };
+
         _mockCalendarService
-            .Setup(s => s.GetLessonsForRangeAsync(weekStart, weekEnd, teacherId, null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lessons);
-        _mockCalendarService
-            .Setup(s => s.GetHolidaysForRangeAsync(weekStart, weekEnd, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<HolidayDto>());
+            .Setup(s => s.GetTeacherScheduleAsync(teacherId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedSchedule);
 
         // Act
         var result = await _controller.GetTeacherSchedule(teacherId, null, CancellationToken.None);
@@ -196,13 +190,73 @@ public class CalendarControllerTests
         // Arrange
         var teacherId = Guid.NewGuid();
 
-        var mockTeacherRepo = new Mock<ITeacherRepository>();
-        mockTeacherRepo.Setup(r => r.GetByIdAsync(teacherId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Teacher?)null);
-        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
+        _mockCalendarService
+            .Setup(s => s.GetTeacherScheduleAsync(teacherId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WeekCalendarDto?)null);
 
         // Act
         var result = await _controller.GetTeacherSchedule(teacherId, null, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetRoomSchedule_WithValidRoomId_ReturnsRoomLessons()
+    {
+        // Arrange
+        var roomId = 1;
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var weekStart = IsoDateHelper.GetWeekStart(today);
+        var weekEnd = weekStart.AddDays(6);
+
+        var lessons = new List<CalendarLessonDto>
+        {
+            new CalendarLessonDto
+            {
+                Id = Guid.NewGuid(),
+                Date = today,
+                Title = "Piano - Student",
+                StartTime = new TimeOnly(14, 0),
+                EndTime = new TimeOnly(14, 30),
+                RoomName = "Room A"
+            }
+        };
+
+        var expectedSchedule = new WeekCalendarDto
+        {
+            WeekStart = weekStart,
+            WeekEnd = weekEnd,
+            Lessons = lessons,
+            Holidays = new List<HolidayDto>()
+        };
+
+        _mockCalendarService
+            .Setup(s => s.GetRoomScheduleAsync(roomId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedSchedule);
+
+        // Act
+        var result = await _controller.GetRoomSchedule(roomId, null, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var weekCalendar = Assert.IsType<WeekCalendarDto>(okResult.Value);
+        Assert.Single(weekCalendar.Lessons);
+        Assert.Equal("Room A", weekCalendar.Lessons[0].RoomName);
+    }
+
+    [Fact]
+    public async Task GetRoomSchedule_WithInvalidRoomId_ReturnsNotFound()
+    {
+        // Arrange
+        var roomId = 999;
+
+        _mockCalendarService
+            .Setup(s => s.GetRoomScheduleAsync(roomId, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WeekCalendarDto?)null);
+
+        // Act
+        var result = await _controller.GetRoomSchedule(roomId, null, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundObjectResult>(result.Result);

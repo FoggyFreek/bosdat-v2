@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 
 namespace BosDAT.API.Controllers;
@@ -10,113 +8,60 @@ namespace BosDAT.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class HolidaysController : ControllerBase
+public class HolidaysController(IHolidayService holidayService) : ControllerBase
 {
-    private readonly IUnitOfWork _unitOfWork;
-
-    public HolidaysController(IUnitOfWork unitOfWork)
-    {
-        _unitOfWork = unitOfWork;
-    }
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HolidayDto>>> GetAll(CancellationToken cancellationToken)
     {
-        var holidays = await _unitOfWork.Repository<Holiday>().Query()
-            .OrderBy(h => h.StartDate)
-            .Select(h => new HolidayDto
-            {
-                Id = h.Id,
-                Name = h.Name,
-                StartDate = h.StartDate,
-                EndDate = h.EndDate
-            })
-            .ToListAsync(cancellationToken);
-
+        var holidays = await holidayService.GetAllAsync(cancellationToken);
         return Ok(holidays);
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<HolidayDto>> GetById(int id, CancellationToken cancellationToken)
     {
-        var holiday = await _unitOfWork.Repository<Holiday>().GetByIdAsync(id, cancellationToken);
+        var holiday = await holidayService.GetByIdAsync(id, cancellationToken);
 
         if (holiday == null)
         {
             return NotFound();
         }
 
-        return Ok(new HolidayDto
-        {
-            Id = holiday.Id,
-            Name = holiday.Name,
-            StartDate = holiday.StartDate,
-            EndDate = holiday.EndDate
-        });
+        return Ok(holiday);
     }
 
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<HolidayDto>> Create([FromBody] CreateHolidayDto dto, CancellationToken cancellationToken)
     {
-        var holiday = new Holiday
-        {
-            Name = dto.Name,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate
-        };
-
-        await _unitOfWork.Repository<Holiday>().AddAsync(holiday, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return CreatedAtAction(nameof(GetById), new { id = holiday.Id }, new HolidayDto
-        {
-            Id = holiday.Id,
-            Name = holiday.Name,
-            StartDate = holiday.StartDate,
-            EndDate = holiday.EndDate
-        });
+        var holiday = await holidayService.CreateAsync(dto, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = holiday.Id }, holiday);
     }
 
     [HttpPut("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<HolidayDto>> Update(int id, [FromBody] UpdateHolidayDto dto, CancellationToken cancellationToken)
     {
-        var holiday = await _unitOfWork.Repository<Holiday>().GetByIdAsync(id, cancellationToken);
+        var holiday = await holidayService.UpdateAsync(id, dto, cancellationToken);
 
         if (holiday == null)
         {
             return NotFound();
         }
 
-        holiday.Name = dto.Name;
-        holiday.StartDate = dto.StartDate;
-        holiday.EndDate = dto.EndDate;
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return Ok(new HolidayDto
-        {
-            Id = holiday.Id,
-            Name = holiday.Name,
-            StartDate = holiday.StartDate,
-            EndDate = holiday.EndDate
-        });
+        return Ok(holiday);
     }
 
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        var holiday = await _unitOfWork.Repository<Holiday>().GetByIdAsync(id, cancellationToken);
+        var success = await holidayService.DeleteAsync(id, cancellationToken);
 
-        if (holiday == null)
+        if (!success)
         {
             return NotFound();
         }
-
-        await _unitOfWork.Repository<Holiday>().DeleteAsync(holiday, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return NoContent();
     }

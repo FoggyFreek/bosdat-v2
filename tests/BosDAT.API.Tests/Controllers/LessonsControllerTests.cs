@@ -12,14 +12,16 @@ namespace BosDAT.API.Tests.Controllers;
 
 public class LessonsControllerTests
 {
+    private readonly Mock<ILessonService> _mockLessonService;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly BosDAT.API.Controllers.LessonsController _controller;
 
     public LessonsControllerTests()
     {
+        _mockLessonService = new Mock<ILessonService>();
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
         var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object, lessonGenerationService);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockLessonService.Object, lessonGenerationService, _mockUnitOfWork.Object);
     }
 
     [Fact]
@@ -27,53 +29,29 @@ public class LessonsControllerTests
     {
         // Arrange
         var studentId = Guid.NewGuid();
-        var teacherId = Guid.NewGuid();
-        var courseId = Guid.NewGuid();
-
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType
+        var lessons = new List<LessonDto>
         {
-            Id = Guid.NewGuid(),
-            Name = "Piano 30 min",
-            InstrumentId = 1,
-            Instrument = instrument
-        };
-        var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var room = new Room { Id = 1, Name = "Room A" };
-        var course = new Course
-        {
-            Id = courseId,
-            CourseType = courseType,
-            Teacher = teacher,
-            Room = room
-        };
-
-        var lessons = new List<Lesson>
-        {
-            new Lesson
+            new LessonDto
             {
                 Id = Guid.NewGuid(),
-                CourseId = courseId,
+                CourseId = Guid.NewGuid(),
                 StudentId = studentId,
-                TeacherId = teacherId,
+                StudentName = "John Doe",
+                TeacherId = Guid.NewGuid(),
+                TeacherName = "Jane Smith",
                 RoomId = 1,
+                RoomName = "Room A",
+                CourseTypeName = "Piano 30 min",
+                InstrumentName = "Piano",
                 ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
                 StartTime = new TimeOnly(10, 0),
                 EndTime = new TimeOnly(10, 30),
-                Status = LessonStatus.Scheduled,
-                Course = course,
-                Student = student,
-                Teacher = teacher,
-                Room = room
+                Status = LessonStatus.Scheduled
             }
         };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByStudentAsync(studentId, It.IsAny<CancellationToken>()))
+        _mockLessonService.Setup(s => s.GetByStudentAsync(studentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
 
         // Act
         var result = await _controller.GetByStudent(studentId, CancellationToken.None);
@@ -91,38 +69,11 @@ public class LessonsControllerTests
         var courseId = Guid.NewGuid();
         var teacherId = Guid.NewGuid();
         var studentId = Guid.NewGuid();
+        var lessonId = Guid.NewGuid();
 
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
-        var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var room = new Room { Id = 1, Name = "Room A" };
-
-        var course = new Course
+        var createdLesson = new LessonDto
         {
-            Id = courseId,
-            TeacherId = teacherId,
-            CourseTypeId = courseType.Id,
-            CourseType = courseType,
-            Teacher = teacher,
-            Room = room
-        };
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockTeacherRepo = new Mock<ITeacherRepository>();
-        mockTeacherRepo.Setup(r => r.GetByIdAsync(teacherId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(teacher);
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(studentId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(student);
-
-        var createdLesson = new Lesson
-        {
-            Id = Guid.NewGuid(),
+            Id = lessonId,
             CourseId = courseId,
             StudentId = studentId,
             TeacherId = teacherId,
@@ -130,23 +81,11 @@ public class LessonsControllerTests
             ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
-            Status = LessonStatus.Scheduled,
-            Course = course,
-            Student = student,
-            Teacher = teacher,
-            Room = room
+            Status = LessonStatus.Scheduled
         };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.AddAsync(It.IsAny<Lesson>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(createdLesson);
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(new List<Lesson> { createdLesson }.AsQueryable().BuildMockDbSet().Object);
-
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.CreateAsync(It.IsAny<CreateLessonDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((createdLesson, (string?)null));
 
         var dto = new CreateLessonDto
         {
@@ -164,6 +103,7 @@ public class LessonsControllerTests
 
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        Assert.Equal(lessonId, ((LessonDto)createdResult.Value!).Id);
     }
 
     [Fact]
@@ -173,11 +113,8 @@ public class LessonsControllerTests
         var courseId = Guid.NewGuid();
         var teacherId = Guid.NewGuid();
 
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Course?)null);
-
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
+        _mockLessonService.Setup(s => s.CreateAsync(It.IsAny<CreateLessonDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((LessonDto?)null, "Course not found"));
 
         var dto = new CreateLessonDto
         {
@@ -200,33 +137,20 @@ public class LessonsControllerTests
     {
         // Arrange
         var lessonId = Guid.NewGuid();
-        var teacherId = Guid.NewGuid();
-
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
-        var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
-
-        var lesson = new Lesson
+        var updatedLesson = new LessonDto
         {
             Id = lessonId,
-            CourseId = course.Id,
-            TeacherId = teacherId,
+            CourseId = Guid.NewGuid(),
+            TeacherId = Guid.NewGuid(),
             ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
-            Status = LessonStatus.Scheduled,
-            Course = course,
-            Teacher = teacher
+            Status = LessonStatus.Completed
         };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lesson);
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(new List<Lesson> { lesson }.AsQueryable().BuildMockDbSet().Object);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.UpdateStatusAsync(
+            lessonId, LessonStatus.Completed, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((updatedLesson, false));
 
         var dto = new UpdateLessonStatusDto
         {
@@ -238,7 +162,8 @@ public class LessonsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        Assert.Equal(LessonStatus.Completed, lesson.Status);
+        var returnedLesson = Assert.IsType<LessonDto>(okResult.Value);
+        Assert.Equal(LessonStatus.Completed, returnedLesson.Status);
     }
 
     [Fact]
@@ -246,33 +171,21 @@ public class LessonsControllerTests
     {
         // Arrange
         var lessonId = Guid.NewGuid();
-        var teacherId = Guid.NewGuid();
-
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType { Id = Guid.NewGuid(), Name = "Piano 30 min", InstrumentId = 1, Instrument = instrument };
-        var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var course = new Course { Id = Guid.NewGuid(), CourseType = courseType, Teacher = teacher };
-
-        var lesson = new Lesson
+        var updatedLesson = new LessonDto
         {
             Id = lessonId,
-            CourseId = course.Id,
-            TeacherId = teacherId,
+            CourseId = Guid.NewGuid(),
+            TeacherId = Guid.NewGuid(),
             ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
             StartTime = new TimeOnly(10, 0),
             EndTime = new TimeOnly(10, 30),
-            Status = LessonStatus.Scheduled,
-            Course = course,
-            Teacher = teacher
+            Status = LessonStatus.Cancelled,
+            CancellationReason = "Student is sick"
         };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lesson);
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(new List<Lesson> { lesson }.AsQueryable().BuildMockDbSet().Object);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.UpdateStatusAsync(
+            lessonId, LessonStatus.Cancelled, "Student is sick", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((updatedLesson, false));
 
         var dto = new UpdateLessonStatusDto
         {
@@ -285,8 +198,9 @@ public class LessonsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        Assert.Equal(LessonStatus.Cancelled, lesson.Status);
-        Assert.Equal("Student is sick", lesson.CancellationReason);
+        var returnedLesson = Assert.IsType<LessonDto>(okResult.Value);
+        Assert.Equal(LessonStatus.Cancelled, returnedLesson.Status);
+        Assert.Equal("Student is sick", returnedLesson.CancellationReason);
     }
 
     [Fact]
@@ -295,22 +209,8 @@ public class LessonsControllerTests
         // Arrange
         var lessonId = Guid.NewGuid();
 
-        var lesson = new Lesson
-        {
-            Id = lessonId,
-            CourseId = Guid.NewGuid(),
-            TeacherId = Guid.NewGuid(),
-            ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
-            StartTime = new TimeOnly(10, 0),
-            EndTime = new TimeOnly(10, 30),
-            IsInvoiced = true
-        };
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lesson);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.DeleteAsync(lessonId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, "Cannot delete an invoiced lesson"));
 
         // Act
         var result = await _controller.Delete(lessonId, CancellationToken.None);
@@ -325,29 +225,14 @@ public class LessonsControllerTests
         // Arrange
         var lessonId = Guid.NewGuid();
 
-        var lesson = new Lesson
-        {
-            Id = lessonId,
-            CourseId = Guid.NewGuid(),
-            TeacherId = Guid.NewGuid(),
-            ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
-            StartTime = new TimeOnly(10, 0),
-            EndTime = new TimeOnly(10, 30),
-            IsInvoiced = false
-        };
-
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lesson);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.DeleteAsync(lessonId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, (string?)null));
 
         // Act
         var result = await _controller.Delete(lessonId, CancellationToken.None);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
-        mockLessonRepo.Verify(r => r.DeleteAsync(lesson, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -356,11 +241,8 @@ public class LessonsControllerTests
         // Arrange
         var lessonId = Guid.NewGuid();
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Lesson?)null);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.DeleteAsync(lessonId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, "Lesson not found"));
 
         // Act
         var result = await _controller.Delete(lessonId, CancellationToken.None);
@@ -373,12 +255,11 @@ public class LessonsControllerTests
     public async Task GetAll_WithNoFilters_ReturnsAllLessons()
     {
         // Arrange
-        var lessons = CreateTestLessons();
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
+        var lessons = CreateTestLessonDtos();
 
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.GetAllAsync(
+            null, null, null, null, null, null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lessons);
 
         // Act
         var result = await _controller.GetAll(null, null, null, null, null, null, null, null, CancellationToken.None);
@@ -394,12 +275,11 @@ public class LessonsControllerTests
     {
         // Arrange
         var startDate = DateOnly.FromDateTime(DateTime.Today);
-        var lessons = CreateTestLessons();
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
+        var lessons = CreateTestLessonDtos().Where(l => l.ScheduledDate >= startDate).ToList();
 
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.GetAllAsync(
+            startDate, null, null, null, null, null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lessons);
 
         // Act
         var result = await _controller.GetAll(startDate, null, null, null, null, null, null, null, CancellationToken.None);
@@ -415,12 +295,11 @@ public class LessonsControllerTests
     {
         // Arrange
         var teacherId = Guid.NewGuid();
-        var lessons = CreateTestLessons(teacherId);
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
+        var lessons = CreateTestLessonDtos(teacherId);
 
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.GetAllAsync(
+            null, null, teacherId, null, null, null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lessons);
 
         // Act
         var result = await _controller.GetAll(null, null, teacherId, null, null, null, null, null, CancellationToken.None);
@@ -435,12 +314,11 @@ public class LessonsControllerTests
     public async Task GetAll_WithStatusFilter_ReturnsFilteredLessons()
     {
         // Arrange
-        var lessons = CreateTestLessons();
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(lessons.AsQueryable().BuildMockDbSet().Object);
+        var lessons = CreateTestLessonDtos().Where(l => l.Status == LessonStatus.Completed).ToList();
 
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.GetAllAsync(
+            null, null, null, null, null, null, LessonStatus.Completed, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lessons);
 
         // Act
         var result = await _controller.GetAll(null, null, null, null, null, null, LessonStatus.Completed, null, CancellationToken.None);
@@ -455,12 +333,10 @@ public class LessonsControllerTests
     public async Task GetById_WithValidId_ReturnsLesson()
     {
         // Arrange
-        var lesson = CreateTestLessons().First();
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(new List<Lesson> { lesson }.AsQueryable().BuildMockDbSet().Object);
+        var lesson = CreateTestLessonDtos().First();
 
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.GetByIdAsync(lesson.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(lesson);
 
         // Act
         var result = await _controller.GetById(lesson.Id, CancellationToken.None);
@@ -475,14 +351,13 @@ public class LessonsControllerTests
     public async Task GetById_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(new List<Lesson>().AsQueryable().BuildMockDbSet().Object);
+        var lessonId = Guid.NewGuid();
 
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LessonDto?)null);
 
         // Act
-        var result = await _controller.GetById(Guid.NewGuid(), CancellationToken.None);
+        var result = await _controller.GetById(lessonId, CancellationToken.None);
 
         // Assert
         Assert.IsType<NotFoundResult>(result.Result);
@@ -492,23 +367,12 @@ public class LessonsControllerTests
     public async Task Create_WithNonExistentTeacher_ReturnsBadRequest()
     {
         // Arrange
-        var courseId = Guid.NewGuid();
-        var course = new Course { Id = courseId, TeacherId = Guid.NewGuid() };
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockTeacherRepo = new Mock<ITeacherRepository>();
-        mockTeacherRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Teacher?)null);
-
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
+        _mockLessonService.Setup(s => s.CreateAsync(It.IsAny<CreateLessonDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((LessonDto?)null, "Teacher not found"));
 
         var dto = new CreateLessonDto
         {
-            CourseId = courseId,
+            CourseId = Guid.NewGuid(),
             TeacherId = Guid.NewGuid(),
             ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
             StartTime = new TimeOnly(10, 0),
@@ -526,31 +390,13 @@ public class LessonsControllerTests
     public async Task Create_WithNonExistentStudent_ReturnsBadRequest()
     {
         // Arrange
-        var courseId = Guid.NewGuid();
-        var teacherId = Guid.NewGuid();
-        var course = new Course { Id = courseId, TeacherId = teacherId };
-        var teacher = new Teacher { Id = teacherId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-
-        var mockCourseRepo = new Mock<ICourseRepository>();
-        mockCourseRepo.Setup(r => r.GetByIdAsync(courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
-
-        var mockTeacherRepo = new Mock<ITeacherRepository>();
-        mockTeacherRepo.Setup(r => r.GetByIdAsync(teacherId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(teacher);
-
-        var mockStudentRepo = new Mock<IStudentRepository>();
-        mockStudentRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Student?)null);
-
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
+        _mockLessonService.Setup(s => s.CreateAsync(It.IsAny<CreateLessonDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((LessonDto?)null, "Student not found"));
 
         var dto = new CreateLessonDto
         {
-            CourseId = courseId,
-            TeacherId = teacherId,
+            CourseId = Guid.NewGuid(),
+            TeacherId = Guid.NewGuid(),
             StudentId = Guid.NewGuid(),
             ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
             StartTime = new TimeOnly(10, 0),
@@ -569,16 +415,21 @@ public class LessonsControllerTests
     {
         // Arrange
         var lessonId = Guid.NewGuid();
-        var lesson = CreateTestLessons().First();
-        lesson.Id = lessonId;
+        var updatedLesson = new LessonDto
+        {
+            Id = lessonId,
+            CourseId = Guid.NewGuid(),
+            StudentId = Guid.NewGuid(),
+            TeacherId = Guid.NewGuid(),
+            RoomId = 2,
+            ScheduledDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+            StartTime = new TimeOnly(11, 0),
+            EndTime = new TimeOnly(12, 0),
+            Status = LessonStatus.Completed
+        };
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(lesson);
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(new List<Lesson> { lesson }.AsQueryable().BuildMockDbSet().Object);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.UpdateAsync(lessonId, It.IsAny<UpdateLessonDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((updatedLesson, false));
 
         var dto = new UpdateLessonDto
         {
@@ -596,7 +447,8 @@ public class LessonsControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        Assert.Equal(LessonStatus.Completed, lesson.Status);
+        var returnedLesson = Assert.IsType<LessonDto>(okResult.Value);
+        Assert.Equal(LessonStatus.Completed, returnedLesson.Status);
     }
 
     [Fact]
@@ -605,11 +457,8 @@ public class LessonsControllerTests
         // Arrange
         var lessonId = Guid.NewGuid();
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Lesson?)null);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.UpdateAsync(lessonId, It.IsAny<UpdateLessonDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((LessonDto?)null, true));
 
         var dto = new UpdateLessonDto
         {
@@ -635,11 +484,9 @@ public class LessonsControllerTests
         // Arrange
         var lessonId = Guid.NewGuid();
 
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.GetByIdAsync(lessonId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Lesson?)null);
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
+        _mockLessonService.Setup(s => s.UpdateStatusAsync(
+            lessonId, It.IsAny<LessonStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((LessonDto?)null, true));
 
         var dto = new UpdateLessonStatusDto
         {
@@ -716,7 +563,7 @@ public class LessonsControllerTests
         var dto = new GenerateLessonsDto
         {
             CourseId = courseId,
-            StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + 1)), // Next Monday
+            StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + 1)),
             EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(14)),
             SkipHolidays = false
         };
@@ -825,64 +672,101 @@ public class LessonsControllerTests
         Assert.True(bulkResult.TotalCoursesProcessed >= 0);
     }
 
-    private static List<Lesson> CreateTestLessons(Guid? specificTeacherId = null)
+    [Fact]
+    public async Task UpdateGroupStatus_WithValidData_UpdatesMultipleLessons()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var scheduledDate = DateOnly.FromDateTime(DateTime.Today);
+
+        _mockLessonService.Setup(s => s.UpdateGroupStatusAsync(
+            courseId, scheduledDate, LessonStatus.Cancelled, "Holiday", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((2, false));
+
+        var dto = new UpdateGroupLessonStatusDto
+        {
+            CourseId = courseId,
+            ScheduledDate = scheduledDate,
+            Status = LessonStatus.Cancelled,
+            CancellationReason = "Holiday"
+        };
+
+        // Act
+        var result = await _controller.UpdateGroupStatus(dto, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var resultDto = Assert.IsType<UpdateGroupLessonStatusResultDto>(okResult.Value);
+        Assert.Equal(2, resultDto.LessonsUpdated);
+        Assert.Equal(LessonStatus.Cancelled, resultDto.Status);
+    }
+
+    [Fact]
+    public async Task UpdateGroupStatus_WithNoLessons_ReturnsNotFound()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var scheduledDate = DateOnly.FromDateTime(DateTime.Today);
+
+        _mockLessonService.Setup(s => s.UpdateGroupStatusAsync(
+            courseId, scheduledDate, It.IsAny<LessonStatus>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((0, true));
+
+        var dto = new UpdateGroupLessonStatusDto
+        {
+            CourseId = courseId,
+            ScheduledDate = scheduledDate,
+            Status = LessonStatus.Cancelled
+        };
+
+        // Act
+        var result = await _controller.UpdateGroupStatus(dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    private static List<LessonDto> CreateTestLessonDtos(Guid? specificTeacherId = null)
     {
         var teacherId = specificTeacherId ?? Guid.NewGuid();
         var studentId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
 
-        var instrument = new Instrument { Id = 1, Name = "Piano", Category = InstrumentCategory.Keyboard };
-        var courseType = new CourseType
-        {
-            Id = Guid.NewGuid(),
-            Name = "Piano 30 min",
-            InstrumentId = 1,
-            Instrument = instrument
-        };
-        var teacher = new Teacher { Id = teacherId, FirstName = "Jane", LastName = "Smith", Email = "jane@test.com" };
-        var student = new Student { Id = studentId, FirstName = "John", LastName = "Doe", Email = "john@test.com" };
-        var room = new Room { Id = 1, Name = "Room A" };
-        var course = new Course
-        {
-            Id = courseId,
-            CourseType = courseType,
-            Teacher = teacher,
-            Room = room
-        };
-
-        return new List<Lesson>
+        return new List<LessonDto>
         {
             new()
             {
                 Id = Guid.NewGuid(),
                 CourseId = courseId,
                 StudentId = studentId,
+                StudentName = "John Doe",
                 TeacherId = teacherId,
+                TeacherName = "Jane Smith",
                 RoomId = 1,
+                RoomName = "Room A",
+                CourseTypeName = "Piano 30 min",
+                InstrumentName = "Piano",
                 ScheduledDate = DateOnly.FromDateTime(DateTime.Today),
                 StartTime = new TimeOnly(10, 0),
                 EndTime = new TimeOnly(10, 30),
-                Status = LessonStatus.Scheduled,
-                Course = course,
-                Student = student,
-                Teacher = teacher,
-                Room = room
+                Status = LessonStatus.Scheduled
             },
             new()
             {
                 Id = Guid.NewGuid(),
                 CourseId = courseId,
                 StudentId = studentId,
+                StudentName = "John Doe",
                 TeacherId = teacherId,
+                TeacherName = "Jane Smith",
                 RoomId = 1,
+                RoomName = "Room A",
+                CourseTypeName = "Piano 30 min",
+                InstrumentName = "Piano",
                 ScheduledDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
                 StartTime = new TimeOnly(11, 0),
                 EndTime = new TimeOnly(11, 30),
-                Status = LessonStatus.Completed,
-                Course = course,
-                Student = student,
-                Teacher = teacher,
-                Room = room
+                Status = LessonStatus.Completed
             }
         };
     }

@@ -5,28 +5,27 @@ using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
-using BosDAT.API.Tests.Helpers;
 
 namespace BosDAT.API.Tests.Controllers;
 
 public class RoomsControllerTests
 {
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<IRoomService> _mockRoomService;
     private readonly RoomsController _controller;
 
     public RoomsControllerTests()
     {
-        _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _controller = new RoomsController(_mockUnitOfWork.Object);
+        _mockRoomService = new Mock<IRoomService>();
+        _controller = new RoomsController(_mockRoomService.Object);
     }
 
     [Fact]
     public async Task GetAll_ReturnsAllRooms()
     {
         // Arrange
-        var rooms = new List<Room>
+        var roomDtos = new List<RoomDto>
         {
-            new Room
+            new RoomDto
             {
                 Id = 1,
                 Name = "Room A",
@@ -34,11 +33,9 @@ public class RoomsControllerTests
                 Capacity = 2,
                 HasPiano = true,
                 HasStereo = true,
-                IsActive = true,
-                Courses = new List<Course>(),
-                Lessons = new List<Lesson>()
+                IsActive = true
             },
-            new Room
+            new RoomDto
             {
                 Id = 2,
                 Name = "Room B",
@@ -46,14 +43,12 @@ public class RoomsControllerTests
                 Capacity = 4,
                 HasDrums = true,
                 HasGuitar = true,
-                IsActive = true,
-                Courses = new List<Course>(),
-                Lessons = new List<Lesson>()
+                IsActive = true
             }
         };
 
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.GetAllAsync(null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(roomDtos);
 
         // Act
         var result = await _controller.GetAll(null, CancellationToken.None);
@@ -68,28 +63,18 @@ public class RoomsControllerTests
     public async Task GetAll_ActiveOnly_ReturnsOnlyActiveRooms()
     {
         // Arrange
-        var rooms = new List<Room>
+        var roomDtos = new List<RoomDto>
         {
-            new Room
+            new RoomDto
             {
                 Id = 1,
                 Name = "Active Room",
-                IsActive = true,
-                Courses = new List<Course>(),
-                Lessons = new List<Lesson>()
-            },
-            new Room
-            {
-                Id = 2,
-                Name = "Archived Room",
-                IsActive = false,
-                Courses = new List<Course>(),
-                Lessons = new List<Lesson>()
+                IsActive = true
             }
         };
 
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.GetAllAsync(true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(roomDtos);
 
         // Act
         var result = await _controller.GetAll(true, CancellationToken.None);
@@ -105,18 +90,6 @@ public class RoomsControllerTests
     public async Task Create_WithValidData_ReturnsCreatedRoom()
     {
         // Arrange
-        var mockRoomRepo = new Mock<IRepository<Room>>();
-        mockRoomRepo.Setup(r => r.AddAsync(It.IsAny<Room>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Room r, CancellationToken _) =>
-            {
-                r.Id = 1;
-                r.Courses = new List<Course>();
-                r.Lessons = new List<Lesson>();
-                return r;
-            });
-
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
-
         var dto = new CreateRoomDto
         {
             Name = "New Room",
@@ -126,6 +99,21 @@ public class RoomsControllerTests
             HasStereo = true,
             HasGuitar = false
         };
+
+        var createdRoom = new RoomDto
+        {
+            Id = 1,
+            Name = "New Room",
+            FloorLevel = 1,
+            Capacity = 3,
+            HasPiano = true,
+            HasStereo = true,
+            HasGuitar = false,
+            IsActive = true
+        };
+
+        _mockRoomService.Setup(s => s.CreateAsync(dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(createdRoom);
 
         // Act
         var result = await _controller.Create(dto, CancellationToken.None);
@@ -145,18 +133,15 @@ public class RoomsControllerTests
     public async Task Archive_WithNoLinkedData_ReturnsArchivedRoom()
     {
         // Arrange
-        var room = new Room
+        var archivedRoom = new RoomDto
         {
             Id = 1,
             Name = "Room A",
-            IsActive = true,
-            Courses = new List<Course>(),
-            Lessons = new List<Lesson>()
+            IsActive = false
         };
 
-        var rooms = new List<Room> { room };
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.ArchiveAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, null, archivedRoom));
 
         // Act
         var result = await _controller.Archive(1, CancellationToken.None);
@@ -171,32 +156,8 @@ public class RoomsControllerTests
     public async Task Archive_WithActiveCourses_ReturnsBadRequest()
     {
         // Arrange
-        var room = new Room
-        {
-            Id = 1,
-            Name = "Room A",
-            IsActive = true,
-            Courses = new List<Course>
-            {
-                new Course
-                {
-                    Id = Guid.NewGuid(),
-                    RoomId = 1,
-                    Status = CourseStatus.Active,
-                    TeacherId = Guid.NewGuid(),
-                    CourseTypeId = Guid.NewGuid(),
-                    DayOfWeek = DayOfWeek.Monday,
-                    StartTime = new TimeOnly(10, 0),
-                    EndTime = new TimeOnly(11, 0),
-                    StartDate = DateOnly.FromDateTime(DateTime.Today)
-                }
-            },
-            Lessons = new List<Lesson>()
-        };
-
-        var rooms = new List<Room> { room };
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.ArchiveAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, "Cannot archive room: 1 active courses and 0 scheduled lessons are linked to this room.", null));
 
         // Act
         var result = await _controller.Archive(1, CancellationToken.None);
@@ -210,31 +171,8 @@ public class RoomsControllerTests
     public async Task Archive_WithScheduledLessons_ReturnsBadRequest()
     {
         // Arrange
-        var room = new Room
-        {
-            Id = 1,
-            Name = "Room A",
-            IsActive = true,
-            Courses = new List<Course>(),
-            Lessons = new List<Lesson>
-            {
-                new Lesson
-                {
-                    Id = Guid.NewGuid(),
-                    RoomId = 1,
-                    Status = LessonStatus.Scheduled,
-                    CourseId = Guid.NewGuid(),
-                    TeacherId = Guid.NewGuid(),
-                    ScheduledDate = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),
-                    StartTime = new TimeOnly(10, 0),
-                    EndTime = new TimeOnly(11, 0)
-                }
-            }
-        };
-
-        var rooms = new List<Room> { room };
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.ArchiveAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, "Cannot archive room: 0 active courses and 1 scheduled lessons are linked to this room.", null));
 
         // Act
         var result = await _controller.Archive(1, CancellationToken.None);
@@ -248,21 +186,8 @@ public class RoomsControllerTests
     public async Task Delete_WithNoLinkedData_ReturnsNoContent()
     {
         // Arrange
-        var room = new Room
-        {
-            Id = 1,
-            Name = "Room A",
-            IsActive = true,
-            Courses = new List<Course>(),
-            Lessons = new List<Lesson>()
-        };
-
-        var rooms = new List<Room> { room };
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        mockRoomRepo.Setup(r => r.DeleteAsync(It.IsAny<Room>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.DeleteAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, null));
 
         // Act
         var result = await _controller.Delete(1, CancellationToken.None);
@@ -275,32 +200,8 @@ public class RoomsControllerTests
     public async Task Delete_WithLinkedCourses_ReturnsBadRequest()
     {
         // Arrange
-        var room = new Room
-        {
-            Id = 1,
-            Name = "Room A",
-            IsActive = true,
-            Courses = new List<Course>
-            {
-                new Course
-                {
-                    Id = Guid.NewGuid(),
-                    RoomId = 1,
-                    Status = CourseStatus.Completed, // Even completed courses block deletion
-                    TeacherId = Guid.NewGuid(),
-                    CourseTypeId = Guid.NewGuid(),
-                    DayOfWeek = DayOfWeek.Monday,
-                    StartTime = new TimeOnly(10, 0),
-                    EndTime = new TimeOnly(11, 0),
-                    StartDate = DateOnly.FromDateTime(DateTime.Today)
-                }
-            },
-            Lessons = new List<Lesson>()
-        };
-
-        var rooms = new List<Room> { room };
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.DeleteAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, "Cannot delete room: 1 courses and 0 lessons are linked to this room. Use archive instead."));
 
         // Act
         var result = await _controller.Delete(1, CancellationToken.None);
@@ -314,20 +215,15 @@ public class RoomsControllerTests
     public async Task Reactivate_WithValidId_ReturnsReactivatedRoom()
     {
         // Arrange
-        var room = new Room
+        var reactivatedRoom = new RoomDto
         {
             Id = 1,
             Name = "Archived Room",
-            IsActive = false,
-            Courses = new List<Course>(),
-            Lessons = new List<Lesson>()
+            IsActive = true
         };
 
-        var mockRoomRepo = new Mock<IRepository<Room>>();
-        mockRoomRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(room);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.ReactivateAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reactivatedRoom);
 
         // Act
         var result = await _controller.Reactivate(1, CancellationToken.None);
@@ -342,11 +238,8 @@ public class RoomsControllerTests
     public async Task Reactivate_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var mockRoomRepo = new Mock<IRepository<Room>>();
-        mockRoomRepo.Setup(r => r.GetByIdAsync(999, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Room?)null);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.ReactivateAsync(999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RoomDto?)null);
 
         // Act
         var result = await _controller.Reactivate(999, CancellationToken.None);
@@ -359,9 +252,8 @@ public class RoomsControllerTests
     public async Task Archive_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var rooms = new List<Room>();
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.ArchiveAsync(999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, null, null));
 
         // Act
         var result = await _controller.Archive(999, CancellationToken.None);
@@ -374,9 +266,8 @@ public class RoomsControllerTests
     public async Task Delete_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var rooms = new List<Room>();
-        var mockRoomRepo = MockHelpers.CreateMockRepository(rooms);
-        _mockUnitOfWork.Setup(u => u.Repository<Room>()).Returns(mockRoomRepo.Object);
+        _mockRoomService.Setup(s => s.DeleteAsync(999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, null));
 
         // Act
         var result = await _controller.Delete(999, CancellationToken.None);

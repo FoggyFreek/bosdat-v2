@@ -29,7 +29,6 @@ const navigation = [
   { name: 'Teachers', href: '/teachers', icon: GraduationCap },
   { name: 'Courses', href: '/courses', icon: Music },
   { name: 'Schedule', href: '/schedule', icon: Calendar },
-  { name: 'Invoices', href: '/invoices', icon: FileText },
 ]
 
 export function Layout({ children }: LayoutProps) {

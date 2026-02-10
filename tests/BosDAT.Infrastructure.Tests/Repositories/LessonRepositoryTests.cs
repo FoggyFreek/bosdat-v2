@@ -1,7 +1,6 @@
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -80,11 +79,11 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByDateRangeAsync(startDate, endDate);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(l =>
+        Assert.NotEmpty(result);
+        Assert.All(result, l =>
         {
-            l.ScheduledDate.Should().BeOnOrAfter(startDate);
-            l.ScheduledDate.Should().BeOnOrBefore(endDate);
+            Assert.True(l.ScheduledDate >= startDate);
+            Assert.True(l.ScheduledDate <= endDate);
         });
     }
 
@@ -99,14 +98,14 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByDateRangeAsync(startDate, endDate);
 
         // Assert
-        result.Should().NotBeEmpty();
+        Assert.NotEmpty(result);
         var lesson = result.First();
-        lesson.Course.Should().NotBeNull();
-        lesson.Course.CourseType.Should().NotBeNull();
-        lesson.Course.CourseType.Instrument.Should().NotBeNull();
-        lesson.Student.Should().NotBeNull();
-        lesson.Teacher.Should().NotBeNull();
-        lesson.Room.Should().NotBeNull();
+        Assert.NotNull(lesson.Course);
+        Assert.NotNull(lesson.Course.CourseType);
+        Assert.NotNull(lesson.Course.CourseType.Instrument);
+        Assert.NotNull(lesson.Student);
+        Assert.NotNull(lesson.Teacher);
+        Assert.NotNull(lesson.Room);
     }
 
     [Fact]
@@ -156,8 +155,21 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByDateRangeAsync(startDate, endDate);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInAscendingOrder(l => l.ScheduledDate).And.ThenBeInAscendingOrder(l => l.StartTime);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            var current = list[i];
+            var next = list[i + 1];
+            if (current.ScheduledDate == next.ScheduledDate)
+            {
+                Assert.True(current.StartTime <= next.StartTime);
+            }
+            else
+            {
+                Assert.True(current.ScheduledDate <= next.ScheduledDate);
+            }
+        }
     }
 
     [Fact]
@@ -172,15 +184,15 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByTeacherAndDateRangeAsync(teacher.Id, startDate, endDate);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(l =>
+        Assert.NotEmpty(result);
+        Assert.All(result, l =>
         {
-            l.TeacherId.Should().Be(teacher.Id);
-            l.ScheduledDate.Should().BeOnOrAfter(startDate);
-            l.ScheduledDate.Should().BeOnOrBefore(endDate);
+            Assert.Equal(teacher.Id, l.TeacherId);
+            Assert.True(l.ScheduledDate >= startDate);
+            Assert.True(l.ScheduledDate <= endDate);
         });
-        result.First().Course.Should().NotBeNull();
-        result.First().Student.Should().NotBeNull();
+        Assert.NotNull(result.First().Course);
+        Assert.NotNull(result.First().Student);
     }
 
     [Fact]
@@ -193,13 +205,13 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByStudentAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(l => l.StudentId.Should().Be(student.Id));
-        result.First().Course.Should().NotBeNull();
-        result.First().Course.CourseType.Should().NotBeNull();
-        result.First().Course.CourseType.Instrument.Should().NotBeNull();
-        result.First().Teacher.Should().NotBeNull();
-        result.First().Room.Should().NotBeNull();
+        Assert.NotEmpty(result);
+        Assert.All(result, l => Assert.Equal(student.Id, l.StudentId));
+        Assert.NotNull(result.First().Course);
+        Assert.NotNull(result.First().Course.CourseType);
+        Assert.NotNull(result.First().Course.CourseType.Instrument);
+        Assert.NotNull(result.First().Teacher);
+        Assert.NotNull(result.First().Room);
     }
 
     [Fact]
@@ -212,9 +224,21 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByStudentAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInDescendingOrder(l => l.ScheduledDate)
-            .And.ThenBeInDescendingOrder(l => l.StartTime);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            var current = list[i];
+            var next = list[i + 1];
+            if (current.ScheduledDate == next.ScheduledDate)
+            {
+                Assert.True(current.StartTime >= next.StartTime);
+            }
+            else
+            {
+                Assert.True(current.ScheduledDate >= next.ScheduledDate);
+            }
+        }
     }
 
     [Fact]
@@ -227,12 +251,12 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUninvoicedLessonsAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(l =>
+        Assert.NotEmpty(result);
+        Assert.All(result, l =>
         {
-            l.StudentId.Should().Be(student.Id);
-            l.IsInvoiced.Should().BeFalse();
-            l.Status.Should().Be(LessonStatus.Completed);
+            Assert.Equal(student.Id, l.StudentId);
+            Assert.False(l.IsInvoiced);
+            Assert.Equal(LessonStatus.Completed, l.Status);
         });
     }
 
@@ -247,7 +271,7 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUninvoicedLessonsAsync(student.Id);
 
         // Assert
-        result.Should().NotContain(l => l.Status == LessonStatus.Scheduled);
+        Assert.DoesNotContain(result, l => l.Status == LessonStatus.Scheduled);
     }
 
     [Fact]
@@ -260,7 +284,7 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUninvoicedLessonsAsync(student.Id);
 
         // Assert
-        result.Should().NotContain(l => l.IsInvoiced);
+        Assert.DoesNotContain(result, l => l.IsInvoiced);
     }
 
     [Fact]
@@ -273,9 +297,21 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUninvoicedLessonsAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInAscendingOrder(l => l.ScheduledDate)
-            .And.ThenBeInAscendingOrder(l => l.StartTime);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            var current = list[i];
+            var next = list[i + 1];
+            if (current.ScheduledDate == next.ScheduledDate)
+            {
+                Assert.True(current.StartTime <= next.StartTime);
+            }
+            else
+            {
+                Assert.True(current.ScheduledDate <= next.ScheduledDate);
+            }
+        }
     }
 
     [Fact]
@@ -289,14 +325,14 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByRoomAndDateAsync(room.Id, date);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(l =>
+        Assert.NotEmpty(result);
+        Assert.All(result, l =>
         {
-            l.RoomId.Should().Be(room.Id);
-            l.ScheduledDate.Should().Be(date);
+            Assert.Equal(room.Id, l.RoomId);
+            Assert.Equal(date, l.ScheduledDate);
         });
-        result.First().Teacher.Should().NotBeNull();
-        result.First().Student.Should().NotBeNull();
+        Assert.NotNull(result.First().Teacher);
+        Assert.NotNull(result.First().Student);
     }
 
     [Fact]
@@ -344,9 +380,13 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByRoomAndDateAsync(room.Id, date);
 
         // Assert
-        result.Should().HaveCount(2);
-        result.Should().BeInAscendingOrder(l => l.StartTime);
-        result.First().StartTime.Should().Be(new TimeOnly(10, 0));
+        Assert.Equal(2, result.Count());
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].StartTime <= list[i + 1].StartTime);
+        }
+        Assert.Equal(new TimeOnly(10, 0), result.First().StartTime);
     }
 
     [Fact]
@@ -360,6 +400,6 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByRoomAndDateAsync(room.Id, date);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 }

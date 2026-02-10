@@ -1,7 +1,6 @@
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -83,11 +82,11 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByInvoiceNumberAsync(invoiceNumber);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.InvoiceNumber.Should().Be(invoiceNumber);
-        result.Student.Should().NotBeNull();
-        result.Lines.Should().NotBeNull();
-        result.Payments.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal(invoiceNumber, result!.InvoiceNumber);
+        Assert.NotNull(result.Student);
+        Assert.NotNull(result.Lines);
+        Assert.NotNull(result.Payments);
     }
 
     [Fact]
@@ -100,7 +99,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByInvoiceNumberAsync(nonexistentNumber);
 
         // Assert
-        result.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
@@ -125,10 +124,10 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithLinesAsync(invoice.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Student.Should().NotBeNull();
-        result.Lines.Should().NotBeEmpty();
-        result.Payments.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.NotNull(result!.Student);
+        Assert.NotEmpty(result.Lines);
+        Assert.NotNull(result.Payments);
     }
 
     [Fact]
@@ -141,10 +140,10 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByStudentAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(i => i.StudentId.Should().Be(student.Id));
-        result.First().Lines.Should().NotBeNull();
-        result.First().Payments.Should().NotBeNull();
+        Assert.NotEmpty(result);
+        Assert.All(result, i => Assert.Equal(student.Id, i.StudentId));
+        Assert.NotNull(result.First().Lines);
+        Assert.NotNull(result.First().Payments);
     }
 
     [Fact]
@@ -157,8 +156,12 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByStudentAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInDescendingOrder(i => i.IssueDate);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].IssueDate >= list[i + 1].IssueDate);
+        }
     }
 
     [Fact]
@@ -171,9 +174,9 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByStatusAsync(status);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(i => i.Status.Should().Be(status));
-        result.First().Student.Should().NotBeNull();
+        Assert.NotEmpty(result);
+        Assert.All(result, i => Assert.Equal(status, i.Status));
+        Assert.NotNull(result.First().Student);
     }
 
     [Fact]
@@ -186,8 +189,12 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByStatusAsync(status);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInDescendingOrder(i => i.IssueDate);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].IssueDate >= list[i + 1].IssueDate);
+        }
     }
 
     [Fact]
@@ -198,13 +205,13 @@ public class InvoiceRepositoryTests : RepositoryTestBase
 
         // Assert
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(i =>
+        Assert.NotEmpty(result);
+        Assert.All(result, i =>
         {
-            i.Status.Should().Be(InvoiceStatus.Sent);
-            i.DueDate.Should().BeBefore(today);
+            Assert.Equal(InvoiceStatus.Sent, i.Status);
+            Assert.True(i.DueDate < today);
         });
-        result.First().Student.Should().NotBeNull();
+        Assert.NotNull(result.First().Student);
     }
 
     [Fact]
@@ -214,8 +221,12 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetOverdueInvoicesAsync();
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInAscendingOrder(i => i.DueDate);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].DueDate <= list[i + 1].DueDate);
+        }
     }
 
     [Fact]
@@ -225,7 +236,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetOverdueInvoicesAsync();
 
         // Assert
-        result.Should().NotContain(i => i.Status == InvoiceStatus.Draft);
+        Assert.DoesNotContain(result, i => i.Status == InvoiceStatus.Draft);
     }
 
     [Fact]
@@ -240,8 +251,8 @@ public class InvoiceRepositoryTests : RepositoryTestBase
 
         // Assert
         var currentYear = DateTime.UtcNow.Year;
-        result.Should().Be($"{currentYear}01");
-        result.Should().HaveLength(6); // YYYYNN
+        Assert.Equal($"{currentYear}01", result);
+        Assert.Equal(6, result.Length); // YYYYNN
     }
 
     [Fact]
@@ -273,7 +284,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GenerateInvoiceNumberAsync();
 
         // Assert
-        result.Should().Be($"{currentYear}11");
+        Assert.Equal($"{currentYear}11", result);
     }
 
     [Fact]
@@ -286,10 +297,10 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEnrollmentAsync(enrollment.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(i => i.EnrollmentId.Should().Be(enrollment.Id));
-        result.First().Lines.Should().NotBeNull();
-        result.First().Payments.Should().NotBeNull();
+        Assert.NotEmpty(result);
+        Assert.All(result, i => Assert.Equal(enrollment.Id, i.EnrollmentId));
+        Assert.NotNull(result.First().Lines);
+        Assert.NotNull(result.First().Payments);
     }
 
     [Fact]
@@ -302,8 +313,12 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEnrollmentAsync(enrollment.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInDescendingOrder(i => i.IssueDate);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].IssueDate >= list[i + 1].IssueDate);
+        }
     }
 
     [Fact]
@@ -319,14 +334,14 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByPeriodAsync(student.Id, enrollment.Id, periodStart, periodEnd);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.StudentId.Should().Be(student.Id);
-        result.EnrollmentId.Should().Be(enrollment.Id);
-        result.PeriodStart.Should().Be(periodStart);
-        result.PeriodEnd.Should().Be(periodEnd);
-        result.Lines.Should().NotBeNull();
-        result.Payments.Should().NotBeNull();
-        result.LedgerApplications.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal(student.Id, result!.StudentId);
+        Assert.Equal(enrollment.Id, result.EnrollmentId);
+        Assert.Equal(periodStart, result.PeriodStart);
+        Assert.Equal(periodEnd, result.PeriodEnd);
+        Assert.NotNull(result.Lines);
+        Assert.NotNull(result.Payments);
+        Assert.NotNull(result.LedgerApplications);
     }
 
     [Fact]
@@ -342,7 +357,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByPeriodAsync(student.Id, enrollment.Id, periodStart, periodEnd);
 
         // Assert
-        result.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
@@ -355,19 +370,19 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUnpaidInvoicesAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(i =>
+        Assert.NotEmpty(result);
+        Assert.All(result, i =>
         {
-            i.StudentId.Should().Be(student.Id);
-            i.Status.Should().BeOneOf(
+            Assert.Equal(student.Id, i.StudentId);
+            Assert.Contains(i.Status, new[] {
                 InvoiceStatus.Draft,
                 InvoiceStatus.Sent,
                 InvoiceStatus.Overdue
-            );
+            });
         });
-        result.First().Lines.Should().NotBeNull();
-        result.First().Payments.Should().NotBeNull();
-        result.First().LedgerApplications.Should().NotBeNull();
+        Assert.NotNull(result.First().Lines);
+        Assert.NotNull(result.First().Payments);
+        Assert.NotNull(result.First().LedgerApplications);
     }
 
     [Fact]
@@ -398,7 +413,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUnpaidInvoicesAsync(student.Id);
 
         // Assert
-        result.Should().NotContain(i => i.Id == paidInvoice.Id);
+        Assert.DoesNotContain(result, i => i.Id == paidInvoice.Id);
     }
 
     [Fact]
@@ -411,8 +426,12 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUnpaidInvoicesAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInAscendingOrder(i => i.IssueDate);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].IssueDate <= list[i + 1].IssueDate);
+        }
     }
 
     [Fact]
@@ -436,6 +455,6 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         var result = await _repository.GetUnpaidInvoicesAsync(studentWithNoPaidInvoices.Id);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 }

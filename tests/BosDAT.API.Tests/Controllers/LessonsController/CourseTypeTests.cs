@@ -18,14 +18,16 @@ namespace BosDAT.API.Tests.Controllers.LessonsController;
 public class CourseTypeTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<ILessonService> _mockLessonService;
     private readonly BosDAT.API.Controllers.LessonsController _controller;
     private readonly List<Lesson> _createdLessons;
 
     public CourseTypeTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
+        _mockLessonService = new Mock<ILessonService>();
         var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object, lessonGenerationService);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockLessonService.Object, lessonGenerationService, _mockUnitOfWork.Object);
         _createdLessons = new List<Lesson>();
     }
 

@@ -1,7 +1,6 @@
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -25,8 +24,8 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEmailAsync(expectedEmail);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Email.Should().BeEquivalentTo(expectedEmail);
+        Assert.NotNull(result);
+        Assert.Equal(expectedEmail.ToLower(), result!.Email.ToLower());
     }
 
     [Fact]
@@ -39,8 +38,8 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEmailAsync(expectedEmail);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Email.Should().BeEquivalentTo("alice.johnson@example.com");
+        Assert.NotNull(result);
+        Assert.Equal("alice.johnson@example.com".ToLower(), result!.Email.ToLower());
     }
 
     [Fact]
@@ -53,7 +52,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEmailAsync(nonexistentEmail);
 
         // Assert
-        result.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
@@ -66,12 +65,12 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithEnrollmentsAsync(student.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Enrollments.Should().NotBeEmpty();
-        result.Enrollments.First().Course.Should().NotBeNull();
-        result.Enrollments.First().Course.CourseType.Should().NotBeNull();
-        result.Enrollments.First().Course.CourseType.Instrument.Should().NotBeNull();
-        result.Enrollments.First().Course.Teacher.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.Enrollments);
+        Assert.NotNull(result.Enrollments.First().Course);
+        Assert.NotNull(result.Enrollments.First().Course.CourseType);
+        Assert.NotNull(result.Enrollments.First().Course.CourseType.Instrument);
+        Assert.NotNull(result.Enrollments.First().Course.Teacher);
     }
 
     [Fact]
@@ -84,7 +83,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithEnrollmentsAsync(nonexistentId);
 
         // Assert
-        result.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
@@ -127,9 +126,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithInvoicesAsync(student.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Invoices.Should().NotBeEmpty();
-        result.Invoices.First().Lines.Should().NotBeEmpty();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.Invoices);
+        Assert.NotEmpty(result.Invoices.First().Lines);
     }
 
     [Fact]
@@ -153,9 +152,9 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveStudentsAsync();
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(s => s.Status.Should().Be(StudentStatus.Active));
-        result.Should().NotContain(s => s.Id == inactiveStudent.Id);
+        Assert.NotEmpty(result);
+        Assert.All(result, s => Assert.Equal(StudentStatus.Active, s.Status));
+        Assert.DoesNotContain(result, s => s.Id == inactiveStudent.Id);
     }
 
     [Fact]
@@ -192,8 +191,11 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         // Assert
         var andersons = result.Where(s => s.LastName == "Anderson").ToList();
-        andersons.Should().HaveCountGreaterThanOrEqualTo(2);
-        andersons.Should().BeInAscendingOrder(s => s.FirstName);
+        Assert.True(andersons.Count >= 2);
+        for (int i = 0; i < andersons.Count - 1; i++)
+        {
+            Assert.True(string.Compare(andersons[i].FirstName, andersons[i + 1].FirstName, StringComparison.Ordinal) <= 0);
+        }
     }
 
     [Fact]
@@ -206,8 +208,8 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.SearchAsync(searchTerm);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().Contain(s => s.FirstName.ToLower().Contains(searchTerm));
+        Assert.NotEmpty(result);
+        Assert.Contains(result, s => s.FirstName.ToLower().Contains(searchTerm));
     }
 
     [Fact]
@@ -220,8 +222,8 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.SearchAsync(searchTerm);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().Contain(s => s.LastName.ToLower().Contains(searchTerm));
+        Assert.NotEmpty(result);
+        Assert.Contains(result, s => s.LastName.ToLower().Contains(searchTerm));
     }
 
     [Fact]
@@ -234,8 +236,8 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.SearchAsync(searchTerm);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().Contain(s => s.Email.ToLower().Contains(searchTerm));
+        Assert.NotEmpty(result);
+        Assert.Contains(result, s => s.Email.ToLower().Contains(searchTerm));
     }
 
     [Fact]
@@ -248,7 +250,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.SearchAsync(searchTerm);
 
         // Assert
-        result.Should().NotBeEmpty();
+        Assert.NotEmpty(result);
     }
 
     [Fact]
@@ -261,7 +263,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.SearchAsync(searchTerm);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -274,7 +276,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.HasActiveEnrollmentsAsync(student.Id);
 
         // Assert
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Fact]
@@ -287,7 +289,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.HasActiveEnrollmentsAsync(student.Id);
 
         // Assert
-        result.Should().BeTrue();
+        Assert.True(result);
     }
 
     [Fact]
@@ -311,7 +313,7 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.HasActiveEnrollmentsAsync(studentWithNoEnrollments.Id);
 
         // Assert
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 
     [Fact]
@@ -348,6 +350,6 @@ public class StudentRepositoryTests : RepositoryTestBase
         var result = await _repository.HasActiveEnrollmentsAsync(student.Id);
 
         // Assert
-        result.Should().BeFalse();
+        Assert.False(result);
     }
 }

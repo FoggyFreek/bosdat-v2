@@ -1,6 +1,5 @@
 using BosDAT.Core.Entities;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -24,8 +23,8 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEmailAsync(expectedEmail);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Email.Should().BeEquivalentTo(expectedEmail);
+        Assert.NotNull(result);
+        Assert.Equal(expectedEmail.ToLower(), result!.Email.ToLower());
     }
 
     [Fact]
@@ -38,8 +37,8 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEmailAsync(expectedEmail);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Email.Should().BeEquivalentTo("john.doe@example.com");
+        Assert.NotNull(result);
+        Assert.Equal("john.doe@example.com".ToLower(), result!.Email.ToLower());
     }
 
     [Fact]
@@ -52,7 +51,7 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByEmailAsync(nonexistentEmail);
 
         // Assert
-        result.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
@@ -74,9 +73,9 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithInstrumentsAsync(teacher.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.TeacherInstruments.Should().NotBeEmpty();
-        result.TeacherInstruments.First().Instrument.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.TeacherInstruments);
+        Assert.NotNull(result.TeacherInstruments.First().Instrument);
     }
 
     [Fact]
@@ -107,12 +106,12 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithInstrumentsAndCourseTypesAsync(teacher.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.TeacherInstruments.Should().NotBeEmpty();
-        result.TeacherInstruments.First().Instrument.Should().NotBeNull();
-        result.TeacherCourseTypes.Should().NotBeEmpty();
-        result.TeacherCourseTypes.First().CourseType.Should().NotBeNull();
-        result.TeacherCourseTypes.First().CourseType.Instrument.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.TeacherInstruments);
+        Assert.NotNull(result.TeacherInstruments.First().Instrument);
+        Assert.NotEmpty(result.TeacherCourseTypes);
+        Assert.NotNull(result.TeacherCourseTypes.First().CourseType);
+        Assert.NotNull(result.TeacherCourseTypes.First().CourseType.Instrument);
     }
 
     [Fact]
@@ -125,12 +124,12 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithCoursesAsync(teacher.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Courses.Should().NotBeEmpty();
-        result.Courses.First().CourseType.Should().NotBeNull();
-        result.Courses.First().CourseType.Instrument.Should().NotBeNull();
-        result.Courses.First().Room.Should().NotBeNull();
-        result.Courses.First().Enrollments.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.Courses);
+        Assert.NotNull(result.Courses.First().CourseType);
+        Assert.NotNull(result.Courses.First().CourseType.Instrument);
+        Assert.NotNull(result.Courses.First().Room);
+        Assert.NotNull(result.Courses.First().Enrollments);
     }
 
     [Fact]
@@ -153,9 +152,9 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveTeachersAsync();
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(t => t.IsActive.Should().BeTrue());
-        result.Should().NotContain(t => t.Id == inactiveTeacher.Id);
+        Assert.NotEmpty(result);
+        Assert.All(result, t => Assert.True(t.IsActive));
+        Assert.DoesNotContain(result, t => t.Id == inactiveTeacher.Id);
     }
 
     [Fact]
@@ -190,8 +189,11 @@ public class TeacherRepositoryTests : RepositoryTestBase
 
         // Assert
         var andersons = result.Where(t => t.LastName == "Anderson").ToList();
-        andersons.Should().HaveCountGreaterThanOrEqualTo(2);
-        andersons.Should().BeInAscendingOrder(t => t.FirstName);
+        Assert.True(andersons.Count >= 2);
+        for (int i = 0; i < andersons.Count - 1; i++)
+        {
+            Assert.True(string.Compare(andersons[i].FirstName, andersons[i + 1].FirstName, StringComparison.Ordinal) <= 0);
+        }
     }
 
     [Fact]
@@ -213,11 +215,11 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetTeachersByInstrumentAsync(piano.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(t =>
+        Assert.NotEmpty(result);
+        Assert.All(result, t =>
         {
-            t.IsActive.Should().BeTrue();
-            t.TeacherInstruments.Should().Contain(ti => ti.InstrumentId == piano.Id);
+            Assert.True(t.IsActive);
+            Assert.Contains(t.TeacherInstruments, ti => ti.InstrumentId == piano.Id);
         });
     }
 
@@ -251,7 +253,7 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetTeachersByInstrumentAsync(piano.Id);
 
         // Assert
-        result.Should().NotContain(t => t.Id == inactiveTeacher.Id);
+        Assert.DoesNotContain(result, t => t.Id == inactiveTeacher.Id);
     }
 
     [Fact]
@@ -273,14 +275,14 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetTeachersByCourseTypeAsync(courseType.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(t =>
+        Assert.NotEmpty(result);
+        Assert.All(result, t =>
         {
-            t.IsActive.Should().BeTrue();
-            t.TeacherCourseTypes.Should().Contain(tct => tct.CourseTypeId == courseType.Id);
+            Assert.True(t.IsActive);
+            Assert.Contains(t.TeacherCourseTypes, tct => tct.CourseTypeId == courseType.Id);
         });
-        result.First().TeacherInstruments.Should().NotBeNull();
-        result.First().TeacherCourseTypes.First().CourseType.Should().NotBeNull();
+        Assert.NotNull(result.First().TeacherInstruments);
+        Assert.NotNull(result.First().TeacherCourseTypes.First().CourseType);
     }
 
     [Fact]
@@ -304,9 +306,9 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithAvailabilityAsync(teacher.Id);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Availability.Should().NotBeEmpty();
-        result.Availability.First().DayOfWeek.Should().Be(DayOfWeek.Monday);
+        Assert.NotNull(result);
+        Assert.NotEmpty(result!.Availability);
+        Assert.Equal(DayOfWeek.Monday, result.Availability.First().DayOfWeek);
     }
 
     [Fact]
@@ -340,9 +342,13 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetAvailabilityAsync(teacher.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().BeInAscendingOrder(a => a.DayOfWeek);
-        result.First().DayOfWeek.Should().Be(DayOfWeek.Monday);
+        Assert.NotEmpty(result);
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].DayOfWeek <= list[i + 1].DayOfWeek);
+        }
+        Assert.Equal(DayOfWeek.Monday, result.First().DayOfWeek);
     }
 
     [Fact]
@@ -365,6 +371,6 @@ public class TeacherRepositoryTests : RepositoryTestBase
         var result = await _repository.GetAvailabilityAsync(teacherWithNoAvailability.Id);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 }

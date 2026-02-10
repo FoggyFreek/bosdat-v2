@@ -1,7 +1,6 @@
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -25,11 +24,11 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(e =>
+        Assert.NotEmpty(result);
+        Assert.All(result, e =>
         {
-            e.StudentId.Should().Be(student.Id);
-            e.Status.Should().BeOneOf(EnrollmentStatus.Active, EnrollmentStatus.Trail);
+            Assert.Equal(student.Id, e.StudentId);
+            Assert.Contains(e.Status, new[] { EnrollmentStatus.Active, EnrollmentStatus.Trail });
         });
     }
 
@@ -43,8 +42,8 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().Contain(e => e.Status == EnrollmentStatus.Trail);
+        Assert.NotEmpty(result);
+        Assert.Contains(result, e => e.Status == EnrollmentStatus.Trail);
     }
 
     [Fact]
@@ -57,11 +56,11 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(student.Id);
 
         // Assert
-        result.Should().NotBeEmpty();
+        Assert.NotEmpty(result);
         var enrollment = result.First();
-        enrollment.Course.Should().NotBeNull();
-        enrollment.Course.CourseType.Should().NotBeNull();
-        enrollment.Course.Teacher.Should().NotBeNull();
+        Assert.NotNull(enrollment.Course);
+        Assert.NotNull(enrollment.Course.CourseType);
+        Assert.NotNull(enrollment.Course.Teacher);
     }
 
     [Fact]
@@ -86,7 +85,7 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(student.Id);
 
         // Assert
-        result.Should().NotContain(e => e.Id == completedEnrollment.Id);
+        Assert.DoesNotContain(result, e => e.Id == completedEnrollment.Id);
     }
 
     [Fact]
@@ -111,7 +110,7 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(student.Id);
 
         // Assert
-        result.Should().NotContain(e => e.Id == cancelledEnrollment.Id);
+        Assert.DoesNotContain(result, e => e.Id == cancelledEnrollment.Id);
     }
 
     [Fact]
@@ -135,7 +134,7 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(studentWithNoEnrollments.Id);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -148,7 +147,7 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(nonexistentStudentId);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -183,7 +182,7 @@ public class EnrollmentRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveEnrollmentsByStudentIdAsync(student.Id);
 
         // Assert
-        result.Should().Contain(e => e.Id == enrollment1.Id);
-        result.Should().Contain(e => e.Id == enrollment2.Id);
+        Assert.Contains(result, e => e.Id == enrollment1.Id);
+        Assert.Contains(result, e => e.Id == enrollment2.Id);
     }
 }

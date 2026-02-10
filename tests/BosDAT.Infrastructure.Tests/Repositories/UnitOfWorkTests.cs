@@ -1,6 +1,5 @@
 using BosDAT.Core.Entities;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -21,7 +20,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var students2 = _unitOfWork.Students;
 
         // Assert
-        students1.Should().BeSameAs(students2);
+        Assert.Same(students2, students1);
     }
 
     [Fact]
@@ -32,7 +31,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var teachers2 = _unitOfWork.Teachers;
 
         // Assert
-        teachers1.Should().BeSameAs(teachers2);
+        Assert.Same(teachers2, teachers1);
     }
 
     [Fact]
@@ -43,7 +42,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var courses2 = _unitOfWork.Courses;
 
         // Assert
-        courses1.Should().BeSameAs(courses2);
+        Assert.Same(courses2, courses1);
     }
 
     [Fact]
@@ -54,7 +53,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var enrollments2 = _unitOfWork.Enrollments;
 
         // Assert
-        enrollments1.Should().BeSameAs(enrollments2);
+        Assert.Same(enrollments2, enrollments1);
     }
 
     [Fact]
@@ -65,7 +64,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var lessons2 = _unitOfWork.Lessons;
 
         // Assert
-        lessons1.Should().BeSameAs(lessons2);
+        Assert.Same(lessons2, lessons1);
     }
 
     [Fact]
@@ -76,7 +75,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var invoices2 = _unitOfWork.Invoices;
 
         // Assert
-        invoices1.Should().BeSameAs(invoices2);
+        Assert.Same(invoices2, invoices1);
     }
 
     [Fact]
@@ -87,7 +86,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var ledger2 = _unitOfWork.StudentLedgerEntries;
 
         // Assert
-        ledger1.Should().BeSameAs(ledger2);
+        Assert.Same(ledger2, ledger1);
     }
 
     [Fact]
@@ -98,7 +97,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var repo2 = _unitOfWork.Repository<Room>();
 
         // Assert
-        repo1.Should().BeSameAs(repo2);
+        Assert.Same(repo2, repo1);
     }
 
     [Fact]
@@ -109,7 +108,7 @@ public class UnitOfWorkTests : RepositoryTestBase
         var instrumentRepo = _unitOfWork.Repository<Instrument>();
 
         // Assert
-        roomRepo.Should().NotBeSameAs(instrumentRepo);
+        Assert.NotSame(instrumentRepo, roomRepo);
     }
 
     [Fact]
@@ -133,10 +132,10 @@ public class UnitOfWorkTests : RepositoryTestBase
         var result = await _unitOfWork.SaveChangesAsync();
 
         // Assert
-        result.Should().Be(1);
+        Assert.Equal(1, result);
         var saved = await _unitOfWork.Students.GetByIdAsync(student.Id);
-        saved.Should().NotBeNull();
-        saved!.Email.Should().Be("test@example.com");
+        Assert.NotNull(saved);
+        Assert.Equal("test@example.com", saved!.Email);
     }
 
     [Fact(Skip = "InMemory database provider doesn't support transactions")]
@@ -173,7 +172,7 @@ public class UnitOfWorkTests : RepositoryTestBase
 
         // Assert
         var saved = await _unitOfWork.Students.GetByIdAsync(student.Id);
-        saved.Should().NotBeNull();
+        Assert.NotNull(saved);
     }
 
     [Fact(Skip = "InMemory database provider doesn't support transactions")]
@@ -201,7 +200,7 @@ public class UnitOfWorkTests : RepositoryTestBase
 
         // Assert
         var saved = await _unitOfWork.Students.GetByIdAsync(studentId);
-        saved.Should().BeNull();
+        Assert.Null(saved);
     }
 
     [Fact(Skip = "Dispose calls on shared context cause issues in test cleanup")]

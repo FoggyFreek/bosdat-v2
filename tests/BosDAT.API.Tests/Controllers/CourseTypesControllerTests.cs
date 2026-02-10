@@ -11,15 +11,13 @@ namespace BosDAT.API.Tests.Controllers;
 
 public class CourseTypesControllerTests
 {
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly Mock<ICourseTypePricingService> _mockPricingService;
+    private readonly Mock<ICourseTypeService> _mockCourseTypeService;
     private readonly CourseTypesController _controller;
 
     public CourseTypesControllerTests()
     {
-        _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _mockPricingService = new Mock<ICourseTypePricingService>();
-        _controller = new CourseTypesController(_mockUnitOfWork.Object, _mockPricingService.Object);
+        _mockCourseTypeService = new Mock<ICourseTypeService>();
+        _controller = new CourseTypesController(_mockCourseTypeService.Object);
     }
 
     private static CourseTypePricingVersion CreatePricingVersion(Guid courseTypeId, decimal priceAdult = 50, decimal priceChild = 40)
@@ -62,24 +60,14 @@ public class CourseTypesControllerTests
     public async Task GetAll_ReturnsAllCourseTypes()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType1 = CreateCourseType(instrument, "Beginner Piano");
-        var courseType2 = CreateCourseType(instrument, "Intermediate Piano");
-        var courseTypes = new List<CourseType> { courseType1, courseType2 };
+        var courseTypeDtos = new List<CourseTypeDto>
+        {
+            new CourseTypeDto { Id = Guid.NewGuid(), Name = "Beginner Piano" },
+            new CourseTypeDto { Id = Guid.NewGuid(), Name = "Intermediate Piano" }
+        };
 
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.GetAllAsync(null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(courseTypeDtos);
 
         // Act
         var result = await _controller.GetAll(null, null, CancellationToken.None);
@@ -94,26 +82,13 @@ public class CourseTypesControllerTests
     public async Task GetAll_WithActiveOnlyFilter_ReturnsOnlyActiveCourseTypes()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var activeCourseType = CreateCourseType(instrument, "Active Piano");
-        var archivedCourseType = CreateCourseType(instrument, "Archived Piano");
-        archivedCourseType.IsActive = false;
+        var courseTypeDtos = new List<CourseTypeDto>
+        {
+            new CourseTypeDto { Id = Guid.NewGuid(), Name = "Active Piano", IsActive = true }
+        };
 
-        var courseTypes = new List<CourseType> { activeCourseType, archivedCourseType };
-
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.GetAllAsync(true, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(courseTypeDtos);
 
         // Act
         var result = await _controller.GetAll(true, null, CancellationToken.None);
@@ -129,27 +104,13 @@ public class CourseTypesControllerTests
     public async Task GetAll_WithInstrumentIdFilter_ReturnsOnlyMatchingInstrument()
     {
         // Arrange
-        var piano = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var guitar = new Instrument { Id = 2, Name = "Guitar", IsActive = true };
-        var pianoCourseType = CreateCourseType(piano, "Beginner Piano");
-        var guitarCourseType = CreateCourseType(guitar, "Beginner Guitar");
-        guitarCourseType.InstrumentId = 2;
+        var courseTypeDtos = new List<CourseTypeDto>
+        {
+            new CourseTypeDto { Id = Guid.NewGuid(), Name = "Beginner Piano", InstrumentId = 1 }
+        };
 
-        var courseTypes = new List<CourseType> { pianoCourseType, guitarCourseType };
-
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.GetAllAsync(null, 1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(courseTypeDtos);
 
         // Act
         var result = await _controller.GetAll(null, 1, CancellationToken.None);
@@ -169,31 +130,19 @@ public class CourseTypesControllerTests
     public async Task GetById_WithValidId_ReturnsCourseType()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Beginner Piano");
+        var id = Guid.NewGuid();
+        var courseTypeDto = new CourseTypeDto { Id = id, Name = "Beginner Piano" };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(courseTypeDto);
 
         // Act
-        var result = await _controller.GetById(courseType.Id, CancellationToken.None);
+        var result = await _controller.GetById(id, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedCourseType = Assert.IsType<CourseTypeDto>(okResult.Value);
-        Assert.Equal(courseType.Id, returnedCourseType.Id);
+        Assert.Equal(id, returnedCourseType.Id);
         Assert.Equal("Beginner Piano", returnedCourseType.Name);
     }
 
@@ -201,9 +150,8 @@ public class CourseTypesControllerTests
     public async Task GetById_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var courseTypes = new List<CourseType>();
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
+        _mockCourseTypeService.Setup(s => s.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CourseTypeDto?)null);
 
         // Act
         var result = await _controller.GetById(Guid.NewGuid(), CancellationToken.None);
@@ -220,7 +168,6 @@ public class CourseTypesControllerTests
     public async Task Create_WithValidData_CreatesCourseType()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
         var dto = new CreateCourseTypeDto
         {
             InstrumentId = 1,
@@ -232,37 +179,10 @@ public class CourseTypesControllerTests
             MaxStudents = 1
         };
 
-        var instruments = new List<Instrument> { instrument };
-        var courseTypes = new List<CourseType>();
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
+        var createdDto = new CourseTypeDto { Id = Guid.NewGuid(), Name = "Beginner Piano" };
 
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(instrument);
-
-        // Setup mock to capture created course type and add pricing version
-        mockCourseTypeRepo.Setup(r => r.AddAsync(It.IsAny<CourseType>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CourseType ct, CancellationToken _) =>
-            {
-                ct.Instrument = instrument;
-                ct.PricingVersions = new List<CourseTypePricingVersion> { CreatePricingVersion(ct.Id, 50, 40) };
-                courseTypes.Add(ct);
-                return ct;
-            });
-
-        _mockPricingService.Setup(s => s.CreateInitialPricingVersionAsync(
-            It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<decimal>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid id, decimal adult, decimal child, CancellationToken _) => CreatePricingVersion(id, adult, child));
+        _mockCourseTypeService.Setup(s => s.CreateAsync(dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((createdDto, (string?)null));
 
         // Act
         var result = await _controller.Create(dto, CancellationToken.None);
@@ -289,12 +209,8 @@ public class CourseTypesControllerTests
             MaxStudents = 1
         };
 
-        var instruments = new List<Instrument>();
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(999, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Instrument?)null);
+        _mockCourseTypeService.Setup(s => s.CreateAsync(dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((CourseTypeDto?)null, "Instrument not found"));
 
         // Act
         var result = await _controller.Create(dto, CancellationToken.None);
@@ -308,7 +224,6 @@ public class CourseTypesControllerTests
     public async Task Create_WithChildPriceHigherThanAdultPrice_ReturnsBadRequest()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
         var dto = new CreateCourseTypeDto
         {
             InstrumentId = 1,
@@ -316,16 +231,12 @@ public class CourseTypesControllerTests
             DurationMinutes = 30,
             Type = CourseTypeCategory.Individual,
             PriceAdult = 40,
-            PriceChild = 50,  // Higher than adult price
+            PriceChild = 50,
             MaxStudents = 1
         };
 
-        var instruments = new List<Instrument> { instrument };
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(instrument);
+        _mockCourseTypeService.Setup(s => s.CreateAsync(dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((CourseTypeDto?)null, "Child price cannot be higher than adult price"));
 
         // Act
         var result = await _controller.Create(dto, CancellationToken.None);
@@ -343,9 +254,7 @@ public class CourseTypesControllerTests
     public async Task Update_WithValidData_UpdatesCourseType()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Old Name");
-
+        var id = Guid.NewGuid();
         var dto = new UpdateCourseTypeDto
         {
             InstrumentId = 1,
@@ -356,29 +265,13 @@ public class CourseTypesControllerTests
             IsActive = true
         };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var instruments = new List<Instrument> { instrument };
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
+        var updatedDto = new CourseTypeDto { Id = id, Name = "Updated Name" };
 
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(instrument);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.UpdateAsync(id, dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((updatedDto, (string?)null, false));
 
         // Act
-        var result = await _controller.Update(courseType.Id, dto, CancellationToken.None);
+        var result = await _controller.Update(id, dto, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -400,9 +293,8 @@ public class CourseTypesControllerTests
             IsActive = true
         };
 
-        var courseTypes = new List<CourseType>();
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
+        _mockCourseTypeService.Setup(s => s.UpdateAsync(It.IsAny<Guid>(), dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((CourseTypeDto?)null, (string?)null, true));
 
         // Act
         var result = await _controller.Update(Guid.NewGuid(), dto, CancellationToken.None);
@@ -415,16 +307,7 @@ public class CourseTypesControllerTests
     public async Task Update_ArchivingWithActiveCourses_ReturnsBadRequest()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
-
-        var activeCourse = new Course
-        {
-            Id = Guid.NewGuid(),
-            CourseTypeId = courseType.Id,
-            Status = CourseStatus.Active
-        };
-
+        var id = Guid.NewGuid();
         var dto = new UpdateCourseTypeDto
         {
             InstrumentId = 1,
@@ -432,26 +315,14 @@ public class CourseTypesControllerTests
             DurationMinutes = 30,
             Type = CourseTypeCategory.Individual,
             MaxStudents = 1,
-            IsActive = false  // Archiving
+            IsActive = false
         };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var instruments = new List<Instrument> { instrument };
-        var courses = new List<Course> { activeCourse };
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(instrument);
+        _mockCourseTypeService.Setup(s => s.UpdateAsync(id, dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((CourseTypeDto?)null, "Cannot archive course type: 1 active course(s) are using it", false));
 
         // Act
-        var result = await _controller.Update(courseType.Id, dto, CancellationToken.None);
+        var result = await _controller.Update(id, dto, CancellationToken.None);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -466,23 +337,13 @@ public class CourseTypesControllerTests
     public async Task Delete_WithValidId_ArchivesCourseType()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
+        var id = Guid.NewGuid();
 
-        var courseTypes = new List<CourseType> { courseType };
-        var courses = new List<Course>();
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
+        _mockCourseTypeService.Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, (string?)null, false));
 
         // Act
-        var result = await _controller.Delete(courseType.Id, CancellationToken.None);
+        var result = await _controller.Delete(id, CancellationToken.None);
 
         // Assert
         Assert.IsType<NoContentResult>(result);
@@ -492,15 +353,12 @@ public class CourseTypesControllerTests
     public async Task Delete_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var courseTypes = new List<CourseType>();
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((CourseType?)null);
+        _mockCourseTypeService.Setup(s => s.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, (string?)null, true));
 
         // Act
         var result = await _controller.Delete(Guid.NewGuid(), CancellationToken.None);
+
         // Assert
         Assert.IsType<NotFoundResult>(result);
     }
@@ -509,30 +367,13 @@ public class CourseTypesControllerTests
     public async Task Delete_WithActiveCourses_ReturnsBadRequest()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
+        var id = Guid.NewGuid();
 
-        var activeCourse = new Course
-        {
-            Id = Guid.NewGuid(),
-            CourseTypeId = courseType.Id,
-            Status = CourseStatus.Active
-        };
-
-        var courseTypes = new List<CourseType> { courseType };
-        var courses = new List<Course> { activeCourse };
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
+        _mockCourseTypeService.Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((false, "Cannot archive course type: 1 active course(s) are using it", false));
 
         // Act
-        var result = await _controller.Delete(courseType.Id, CancellationToken.None);
+        var result = await _controller.Delete(id, CancellationToken.None);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -547,27 +388,14 @@ public class CourseTypesControllerTests
     public async Task Reactivate_WithValidId_ReactivatesCourseType()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
-        courseType.IsActive = false;
+        var id = Guid.NewGuid();
+        var reactivatedDto = new CourseTypeDto { Id = id, Name = "Test", IsActive = true };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var courses = new List<Course>();
-        var teacherCourseTypes = new List<TeacherCourseType>();
-
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        var mockCourseRepo = MockHelpers.CreateMockRepository(courses);
-        var mockTeacherCourseTypeRepo = MockHelpers.CreateMockRepository(teacherCourseTypes);
-
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Course>()).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherCourseType>()).Returns(mockTeacherCourseTypeRepo.Object);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.ReactivateAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((reactivatedDto, false));
 
         // Act
-        var result = await _controller.Reactivate(courseType.Id, CancellationToken.None);
+        var result = await _controller.Reactivate(id, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -579,9 +407,8 @@ public class CourseTypesControllerTests
     public async Task Reactivate_WithInvalidId_ReturnsNotFound()
     {
         // Arrange
-        var courseTypes = new List<CourseType>();
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
+        _mockCourseTypeService.Setup(s => s.ReactivateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((CourseTypeDto?)null, true));
 
         // Act
         var result = await _controller.Reactivate(Guid.NewGuid(), CancellationToken.None);
@@ -598,22 +425,17 @@ public class CourseTypesControllerTests
     public async Task GetPricingHistory_WithValidId_ReturnsPricingHistory()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
-        var pricingVersion = courseType.PricingVersions.First();
+        var id = Guid.NewGuid();
+        var pricingHistory = new List<CourseTypePricingVersionDto>
+        {
+            new CourseTypePricingVersionDto { Id = Guid.NewGuid(), CourseTypeId = id }
+        };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
-
-        _mockPricingService.Setup(s => s.GetPricingHistoryAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<CourseTypePricingVersion> { pricingVersion });
+        _mockCourseTypeService.Setup(s => s.GetPricingHistoryAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((pricingHistory, false));
 
         // Act
-        var result = await _controller.GetPricingHistory(courseType.Id, CancellationToken.None);
+        var result = await _controller.GetPricingHistory(id, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -625,90 +447,70 @@ public class CourseTypesControllerTests
     public async Task CheckPricingEditability_NotInvoiced_CanEditDirectly()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
+        var id = Guid.NewGuid();
+        var editability = new PricingEditabilityDto
+        {
+            CanEditDirectly = true,
+            IsInvoiced = false
+        };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
+        _mockCourseTypeService.Setup(s => s.CheckPricingEditabilityAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((editability, false));
 
         // Act
-        var result = await _controller.CheckPricingEditability(courseType.Id, CancellationToken.None);
+        var result = await _controller.CheckPricingEditability(id, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var editability = Assert.IsType<PricingEditabilityDto>(okResult.Value);
-        Assert.True(editability.CanEditDirectly);
-        Assert.False(editability.IsInvoiced);
+        var returnedEditability = Assert.IsType<PricingEditabilityDto>(okResult.Value);
+        Assert.True(returnedEditability.CanEditDirectly);
+        Assert.False(returnedEditability.IsInvoiced);
     }
 
     [Fact]
     public async Task CheckPricingEditability_Invoiced_CannotEditDirectly()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
+        var id = Guid.NewGuid();
+        var editability = new PricingEditabilityDto
+        {
+            CanEditDirectly = false,
+            IsInvoiced = true,
+            Reason = "Current pricing has been used in invoices. Create a new version instead."
+        };
 
-        var courseTypes = new List<CourseType> { courseType };
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
-
-        _mockPricingService.Setup(s => s.IsCurrentPricingInvoicedAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        _mockCourseTypeService.Setup(s => s.CheckPricingEditabilityAsync(id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((editability, false));
 
         // Act
-        var result = await _controller.CheckPricingEditability(courseType.Id, CancellationToken.None);
+        var result = await _controller.CheckPricingEditability(id, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var editability = Assert.IsType<PricingEditabilityDto>(okResult.Value);
-        Assert.False(editability.CanEditDirectly);
-        Assert.True(editability.IsInvoiced);
+        var returnedEditability = Assert.IsType<PricingEditabilityDto>(okResult.Value);
+        Assert.False(returnedEditability.CanEditDirectly);
+        Assert.True(returnedEditability.IsInvoiced);
     }
 
     [Fact]
     public async Task UpdatePricing_NotInvoiced_UpdatesSuccessfully()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
-        var pricingVersion = courseType.PricingVersions.First();
-
-        var courseTypes = new List<CourseType> { courseType };
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
-
+        var id = Guid.NewGuid();
         var dto = new UpdateCourseTypePricingDto { PriceAdult = 60, PriceChild = 50 };
-
-        var updatedPricing = new CourseTypePricingVersion
+        var updatedPricing = new CourseTypePricingVersionDto
         {
-            Id = pricingVersion.Id,
-            CourseTypeId = courseType.Id,
+            Id = Guid.NewGuid(),
+            CourseTypeId = id,
             PriceAdult = 60,
-            PriceChild = 50,
-            ValidFrom = pricingVersion.ValidFrom,
-            IsCurrent = true,
-            CreatedAt = pricingVersion.CreatedAt
+            PriceChild = 50
         };
 
-        _mockPricingService.Setup(s => s.UpdateCurrentPricingAsync(
-            courseType.Id, dto.PriceAdult, dto.PriceChild, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(updatedPricing);
+        _mockCourseTypeService.Setup(s => s.UpdatePricingAsync(id, dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((updatedPricing, (string?)null, false));
 
         // Act
-        var result = await _controller.UpdatePricing(courseType.Id, dto, CancellationToken.None);
+        var result = await _controller.UpdatePricing(id, dto, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -721,16 +523,7 @@ public class CourseTypesControllerTests
     public async Task CreatePricingVersion_WithValidData_CreatesNewVersion()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var courseType = CreateCourseType(instrument, "Test");
-
-        var courseTypes = new List<CourseType> { courseType };
-        var mockCourseTypeRepo = MockHelpers.CreateMockRepository(courseTypes);
-        _mockUnitOfWork.Setup(u => u.Repository<CourseType>()).Returns(mockCourseTypeRepo.Object);
-
-        mockCourseTypeRepo.Setup(r => r.GetByIdAsync(courseType.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(courseType);
-
+        var id = Guid.NewGuid();
         var validFrom = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
         var dto = new CreateCourseTypePricingVersionDto
         {
@@ -739,23 +532,20 @@ public class CourseTypesControllerTests
             ValidFrom = validFrom
         };
 
-        var newVersion = new CourseTypePricingVersion
+        var newPricing = new CourseTypePricingVersionDto
         {
             Id = Guid.NewGuid(),
-            CourseTypeId = courseType.Id,
+            CourseTypeId = id,
             PriceAdult = 70,
             PriceChild = 60,
-            ValidFrom = validFrom,
-            IsCurrent = true,
-            CreatedAt = DateTime.UtcNow
+            ValidFrom = validFrom
         };
 
-        _mockPricingService.Setup(s => s.CreateNewPricingVersionAsync(
-            courseType.Id, dto.PriceAdult, dto.PriceChild, dto.ValidFrom, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(newVersion);
+        _mockCourseTypeService.Setup(s => s.CreatePricingVersionAsync(id, dto, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((newPricing, (string?)null, false));
 
         // Act
-        var result = await _controller.CreatePricingVersion(courseType.Id, dto, CancellationToken.None);
+        var result = await _controller.CreatePricingVersion(id, dto, CancellationToken.None);
 
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
@@ -772,21 +562,8 @@ public class CourseTypesControllerTests
     public async Task GetTeachersCountForInstrument_WithValidInstrumentId_ReturnsTeacherCount()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", IsActive = true };
-        var teacherInstrument = new TeacherInstrument { InstrumentId = 1, TeacherId = teacher.Id, Teacher = teacher };
-
-        var instruments = new List<Instrument> { instrument };
-        var teacherInstruments = new List<TeacherInstrument> { teacherInstrument };
-
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        var mockTeacherInstrumentRepo = MockHelpers.CreateMockRepository(teacherInstruments);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherInstrument>()).Returns(mockTeacherInstrumentRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(instrument);
+        _mockCourseTypeService.Setup(s => s.GetTeachersCountForInstrumentAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((1, false));
 
         // Act
         var result = await _controller.GetTeachersCountForInstrument(1, CancellationToken.None);
@@ -800,12 +577,8 @@ public class CourseTypesControllerTests
     public async Task GetTeachersCountForInstrument_WithInvalidInstrumentId_ReturnsNotFound()
     {
         // Arrange
-        var instruments = new List<Instrument>();
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(999, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Instrument?)null);
+        _mockCourseTypeService.Setup(s => s.GetTeachersCountForInstrumentAsync(999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(((int?)null, true));
 
         // Act
         var result = await _controller.GetTeachersCountForInstrument(999, CancellationToken.None);
@@ -818,18 +591,8 @@ public class CourseTypesControllerTests
     public async Task GetTeachersCountForInstrument_WithNoTeachers_ReturnsZero()
     {
         // Arrange
-        var instrument = new Instrument { Id = 1, Name = "Piano", IsActive = true };
-        var instruments = new List<Instrument> { instrument };
-        var teacherInstruments = new List<TeacherInstrument>();
-
-        var mockInstrumentRepo = MockHelpers.CreateMockRepository(instruments);
-        var mockTeacherInstrumentRepo = MockHelpers.CreateMockRepository(teacherInstruments);
-
-        _mockUnitOfWork.Setup(u => u.Repository<Instrument>()).Returns(mockInstrumentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<TeacherInstrument>()).Returns(mockTeacherInstrumentRepo.Object);
-
-        mockInstrumentRepo.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(instrument);
+        _mockCourseTypeService.Setup(s => s.GetTeachersCountForInstrumentAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((0, false));
 
         // Act
         var result = await _controller.GetTeachersCountForInstrument(1, CancellationToken.None);

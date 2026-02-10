@@ -35,7 +35,7 @@ export function LessonsSection({ studentId }: LessonsSectionProps) {
     result.sort((a, b) => {
       const dateA = new Date(a.scheduledDate)
       const dateB = new Date(b.scheduledDate)
-      return dateB.getTime() - dateA.getTime()
+      return dateA.getTime() - dateB.getTime()
     })
 
     if (!hasDateFilters) {

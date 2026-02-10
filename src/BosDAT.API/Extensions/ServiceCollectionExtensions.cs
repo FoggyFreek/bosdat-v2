@@ -117,7 +117,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEnrollmentService, EnrollmentService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ICourseService, CourseService>();
+        services.AddScoped<ICourseTypeService, CourseTypeService>();
+        services.AddScoped<ILessonService, LessonService>();
         services.AddScoped<ILessonGenerationService, LessonGenerationService>();
+        services.AddScoped<IHolidayService, HolidayService>();
+        services.AddScoped<IInstrumentService, InstrumentService>();
+        services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<ITeacherService, TeacherService>();
+        services.AddScoped<ISchedulingService, SchedulingService>();
+        services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
 
         return services;

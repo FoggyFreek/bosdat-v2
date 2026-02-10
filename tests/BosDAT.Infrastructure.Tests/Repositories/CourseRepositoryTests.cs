@@ -1,7 +1,6 @@
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Repositories;
-using FluentAssertions;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
 
@@ -26,14 +25,14 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithEnrollmentsAsync(courseId);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be(courseId);
-        result.Teacher.Should().NotBeNull();
-        result.CourseType.Should().NotBeNull();
-        result.CourseType.Instrument.Should().NotBeNull();
-        result.Room.Should().NotBeNull();
-        result.Enrollments.Should().NotBeEmpty();
-        result.Enrollments.First().Student.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal(courseId, result!.Id);
+        Assert.NotNull(result.Teacher);
+        Assert.NotNull(result.CourseType);
+        Assert.NotNull(result.CourseType.Instrument);
+        Assert.NotNull(result.Room);
+        Assert.NotEmpty(result.Enrollments);
+        Assert.NotNull(result.Enrollments.First().Student);
     }
 
     [Fact]
@@ -46,7 +45,7 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetWithEnrollmentsAsync(nonexistentId);
 
         // Assert
-        result.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
@@ -60,11 +59,11 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByTeacherAsync(teacherId);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(c => c.TeacherId.Should().Be(teacherId));
-        result.First().CourseType.Should().NotBeNull();
-        result.First().CourseType.Instrument.Should().NotBeNull();
-        result.First().Room.Should().NotBeNull();
+        Assert.NotEmpty(result);
+        Assert.All(result, c => Assert.Equal(teacherId, c.TeacherId));
+        Assert.NotNull(result.First().CourseType);
+        Assert.NotNull(result.First().CourseType.Instrument);
+        Assert.NotNull(result.First().Room);
     }
 
     [Fact]
@@ -87,7 +86,7 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByTeacherAsync(teacherWithNoCourses.Id);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -138,9 +137,12 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByTeacherAsync(teacherId);
 
         // Assert
-        result.Should().HaveCountGreaterThan(1);
+        Assert.True(result.Count() > 1);
         var tuesdayCourses = result.Where(c => c.DayOfWeek == DayOfWeek.Tuesday).ToList();
-        tuesdayCourses.Should().BeInAscendingOrder(c => c.StartTime);
+        for (int i = 0; i < tuesdayCourses.Count - 1; i++)
+        {
+            Assert.True(tuesdayCourses[i].StartTime <= tuesdayCourses[i + 1].StartTime);
+        }
     }
 
     [Fact]
@@ -173,12 +175,12 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetActiveCoursesAsync();
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(c => c.Status.Should().Be(CourseStatus.Active));
-        result.Should().NotContain(c => c.Id == inactiveCourse.Id);
-        result.First().Teacher.Should().NotBeNull();
-        result.First().CourseType.Should().NotBeNull();
-        result.First().Room.Should().NotBeNull();
+        Assert.NotEmpty(result);
+        Assert.All(result, c => Assert.Equal(CourseStatus.Active, c.Status));
+        Assert.DoesNotContain(result, c => c.Id == inactiveCourse.Id);
+        Assert.NotNull(result.First().Teacher);
+        Assert.NotNull(result.First().CourseType);
+        Assert.NotNull(result.First().Room);
     }
 
     [Fact]
@@ -191,16 +193,16 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetCoursesByDayAsync(targetDay);
 
         // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(c =>
+        Assert.NotEmpty(result);
+        Assert.All(result, c =>
         {
-            c.DayOfWeek.Should().Be(targetDay);
-            c.Status.Should().Be(CourseStatus.Active);
+            Assert.Equal(targetDay, c.DayOfWeek);
+            Assert.Equal(CourseStatus.Active, c.Status);
         });
-        result.First().Teacher.Should().NotBeNull();
-        result.First().CourseType.Should().NotBeNull();
-        result.First().Room.Should().NotBeNull();
-        result.First().Enrollments.Should().NotBeNull();
+        Assert.NotNull(result.First().Teacher);
+        Assert.NotNull(result.First().CourseType);
+        Assert.NotNull(result.First().Room);
+        Assert.NotNull(result.First().Enrollments);
     }
 
     [Fact]
@@ -213,7 +215,7 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetCoursesByDayAsync(dayWithNoCourses);
 
         // Assert
-        result.Should().BeEmpty();
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -262,9 +264,13 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetCoursesByDayAsync(targetDay);
 
         // Assert
-        result.Should().HaveCount(2);
-        result.Should().BeInAscendingOrder(c => c.StartTime);
-        result.First().StartTime.Should().Be(new TimeOnly(10, 0));
+        Assert.Equal(2, result.Count());
+        var list = result.ToList();
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            Assert.True(list[i].StartTime <= list[i + 1].StartTime);
+        }
+        Assert.Equal(new TimeOnly(10, 0), result.First().StartTime);
     }
 
     [Fact]
@@ -298,6 +304,6 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetCoursesByDayAsync(targetDay);
 
         // Assert
-        result.Should().NotContain(c => c.Id == inactiveCourse.Id);
+        Assert.DoesNotContain(result, c => c.Id == inactiveCourse.Id);
     }
 }

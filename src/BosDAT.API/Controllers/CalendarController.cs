@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.Core.Utilities;
 
@@ -10,7 +9,7 @@ namespace BosDAT.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class CalendarController(ICalendarService calendarService, IUnitOfWork unitOfWork) : ControllerBase
+public class CalendarController(ICalendarService calendarService) : ControllerBase
 {
     [HttpGet("week")]
     public async Task<ActionResult<WeekCalendarDto>> GetWeek(
@@ -96,26 +95,13 @@ public class CalendarController(ICalendarService calendarService, IUnitOfWork un
         [FromQuery] DateOnly? date,
         CancellationToken cancellationToken)
     {
-        var teacher = await unitOfWork.Teachers.GetByIdAsync(teacherId, cancellationToken);
-        if (teacher == null)
+        var schedule = await calendarService.GetTeacherScheduleAsync(teacherId, date, cancellationToken);
+        if (schedule == null)
         {
             return NotFound(new { message = "Teacher not found" });
         }
 
-        var targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
-        var weekStart = IsoDateHelper.GetWeekStart(targetDate);
-        var weekEnd = weekStart.AddDays(6);
-
-        var lessons = await calendarService.GetLessonsForRangeAsync(weekStart, weekEnd, teacherId, null, cancellationToken);
-        var holidays = await calendarService.GetHolidaysForRangeAsync(weekStart, weekEnd, cancellationToken);
-
-        return Ok(new WeekCalendarDto
-        {
-            WeekStart = weekStart,
-            WeekEnd = weekEnd,
-            Lessons = lessons,
-            Holidays = holidays
-        });
+        return Ok(schedule);
     }
 
     [HttpGet("room/{roomId:int}")]
@@ -124,26 +110,13 @@ public class CalendarController(ICalendarService calendarService, IUnitOfWork un
         [FromQuery] DateOnly? date,
         CancellationToken cancellationToken)
     {
-        var room = await unitOfWork.Repository<Room>().GetByIdAsync(roomId, cancellationToken);
-        if (room == null)
+        var schedule = await calendarService.GetRoomScheduleAsync(roomId, date, cancellationToken);
+        if (schedule == null)
         {
             return NotFound(new { message = "Room not found" });
         }
 
-        var targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
-        var weekStart = IsoDateHelper.GetWeekStart(targetDate);
-        var weekEnd = weekStart.AddDays(6);
-
-        var lessons = await calendarService.GetLessonsForRangeAsync(weekStart, weekEnd, null, roomId, cancellationToken);
-        var holidays = await calendarService.GetHolidaysForRangeAsync(weekStart, weekEnd, cancellationToken);
-
-        return Ok(new WeekCalendarDto
-        {
-            WeekStart = weekStart,
-            WeekEnd = weekEnd,
-            Lessons = lessons,
-            Holidays = holidays
-        });
+        return Ok(schedule);
     }
 
     [HttpGet("availability")]

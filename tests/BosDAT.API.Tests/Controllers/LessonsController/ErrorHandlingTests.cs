@@ -18,13 +18,15 @@ namespace BosDAT.API.Tests.Controllers.LessonsController;
 public class ErrorHandlingTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<ILessonService> _mockLessonService;
     private readonly BosDAT.API.Controllers.LessonsController _controller;
 
     public ErrorHandlingTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
+        _mockLessonService = new Mock<ILessonService>();
         var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockUnitOfWork.Object, lessonGenerationService);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockLessonService.Object, lessonGenerationService, _mockUnitOfWork.Object);
     }
 
     #region Course Not Found Tests
@@ -200,20 +202,20 @@ public class ErrorHandlingTests
     public async Task GetAll_CancellationRequested_ThrowsOperationCanceledException()
     {
         // Arrange
-        var mockLessonRepo = new Mock<ILessonRepository>();
-        mockLessonRepo.Setup(r => r.Query())
-            .Returns(() =>
-            {
-                var cts = new CancellationTokenSource();
-                cts.Cancel();
-                cts.Token.ThrowIfCancellationRequested();
-                return new List<Lesson>().AsQueryable().BuildMockDbSet().Object;
-            });
-
-        _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
-
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Cancel();
+
+        _mockLessonService.Setup(s => s.GetAllAsync(
+                It.IsAny<DateOnly?>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<int?>(),
+                It.IsAny<LessonStatus?>(),
+                It.IsAny<int?>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
 
         // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>

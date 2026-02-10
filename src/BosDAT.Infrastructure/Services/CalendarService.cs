@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Utilities;
 
 namespace BosDAT.Infrastructure.Services;
 
@@ -129,5 +130,57 @@ public class CalendarService(IUnitOfWork unitOfWork) : ICalendarService
     private static bool TimesOverlap(TimeOnly start1, TimeOnly end1, TimeOnly start2, TimeOnly end2)
     {
         return start1 < end2 && end1 > start2;
+    }
+
+    public async Task<WeekCalendarDto?> GetTeacherScheduleAsync(
+        Guid teacherId, DateOnly? date,
+        CancellationToken ct = default)
+    {
+        var teacher = await unitOfWork.Teachers.GetByIdAsync(teacherId, ct);
+        if (teacher == null)
+        {
+            return null;
+        }
+
+        var targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var weekStart = IsoDateHelper.GetWeekStart(targetDate);
+        var weekEnd = weekStart.AddDays(6);
+
+        var lessons = await GetLessonsForRangeAsync(weekStart, weekEnd, teacherId, null, ct);
+        var holidays = await GetHolidaysForRangeAsync(weekStart, weekEnd, ct);
+
+        return new WeekCalendarDto
+        {
+            WeekStart = weekStart,
+            WeekEnd = weekEnd,
+            Lessons = lessons,
+            Holidays = holidays
+        };
+    }
+
+    public async Task<WeekCalendarDto?> GetRoomScheduleAsync(
+        int roomId, DateOnly? date,
+        CancellationToken ct = default)
+    {
+        var room = await unitOfWork.Repository<Room>().GetByIdAsync(roomId, ct);
+        if (room == null)
+        {
+            return null;
+        }
+
+        var targetDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var weekStart = IsoDateHelper.GetWeekStart(targetDate);
+        var weekEnd = weekStart.AddDays(6);
+
+        var lessons = await GetLessonsForRangeAsync(weekStart, weekEnd, null, roomId, ct);
+        var holidays = await GetHolidaysForRangeAsync(weekStart, weekEnd, ct);
+
+        return new WeekCalendarDto
+        {
+            WeekStart = weekStart,
+            WeekEnd = weekEnd,
+            Lessons = lessons,
+            Holidays = holidays
+        };
     }
 }

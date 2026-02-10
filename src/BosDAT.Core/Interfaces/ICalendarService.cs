@@ -17,4 +17,12 @@ public interface ICalendarService
         DateOnly date, TimeOnly startTime, TimeOnly endTime,
         Guid? teacherId, int? roomId,
         CancellationToken ct = default);
+
+    Task<WeekCalendarDto?> GetTeacherScheduleAsync(
+        Guid teacherId, DateOnly? date,
+        CancellationToken ct = default);
+
+    Task<WeekCalendarDto?> GetRoomScheduleAsync(
+        int roomId, DateOnly? date,
+        CancellationToken ct = default);
 }
