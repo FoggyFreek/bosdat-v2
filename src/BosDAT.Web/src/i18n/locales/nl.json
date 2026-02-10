@@ -1,0 +1,1013 @@
+{
+  "common": {
+    "actions": {
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "delete": "Verwijderen",
+      "edit": "Bewerken",
+      "create": "Aanmaken",
+      "add": "Toevoegen",
+      "remove": "Verwijderen",
+      "search": "Zoeken",
+      "filter": "Filteren",
+      "confirm": "Bevestigen",
+      "close": "Sluiten",
+      "submit": "Verzenden",
+      "back": "Terug",
+      "next": "Volgende",
+      "previous": "Vorige",
+      "export": "Exporteren",
+      "import": "Importeren",
+      "refresh": "Vernieuwen",
+      "view": "Bekijken",
+      "download": "Downloaden",
+      "closeSidebar": "Sluit zijbalk"
+    },
+    "entities": {
+      "student": "Leerling",
+      "students": "Leerlingen",
+      "teacher": "Docent",
+      "teachers": "Docenten",
+      "course": "Cursus",
+      "courses": "Cursussen",
+      "lesson": "Les",
+      "lessons": "Lessen",
+      "invoice": "Factuur",
+      "invoices": "Facturen",
+      "enrollment": "Inschrijving",
+      "enrollments": "Inschrijvingen",
+      "instrument": "Instrument",
+      "instruments": "Instrumenten",
+      "room": "Ruimte",
+      "rooms": "Ruimtes",
+      "holiday": "Vakantie",
+      "holidays": "Vakanties",
+      "schedule": "Rooster",
+      "payment": "Betaling",
+      "payments": "Betalingen",
+      "absence": "Afwezigheid",
+      "absences": "Afwezigheden"
+    },
+    "status": {
+      "active": "Actief",
+      "inactive": "Inactief",
+      "trial": "Proefles",
+      "pending": "In behandeling",
+      "completed": "Afgerond",
+      "cancelled": "Geannuleerd",
+      "scheduled": "Gepland",
+      "draft": "Concept",
+      "paid": "Betaald",
+      "unpaid": "Onbetaald",
+      "overdue": "Achterstallig"
+    },
+    "states": {
+      "loading": "Laden...",
+      "error": "Fout",
+      "success": "Succes",
+      "warning": "Waarschuwing",
+      "info": "Informatie",
+      "noData": "Geen gegevens beschikbaar",
+      "noResults": "Geen resultaten gevonden",
+      "comingSoon": "Binnenkort beschikbaar"
+    },
+    "form": {
+      "required": "Verplicht",
+      "optional": "Optioneel",
+      "yes": "Ja",
+      "no": "Nee",
+      "select": "Selecteer",
+      "selectPlaceholder": "Maak een keuze...",
+      "searchPlaceholder": "Zoeken...",
+      "validation": {
+        "required": "Dit veld is verplicht",
+        "email": "Ongeldig e-mailadres",
+        "minLength": "Minimaal {{min}} karakters",
+        "maxLength": "Maximaal {{max}} karakters",
+        "numeric": "Moet een nummer zijn",
+        "positive": "Moet positief zijn"
+      }
+    },
+    "time": {
+      "today": "Vandaag",
+      "yesterday": "Gisteren",
+      "tomorrow": "Morgen",
+      "thisWeek": "Deze week",
+      "thisMonth": "Deze maand",
+      "thisYear": "Dit jaar",
+      "days": {
+        "monday": "Maandag",
+        "tuesday": "Dinsdag",
+        "wednesday": "Woensdag",
+        "thursday": "Donderdag",
+        "friday": "Vrijdag",
+        "saturday": "Zaterdag",
+        "sunday": "Zondag"
+      },
+      "months": {
+        "january": "Januari",
+        "february": "Februari",
+        "march": "Maart",
+        "april": "April",
+        "may": "Mei",
+        "june": "Juni",
+        "july": "Juli",
+        "august": "Augustus",
+        "september": "September",
+        "october": "Oktober",
+        "november": "November",
+        "december": "December"
+      }
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "students": "Leerlingen",
+    "teachers": "Docenten",
+    "courses": "Cursussen",
+    "lessons": "Lessen",
+    "schedule": "Rooster",
+    "invoices": "Facturen",
+    "reports": "Rapporten",
+    "settings": "Instellingen"
+  },
+  "auth": {
+    "login": "Inloggen",
+    "logout": "Uitloggen",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "welcome": "Welkom bij BosDAT",
+    "loginButton": "Inloggen",
+    "logoutButton": "Uitloggen",
+    "signInDescription": "Log in op uw account om door te gaan",
+    "signingIn": "Aan het inloggen...",
+    "passwordPlaceholder": "Voer uw wachtwoord in",
+    "errors": {
+      "invalidCredentials": "Ongeldige inloggegevens",
+      "sessionExpired": "Sessie verlopen",
+      "loginFailed": "Inloggen mislukt",
+      "invalidEmailOrPassword": "Ongeldig e-mailadres of wachtwoord. Probeer het opnieuw."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Welkom bij BosDAT Muziekschool Beheer",
+    "stats": {
+      "activeStudents": "Actieve leerlingen",
+      "activeTeachers": "Actieve docenten",
+      "activeCourses": "Actieve cursussen",
+      "totalStudents": "{{count}} totaal leerlingen",
+      "totalTeachers": "{{count}} totaal docenten",
+      "totalCourses": "{{count}} totaal cursussen"
+    },
+    "recentStudents": {
+      "title": "Recente leerlingen",
+      "noStudents": "Nog geen leerlingen"
+    },
+    "todaysSchedule": {
+      "title": "Rooster vandaag",
+      "comingSoon": "Binnenkort beschikbaar!"
+    }
+  },
+  "students": {
+    "title": "Leerlingen",
+    "addStudent": "Leerling Toevoegen",
+    "editStudent": "Leerling Bewerken",
+    "studentDetails": "Leerling Details",
+    "subtitle": "Beheer uw muziekschool leerlingen",
+    "allStudents": "Alle Leerlingen",
+    "searchPlaceholder": "Zoek leerlingen...",
+    "noStudentsFound": "Geen leerlingen gevonden",
+    "profile": {
+      "title": "Profiel",
+      "personalInfo": "Persoonlijke Informatie",
+      "contactInfo": "Contactinformatie",
+      "sameAsStudent": "Hetzelfde als leerling",
+      "accountDetails": "Accountgegevens",
+      "enrolled": "Ingeschreven",
+      "notSet": "Niet ingesteld",
+      "registrationFee": "Inschrijvingskosten",
+      "paid": "Betaald op",
+      "notPaidYet": "Nog niet betaald"
+    },
+    "form": {
+      "firstName": "Voornaam",
+      "lastName": "Achternaam",
+      "prefix": "Voorvoegsel",
+      "email": "E-mail",
+      "phone": "Telefoonnummer",
+      "phoneAlt": "Alternatief Telefoonnummer",
+      "dateOfBirth": "Geboortedatum",
+      "address": "Adres",
+      "city": "Plaats",
+      "postalCode": "Postcode",
+      "status": "Status",
+      "notes": "Notities",
+      "gender": "Geslacht",
+      "billingContactName": "Contact Naam",
+      "billingContactEmail": "Contact E-mail",
+      "billingContactPhone": "Contact Telefoonnummer",
+      "billingAddress": "Factuuradres",
+      "billingPostalCode": "Factuur Postcode",
+      "billingCity": "Factuur Plaats",
+      "autoDebit": "Automatische incasso inschakelen voor deze leerling",
+      "placeholders": {
+        "firstName": "Voer voornaam in",
+        "lastName": "Voer achternaam in",
+        "prefix": "bijv., van, de",
+        "email": "Voer e-mailadres in",
+        "phone": "Voer telefoonnummer in",
+        "phoneAlt": "Voer alternatief telefoonnummer in",
+        "address": "Straat en nummer",
+        "postalCode": "bijv., 1234 AB",
+        "city": "Voer plaats in",
+        "gender": "Selecteer geslacht",
+        "status": "Selecteer status",
+        "notes": "Aanvullende notities over deze leerling",
+        "billingContactName": "Naam van persoon die facturen ontvangt",
+        "billingContactEmail": "E-mail voor facturen",
+        "billingContactPhone": "Telefoonnummer voor factuurvragen"
+      }
+    },
+    "sections": {
+      "basicInfo": "Basis Informatie",
+      "contact": "Contact",
+      "address": "Adres",
+      "personal": "Persoonlijk",
+      "billing": "Facturering / Betaler",
+      "other": "Overig",
+      "profile": "Profiel",
+      "enrollments": "Inschrijvingen",
+      "lessons": "Lessen",
+      "invoices": "Facturen",
+      "balance": "Saldo",
+      "corrections": "Correcties",
+      "absences": "Afwezigheden",
+      "preferences": "Voorkeuren"
+    },
+    "navigation": {
+      "general": "ALGEMEEN",
+      "scheduling": "ROOSTERING",
+      "finance": "FINANCIËN"
+    },
+    "enrollments": {
+      "courseEnrollments": "Cursusinschrijvingen",
+      "enrollInCourse": "Inschrijven voor cursus",
+      "selectCourse": "Selecteer een cursus",
+      "noAvailableCourses": "Geen beschikbare cursussen",
+      "enrolling": "Inschrijven...",
+      "enroll": "Inschrijven",
+      "noEnrollments": "Nog geen inschrijvingen",
+      "promote": "Promoveren"
+    },
+    "absence": {
+      "absenceRecords": "Afwezigheidsgegevens",
+      "absenceTrackingComingSoon": "Afwezigheidstracking is binnenkort beschikbaar."
+    },
+    "preferences": {
+      "studentPreferences": "Leerlingvoorkeuren",
+      "studentPreferencesComingSoon": "Leerlingvoorkeuren zijn binnenkort beschikbaar."
+    },
+    "corrections": {
+      "ledgerEntries": "Ledgerinschrijvingen",
+      "addCorrection": "Correctie toevoegen",
+      "noActiveCorrections": "Geen actieve correcties",
+      "noCorrections": "Nog geen correcties",
+      "all": "Alles"
+    },
+    "balance": {
+      "availableCredit": "Beschikbaar tegoed",
+      "totalCredits": "Totaal tegoed",
+      "totalDebits": "Totale schulden",
+      "openEntries": "Open inschrijvingen",
+      "openBalanceEntries": "Open saldoboekingen",
+      "noOpenBalanceEntries": "Geen open saldoboekingen",
+      "entryType": {
+        "credit": "Tegoed",
+        "debit": "Schuld"
+      },
+      "applied": "Toegepast",
+      "transactionHistory": "Transactiegeschiedenis",
+      "noTransactions": "Geen transacties nog",
+      "status": {
+        "open": "Open",
+        "applied": "Toegepast",
+        "partially_applied": "Gedeeltelijk toegepast",
+        "reversed": "Teruggeboekt"
+      },
+      "by": "door"
+    },
+    "invoices": {
+      "invoiceHistory": "Factuurgeschiedenis",
+      "noInvoices": "Nog geen facturen",
+      "noInvoicesDesc": "Facturen verschijnen hier zodra deze voor deze leerling zijn gegenereerd.",
+      "balance": "Saldo",
+      "status": {
+        "draft": "Concept",
+        "sent": "Verzonden",
+        "paid": "Betaald",
+        "overdue": "Achterstallig",
+        "cancelled": "Geannuleerd"
+      },
+      "issueDate": "Uitgiftedatum",
+      "dueDate": "Vervaldatum",
+      "period": "Periode",
+      "billingType": "Factureringstype",
+      "description": "Omschrijving",
+      "qty": "Aantal",
+      "unitPrice": "Eenheidsprijs",
+      "vat": "Btw",
+      "subtotal": "Subtotaal",
+      "creditsApplied": "Tegoedengebruikt",
+      "debitsApplied": "Belastingen toegepast",
+      "total": "Totaal",
+      "appliedCorrections": "Toegepaste correcties",
+      "recalculate": "Herberekenen",
+      "viewFullInvoice": "Volledige factuur weergeven",
+      "invoice": "Factuur",
+      "printOrDownload": "Druk af of download deze factuur voor uw administratie.",
+      "downloadPdf": "PDF downloaden",
+      "musicSchool": "Muziekschool",
+      "tel": "Tel",
+      "email": "E-mail",
+      "kvk": "KvK",
+      "billTo": "Factuur naar",
+      "outstandingCharges": "Uitstaande kosten",
+      "totalDue": "Totaal verschuldigd",
+      "amountPaid": "Betaald bedrag",
+      "paymentInstructions": "Betalingsinstructies",
+      "paymentInstructionsText": "Maak het bedrag over naar de volgende bankrekening, met factuurnummer {{invoiceNumber}} als betalingsreferentie.",
+      "iban": "IBAN"
+    },
+    "billingHelp": "Vul deze velden in als iemand anders (bijv. een ouder) de facturen moet ontvangen.",
+    "gender": {
+      "male": "Man",
+      "female": "Vrouw",
+      "other": "Anders",
+      "preferNotToSay": "Zeg ik liever niet"
+    },
+    "duplicate": {
+      "title": "Mogelijke dubbele leerlingen gevonden",
+      "description": "De volgende bestaande leerlingen kunnen duplicaten zijn. Bekijk dit voordat u doorgaat.",
+      "match": "{{reason}} ({{score}}% overeenkomst)",
+      "acknowledge": "Geen duplicaat, toch doorgaan",
+      "acknowledgementRequired": "U moet dit bevestigen om door te gaan met opslaan",
+      "acknowledged": "Bevestigd - u kunt deze leerling nu opslaan",
+      "checking": "Controleren op duplicaten...",
+      "reviewWarning": "Bekijk bovenstaande mogelijke duplicaten"
+    },
+    "validation": {
+      "firstNameRequired": "Voornaam is verplicht",
+      "lastNameRequired": "Achternaam is verplicht",
+      "emailRequired": "E-mail is verplicht",
+      "emailInvalid": "Voer een geldig e-mailadres in",
+      "billingEmailInvalid": "Voer een geldig e-mailadres in"
+    },
+    "actions": {
+      "creating": "Aanmaken...",
+      "saving": "Opslaan...",
+      "createStudent": "Leerling Aanmaken",
+      "saveChanges": "Wijzigingen Opslaan"
+    }
+  },
+  "teachers": {
+    "title": "Docenten",
+    "addTeacher": "Docent Toevoegen",
+    "editTeacher": "Docent Bewerken",
+    "teacherDetails": "Docent Details",
+    "subtitle": "Beheer uw muziekschool docenten",
+    "allTeachers": "Alle Docenten",
+    "searchPlaceholder": "Zoek docenten...",
+    "noTeachersFound": "Geen docenten gevonden",
+    "form": {
+      "firstName": "Voornaam",
+      "lastName": "Achternaam",
+      "prefix": "Voorvoegsel",
+      "email": "E-mail",
+      "phone": "Telefoonnummer",
+      "specialization": "Specialisatie",
+      "isActive": "Actief",
+      "hourlyRate": "Uurtarief",
+      "notes": "Notities",
+      "role": "Rol",
+      "address": "Adres",
+      "postalCode": "Postcode",
+      "city": "Plaats",
+      "placeholders": {
+        "firstName": "Voer voornaam in",
+        "lastName": "Voer achternaam in",
+        "prefix": "bijv., van, de",
+        "email": "Voer e-mailadres in",
+        "phone": "Voer telefoonnummer in",
+        "address": "Straat en nummer",
+        "postalCode": "bijv., 1234 AB",
+        "city": "Voer plaats in",
+        "hourlyRate": "Voer uurtarief in",
+        "role": "Selecteer rol",
+        "notes": "Aanvullende notities over deze docent"
+      }
+    },
+    "sections": {
+      "basicInfo": "Basis Informatie",
+      "address": "Adres",
+      "instruments": "Instrumenten",
+      "lessonTypes": "Lestypes",
+      "financial": "Financiële Informatie",
+      "additionalInfo": "Aanvullende Informatie",
+      "profile": "Profiel",
+      "availability": "Beschikbaarheid",
+      "courses": "Cursussen",
+      "schedule": "Rooster"
+    },
+    "instrumentsHelp": "Selecteer de instrumenten die deze docent kan onderwijzen",
+    "lessonTypesHelp": "Selecteer de lestypes die deze docent kan geven",
+    "noInstrumentsAvailable": "Geen instrumenten beschikbaar",
+    "selectInstrumentsFirst": "Selecteer minimaal één instrument om beschikbare lestypes te zien",
+    "noLessonTypesAvailable": "Geen lestypes beschikbaar voor de geselecteerde instrumenten",
+    "roles": {
+      "teacher": "Docent",
+      "admin": "Beheerder",
+      "staff": "Personeel"
+    },
+    "availability": {
+      "title": "Beschikbaarheid",
+      "unavailable": "Niet beschikbaar",
+      "notSet": "Niet ingesteld",
+      "setAvailable": "Beschikbaar Instellen",
+      "setUnavailable": "Niet Beschikbaar Instellen",
+      "validationError": "Eindtijd moet minimaal 1 uur na starttijd liggen. Gebruik \"Niet Beschikbaar Instellen\" om een dag als niet beschikbaar te markeren."
+    },
+    "validation": {
+      "firstNameRequired": "Voornaam is verplicht",
+      "lastNameRequired": "Achternaam is verplicht",
+      "emailRequired": "E-mail is verplicht",
+      "emailInvalid": "Voer een geldig e-mailadres in",
+      "hourlyRateInvalid": "Voer een geldig uurtarief in"
+    },
+    "actions": {
+      "saving": "Opslaan...",
+      "createTeacher": "Docent Aanmaken",
+      "updateTeacher": "Docent Bijwerken"
+    }
+  },
+  "courses": {
+    "title": "Cursussen",
+    "addCourse": "Cursus Toevoegen",
+    "editCourse": "Cursus Bewerken",
+    "courseDetails": "Cursus Details",
+    "subtitle": "Beheer uw terugkerende cursussen",
+    "noCourses Found": "Geen cursussen gevonden",
+    "loadFailed": "Cursussen laden mislukt. Probeer het later opnieuw.",
+    "form": {
+      "name": "Naam",
+      "courseType": "Cursustype",
+      "teacher": "Docent",
+      "instrument": "Instrument",
+      "room": "Ruimte",
+      "dayOfWeek": "Dag van de Week",
+      "time": "Tijd",
+      "duration": "Duur",
+      "weekParity": "Week Pariteit",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "maxStudents": "Maximaal Aantal Leerlingen",
+      "status": "Status"
+    },
+    "weekParity": {
+      "odd": "Oneven",
+      "even": "Even",
+      "all": "Alle"
+    },
+    "sections": {
+      "summary": "Samenvatting",
+      "enrollments": "Inschrijvingen",
+      "lessonHistory": "Les Geschiedenis"
+    }
+  },
+  "lessons": {
+    "title": "Lessen",
+    "addLesson": "Les Toevoegen",
+    "moveLesson": "Les Verplaatsen",
+    "cancelLesson": "Les Annuleren",
+    "generateLessons": "Lessen Genereren",
+    "lessonNotFound": "Les niet gevonden",
+    "courseNotFound": "Cursus niet gevonden",
+    "form": {
+      "date": "Datum",
+      "time": "Tijd",
+      "duration": "Duur",
+      "teacher": "Docent",
+      "room": "Ruimte",
+      "status": "Status",
+      "notes": "Notities",
+      "reason": "Reden",
+      "cancellationReason": "Reden voor annulering",
+      "cancellationReasonPlaceholder": "Voer de reden voor annulering in...",
+      "cancellationReasonRequired": "Reden voor annulering *"
+    },
+    "status": {
+      "scheduled": "Gepland",
+      "completed": "Afgerond",
+      "cancelled": "Geannuleerd",
+      "moved": "Verplaatst",
+      "noShow": "Niet Verschenen"
+    },
+    "dialogs": {
+      "cancel": {
+        "title": "Les Annuleren",
+        "description": "Weet u zeker dat u deze les wilt annuleren?",
+        "reason": "Reden (optioneel)",
+        "chooseAction": "Kies actie",
+        "cancelOption": "Annuleren",
+        "cancelDescription": "Niet gefactureerd",
+        "noShowOption": "Niet Verschenen",
+        "noShowDescription": "Gefactureerd"
+      }
+    },
+    "summary": {
+      "scheduledEvent": "Gepland Evenement",
+      "courseDetails": "Cursus Details",
+      "course": "Cursus",
+      "regularTime": "Normale tijd",
+      "frequency": "Frequentie"
+    },
+    "scheduler": {
+      "filters": "Filters",
+      "newTimeslot": "Nieuw Tijdslot",
+      "selectedTimeslot": "Geselecteerd Tijdslot",
+      "extraLesson": "Extra les"
+    },
+    "actions": {
+      "addExtraLesson": "Extra Les Toevoegen",
+      "moveLesson": "Les Verplaatsen",
+      "adding": "Toevoegen...",
+      "moving": "Verplaatsen...",
+      "backToCourse": "Terug naar Cursus",
+      "backToCourses": "Terug naar Cursussen"
+    },
+    "toast": {
+      "lessonUpdated": "Les bijgewerkt",
+      "lessonCancelled": "De les is geannuleerd.",
+      "lessonNoShow": "De les is gemarkeerd als niet verschenen.",
+      "lessonMoved": "Les verplaatst",
+      "lessonMovedDescription": "De les is verplaatst naar het nieuwe tijdslot.",
+      "lessonAdded": "Les toegevoegd",
+      "lessonAddedDescription": "De extra les is toegevoegd.",
+      "updateError": "Fout",
+      "updateErrorDescription": "Les status bijwerken mislukt.",
+      "moveError": "Fout",
+      "moveErrorDescription": "Les verplaatsen mislukt.",
+      "addError": "Fout",
+      "addErrorDescription": "Les toevoegen mislukt."
+    }
+  },
+  "enrollments": {
+    "title": "Inschrijvingen",
+    "addEnrollment": "Inschrijving Toevoegen",
+    "newEnrollment": "Nieuwe Inschrijving",
+    "stepper": {
+      "lessonDetails": "Les Details",
+      "lessonDetailsDesc": "Configureer cursus en schema",
+      "studentSelection": "Leerlingen",
+      "studentSelectionDesc": "Selecteer leerlingen om in te schrijven",
+      "calendarSlot": "Tijdslot",
+      "calendarSlotDesc": "Kies dag en tijd",
+      "summary": "Bevestiging",
+      "summaryDesc": "Bekijk en bevestig"
+    },
+    "step1": {
+      "courseType": "Cursustype",
+      "selectCourseType": "Selecteer een cursustype",
+      "teacher": "Docent",
+      "selectTeacher": "Selecteer een docent",
+      "selectCourseTypeFirst": "Selecteer eerst een cursustype",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "endDateRequired": "Einddatum is verplicht voor workshops",
+      "endDateAutoSet": "Einddatum wordt automatisch ingesteld op startdatum voor proefles",
+      "recurrence": "Herhaling",
+      "trial": "Proefles (eenmalig)",
+      "weekly": "Wekelijks",
+      "biweekly": "Tweewekelijks"
+    },
+    "step2": {
+      "searchStudents": "Zoek Leerlingen",
+      "newStudent": "Nieuwe Leerling",
+      "searchPlaceholder": "Zoek op naam of e-mail...",
+      "searchHint": "Voer minimaal 2 karakters in om te zoeken",
+      "resultsFound": "{{count}} resultaat gevonden",
+      "resultsFound_other": "{{count}} resultaten gevonden",
+      "noStudentsFound": "Geen leerlingen gevonden",
+      "createNewStudent": "Maak een nieuwe leerling aan",
+      "maxStudentsReached": "Maximaal aantal leerlingen ({{max}}) bereikt voor dit cursustype.",
+      "selectedStudents": "Geselecteerde Leerlingen ({{count}}/{{max}})",
+      "noStudentsSelected": "Geen leerlingen geselecteerd",
+      "addStudentsHint": "Zoek en voeg leerlingen toe vanaf het linkerpaneel",
+      "lessonConfiguration": "Les Configuratie",
+      "enrollmentDate": "Inschrijfdatum",
+      "discountType": "Kortingstype",
+      "selectDiscount": "Selecteer korting",
+      "noDiscount": "Geen Korting",
+      "familyDiscount": "Gezinskorting ({{percent}}%)",
+      "courseDiscount": "Cursuskorting ({{percent}}%)",
+      "courseDiscountNotEligible": "Cursuskorting ({{percent}}%) - Niet beschikbaar",
+      "discountApplied": "{{percent}}% korting wordt toegepast",
+      "invoiceFrequency": "Factuur Frequentie",
+      "selectFrequency": "Selecteer frequentie",
+      "monthly": "Maandelijks",
+      "quarterly": "Per kwartaal",
+      "monthlyHint": "Maandelijks gefactureerd (bijv. jan26)",
+      "quarterlyHint": "Per kwartaal gefactureerd (bijv. jan-mrt26)",
+      "noteLabel": "Notitie (optioneel)",
+      "notePlaceholder": "Voeg een notitie toe voor deze inschrijving...",
+      "removeStudent": "Verwijder leerling",
+      "hasActiveEnrollments": "Heeft actieve inschrijvingen",
+      "startsOnCourseDate": "Start op cursusdatum"
+    },
+    "step3": {
+      "selectedStudents": "Geselecteerde Leerlingen",
+      "roomSelection": "Ruimte Selectie",
+      "selectRoom": "Selecteer een ruimte",
+      "roomRequired": "Ruimte Verplicht",
+      "selectRoomFirst": "Selecteer eerst een ruimte.",
+      "timeSlotUnavailable": "Tijdslot Niet Beschikbaar",
+      "timeSlotUnavailableDesc": "Dit tijdslot is niet beschikbaar.",
+      "timeSlotSelected": "Tijdslot Geselecteerd",
+      "timeSlotSelectedDesc": "Geselecteerd {{date}} {{startTime}} - {{endTime}}",
+      "errorLoadingData": "Fout bij laden van gegevens",
+      "loadingCalendar": "Kalender laden...",
+      "weekOf": "Week van {{date}}",
+      "selectedSlot": "Geselecteerd Tijdslot"
+    },
+    "step4": {
+      "confirmation": "Bevestiging",
+      "reviewDetails": "Bekijk je inschrijvingsgegevens voordat je indient",
+      "courseDetails": "Cursus Details",
+      "scheduleAndRoom": "Rooster & Ruimte",
+      "enrolledStudents": "Ingeschreven Leerlingen ({{count}})",
+      "starts": "Start {{date}}",
+      "readyToSubmit": "Klaar om in te dienen",
+      "conflictCheckOnSubmit": "Conflictdetectie wordt uitgevoerd wanneer je indient.",
+      "once": "Eenmalig",
+      "oncePerWeek": "Eenmalig per week",
+      "everyTwoWeeks": "Elke twee weken"
+    },
+    "summary": {
+      "courseType": "Cursustype:",
+      "teacher": "Docent:",
+      "startDate": "Startdatum:",
+      "endDate": "Einddatum:",
+      "frequency": "Frequentie:",
+      "type": "Type:",
+      "trialLesson": "Proefles",
+      "maxStudents": "Max. Leerlingen:",
+      "day": "Dag:",
+      "time": "Tijd:",
+      "room": "Ruimte:"
+    },
+    "form": {
+      "selectStudent": "Selecteer Leerling",
+      "selectSlot": "Selecteer Tijdslot",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum"
+    },
+    "conflicts": {
+      "title": "Roosterconflict Gedetecteerd",
+      "description": "Deze cursus conflicteert met bestaande inschrijving(en). Kies een andere cursus of tijdslot.",
+      "noConflicts": "Geen conflicten om weer te geven.",
+      "chooseDifferentCourse": "Kies Andere Cursus"
+    },
+    "addStudent": {
+      "title": "Nieuwe Leerling Toevoegen"
+    },
+    "actions": {
+      "previous": "Vorige",
+      "next": "Volgende",
+      "submit": "Verzenden",
+      "submitting": "Verzenden..."
+    },
+    "success": {
+      "title": "Inschrijving aangemaakt",
+      "description": "Cursus, inschrijvingen en lessen zijn succesvol aangemaakt."
+    },
+    "error": {
+      "title": "Inschrijving mislukt",
+      "unexpectedError": "Er is een onverwachte fout opgetreden",
+      "checkAvailabilityFailed": "Beschikbaarheid controleren mislukt. Probeer het opnieuw."
+    }
+  },
+  "invoices": {
+    "title": "Facturen",
+    "generateInvoices": "Facturen Genereren",
+    "invoiceDetails": "Factuur Details",
+    "form": {
+      "invoiceNumber": "Factuurnummer",
+      "invoiceDate": "Factuurdatum",
+      "dueDate": "Vervaldatum",
+      "student": "Leerling",
+      "amount": "Bedrag",
+      "status": "Status",
+      "notes": "Notities"
+    },
+    "sections": {
+      "lines": "Factuurregels",
+      "payments": "Betalingen",
+      "summary": "Samenvatting"
+    }
+  },
+  "settings": {
+    "title": "Instellingen",
+    "sections": {
+      "profile": "Profiel",
+      "preferences": "Voorkeuren",
+      "system": "Systeem",
+      "instruments": "Instrumenten",
+      "courseTypes": "Cursustypes",
+      "rooms": "Ruimtes",
+      "holidays": "Vakanties",
+      "scheduling": "Roostering",
+      "invoiceGeneration": "Factuur Generatie",
+      "seeding": "Test Data"
+    },
+    "instruments": {
+      "title": "Instrumenten",
+      "description": "Beheer beschikbare instrumenten voor lessen",
+      "addInstrument": "Toevoegen",
+      "editInstrument": "Instrument Bewerken",
+      "newInstrument": "Nieuw Instrument",
+      "name": "Naam",
+      "category": "Categorie",
+      "categories": {
+        "String": "Snaar",
+        "Percussion": "Percussie",
+        "Vocal": "Vocaal",
+        "Keyboard": "Toetsenbord",
+        "Wind": "Hout",
+        "Brass": "Koper",
+        "Electronic": "Electronisch",
+        "Other": "Anders"
+      },
+      "form": {
+        "namePlaceholder": "Instrumentnaam"
+      },
+      "empty": "Geen instrumenten geconfigureerd",
+      "archived": "Gearchiveerd"
+    },
+    "courseTypes": {
+      "title": "Cursustypes",
+      "description": "Configureer cursustypes en prijzen",
+      "addCourseType": "Toevoegen",
+      "editCourseType": "Cursustype Bewerken",
+      "newCourseType": "Nieuw Cursustype",
+      "name": "Naam",
+      "pricing": "Prijzen",
+      "pricingHistory": "Prijs Geschiedenis",
+      "type": "Type",
+      "types": {
+        "Individual": "Individueel",
+        "Group": "Groep",
+        "Workshop": "Workshop"
+      },
+      "form": {
+        "namePlaceholder": "bijv., Piano 30 min",
+        "instrumentPlaceholder": "Selecteer instrument",
+        "duration": "Duur (min)",
+        "customDuration": "Aangepaste duur",
+        "customDurationPlaceholder": "Aangepast",
+        "preset": "Voorinstelling",
+        "custom": "Aangepast",
+        "priceAdult": "Prijs Volwassene",
+        "priceChild": "Prijs Kind",
+        "priceAdultPlaceholder": "0.00",
+        "priceChildPlaceholder": "0.00",
+        "maxStudents": "Max Leerlingen",
+        "childDiscountNote": "Standaard: {{percent}}% korting op volwassenenprijs"
+      },
+      "warnings": {
+        "noTeachers": "Geen docenten",
+        "noTeachersForInstrument": "Geen docenten beschikbaar voor geselecteerd instrument en type",
+        "pricingLocked": "Prijzen zijn gebruikt in facturen. Het wijzigen van de prijs zal een nieuwe prijsversie aanmaken.",
+        "cannotArchive": "Kan niet archiveren: {{count}} actieve cursussen"
+      },
+      "pricingDialog": {
+        "title": "Nieuwe Prijsversie Aanmaken",
+        "description": "Maak een nieuwe prijsversie aan voor \"{{name}}\". De huidige prijzen zijn gebruikt in facturen en kunnen niet direct worden bewerkt.",
+        "activationDate": "Activeringsdatum",
+        "activationDateNote": "De nieuwe prijzen worden actief op deze datum. Huidige prijzen blijven van kracht tot de dag ervoor.",
+        "createVersion": "Nieuwe Versie Aanmaken",
+        "validation": {
+          "priceMin": "Prijs moet 0 of hoger zijn",
+          "childPriceHigh": "Kindprijs kan niet hoger zijn dan volwassenenprijs",
+          "dateRequired": "Activeringsdatum is verplicht"
+        }
+      },
+      "pricingHistory": {
+        "versions": "{{count}} historische prijsversie",
+        "versions_plural": "{{count}} historische prijsversies",
+        "until": "tot",
+        "from": "vanaf"
+      },
+      "empty": "Geen cursustypes geconfigureerd",
+      "noPricing": "Geen prijzen",
+      "adult": "Volwassene",
+      "child": "Kind"
+    },
+    "rooms": {
+      "title": "Ruimtes",
+      "description": "Beheer lesruimtes en apparatuur",
+      "addRoom": "Toevoegen",
+      "editRoom": "Ruimte Bewerken",
+      "newRoom": "Nieuwe Ruimte",
+      "name": "Naam",
+      "capacity": "Capaciteit",
+      "floorLevel": "Verdieping",
+      "equipment": "Apparatuur",
+      "equipmentTypes": {
+        "Piano": "Piano",
+        "Drums": "Drums",
+        "Amplifier": "Versterker",
+        "Microphone": "Microfoon",
+        "Whiteboard": "Whiteboard",
+        "Stereo": "Stereo",
+        "Guitar": "Gitaar"
+      },
+      "form": {
+        "namePlaceholder": "bijv., Ruimte A",
+        "floorLevelPlaceholder": "bijv., 1",
+        "notesPlaceholder": "Optionele notities over de ruimte"
+      },
+      "empty": "Geen ruimtes geconfigureerd",
+      "noEquipment": "Geen apparatuur",
+      "floor": "Verdieping {{level}}",
+      "linkedData": {
+        "activeCourses": "{{count}} actieve cursus",
+        "activeCourses_plural": "{{count}} actieve cursussen",
+        "scheduledLessons": "{{count}} geplande les",
+        "scheduledLessons_plural": "{{count}} geplande lessen",
+        "cannotArchive": "Kan niet archiveren: {{warning}}",
+        "cannotDelete": "Kan niet verwijderen: heeft gekoppelde gegevens"
+      },
+      "actions": {
+        "archive": "Archiveren",
+        "reactivate": "Heractiveren",
+        "deletePermanently": "Permanent verwijderen"
+      },
+      "errors": {
+        "createFailed": "Ruimte aanmaken mislukt",
+        "updateFailed": "Ruimte bijwerken mislukt",
+        "archiveFailed": "Ruimte archiveren mislukt",
+        "reactivateFailed": "Ruimte heractiveren mislukt",
+        "deleteFailed": "Ruimte verwijderen mislukt"
+      }
+    },
+    "holidays": {
+      "title": "Vakanties",
+      "description": "Stel schoolvakanties en sluitingen in",
+      "addHoliday": "Toevoegen",
+      "name": "Naam",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "form": {
+        "namePlaceholder": "bijv., Zomervakantie"
+      },
+      "empty": "Geen vakanties geconfigureerd"
+    },
+    "scheduling": {
+      "title": "Roostering",
+      "description": "Status van les roostering en beheer",
+      "statusCard": {
+        "title": "Roostering Status",
+        "plannedUntil": "Gepland tot",
+        "noLessons": "Geen lessen ingepland",
+        "daysAhead": "Dagen vooruit",
+        "activeCourses": "Actieve cursussen"
+      },
+      "runHistory": {
+        "title": "Rooster Uitvoering Geschiedenis",
+        "noRuns": "Nog geen roostering uitgevoerd.",
+        "loadMore": "Meer laden"
+      },
+      "adminArea": {
+        "title": "Beheerders Gebied",
+        "description": "Start handmatig gegenereerde lessen voor de komende 90 dagen voor alle actieve cursussen.",
+        "manualRun": "Handmatige run {{status}}",
+        "result": "{{courses}} cursussen verwerkt, {{created}} lessen gemaakt, {{skipped}} overgeslagen.",
+        "runButton": "Handmatig Genereren",
+        "confirmTitle": "Handmatig Genereren van Lessen?",
+        "confirmDescription": "Dit zal lessen genereren voor de komende 90 dagen voor alle actieve cursussen. Bestaande lessen zullen niet worden gedupliceerd.",
+        "confirmButton": "Ja, genereren"
+      },
+      "errorState": "Roostering status laden mislukt. Deze functie is mogelijk alleen beschikbaar voor Admin-gebruikers.",
+      "loading": "Status laden..."
+    },
+    "seeding": {
+      "title": "Database Seeding",
+      "description": "Beheer testgegevens voor ontwikkelingsomgevingen",
+      "statusLoading": "Status laden...",
+      "statusDisplay": {
+        "environment": "Omgeving",
+        "status": "Database Status",
+        "seeded": "Gezaaid",
+        "notSeeded": "Niet Gezaaid"
+      },
+      "warningBanner": {
+        "title": "Alleen voor Ontwikkeling",
+        "description": "Deze acties zijn bedoeld voor ontwikkelings- en testdoeleinden. Ze zullen uw database wijzigen en kunnen permanent gegevensverlies veroorzaken."
+      },
+      "statusSection": {
+        "title": "Huidige Status"
+      },
+      "actionsSection": {
+        "title": "Acties"
+      },
+      "actions": {
+        "seed": "Zaad",
+        "reset": "Herinstellen",
+        "reseed": "Opnieuw Zaad"
+      },
+      "preservation": {
+        "title": "Wat wordt behouden tijdens reset?",
+        "admin": "Admin gebruikeraccount",
+        "settings": "Globale instellingen (Btw-tarief, inschrijvingskosten, enz.)"
+      },
+      "confirmDialog": {
+        "warning": "Deze actie kan niet ongedaan worden gemaakt. Zorg ervoor dat u de gevolgen begrijpt voordat u doorgaat."
+      },
+      "errorState": "Seeder status laden mislukt. Deze functie is mogelijk alleen beschikbaar in de Development-omgeving of voor Admin-gebruikers."
+    },
+    "invoiceGeneration": {
+      "title": "Factuur Generatie",
+      "description": "Bulkfactuurafdrukken voor alle actieve inschrijvingen. Elke afdruk wordt vastgelegd met statistieken.",
+      "runHistory": {
+        "title": "Recente Factuur Afdrukken",
+        "noRuns": "Nog geen factuurafdrukken."
+      },
+      "generateArea": {
+        "title": "Facturen Genereren",
+        "description": "Genereer in bulk facturen voor alle actieve inschrijvingen die overeenkomen met het geselecteerde periodetype. Inschrijvingen die al facturen voor deze periode hebben, worden overgeslagen.",
+        "periodType": "Periodesoort",
+        "period": "Periode",
+        "resultTitle": "Factuurafdruk {{status}}",
+        "resultDescription": "{{enrollments}} inschrijvingen verwerkt, {{generated}} facturen gegenereerd, {{skipped}} overgeslagen{{failed|hasFailed}} {{failed}} mislukt{{/failed}}.{{amount|hasAmount}} Totaal: {{amount}}.{{/amount}} Duur: {{duration}}.",
+        "runButton": "Factuur Generatie Uitvoeren",
+        "confirmTitle": "Bulk Factuurafdruk Uitvoeren?",
+        "confirmDescription": "Dit genereert {{periodType}} facturen voor alle actieve inschrijvingen in periode {{period}}. Inschrijvingen die al facturen voor deze periode hebben, worden overgeslagen.",
+        "confirmButton": "Ja, facturen genereren"
+      },
+      "errorState": "Factuurafdrukgegevens laden mislukt. Deze functie is mogelijk alleen beschikbaar voor Admin-gebruikers."
+    },
+    "system": {
+      "title": "Systeeminstellingen",
+      "description": "Configureer instellingen voor de hele applicatie",
+      "empty": "Geen instellingen geconfigureerd"
+    },
+    "navigation": {
+      "account": "ACCOUNT",
+      "lessons": "LESSEN",
+      "scheduling": "ROOSTERING",
+      "finance": "FINANCIËN",
+      "general": "ALGEMEEN",
+      "dataAndStorage": "GEGEVENS EN OPSLAG"
+    },
+    "unsavedChanges": {
+      "title": "Niet opgeslagen wijzigingen",
+      "description": "U heeft niet opgeslagen wijzigingen. Wilt u deze weggooien en wegnavigeren?",
+      "discard": "Wijzigingen weggooien"
+    }
+  },
+  "schedule": {
+    "title": "Rooster",
+    "week": "Week {{number}}",
+    "filters": {
+      "allTeachers": "Alle docenten",
+      "allRooms": "Alle ruimtes"
+    },
+    "legend": {
+      "scheduled": "Gepland",
+      "completed": "Afgerond",
+      "cancelled": "Geannuleerd",
+      "noShow": "Niet Verschenen"
+    }
+  },
+  "calendar": {
+    "navigation": {
+      "previousWeek": "Vorige week",
+      "nextWeek": "Volgende week",
+      "calendarNavigation": "Kalendernavigatie"
+    },
+    "days": {
+      "mon": "MA",
+      "tue": "DI",
+      "wed": "WO",
+      "thu": "DO",
+      "fri": "VR",
+      "sat": "ZA",
+      "sun": "ZO"
+    },
+    "event": {
+      "attendees": "Deelnemers",
+      "original": "origineel",
+      "placeholder": "placeholder"
+    }
+  }
+}

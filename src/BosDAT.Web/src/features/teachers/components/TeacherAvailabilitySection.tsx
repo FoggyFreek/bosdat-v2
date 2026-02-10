@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Clock, Edit2, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,7 +14,6 @@ interface TeacherAvailabilitySectionProps {
   teacherId: string
 }
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const DEFAULT_FROM_TIME = '09:00:00'
 const DEFAULT_UNTIL_TIME = '22:00:00'
 const UNAVAILABLE_TIME = '00:00:00'
@@ -21,7 +21,10 @@ const UNAVAILABLE_TIME = '00:00:00'
 // Display order: Monday-Sunday (1-6, 0)
 const DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0]
 
+const DAY_TRANSLATION_KEYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
+
 export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySectionProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
@@ -136,7 +139,7 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Availability
+            {t('teachers.availability.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -153,19 +156,19 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Availability
+          {t('teachers.availability.title')}
         </CardTitle>
         {canEdit && !isEditing && (
           <Button variant="outline" size="sm" onClick={startEditing}>
             <Edit2 className="h-4 w-4 mr-2" />
-            Edit
+            {t('common.actions.edit')}
           </Button>
         )}
         {isEditing && (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={cancelEditing}>
               <X className="h-4 w-4 mr-2" />
-              Cancel
+              {t('common.actions.cancel')}
             </Button>
             <Button
               size="sm"
@@ -173,7 +176,7 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
               disabled={hasValidationErrors || updateMutation.isPending}
             >
               <Check className="h-4 w-4 mr-2" />
-              {updateMutation.isPending ? 'Saving...' : 'Save'}
+              {updateMutation.isPending ? t('teachers.availability.title') + '...' : t('common.actions.save')}
             </Button>
           </div>
         )}
@@ -193,17 +196,17 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
                   key={day}
                   className={`flex items-center gap-4 p-3 rounded-lg border ${!valid ? 'border-destructive bg-destructive/5' : 'border-border'}`}
                 >
-                  <span className="w-24 font-medium">{DAY_NAMES[day]}</span>
+                  <span className="w-24 font-medium">{t(`common.time.days.${DAY_TRANSLATION_KEYS[day]}`)}</span>
                   {unavailable ? (
                     <div className="flex items-center gap-4 flex-1">
-                      <span className="text-muted-foreground">Unavailable</span>
+                      <span className="text-muted-foreground">{t('teachers.availability.unavailable')}</span>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setDayAvailable(day)}
                         className="ml-auto"
                       >
-                        Set Available
+                        {t('teachers.availability.setAvailable')}
                       </Button>
                     </div>
                   ) : (
@@ -227,7 +230,7 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
                         onClick={() => setDayUnavailable(day)}
                         className="ml-auto text-muted-foreground hover:text-destructive"
                       >
-                        Set Unavailable
+                        {t('teachers.availability.setUnavailable')}
                       </Button>
                     </div>
                   )}
@@ -239,8 +242,8 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
             if (!existing) {
               return (
                 <div key={day} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                  <span className="w-24 font-medium">{DAY_NAMES[day]}</span>
-                  <span className="text-muted-foreground">Not set</span>
+                  <span className="w-24 font-medium">{t(`common.time.days.${DAY_TRANSLATION_KEYS[day]}`)}</span>
+                  <span className="text-muted-foreground">{t('teachers.availability.notSet')}</span>
                 </div>
               )
             }
@@ -252,9 +255,9 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
                 key={day}
                 className={`flex items-center gap-4 p-3 rounded-lg ${unavailable ? 'bg-muted/50' : 'bg-green-50 dark:bg-green-950/20'}`}
               >
-                <span className="w-24 font-medium">{DAY_NAMES[day]}</span>
+                <span className="w-24 font-medium">{t(`common.time.days.${DAY_TRANSLATION_KEYS[day]}`)}</span>
                 {unavailable ? (
-                  <span className="text-muted-foreground">Unavailable</span>
+                  <span className="text-muted-foreground">{t('teachers.availability.unavailable')}</span>
                 ) : (
                   <span className="text-green-700 dark:text-green-400">
                     {formatTime(existing.fromTime)} - {formatTime(existing.untilTime)}
@@ -266,7 +269,7 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
         </div>
         {isEditing && hasValidationErrors && (
           <p className="text-sm text-destructive mt-4">
-            End time must be at least 1 hour after start time. Use &quot;Set Unavailable&quot; to mark a day as unavailable.
+            {t('teachers.availability.validationError')}
           </p>
         )}
       </CardContent>

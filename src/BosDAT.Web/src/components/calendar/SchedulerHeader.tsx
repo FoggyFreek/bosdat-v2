@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,17 +37,19 @@ const SchedulerHeaderComponent: React.FC<SchedulerHeaderProps> = ({
   onNavigatePrevious,
   onNavigateNext,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <header
       className="flex items-center p-6 space-x-8"
       role="toolbar"
-      aria-label="Calendar navigation"
+      aria-label={t('calendar.navigation.calendarNavigation')}
     >
       <div className="flex space-x-4">
-        <NavigationButton onClick={onNavigatePrevious} ariaLabel="Previous week">
+        <NavigationButton onClick={onNavigatePrevious} ariaLabel={t('calendar.navigation.previousWeek')}>
           <ChevronLeft className="w-6 h-6" />
         </NavigationButton>
-        <NavigationButton onClick={onNavigateNext} ariaLabel="Next week">
+        <NavigationButton onClick={onNavigateNext} ariaLabel={t('calendar.navigation.nextWeek')}>
           <ChevronRight className="w-6 h-6" />
         </NavigationButton>
       </div>

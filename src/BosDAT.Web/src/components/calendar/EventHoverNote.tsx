@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Clock, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent, EventColors } from './types';
@@ -28,6 +29,8 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
   onMouseEnter,
   onMouseLeave,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div
       className={cn(
@@ -42,7 +45,7 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
       {/* Attendees */}
       {event.attendees && event.attendees.length > 0 && (
         <div className="mb-3">
-          <div className="text-[10px] font-semibold text-slate-600 mb-2">Attendees</div>
+          <div className="text-[10px] font-semibold text-slate-600 mb-2">{t('calendar.event.attendees')}</div>
           <div className="flex flex-wrap gap-1.5">
             {event.attendees.map((attendee) => (
               <div

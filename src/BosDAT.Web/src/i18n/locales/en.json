@@ -1,0 +1,943 @@
+{
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "add": "Add",
+      "remove": "Remove",
+      "search": "Search",
+      "filter": "Filter",
+      "confirm": "Confirm",
+      "close": "Close",
+      "submit": "Submit",
+      "back": "Back",
+      "next": "Next",
+      "previous": "Previous",
+      "export": "Export",
+      "import": "Import",
+      "refresh": "Refresh",
+      "view": "View",
+      "download": "Download",
+      "closeSidebar": "Close sidebar"
+    },
+    "entities": {
+      "student": "Student",
+      "students": "Students",
+      "teacher": "Teacher",
+      "teachers": "Teachers",
+      "course": "Course",
+      "courses": "Courses",
+      "lesson": "Lesson",
+      "lessons": "Lessons",
+      "invoice": "Invoice",
+      "invoices": "Invoices",
+      "enrollment": "Enrollment",
+      "enrollments": "Enrollments",
+      "instrument": "Instrument",
+      "instruments": "Instruments",
+      "room": "Room",
+      "rooms": "Rooms",
+      "holiday": "Holiday",
+      "holidays": "Holidays",
+      "schedule": "Schedule",
+      "payment": "Payment",
+      "payments": "Payments",
+      "absence": "Absence",
+      "absences": "Absences"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "trial": "Trial",
+      "pending": "Pending",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "scheduled": "Scheduled",
+      "draft": "Draft",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "overdue": "Overdue"
+    },
+    "states": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "warning": "Warning",
+      "info": "Information",
+      "noData": "No data available",
+      "noResults": "No results found",
+      "comingSoon": "Coming soon"
+    },
+    "form": {
+      "required": "Required",
+      "optional": "Optional",
+      "yes": "Yes",
+      "no": "No",
+      "select": "Select",
+      "selectPlaceholder": "Please select...",
+      "searchPlaceholder": "Search...",
+      "validation": {
+        "required": "This field is required",
+        "email": "Invalid email address",
+        "minLength": "Minimum {{min}} characters",
+        "maxLength": "Maximum {{max}} characters",
+        "numeric": "Must be a number",
+        "positive": "Must be positive"
+      }
+    },
+    "time": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "tomorrow": "Tomorrow",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "thisYear": "This Year",
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      },
+      "months": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      }
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "teachers": "Teachers",
+    "courses": "Courses",
+    "lessons": "Lessons",
+    "schedule": "Schedule",
+    "invoices": "Invoices",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "welcome": "Welcome to BosDAT",
+    "loginButton": "Sign In",
+    "logoutButton": "Sign Out",
+    "signInDescription": "Sign in to your account to continue",
+    "signingIn": "Signing in...",
+    "passwordPlaceholder": "Enter your password",
+    "errors": {
+      "invalidCredentials": "Invalid credentials",
+      "sessionExpired": "Session expired",
+      "loginFailed": "Login failed",
+      "invalidEmailOrPassword": "Invalid email or password. Please try again."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Welcome to BosDAT Music School Management",
+    "stats": {
+      "activeStudents": "Active students",
+      "activeTeachers": "Active teachers",
+      "activeCourses": "Active courses",
+      "totalStudents": "{{count}} total students",
+      "totalTeachers": "{{count}} total teachers",
+      "totalCourses": "{{count}} total courses"
+    },
+    "recentStudents": {
+      "title": "Recent students",
+      "noStudents": "No students yet"
+    },
+    "todaysSchedule": {
+      "title": "Today's schedule",
+      "comingSoon": "Coming soon!"
+    }
+  },
+  "students": {
+    "title": "Students",
+    "addStudent": "Add Student",
+    "editStudent": "Edit Student",
+    "studentDetails": "Student Details",
+    "subtitle": "Manage your music school students",
+    "allStudents": "All Students",
+    "searchPlaceholder": "Search students...",
+    "noStudentsFound": "No students found",
+    "profile": {
+      "title": "Profile",
+      "personalInfo": "Personal Information",
+      "contactInfo": "Contact Information",
+      "sameAsStudent": "Same as student",
+      "accountDetails": "Account Details",
+      "enrolled": "Enrolled",
+      "notSet": "Not set",
+      "registrationFee": "Registration Fee",
+      "paid": "Paid on",
+      "notPaidYet": "Not paid yet"
+    },
+    "form": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "prefix": "Prefix",
+      "email": "Email",
+      "phone": "Phone",
+      "phoneAlt": "Alternative Phone",
+      "dateOfBirth": "Date of Birth",
+      "address": "Address",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "status": "Status",
+      "notes": "Notes",
+      "gender": "Gender",
+      "billingContactName": "Contact Name",
+      "billingContactEmail": "Contact Email",
+      "billingContactPhone": "Contact Phone",
+      "billingAddress": "Billing Address",
+      "billingPostalCode": "Billing Postal Code",
+      "billingCity": "Billing City",
+      "autoDebit": "Enable automatic debit for this student",
+      "placeholders": {
+        "firstName": "Enter first name",
+        "lastName": "Enter last name",
+        "prefix": "e.g., van, de",
+        "email": "Enter email address",
+        "phone": "Enter phone number",
+        "phoneAlt": "Enter alternative phone",
+        "address": "Street and number",
+        "postalCode": "e.g., 1234 AB",
+        "city": "Enter city",
+        "gender": "Select gender",
+        "status": "Select status",
+        "notes": "Additional notes about this student",
+        "billingContactName": "Name of person receiving invoices",
+        "billingContactEmail": "Email for invoices",
+        "billingContactPhone": "Phone for billing inquiries"
+      }
+    },
+    "sections": {
+      "basicInfo": "Basic Information",
+      "contact": "Contact",
+      "address": "Address",
+      "personal": "Personal",
+      "billing": "Billing / Payer",
+      "other": "Other",
+      "profile": "Profile",
+      "enrollments": "Enrollments",
+      "lessons": "Lessons",
+      "invoices": "Invoices",
+      "balance": "Balance",
+      "corrections": "Corrections",
+      "absences": "Absences",
+      "preferences": "Preferences"
+    },
+    "navigation": {
+      "general": "GENERAL",
+      "scheduling": "SCHEDULING",
+      "finance": "FINANCE"
+    },
+    "enrollments": {
+      "courseEnrollments": "Course Enrollments",
+      "enrollInCourse": "Enroll in Course",
+      "selectCourse": "Select a course",
+      "noAvailableCourses": "No available courses",
+      "enrolling": "Enrolling...",
+      "enroll": "Enroll",
+      "noEnrollments": "No enrollments yet",
+      "promote": "Promote"
+    },
+    "absence": {
+      "absenceRecords": "Absence Records",
+      "absenceTrackingComingSoon": "Absence tracking will be available in a future update."
+    },
+    "preferences": {
+      "studentPreferences": "Student Preferences",
+      "studentPreferencesComingSoon": "Student preferences will be available in a future update."
+    },
+    "corrections": {
+      "ledgerEntries": "Ledger Entries",
+      "addCorrection": "Add Correction",
+      "noActiveCorrections": "No active corrections",
+      "noCorrections": "No corrections yet",
+      "all": "All"
+    },
+    "balance": {
+      "availableCredit": "Available Credit",
+      "totalCredits": "Total Credits",
+      "totalDebits": "Total Debits",
+      "openEntries": "Open Entries",
+      "openBalanceEntries": "Open Balance Entries",
+      "noOpenBalanceEntries": "No open balance entries",
+      "entryType": {
+        "credit": "Credit",
+        "debit": "Debit"
+      },
+      "applied": "Applied",
+      "transactionHistory": "Transaction History",
+      "noTransactions": "No transactions yet",
+      "status": {
+        "open": "Open",
+        "applied": "Applied",
+        "partially_applied": "Partially Applied",
+        "reversed": "Reversed"
+      },
+      "by": "by"
+    },
+    "invoices": {
+      "invoiceHistory": "Invoice History",
+      "noInvoices": "No invoices yet",
+      "noInvoicesDesc": "Invoices will appear here once they are generated for this student.",
+      "balance": "Balance",
+      "status": {
+        "draft": "Draft",
+        "sent": "Sent",
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "cancelled": "Cancelled"
+      },
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "period": "Period",
+      "billingType": "Billing Type",
+      "description": "Description",
+      "qty": "Qty",
+      "unitPrice": "Unit Price",
+      "vat": "VAT",
+      "subtotal": "Subtotal",
+      "creditsApplied": "Credits Applied",
+      "debitsApplied": "Debits Applied",
+      "total": "Total",
+      "appliedCorrections": "Applied Corrections",
+      "recalculate": "Recalculate",
+      "viewFullInvoice": "View Full Invoice",
+      "invoice": "Invoice",
+      "printOrDownload": "Print or download this invoice for your records.",
+      "downloadPdf": "Download PDF",
+      "musicSchool": "Music School",
+      "tel": "Tel",
+      "email": "Email",
+      "kvk": "KvK",
+      "billTo": "Bill To",
+      "outstandingCharges": "Outstanding Charges",
+      "totalDue": "Total Due",
+      "amountPaid": "Amount Paid",
+      "paymentInstructions": "Payment Instructions",
+      "paymentInstructionsText": "Please transfer the amount to the following bank account, using invoice number {{invoiceNumber}} as the payment reference.",
+      "iban": "IBAN"
+    },
+    "billingHelp": "Fill in these fields if someone else (e.g., a parent) should receive invoices.",
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "preferNotToSay": "Prefer not to say"
+    },
+    "duplicate": {
+      "title": "Potential duplicate students found",
+      "description": "The following existing students may be duplicates. Please review before proceeding.",
+      "match": "{{reason}} ({{score}}% match)",
+      "acknowledge": "Not a duplicate, continue anyway",
+      "acknowledgementRequired": "You must acknowledge to proceed with saving",
+      "acknowledged": "Acknowledged - you can now save this student",
+      "checking": "Checking for duplicates...",
+      "reviewWarning": "Please review potential duplicates above"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "billingEmailInvalid": "Please enter a valid email address"
+    },
+    "actions": {
+      "creating": "Creating...",
+      "saving": "Saving...",
+      "createStudent": "Create Student",
+      "saveChanges": "Save Changes"
+    }
+  },
+  "teachers": {
+    "title": "Teachers",
+    "addTeacher": "Add Teacher",
+    "editTeacher": "Edit Teacher",
+    "teacherDetails": "Teacher Details",
+    "subtitle": "Manage your music school teachers",
+    "allTeachers": "All Teachers",
+    "searchPlaceholder": "Search teachers...",
+    "noTeachersFound": "No teachers found",
+    "form": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "prefix": "Prefix",
+      "email": "Email",
+      "phone": "Phone",
+      "specialization": "Specialization",
+      "isActive": "Active",
+      "hourlyRate": "Hourly Rate",
+      "notes": "Notes",
+      "role": "Role",
+      "address": "Address",
+      "postalCode": "Postal Code",
+      "city": "City",
+      "placeholders": {
+        "firstName": "Enter first name",
+        "lastName": "Enter last name",
+        "prefix": "e.g., van, de",
+        "email": "Enter email address",
+        "phone": "Enter phone number",
+        "address": "Street and number",
+        "postalCode": "e.g., 1234 AB",
+        "city": "Enter city",
+        "hourlyRate": "Enter hourly rate",
+        "role": "Select role",
+        "notes": "Any additional notes about this teacher"
+      }
+    },
+    "sections": {
+      "basicInfo": "Basic Information",
+      "address": "Address",
+      "instruments": "Instruments",
+      "lessonTypes": "Lesson Types",
+      "financial": "Financial Information",
+      "additionalInfo": "Additional Information",
+      "profile": "Profile",
+      "availability": "Availability",
+      "courses": "Courses",
+      "schedule": "Schedule"
+    },
+    "instrumentsHelp": "Select the instruments this teacher can teach",
+    "lessonTypesHelp": "Select the lesson types this teacher can teach",
+    "noInstrumentsAvailable": "No instruments available",
+    "selectInstrumentsFirst": "Please select at least one instrument to see available lesson types",
+    "noLessonTypesAvailable": "No lesson types available for the selected instruments",
+    "roles": {
+      "teacher": "Teacher",
+      "admin": "Admin",
+      "staff": "Staff"
+    },
+    "availability": {
+      "title": "Availability",
+      "unavailable": "Unavailable",
+      "notSet": "Not set",
+      "setAvailable": "Set Available",
+      "setUnavailable": "Set Unavailable",
+      "validationError": "End time must be at least 1 hour after start time. Use \"Set Unavailable\" to mark a day as unavailable."
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "hourlyRateInvalid": "Please enter a valid hourly rate"
+    },
+    "actions": {
+      "saving": "Saving...",
+      "createTeacher": "Create Teacher",
+      "updateTeacher": "Update Teacher"
+    }
+  },
+  "courses": {
+    "title": "Courses",
+    "addCourse": "Add Course",
+    "editCourse": "Edit Course",
+    "courseDetails": "Course Details",
+    "subtitle": "Manage your recurring courses",
+    "noCoursesFound": "No courses found",
+    "loadFailed": "Failed to load courses. Please try again later.",
+    "form": {
+      "name": "Name",
+      "courseType": "Course Type",
+      "teacher": "Teacher",
+      "instrument": "Instrument",
+      "room": "Room",
+      "dayOfWeek": "Day of Week",
+      "time": "Time",
+      "duration": "Duration",
+      "weekParity": "Week Parity",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "maxStudents": "Maximum Students",
+      "status": "Status"
+    },
+    "weekParity": {
+      "odd": "Odd",
+      "even": "Even",
+      "all": "All"
+    },
+    "sections": {
+      "summary": "Summary",
+      "enrollments": "Enrollments",
+      "lessonHistory": "Lesson History"
+    }
+  },
+  "lessons": {
+    "title": "Lessons",
+    "addLesson": "Add Lesson",
+    "moveLesson": "Move Lesson",
+    "cancelLesson": "Cancel Lesson",
+    "generateLessons": "Generate Lessons",
+    "lessonNotFound": "Lesson not found",
+    "courseNotFound": "Course not found",
+    "form": {
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "teacher": "Teacher",
+      "room": "Room",
+      "status": "Status",
+      "notes": "Notes",
+      "reason": "Reason",
+      "cancellationReason": "Reason for cancellation",
+      "cancellationReasonPlaceholder": "Enter the reason for cancellation...",
+      "cancellationReasonRequired": "Reason for cancellation *"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "moved": "Moved",
+      "noShow": "No-Show"
+    },
+    "dialogs": {
+      "cancel": {
+        "title": "Cancel Lesson",
+        "description": "Are you sure you want to cancel this lesson?",
+        "reason": "Reason (optional)",
+        "chooseAction": "Choose action",
+        "cancelOption": "Cancel",
+        "cancelDescription": "Not invoiced",
+        "noShowOption": "No-Show",
+        "noShowDescription": "Invoiced"
+      }
+    },
+    "summary": {
+      "scheduledEvent": "Scheduled Event",
+      "courseDetails": "Course Details",
+      "course": "Course",
+      "regularTime": "Regular time",
+      "frequency": "Frequency"
+    },
+    "scheduler": {
+      "filters": "Filters",
+      "newTimeslot": "New Timeslot",
+      "selectedTimeslot": "Selected Timeslot",
+      "extraLesson": "Extra lesson"
+    },
+    "actions": {
+      "addExtraLesson": "Add Extra Lesson",
+      "moveLesson": "Move Lesson",
+      "adding": "Adding...",
+      "moving": "Moving...",
+      "backToCourse": "Back to Course",
+      "backToCourses": "Back to Courses"
+    },
+    "toast": {
+      "lessonUpdated": "Lesson updated",
+      "lessonCancelled": "The lesson has been cancelled.",
+      "lessonNoShow": "The lesson has been marked as no-show.",
+      "lessonMoved": "Lesson moved",
+      "lessonMovedDescription": "The lesson has been moved to the new timeslot.",
+      "lessonAdded": "Lesson added",
+      "lessonAddedDescription": "The extra lesson has been added.",
+      "updateError": "Error",
+      "updateErrorDescription": "Failed to update the lesson status.",
+      "moveError": "Error",
+      "moveErrorDescription": "Failed to move the lesson.",
+      "addError": "Error",
+      "addErrorDescription": "Failed to add the lesson."
+    }
+  },
+  "enrollments": {
+    "title": "Enrollments",
+    "addEnrollment": "Add Enrollment",
+    "newEnrollment": "New Enrollment",
+    "stepper": {
+      "lessonDetails": "Lesson Details",
+      "lessonDetailsDesc": "Configure course and schedule",
+      "studentSelection": "Students",
+      "studentSelectionDesc": "Select students to enroll",
+      "calendarSlot": "Time Slot",
+      "calendarSlotDesc": "Choose day and time",
+      "summary": "Confirmation",
+      "summaryDesc": "Review and confirm"
+    },
+    "step1": {
+      "courseType": "Course Type",
+      "selectCourseType": "Select a course type",
+      "teacher": "Teacher",
+      "selectTeacher": "Select a teacher",
+      "selectCourseTypeFirst": "Select a course type first",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "endDateRequired": "End date is required for workshops",
+      "endDateAutoSet": "End date is automatically set to start date for trial lessons",
+      "recurrence": "Recurrence",
+      "trial": "Trial (single occurrence)",
+      "weekly": "Weekly",
+      "biweekly": "Bi-weekly"
+    },
+    "step2": {
+      "searchStudents": "Search Students",
+      "newStudent": "New Student",
+      "searchPlaceholder": "Search by name or email...",
+      "searchHint": "Enter at least 2 characters to search",
+      "resultsFound": "{{count}} result found",
+      "resultsFound_other": "{{count}} results found",
+      "noStudentsFound": "No students found",
+      "createNewStudent": "Create a new student",
+      "maxStudentsReached": "Maximum number of students ({{max}}) reached for this course type.",
+      "selectedStudents": "Selected Students ({{count}}/{{max}})",
+      "noStudentsSelected": "No students selected",
+      "addStudentsHint": "Search and add students from the left panel",
+      "lessonConfiguration": "Lesson Configuration",
+      "enrollmentDate": "Enrollment Date",
+      "discountType": "Discount Type",
+      "selectDiscount": "Select discount",
+      "noDiscount": "No Discount",
+      "familyDiscount": "Family Discount ({{percent}}%)",
+      "courseDiscount": "Course Discount ({{percent}}%)",
+      "courseDiscountNotEligible": "Course Discount ({{percent}}%) - Not eligible",
+      "discountApplied": "{{percent}}% discount will be applied",
+      "invoiceFrequency": "Invoice Frequency",
+      "selectFrequency": "Select frequency",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "monthlyHint": "Invoiced each month (e.g., jan26)",
+      "quarterlyHint": "Invoiced each quarter (e.g., jan-mar26)",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Add a note for this enrollment...",
+      "removeStudent": "Remove student",
+      "hasActiveEnrollments": "Has active enrollments",
+      "startsOnCourseDate": "Starts on course date"
+    },
+    "step3": {
+      "selectedStudents": "Selected Students",
+      "roomSelection": "Room Selection",
+      "selectRoom": "Select a room",
+      "roomRequired": "Room Required",
+      "selectRoomFirst": "Please select a room first.",
+      "timeSlotUnavailable": "Time Slot Unavailable",
+      "timeSlotUnavailableDesc": "This time slot is not available.",
+      "timeSlotSelected": "Time Slot Selected",
+      "timeSlotSelectedDesc": "Selected {{date}} {{startTime}} - {{endTime}}",
+      "errorLoadingData": "Error loading data",
+      "loadingCalendar": "Loading calendar...",
+      "weekOf": "Week of {{date}}",
+      "selectedSlot": "Selected Slot"
+    },
+    "step4": {
+      "confirmation": "Confirmation",
+      "reviewDetails": "Review your enrollment details before submitting",
+      "courseDetails": "Course Details",
+      "scheduleAndRoom": "Schedule & Room",
+      "enrolledStudents": "Enrolled Students ({{count}})",
+      "starts": "Starts {{date}}",
+      "readyToSubmit": "Ready to submit",
+      "conflictCheckOnSubmit": "Conflict detection will be performed when you submit.",
+      "once": "Once",
+      "oncePerWeek": "Once per week",
+      "everyTwoWeeks": "Every two weeks"
+    },
+    "summary": {
+      "courseType": "Course Type:",
+      "teacher": "Teacher:",
+      "startDate": "Start Date:",
+      "endDate": "End Date:",
+      "frequency": "Frequency:",
+      "type": "Type:",
+      "trialLesson": "Trial Lesson",
+      "maxStudents": "Max Students:",
+      "day": "Day:",
+      "time": "Time:",
+      "room": "Room:"
+    },
+    "form": {
+      "selectStudent": "Select Student",
+      "selectSlot": "Select Time Slot",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "conflicts": {
+      "title": "Schedule Conflict Detected",
+      "description": "This course conflicts with existing enrollment(s). Please choose a different course or time slot.",
+      "noConflicts": "No conflicts to display.",
+      "chooseDifferentCourse": "Choose Different Course"
+    },
+    "addStudent": {
+      "title": "Add New Student"
+    },
+    "actions": {
+      "previous": "Previous",
+      "next": "Next",
+      "submit": "Submit",
+      "submitting": "Submitting..."
+    },
+    "success": {
+      "title": "Enrollment created",
+      "description": "Course, enrollments and lessons have been created successfully."
+    },
+    "error": {
+      "title": "Enrollment failed",
+      "unexpectedError": "An unexpected error occurred",
+      "checkAvailabilityFailed": "Failed to check availability. Please try again."
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "generateInvoices": "Generate Invoices",
+    "invoiceDetails": "Invoice Details",
+    "form": {
+      "invoiceNumber": "Invoice Number",
+      "invoiceDate": "Invoice Date",
+      "dueDate": "Due Date",
+      "student": "Student",
+      "amount": "Amount",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "sections": {
+      "lines": "Invoice Lines",
+      "payments": "Payments",
+      "summary": "Summary"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "profile": "Profile",
+      "preferences": "Preferences",
+      "system": "System",
+      "instruments": "Instruments",
+      "courseTypes": "Course Types",
+      "rooms": "Rooms",
+      "holidays": "Holidays",
+      "scheduling": "Scheduling",
+      "invoiceGeneration": "Invoice Generation",
+      "seeding": "Test Data"
+    },
+    "instruments": {
+      "title": "Instruments",
+      "addInstrument": "Add Instrument",
+      "name": "Name"
+    },
+    "courseTypes": {
+      "title": "Course Types",
+      "addCourseType": "Add Course Type",
+      "name": "Name",
+      "pricing": "Pricing",
+      "pricingHistory": "Pricing History"
+    },
+    "rooms": {
+      "title": "Rooms",
+      "description": "Manage lesson rooms and equipment",
+      "addRoom": "Add Room",
+      "editRoom": "Edit Room",
+      "newRoom": "New Room",
+      "name": "Name",
+      "capacity": "Capacity",
+      "floorLevel": "Floor Level",
+      "equipment": "Equipment",
+      "equipmentTypes": {
+        "Piano": "Piano",
+        "Drums": "Drums",
+        "Amplifier": "Amplifier",
+        "Microphone": "Microphone",
+        "Whiteboard": "Whiteboard",
+        "Stereo": "Stereo",
+        "Guitar": "Guitar"
+      },
+      "form": {
+        "namePlaceholder": "e.g., Room A",
+        "floorLevelPlaceholder": "e.g., 1",
+        "notesPlaceholder": "Optional notes about the room"
+      },
+      "empty": "No rooms configured",
+      "noEquipment": "No equipment",
+      "floor": "Floor {{level}}",
+      "archived": "Archived",
+      "linkedData": {
+        "activeCourses": "{{count}} active course",
+        "activeCourses_plural": "{{count}} active courses",
+        "scheduledLessons": "{{count}} scheduled lesson",
+        "scheduledLessons_plural": "{{count}} scheduled lessons",
+        "cannotArchive": "Cannot archive: {{warning}}",
+        "cannotDelete": "Cannot delete: has linked data"
+      },
+      "actions": {
+        "archive": "Archive",
+        "reactivate": "Reactivate",
+        "deletePermanently": "Delete permanently"
+      },
+      "errors": {
+        "createFailed": "Failed to create room",
+        "updateFailed": "Failed to update room",
+        "archiveFailed": "Failed to archive room",
+        "reactivateFailed": "Failed to reactivate room",
+        "deleteFailed": "Failed to delete room"
+      }
+    },
+    "holidays": {
+      "title": "Holidays",
+      "description": "Set school holidays and closures",
+      "addHoliday": "Add Holiday",
+      "name": "Name",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "form": {
+        "namePlaceholder": "e.g., Summer holiday"
+      },
+      "empty": "No holidays configured"
+    },
+    "scheduling": {
+      "title": "Scheduling",
+      "description": "Lesson scheduling status and management",
+      "statusCard": {
+        "title": "Scheduling Status",
+        "plannedUntil": "Planned until",
+        "noLessons": "No lessons scheduled",
+        "daysAhead": "Days ahead",
+        "activeCourses": "Active courses"
+      },
+      "runHistory": {
+        "title": "Schedule Run History",
+        "noRuns": "No scheduling runs yet.",
+        "loadMore": "Load more"
+      },
+      "adminArea": {
+        "title": "Administrator Area",
+        "description": "Trigger a manual bulk lesson generation for the next 90 days across all active courses.",
+        "manualRun": "Manual run {{status}}",
+        "result": "{{courses}} courses processed, {{created}} lessons created, {{skipped}} skipped.",
+        "runButton": "Run Manual Generation",
+        "confirmTitle": "Run Manual Lesson Generation?",
+        "confirmDescription": "This will generate lessons for the next 90 days for all active courses. Existing lessons will not be duplicated.",
+        "confirmButton": "Yes, run generation"
+      },
+      "errorState": "Failed to load scheduling status. This feature may only be available for Admin users.",
+      "loading": "Loading status..."
+    },
+    "seeding": {
+      "title": "Database Seeding",
+      "description": "Manage test data for development environments",
+      "statusLoading": "Loading status...",
+      "statusDisplay": {
+        "environment": "Environment",
+        "status": "Database Status",
+        "seeded": "Seeded",
+        "notSeeded": "Not Seeded"
+      },
+      "warningBanner": {
+        "title": "Development Only",
+        "description": "These actions are intended for development and testing purposes only. They will modify your database and can cause permanent data loss."
+      },
+      "statusSection": {
+        "title": "Current Status"
+      },
+      "actionsSection": {
+        "title": "Actions"
+      },
+      "actions": {
+        "seed": "Seed",
+        "reset": "Reset",
+        "reseed": "Reseed"
+      },
+      "preservation": {
+        "title": "What is preserved during reset?",
+        "admin": "Admin user account",
+        "settings": "Global settings (VAT rate, registration fee, etc.)"
+      },
+      "confirmDialog": {
+        "warning": "This action cannot be undone. Make sure you understand the consequences before proceeding."
+      },
+      "errorState": "Failed to load seeder status. This feature may only be available in the Development environment or for Admin users."
+    },
+    "invoiceGeneration": {
+      "title": "Invoice Generation",
+      "description": "Generate invoices in bulk for all active enrollments. Each run is logged with statistics.",
+      "runHistory": {
+        "title": "Recent Invoice Runs",
+        "noRuns": "No invoice generation runs yet."
+      },
+      "generateArea": {
+        "title": "Generate Invoices",
+        "description": "Generate invoices in bulk for all active enrollments matching the selected period type. Enrollments that already have invoices for this period will be skipped.",
+        "periodType": "Period Type",
+        "period": "Period",
+        "resultTitle": "Invoice run {{status}}",
+        "resultDescription": "{{enrollments}} enrollments processed, {{generated}} invoices generated, {{skipped}} skipped{{failed|hasFailed}} {{failed}} failed{{/failed}}.{{amount|hasAmount}} Total: {{amount}}.{{/amount}} Duration: {{duration}}.",
+        "runButton": "Run Invoice Generation",
+        "confirmTitle": "Run Bulk Invoice Generation?",
+        "confirmDescription": "This will generate {{periodType}} invoices for all active enrollments in the period {{period}}. Enrollments that already have invoices for this period will be skipped.",
+        "confirmButton": "Yes, generate invoices"
+      },
+      "errorState": "Failed to load invoice generation data. This feature may only be available for Admin users."
+    },
+    "system": {
+      "title": "System Settings",
+      "description": "Configure application-wide settings",
+      "empty": "No settings configured"
+    },
+    "navigation": {
+      "account": "ACCOUNT",
+      "lessons": "LESSONS",
+      "scheduling": "SCHEDULING",
+      "finance": "FINANCE",
+      "general": "GENERAL",
+      "dataAndStorage": "DATA AND STORAGE"
+    },
+    "unsavedChanges": {
+      "title": "Unsaved changes",
+      "description": "You have unsaved changes. Do you want to discard them and navigate away?",
+      "discard": "Discard changes"
+    }
+  },
+  "schedule": {
+    "title": "Schedule",
+    "week": "Week {{number}}",
+    "filters": {
+      "allTeachers": "All teachers",
+      "allRooms": "All rooms"
+    },
+    "legend": {
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "noShow": "No Show"
+    }
+  },
+  "calendar": {
+    "navigation": {
+      "previousWeek": "Previous week",
+      "nextWeek": "Next week",
+      "calendarNavigation": "Calendar navigation"
+    },
+    "days": {
+      "mon": "MON",
+      "tue": "TUE",
+      "wed": "WED",
+      "thu": "THU",
+      "fri": "FRI",
+      "sat": "SAT",
+      "sun": "SUN"
+    },
+    "event": {
+      "attendees": "Attendees",
+      "original": "original",
+      "placeholder": "placeholder"
+    }
+  }
+}

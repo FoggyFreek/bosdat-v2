@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { isSameDay } from '@/lib/datetime-helpers';
 
@@ -9,7 +10,7 @@ type DayHeadersProps = {
 };
 
 // Move constant outside component to prevent recreation on every render
-const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
+const DAY_LABEL_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 type DayHeaderContentProps = {
   dayLabel: string;
@@ -24,6 +25,8 @@ const DayHeaderContent: React.FC<DayHeaderContentProps> = ({ dayLabel, dayNumber
 );
 
 const DayHeadersComponent: React.FC<DayHeadersProps> = ({ dates, highlightedDate, onDateSelect }) => {
+  const { t } = useTranslation();
+
   const handleDateClick = useCallback(
     (date: Date) => {
       onDateSelect?.(date);
@@ -39,7 +42,7 @@ const DayHeadersComponent: React.FC<DayHeadersProps> = ({ dates, highlightedDate
       <div className="grid grid-cols-7">
         {dates.map((date, index) => {
           const isHighlighted = highlightedDate ? isSameDay(date, highlightedDate) : false;
-          const dayLabel = DAY_LABELS[index];
+          const dayLabel = t(`calendar.days.${DAY_LABEL_KEYS[index]}`);
           const dayNumber = date.getDate();
 
           const className = cn(
