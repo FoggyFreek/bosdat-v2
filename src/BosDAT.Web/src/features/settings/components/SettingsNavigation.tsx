@@ -1,6 +1,6 @@
 import {
   User, SlidersHorizontal, Music, BookOpen,
-  DoorOpen, CalendarDays, Clock, Settings2, Database
+  DoorOpen, CalendarDays, Clock, Settings2, Database, Receipt
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SettingKey, NavGroup } from '@/features/settings/types'
@@ -26,6 +26,12 @@ const navigationGroups: NavGroup[] = [
       { key: 'rooms', label: 'Rooms', icon: <DoorOpen className="h-4 w-4" /> },
       { key: 'holidays', label: 'Holidays', icon: <CalendarDays className="h-4 w-4" /> },
       { key: 'scheduling', label: 'Scheduling', icon: <Clock className="h-4 w-4" /> },
+    ],
+  },
+  {
+    label: 'FINANCE',
+    items: [
+      { key: 'invoice-generation', label: 'Invoice generation', icon: <Receipt className="h-4 w-4" /> },
     ],
   },
   {

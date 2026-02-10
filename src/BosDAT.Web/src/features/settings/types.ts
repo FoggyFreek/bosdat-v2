@@ -8,6 +8,7 @@ export type SettingKey =
   | 'rooms'
   | 'holidays'
   | 'scheduling'
+  | 'invoice-generation'
   | 'system'
   | 'seeding'
 
@@ -76,5 +77,50 @@ export interface ManualRunResult {
   totalCoursesProcessed: number
   totalLessonsCreated: number
   totalLessonsSkipped: number
+  status: string
+}
+
+export interface InvoiceRun {
+  id: string
+  periodStart: string
+  periodEnd: string
+  periodType: string
+  totalEnrollmentsProcessed: number
+  totalInvoicesGenerated: number
+  totalSkipped: number
+  totalFailed: number
+  totalAmount: number
+  durationMs: number
+  status: string
+  errorMessage: string | null
+  initiatedBy: string
+  createdAt: string
+}
+
+export interface InvoiceRunsResponse {
+  items: InvoiceRun[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export interface StartInvoiceRunRequest {
+  periodStart: string
+  periodEnd: string
+  periodType: string
+  applyLedgerCorrections: boolean
+}
+
+export interface InvoiceRunResult {
+  invoiceRunId: string
+  periodStart: string
+  periodEnd: string
+  periodType: string
+  totalEnrollmentsProcessed: number
+  totalInvoicesGenerated: number
+  totalSkipped: number
+  totalFailed: number
+  totalAmount: number
+  durationMs: number
   status: string
 }
