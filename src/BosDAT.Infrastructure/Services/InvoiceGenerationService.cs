@@ -171,6 +171,7 @@ public class InvoiceGenerationService(
         {
             await ledgerService.RevertLedgerApplicationsAsync(invoice, ct);
             UnInvoiceAndClearLines(invoice);
+            await context.SaveChangesAsync(ct);
 
             var lessons = await GetInvoiceableLessonsAsync(
                 invoice.Enrollment, invoice.PeriodStart.Value, invoice.PeriodEnd.Value, ct);

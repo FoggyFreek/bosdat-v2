@@ -18,10 +18,11 @@ const LESSON_STATUS_COLORS: Record<LessonStatus, string> = {
 
 interface CourseLessonHistoryCardProps {
   lessons: Lesson[]
-  courseId: string
+  courseId?: string
   filters: LessonFilters
   onFiltersChange: (filters: LessonFilters) => void
   onCancelLesson: (lesson: Lesson) => void
+  showCourseName?: boolean
 }
 
 export function CourseLessonHistoryCard({
@@ -30,6 +31,7 @@ export function CourseLessonHistoryCard({
   filters,
   onFiltersChange,
   onCancelLesson,
+  showCourseName = false,
 }: CourseLessonHistoryCardProps) {
   const navigate = useNavigate()
   const [showFilters, setShowFilters] = useState(
@@ -57,13 +59,15 @@ export function CourseLessonHistoryCard({
             <Filter className="h-4 w-4 mr-1" />
             Filter
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/courses/${courseId}/add-lesson`)}
-          >
-            Add lesson
-          </Button>
+          {courseId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/courses/${courseId}/add-lesson`)}
+            >
+              Add lesson
+            </Button>
+          )}
         </div>
       </div>
 
@@ -116,7 +120,8 @@ export function CourseLessonHistoryCard({
               <tr className="border-b text-left">
                 <th className="pb-2 font-medium text-muted-foreground">Date</th>
                 <th className="pb-2 font-medium text-muted-foreground">Time</th>
-                <th className="pb-2 font-medium text-muted-foreground">Student</th>
+                {showCourseName && <th className="pb-2 font-medium text-muted-foreground">Course</th>}
+                {!showCourseName && <th className="pb-2 font-medium text-muted-foreground">Student</th>}
                 <th className="pb-2 font-medium text-muted-foreground">Status</th>
                 <th className="pb-2 font-medium text-muted-foreground text-right">Invoiced</th>
                 <th className="pb-2 font-medium text-muted-foreground text-right">Actions</th>
@@ -129,7 +134,12 @@ export function CourseLessonHistoryCard({
                   <td className="py-2">
                     {formatTime(lesson.startTime)} – {formatTime(lesson.endTime)}
                   </td>
-                  <td className="py-2">{lesson.studentName ?? '—'}</td>
+                  {showCourseName && (
+                    <td className="py-2">
+                      {lesson.instrumentName} – {lesson.courseTypeName}
+                    </td>
+                  )}
+                  {!showCourseName && <td className="py-2">{lesson.studentName ?? '—'}</td>}
                   <td className="py-2">
                     <span
                       className={cn(
@@ -154,9 +164,9 @@ export function CourseLessonHistoryCard({
                         size="sm"
                         className="h-7 px-2"
                         title="Move lesson"
-                        disabled={lesson.status !== 'Scheduled'}
+                        disabled={lesson.isInvoiced || lesson.status !== 'Scheduled'}
                         onClick={() =>
-                          navigate(`/courses/${courseId}/lessons/${lesson.id}/move`)
+                          navigate(`/courses/${courseId ?? lesson.courseId}/lessons/${lesson.id}/move`)
                         }
                       >
                         <ArrowRightLeft className="h-3.5 w-3.5" />
@@ -166,7 +176,7 @@ export function CourseLessonHistoryCard({
                         size="sm"
                         className="h-7 px-2 text-destructive hover:text-destructive"
                         title="Cancel lesson"
-                        disabled={lesson.status !== 'Scheduled'}
+                        disabled={lesson.isInvoiced || lesson.status !== 'Scheduled'}
                         onClick={() => onCancelLesson(lesson)}
                       >
                         <Ban className="h-3.5 w-3.5" />

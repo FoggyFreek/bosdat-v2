@@ -13,8 +13,6 @@ public class EnrollmentsController(
     IEnrollmentService enrollmentService,
     IEnrollmentPricingService enrollmentPricingService) : ControllerBase
 {
-    private readonly IEnrollmentPricingService _enrollmentPricingService = enrollmentPricingService;
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetAll(
         [FromQuery] Guid? studentId,

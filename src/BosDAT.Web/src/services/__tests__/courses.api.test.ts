@@ -77,13 +77,15 @@ describe('coursesApi', () => {
     expect(result).toEqual(updated)
   })
 
-  it('enroll enrolls student in course', async () => {
-    const enrollmentData = { studentId: 's-1', discountPercent: 10, notes: 'Test' }
-    const enrollment = { id: 'e-1', ...enrollmentData }
-    mock.onPost('/courses/c-1/enroll').reply(200, enrollment)
+  it('getCount fetches course count with params', async () => {
+    const count = { total: 5 }
+    mock.onGet('/courses/count').reply((config) => {
+      expect(config.params).toEqual({ status: 'Active' })
+      return [200, count]
+    })
 
-    const result = await coursesApi.enroll('c-1', enrollmentData)
+    const result = await coursesApi.getCount({ status: 'Active' })
 
-    expect(result).toEqual(enrollment)
+    expect(result).toEqual(count)
   })
 })

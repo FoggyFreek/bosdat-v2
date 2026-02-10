@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { EnrollmentStepper } from '../EnrollmentStepper'
 import { coursesApi } from '@/features/courses/api'
+import { enrollmentsApi } from '@/features/enrollments/api'
 import { schedulingApi } from '@/features/settings/api'
 import type { Course } from '@/features/courses/types'
 import type { ManualRunResult } from '@/features/settings/types'
@@ -32,7 +33,12 @@ vi.mock('@/features/course-types/api', () => ({
 vi.mock('@/features/courses/api', () => ({
   coursesApi: {
     create: vi.fn(),
-    enroll: vi.fn(),
+  },
+}))
+
+vi.mock('@/features/enrollments/api', () => ({
+  enrollmentsApi: {
+    create: vi.fn(),
   },
 }))
 
@@ -164,7 +170,7 @@ describe('EnrollmentStepper - Submit', () => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
     vi.mocked(coursesApi.create).mockResolvedValue(mockCreatedCourse)
-    vi.mocked(coursesApi.enroll).mockResolvedValue({})
+    vi.mocked(enrollmentsApi.create).mockResolvedValue({})
     vi.mocked(schedulingApi.runSingle).mockResolvedValue(mockRunResult)
   })
 
@@ -207,19 +213,21 @@ describe('EnrollmentStepper - Submit', () => {
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
     await waitFor(() => {
-      expect(coursesApi.enroll).toHaveBeenCalledTimes(2)
+      expect(enrollmentsApi.create).toHaveBeenCalledTimes(2)
     })
 
-    expect(coursesApi.enroll).toHaveBeenCalledWith('new-course-1', {
+    expect(enrollmentsApi.create).toHaveBeenCalledWith({
       studentId: 's-1',
+      courseId: 'new-course-1',
       discountPercent: 15,
       discountType: 'Family',
       invoicingPreference: 'Monthly',
       notes: 'First year student',
     })
 
-    expect(coursesApi.enroll).toHaveBeenCalledWith('new-course-1', {
+    expect(enrollmentsApi.create).toHaveBeenCalledWith({
       studentId: 's-2',
+      courseId: 'new-course-1',
       discountPercent: 0,
       discountType: 'None',
       invoicingPreference: 'Quarterly',
@@ -247,8 +255,8 @@ describe('EnrollmentStepper - Submit', () => {
       callOrder.push('create')
       return mockCreatedCourse
     })
-    vi.mocked(coursesApi.enroll).mockImplementation(async () => {
-      callOrder.push('enroll')
+    vi.mocked(enrollmentsApi.create).mockImplementation(async () => {
+      callOrder.push('enrollment')
       return {}
     })
     vi.mocked(schedulingApi.runSingle).mockImplementation(async () => {
@@ -262,7 +270,7 @@ describe('EnrollmentStepper - Submit', () => {
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
     await waitFor(() => {
-      expect(callOrder).toEqual(['create', 'enroll', 'enroll', 'runSingle'])
+      expect(callOrder).toEqual(['create', 'enrollment', 'enrollment', 'runSingle'])
     })
   })
 
@@ -344,7 +352,7 @@ describe('EnrollmentStepper - Submit', () => {
       )
     })
 
-    expect(coursesApi.enroll).not.toHaveBeenCalled()
+    expect(enrollmentsApi.create).not.toHaveBeenCalled()
     expect(schedulingApi.runSingle).not.toHaveBeenCalled()
 
     expect(screen.getByRole('button', { name: /submit/i })).not.toBeDisabled()
@@ -353,7 +361,7 @@ describe('EnrollmentStepper - Submit', () => {
   it('handles enrollment error gracefully', async () => {
     const user = userEvent.setup()
 
-    vi.mocked(coursesApi.enroll).mockRejectedValue(new Error('Enrollment failed'))
+    vi.mocked(enrollmentsApi.create).mockRejectedValue(new Error('Enrollment failed'))
 
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
@@ -391,7 +399,7 @@ describe('EnrollmentStepper - Submit', () => {
     })
 
     expect(coursesApi.create).toHaveBeenCalled()
-    expect(coursesApi.enroll).toHaveBeenCalledTimes(2)
+    expect(enrollmentsApi.create).toHaveBeenCalledTimes(2)
 
     expect(screen.getByRole('button', { name: /submit/i })).not.toBeDisabled()
   })

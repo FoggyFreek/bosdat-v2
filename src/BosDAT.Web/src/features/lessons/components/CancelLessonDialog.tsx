@@ -38,6 +38,7 @@ export function CancelLessonDialog({ lesson, courseId, onClose }: CancelLessonDi
         description: `The lesson has been ${statusLabel}.`,
       })
       queryClient.invalidateQueries({ queryKey: ['course', courseId, 'lessons'] })
+      queryClient.invalidateQueries({ queryKey: ['lessons', 'student'] })
       handleClose()
     },
     onError: () => {
