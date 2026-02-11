@@ -7,9 +7,9 @@ import { useToast } from '@/hooks/use-toast'
 import { lessonsApi } from '@/features/lessons/api'
 import { coursesApi } from '@/features/courses/api'
 import { useScheduleCalendarData } from '@/features/lessons/hooks/useScheduleCalendarData'
-import { formatTime } from '@/lib/datetime-helpers'
+import { formatTime, getDurationMinutes } from '@/lib/datetime-helpers'
 import type { Course } from '@/features/courses/types'
-import { LessonSchedulerLayout, getDurationMinutes } from '@/components/LessonSchedulerLayout'
+import { LessonSchedulerLayout } from '@/components/LessonSchedulerLayout'
 
 function CourseSummaryMini({ course }: { course: Course }) {
   return (

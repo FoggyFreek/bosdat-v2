@@ -30,7 +30,7 @@ describe('ConflictDialog', () => {
     )
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
+    expect(screen.getByText('enrollments.conflicts.title')).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
@@ -59,8 +59,8 @@ describe('ConflictDialog', () => {
     )
 
     // Check for specific conflict details
-    expect(screen.getByText('Monday 10:00 - 11:30')).toBeInTheDocument()
-    expect(screen.getAllByText(/Weekly/i).length).toBeGreaterThan(0)
+    expect(screen.getByText('common.time.days.monday 10:00 - 11:30')).toBeInTheDocument()
+    expect(screen.getAllByText(/courses.frequency.weekly/i).length).toBeGreaterThan(0)
   })
 
   it('displays week parity when present', () => {
@@ -69,7 +69,7 @@ describe('ConflictDialog', () => {
       <ConflictDialog open={true} conflicts={mockConflicts} onClose={onClose} />
     )
 
-    expect(screen.getByText(/Odd Weeks/i)).toBeInTheDocument()
+    expect(screen.getByText(/courses.parity.odd/i)).toBeInTheDocument()
   })
 
   it('calls onClose when close button clicked', async () => {
@@ -79,7 +79,7 @@ describe('ConflictDialog', () => {
     )
 
     const closeButton = screen.getByRole('button', {
-      name: /choose different course/i,
+      name: /enrollments.conflicts.chooseDifferentCourse/i,
     })
     closeButton.click()
 
@@ -90,7 +90,7 @@ describe('ConflictDialog', () => {
     const onClose = vi.fn()
     render(<ConflictDialog open={true} conflicts={[]} onClose={onClose} />)
 
-    expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
+    expect(screen.getByText('enrollments.conflicts.title')).toBeInTheDocument()
     expect(screen.queryByText('Piano Basics')).not.toBeInTheDocument()
   })
 
@@ -99,16 +99,16 @@ describe('ConflictDialog', () => {
       const onClose = vi.fn()
       render(<ConflictDialog open={true} conflicts={undefined as unknown as ConflictingCourse[]} onClose={onClose} />)
 
-      expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
-      expect(screen.getByText('No conflicts to display.')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.conflicts.title')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.conflicts.noConflicts')).toBeInTheDocument()
     })
 
     it('should handle null conflicts array', () => {
       const onClose = vi.fn()
       render(<ConflictDialog open={true} conflicts={null as unknown as ConflictingCourse[]} onClose={onClose} />)
 
-      expect(screen.getByText('Schedule Conflict Detected')).toBeInTheDocument()
-      expect(screen.getByText('No conflicts to display.')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.conflicts.title')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.conflicts.noConflicts')).toBeInTheDocument()
     })
   })
 })

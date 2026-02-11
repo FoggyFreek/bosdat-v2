@@ -80,3 +80,10 @@ export interface TeacherAvailabilityForInstrument {
   teacherCount: number
   hasTeachers: boolean
 }
+
+// Translation Mappings
+export const courseTypeCategoryTranslations = {
+  Individual: 'settings.courseTypes.types.Individual',
+  Group: 'settings.courseTypes.types.Group',
+  Workshop: 'settings.courseTypes.types.Workshop',
+} as const satisfies Record<CourseTypeCategory, string>

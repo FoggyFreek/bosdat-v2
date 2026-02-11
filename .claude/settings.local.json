@@ -36,7 +36,14 @@
       "Bash(npm ls:*)",
       "Bash(npm view:*)",
       "WebSearch",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(while read file)",
+      "Bash(do grep -q \"vi.mock\\(''react-i18next''\" \"$file\")",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(i18n\\): add translations for teacher availability and calendar components\n\n- Update TeacherAvailabilitySection.tsx with i18n support\n  * Add useTranslation hook\n  * Replace hardcoded day names with translated keys from common.time.days.*\n  * Replace all button labels and messages with translated keys\n  * Move day name array to translation keys constant\n\n- Update calendar components with i18n support\n  * SchedulerHeader: add navigation labels \\(previousWeek, nextWeek, calendarNavigation\\)\n  * DayHeaders: replace MON/TUE/etc with translated calendar.days.* keys\n  * EventHoverNote: translate \"Attendees\" label to calendar.event.attendees\n  * Note: Step3CalendarSlotSelection already had i18n implemented\n\n- Add teacher availability translations \\(en.json and nl.json\\)\n  * teachers.availability.title\n  * teachers.availability.unavailable\n  * teachers.availability.notSet\n  * teachers.availability.setAvailable\n  * teachers.availability.setUnavailable\n  * teachers.availability.validationError\n\n- Add calendar translations \\(en.json and nl.json\\)\n  * calendar.navigation.previousWeek\n  * calendar.navigation.nextWeek\n  * calendar.navigation.calendarNavigation\n  * calendar.days.mon through calendar.days.sun\n  * calendar.event.attendees\n  * calendar.event.original\n  * calendar.event.placeholder\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python3:*)"
     ]
   }
 }

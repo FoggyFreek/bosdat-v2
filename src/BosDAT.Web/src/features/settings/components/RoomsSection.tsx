@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,7 @@ const defaultFormData: FormData = {
 const equipmentKeys = ['hasPiano', 'hasDrums', 'hasAmplifier', 'hasMicrophone', 'hasWhiteboard', 'hasStereo', 'hasGuitar'] as const
 
 export function RoomsSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
@@ -176,12 +178,12 @@ export function RoomsSection() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Rooms</CardTitle>
-          <CardDescription>Manage lesson rooms and equipment</CardDescription>
+          <CardTitle>{t('settings.rooms.title')}</CardTitle>
+          <CardDescription>{t('settings.rooms.description')}</CardDescription>
         </div>
         <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
-          Add
+          {t('common.actions.add')}
         </Button>
       </CardHeader>
       <CardContent>
@@ -194,27 +196,27 @@ export function RoomsSection() {
 
         {(showAdd || editId !== null) && (
           <div className="mb-4 p-4 bg-muted/50 rounded-lg space-y-3">
-            <h4 className="font-medium">{editId ? 'Edit Room' : 'New Room'}</h4>
+            <h4 className="font-medium">{editId ? t('settings.rooms.editRoom') : t('settings.rooms.newRoom')}</h4>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label>Room Name *</Label>
+                <Label>{t('settings.rooms.name')} *</Label>
                 <Input
-                  placeholder="e.g., Room A"
+                  placeholder={t('settings.rooms.form.namePlaceholder')}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
               <div>
-                <Label>Floor Level</Label>
+                <Label>{t('settings.rooms.floorLevel')}</Label>
                 <Input
                   type="number"
-                  placeholder="e.g., 1"
+                  placeholder={t('settings.rooms.form.floorLevelPlaceholder')}
                   value={formData.floorLevel}
                   onChange={(e) => setFormData({ ...formData, floorLevel: e.target.value })}
                 />
               </div>
               <div>
-                <Label>Capacity *</Label>
+                <Label>{t('settings.rooms.capacity')} *</Label>
                 <Input
                   type="number"
                   min="1"
@@ -224,7 +226,7 @@ export function RoomsSection() {
               </div>
             </div>
             <div>
-              <Label className="mb-2 block">Equipment</Label>
+              <Label className="mb-2 block">{t('settings.rooms.equipment')}</Label>
               <div className="flex flex-wrap gap-4">
                 {equipmentKeys.map((key) => (
                   <label key={key} className="flex items-center gap-2 text-sm">
@@ -240,15 +242,15 @@ export function RoomsSection() {
               </div>
             </div>
             <div>
-              <Label>Notes</Label>
+              <Label>{t('common.entities.notes')}</Label>
               <Input
-                placeholder="Optional notes about the room"
+                placeholder={t('settings.rooms.form.notesPlaceholder')}
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={resetForm}>Cancel</Button>
+              <Button variant="outline" onClick={resetForm}>{t('common.actions.cancel')}</Button>
               <Button
                 onClick={() => {
                   if (editId) {
@@ -259,7 +261,7 @@ export function RoomsSection() {
                 }}
                 disabled={!formData.name || createMutation.isPending || updateMutation.isPending}
               >
-                {editId ? 'Save' : 'Create'}
+                {editId ? t('common.actions.save') : t('common.actions.create')}
               </Button>
             </div>
           </div>
@@ -272,7 +274,7 @@ export function RoomsSection() {
         )}
 
         {!isLoading && rooms.length === 0 && (
-          <p className="text-muted-foreground">No rooms configured</p>
+          <p className="text-muted-foreground">{t('settings.rooms.empty')}</p>
         )}
 
         {!isLoading && rooms.length > 0 && (
@@ -286,7 +288,7 @@ export function RoomsSection() {
                       'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
                       room.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                     )}>
-                      {room.isActive ? 'Active' : 'Archived'}
+                      {room.isActive ? t('common.status.active') : t('settings.rooms.archived')}
                     </span>
                     {hasLinkedData(room) && (
                       <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-blue-100 text-blue-800">
@@ -295,20 +297,20 @@ export function RoomsSection() {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {room.floorLevel !== undefined && room.floorLevel !== null && `Floor ${room.floorLevel} - `}
-                    Capacity: {room.capacity}
+                    {room.floorLevel !== undefined && room.floorLevel !== null && `${t('settings.rooms.floor', { level: room.floorLevel })} - `}
+                    {t('settings.rooms.capacity')}: {room.capacity}
                     {' - '}
                     {[
-                      room.hasPiano && 'Piano',
-                      room.hasDrums && 'Drums',
-                      room.hasAmplifier && 'Amp',
-                      room.hasMicrophone && 'Mic',
-                      room.hasWhiteboard && 'Whiteboard',
-                      room.hasStereo && 'Stereo',
-                      room.hasGuitar && 'Guitar',
+                      room.hasPiano && t('settings.rooms.equipmentTypes.Piano'),
+                      room.hasDrums && t('settings.rooms.equipmentTypes.Drums'),
+                      room.hasAmplifier && t('settings.rooms.equipmentTypes.Amplifier'),
+                      room.hasMicrophone && t('settings.rooms.equipmentTypes.Microphone'),
+                      room.hasWhiteboard && t('settings.rooms.equipmentTypes.Whiteboard'),
+                      room.hasStereo && t('settings.rooms.equipmentTypes.Stereo'),
+                      room.hasGuitar && t('settings.rooms.equipmentTypes.Guitar'),
                     ]
                       .filter(Boolean)
-                      .join(', ') || 'No equipment'}
+                      .join(', ') || t('settings.rooms.noEquipment')}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
@@ -316,7 +318,7 @@ export function RoomsSection() {
                     variant="ghost"
                     size="icon"
                     onClick={() => startEdit(room)}
-                    title="Edit"
+                    title={t('common.actions.edit')}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -328,7 +330,7 @@ export function RoomsSection() {
                         className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                         onClick={() => archiveMutation.mutate(room.id)}
                         disabled={hasLinkedData(room) || archiveMutation.isPending}
-                        title={hasLinkedData(room) ? `Cannot archive: ${getLinkedDataWarning(room)}` : 'Archive'}
+                        title={hasLinkedData(room) ? `${t('settings.rooms.linkedData.cannotArchive', { warning: getLinkedDataWarning(room) })}` : t('settings.rooms.actions.archive')}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -338,7 +340,7 @@ export function RoomsSection() {
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => deleteMutation.mutate(room.id)}
                         disabled={room.activeCourseCount > 0 || room.scheduledLessonCount > 0 || (rooms.find(r => r.id === room.id)?.activeCourseCount ?? 0) > 0 || deleteMutation.isPending}
-                        title={hasLinkedData(room) ? `Cannot delete: has linked data` : 'Delete permanently'}
+                        title={hasLinkedData(room) ? t('settings.rooms.linkedData.cannotDelete') : t('settings.rooms.actions.deletePermanently')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -350,7 +352,7 @@ export function RoomsSection() {
                       className="text-green-600 hover:text-green-700 hover:bg-green-50"
                       onClick={() => reactivateMutation.mutate(room.id)}
                       disabled={reactivateMutation.isPending}
-                      title="Reactivate"
+                      title={t('settings.rooms.actions.reactivate')}
                     >
                       <Check className="h-4 w-4" />
                     </Button>

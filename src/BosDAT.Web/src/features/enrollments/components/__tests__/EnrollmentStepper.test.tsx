@@ -113,10 +113,10 @@ describe('EnrollmentStepper', () => {
     render(<EnrollmentStepper />)
 
     await waitFor(() => {
-      expect(screen.getByText('Lesson Details')).toBeInTheDocument()
-      expect(screen.getByText('Students')).toBeInTheDocument()
-      expect(screen.getByText('Time Slot')).toBeInTheDocument()
-      expect(screen.getByText('Confirmation')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.stepper.lessonDetails')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.stepper.studentSelection')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.stepper.calendarSlot')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.stepper.summary')).toBeInTheDocument()
     })
   })
 
@@ -124,9 +124,9 @@ describe('EnrollmentStepper', () => {
     render(<EnrollmentStepper />)
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/course type/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/teacher/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/start date/i)).toBeInTheDocument()
+      expect(screen.getByLabelText('enrollments.step1.courseType')).toBeInTheDocument()
+      expect(screen.getByLabelText('enrollments.step1.teacher')).toBeInTheDocument()
+      expect(screen.getByLabelText('enrollments.step1.startDate')).toBeInTheDocument()
     })
   })
 
@@ -134,7 +134,7 @@ describe('EnrollmentStepper', () => {
     render(<EnrollmentStepper />)
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'enrollments.actions.next' })).toBeInTheDocument()
     })
   })
 
@@ -142,7 +142,7 @@ describe('EnrollmentStepper', () => {
     render(<EnrollmentStepper />)
 
     await waitFor(() => {
-      const nextButton = screen.getByRole('button', { name: /next/i })
+      const nextButton = screen.getByRole('button', { name: 'enrollments.actions.next' })
       expect(nextButton).toBeDisabled()
     })
   })
@@ -151,55 +151,71 @@ describe('EnrollmentStepper', () => {
     const user = userEvent.setup()
     render(<EnrollmentStepper />)
 
-    await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     // Fill out step 1
-    const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+    const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
     await user.click(courseTypeSelect)
     await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
-    const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+    const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
     await user.click(teacherSelect)
     await user.click(screen.getByRole('option', { name: /john smith/i }))
 
-    const startDateInput = screen.getByLabelText(/start date/i)
+    const startDateInput = screen.getByLabelText('enrollments.step1.startDate')
     await user.clear(startDateInput)
     await user.type(startDateInput, '2024-01-15')
 
-    await waitFor(() => {
-      const nextButton = screen.getByRole('button', { name: /next/i })
-      expect(nextButton).not.toBeDisabled()
-    })
+    await waitFor(
+      () => {
+        const nextButton = screen.getByRole('button', { name: 'enrollments.actions.next' })
+        expect(nextButton).not.toBeDisabled()
+      },
+      { timeout: 3000 }
+    )
   })
 
   it('shows Previous button on step 2', async () => {
     const user = userEvent.setup()
     render(<EnrollmentStepper />)
 
-    await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     // Fill out step 1
-    const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+    const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
     await user.click(courseTypeSelect)
     await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
-    const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+    const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
     await user.click(teacherSelect)
     await user.click(screen.getByRole('option', { name: /john smith/i }))
 
-    const startDateInput = screen.getByLabelText(/start date/i)
+    const startDateInput = screen.getByLabelText('enrollments.step1.startDate')
     await user.clear(startDateInput)
     await user.type(startDateInput, '2024-01-15')
 
     // Go to step 2
-    await user.click(screen.getByRole('button', { name: /next/i }))
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'enrollments.actions.next' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
+
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.next' }))
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'enrollments.actions.previous' })).toBeInTheDocument()
     })
   })
 
@@ -207,32 +223,42 @@ describe('EnrollmentStepper', () => {
     const user = userEvent.setup()
     render(<EnrollmentStepper />)
 
-    await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     // Fill out step 1
-    const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+    const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
     await user.click(courseTypeSelect)
     await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
-    const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+    const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
     await user.click(teacherSelect)
     await user.click(screen.getByRole('option', { name: /john smith/i }))
 
-    const startDateInput = screen.getByLabelText(/start date/i)
+    const startDateInput = screen.getByLabelText('enrollments.step1.startDate')
     await user.clear(startDateInput)
     await user.type(startDateInput, '2024-01-15')
 
     // Go to step 2
-    await user.click(screen.getByRole('button', { name: /next/i }))
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'enrollments.actions.next' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
+
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.next' }))
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'enrollments.actions.previous' })).toBeInTheDocument()
     })
 
     // Go back to step 1
-    await user.click(screen.getByRole('button', { name: /previous/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.previous' }))
 
     // Check that form data is preserved
     await waitFor(() => {
@@ -245,30 +271,40 @@ describe('EnrollmentStepper', () => {
     const user = userEvent.setup()
     render(<EnrollmentStepper />)
 
-    await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     // Fill out step 1
-    const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+    const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
     await user.click(courseTypeSelect)
     await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
-    const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+    const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
     await user.click(teacherSelect)
     await user.click(screen.getByRole('option', { name: /john smith/i }))
 
-    const startDateInput = screen.getByLabelText(/start date/i)
+    const startDateInput = screen.getByLabelText('enrollments.step1.startDate')
     await user.clear(startDateInput)
     await user.type(startDateInput, '2024-01-15')
 
     // Go to step 2
-    await user.click(screen.getByRole('button', { name: /next/i }))
+    await waitFor(
+      () => {
+        expect(screen.getByRole('button', { name: 'enrollments.actions.next' })).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
+
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.next' }))
 
     await waitFor(() => {
       // Step 2 shows the student selection component with search functionality
-      expect(screen.getByText(/search students/i)).toBeInTheDocument()
-      expect(screen.getByPlaceholderText(/search by name or email/i)).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step2.searchStudents')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('enrollments.step2.searchPlaceholder')).toBeInTheDocument()
     })
   })
 })

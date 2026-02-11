@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Stepper, type StepConfig } from '@/components/ui/stepper'
@@ -25,18 +26,8 @@ import { enrollmentsApi } from '../api'
 const DISPLAY_NAME = 'EnrollmentStepper'
 const CONTENT_DISPLAY_NAME = 'EnrollmentStepperContent'
 
-const STEPS: StepConfig[] = [
-  { title: 'Lesson Details', description: 'Configure course and schedule' },
-  { title: 'Students', description: 'Select students to enroll' },
-  { title: 'Time Slot', description: 'Choose day and time' },
-  { title: 'Confirmation', description: 'Review and confirm' },
-]
-
-const getNextButtonLabel = (currentStep: number, totalSteps: number) => {
-  return currentStep === totalSteps - 1 ? 'Submit' : 'Next'
-}
-
 const EnrollmentStepperContent = () => {
+  const { t } = useTranslation()
   const {
     currentStep,
     setCurrentStep,
@@ -48,6 +39,17 @@ const EnrollmentStepperContent = () => {
 
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  const STEPS: StepConfig[] = useMemo(() => [
+    { title: t('enrollments.stepper.lessonDetails'), description: t('enrollments.stepper.lessonDetailsDesc') },
+    { title: t('enrollments.stepper.studentSelection'), description: t('enrollments.stepper.studentSelectionDesc') },
+    { title: t('enrollments.stepper.calendarSlot'), description: t('enrollments.stepper.calendarSlotDesc') },
+    { title: t('enrollments.stepper.summary'), description: t('enrollments.stepper.summaryDesc') },
+  ], [t])
+
+  const getNextButtonLabel = (currentStep: number, totalSteps: number) => {
+    return currentStep === totalSteps - 1 ? t('enrollments.actions.submit') : t('enrollments.actions.next')
+  }
 
   const { data: courseTypes = [] } = useQuery<CourseType[]>({
     queryKey: ['courseTypes', 'active'],
@@ -127,16 +129,16 @@ const EnrollmentStepperContent = () => {
       await schedulingApi.runSingle(course.id)
 
       toast({
-        title: 'Enrollment created',
-        description: 'Course, enrollments and lessons have been created successfully.',
+        title: t('enrollments.success.title'),
+        description: t('enrollments.success.description'),
       })
 
       navigate(`/courses/${course.id}`)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+      const message = error instanceof Error ? error.message : t('enrollments.error.unexpectedError')
       toast({
         variant: 'destructive',
-        title: 'Enrollment failed',
+        title: t('enrollments.error.title'),
         description: message,
       })
     } finally {
@@ -187,7 +189,7 @@ const EnrollmentStepperContent = () => {
 
   const renderHeader = () => (
     <CardHeader>
-      <CardTitle>New Enrollment</CardTitle>
+      <CardTitle>{t('enrollments.newEnrollment')}</CardTitle>
     </CardHeader>
   )
 
@@ -209,7 +211,7 @@ const EnrollmentStepperContent = () => {
       onClick={handlePrevious}
       variant="outline"
     >
-      Previous
+      {t('enrollments.actions.previous')}
     </Button>
   )
 
@@ -218,7 +220,7 @@ const EnrollmentStepperContent = () => {
       disabled={isNextButtonDisabled || isSubmitting}
       onClick={handleNext}
     >
-      {isSubmitting ? 'Submitting...' : getNextButtonLabel(currentStep, STEPS.length)}
+      {isSubmitting ? t('enrollments.actions.submitting') : getNextButtonLabel(currentStep, STEPS.length)}
     </Button>
   )
 

@@ -61,9 +61,9 @@ describe('InvoiceGenerationSection', () => {
     it('renders the section title and description', async () => {
       render(<InvoiceGenerationSection />)
 
-      expect(screen.getByText('Invoice Generation')).toBeInTheDocument()
+      expect(screen.getByText('settings.invoiceGeneration.title')).toBeInTheDocument()
       expect(
-        screen.getByText(/Each run is logged with statistics/)
+        screen.getByText('settings.invoiceGeneration.description')
       ).toBeInTheDocument()
     })
 
@@ -72,7 +72,7 @@ describe('InvoiceGenerationSection', () => {
 
       render(<InvoiceGenerationSection />)
 
-      expect(screen.getByText('Loading...')).toBeInTheDocument()
+      expect(screen.getByText('common.states.loading')).toBeInTheDocument()
     })
 
     it('displays recent invoice runs', async () => {
@@ -96,7 +96,7 @@ describe('InvoiceGenerationSection', () => {
       render(<InvoiceGenerationSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No invoice generation runs yet.')).toBeInTheDocument()
+        expect(screen.getByText('settings.invoiceGeneration.runHistory.noRuns')).toBeInTheDocument()
       })
     })
 
@@ -115,8 +115,8 @@ describe('InvoiceGenerationSection', () => {
       render(<InvoiceGenerationSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Period Type')).toBeInTheDocument()
-        expect(screen.getByText('Period')).toBeInTheDocument()
+        expect(screen.getByText('settings.invoiceGeneration.generateArea.periodType')).toBeInTheDocument()
+        expect(screen.getByText('settings.invoiceGeneration.generateArea.period')).toBeInTheDocument()
       })
     })
 
@@ -124,7 +124,7 @@ describe('InvoiceGenerationSection', () => {
       render(<InvoiceGenerationSection />)
 
       await waitFor(() => {
-        const button = screen.getByRole('button', { name: /Run Invoice Generation/i })
+        const button = screen.getByRole('button', { name: /settings\.invoiceGeneration\.generateArea\.runButton/i })
         expect(button).toBeDisabled()
       })
     })
@@ -133,7 +133,7 @@ describe('InvoiceGenerationSection', () => {
       render(<InvoiceGenerationSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Generate Invoices')).toBeInTheDocument()
+        expect(screen.getByText('settings.invoiceGeneration.generateArea.title')).toBeInTheDocument()
       })
     })
 
@@ -142,7 +142,7 @@ describe('InvoiceGenerationSection', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Generate invoices in bulk for all active enrollments matching/)
+          screen.getByText('settings.invoiceGeneration.generateArea.description')
         ).toBeInTheDocument()
       })
     })
@@ -156,7 +156,7 @@ describe('InvoiceGenerationSection', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/Failed to load invoice generation data/)
+          screen.getByText('settings.invoiceGeneration.errorState')
         ).toBeInTheDocument()
       })
     })

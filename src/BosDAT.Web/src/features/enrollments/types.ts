@@ -135,3 +135,24 @@ export interface ValidateEnrollmentRequest {
   courseId: string
 }
 
+// Translation Mappings
+export const enrollmentStatusTranslations = {
+  Trail: 'enrollments.status.trail',
+  Active: 'enrollments.status.active',
+  Withdrawn: 'enrollments.status.withdrawn',
+  Completed: 'enrollments.status.completed',
+  Suspended: 'enrollments.status.suspended',
+} as const satisfies Record<EnrollmentStatus, string>
+
+export const discountTypeTranslations = {
+  None: 'enrollments.discountType.none',
+  Family: 'enrollments.discountType.family',
+  Course: 'enrollments.discountType.course',
+} as const satisfies Record<DiscountType, string>
+
+export const recurrenceTypeTranslations = {
+  Trial: 'enrollments.recurrenceType.trial',
+  Weekly: 'enrollments.recurrenceType.weekly',
+  Biweekly: 'enrollments.recurrenceType.biweekly',
+} as const satisfies Record<RecurrenceType, string>
+

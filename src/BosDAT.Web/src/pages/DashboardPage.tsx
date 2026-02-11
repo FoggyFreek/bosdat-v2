@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Users, GraduationCap, Music } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { studentsApi } from '@/features/students/api'
 import { teachersApi } from '@/features/teachers/api'
@@ -18,6 +19,8 @@ const getStatusBadgeClass = (status: string) => {
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation()
+
   const { data: students = [] } = useQuery<StudentList[]>({
     queryKey: ['students'],
     queryFn: () => studentsApi.getAll(),
@@ -41,30 +44,30 @@ export function DashboardPage() {
 
   const stats = [
     {
-      name: 'Active Students',
+      name: t('dashboard.stats.activeStudents'),
       value: activeStudents,
       icon: Users,
-      description: `${students.length} total students`,
+      description: t('dashboard.stats.totalStudents', { count: students.length }),
     },
     {
-      name: 'Active Teachers',
+      name: t('dashboard.stats.activeTeachers'),
       value: activeTeachers,
       icon: GraduationCap,
-      description: `${teachers.length} total teachers`,
+      description: t('dashboard.stats.totalTeachers', { count: teachers.length }),
     },
     {
-      name: 'Active Courses',
+      name: t('dashboard.stats.activeCourses'),
       value: activeCourses,
       icon: Music,
-      description: `${activeCourses} total courses`,
+      description: t('dashboard.stats.totalCourses', { count: activeCourses }),
     }
   ]
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to BosDAT Music School Management</p>
+        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+        <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -85,7 +88,7 @@ export function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Students</CardTitle>
+            <CardTitle>{t('dashboard.recentStudents.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -103,7 +106,7 @@ export function DashboardPage() {
                 </div>
               ))}
               {students.length === 0 && (
-                <p className="text-sm text-muted-foreground">No students yet</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.recentStudents.noStudents')}</p>
               )}
             </div>
           </CardContent>
@@ -111,11 +114,11 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Today's Schedule</CardTitle>
+            <CardTitle>{t('dashboard.todaysSchedule.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">Coming soon!</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.todaysSchedule.comingSoon')}</p>
             </div>
           </CardContent>
         </Card>

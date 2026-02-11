@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,8 +16,9 @@ import {
 import { useDuplicateCheck } from '@/hooks/useDuplicateCheck'
 import { validateEmail } from '@/lib/utils'
 import type { Student, StudentStatus, Gender, CreateStudent } from '@/features/students/types'
+import { studentStatusTranslations } from '@/features/students/types'
 
-const getStatusBadgeClass = (status: string) => {
+const getStatusBadgeClass = (status: StudentStatus) => {
   if (status === 'Active') return 'bg-green-100 text-green-700'
   if (status === 'Trial') return 'bg-yellow-100 text-yellow-700'
   return 'bg-gray-100 text-gray-700'
@@ -61,6 +63,7 @@ interface FormErrors {
 }
 
 export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess }: StudentFormProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const isEditMode = !!student
 
@@ -101,9 +104,9 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
 
   const getSubmitButtonText = () => {
     if (isSubmitting) {
-      return isEditMode ? 'Saving...' : 'Creating...'
+      return isEditMode ? t('students.actions.saving') : t('students.actions.creating')
     }
-    return isEditMode ? 'Save Changes' : 'Create Student'
+    return isEditMode ? t('students.actions.saveChanges') : t('students.actions.createStudent')
   }
 
   // Trigger duplicate check when key fields change
@@ -124,21 +127,21 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
     const newErrors: FormErrors = {}
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = t('students.validation.firstNameRequired')
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = t('students.validation.lastNameRequired')
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('students.validation.emailRequired')
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('students.validation.emailInvalid')
     }
 
     if (formData.billingContactEmail.trim() && !validateEmail(formData.billingContactEmail)) {
-      newErrors.billingContactEmail = 'Please enter a valid email address'
+      newErrors.billingContactEmail = t('students.validation.billingEmailInvalid')
     }
 
     setErrors(newErrors)
@@ -229,10 +232,10 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
             </svg>
             <div className="flex-1">
               <h4 className="text-sm font-medium text-amber-800">
-                Potential duplicate students found
+                {t('students.duplicate.title')}
               </h4>
               <p className="mt-1 text-sm text-amber-700">
-                The following existing students may be duplicates. Please review before proceeding.
+                {t('students.duplicate.description')}
               </p>
               <ul className="mt-3 space-y-2">
                 {duplicates.map((duplicate) => (
@@ -249,13 +252,16 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                       </Link>
                       <p className="text-sm text-amber-700">{duplicate.email}</p>
                       <p className="text-xs text-amber-600 mt-1">
-                        {duplicate.matchReason} ({duplicate.confidenceScore}% match)
+                        {t('students.duplicate.match', {
+                          reason: duplicate.matchReason,
+                          score: duplicate.confidenceScore
+                        })}
                       </p>
                     </div>
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusBadgeClass(duplicate.status)}`}
                     >
-                      {duplicate.status}
+                      {t(studentStatusTranslations[duplicate.status])}
                     </span>
                   </li>
                 ))}
@@ -269,10 +275,10 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                     onClick={acknowledgeDuplicates}
                     className="border-amber-300 text-amber-800 hover:bg-amber-100"
                   >
-                    Not a duplicate, continue anyway
+                    {t('students.duplicate.acknowledge')}
                   </Button>
                   <span className="text-xs text-amber-600">
-                    You must acknowledge to proceed with saving
+                    {t('students.duplicate.acknowledgementRequired')}
                   </span>
                 </div>
               )}
@@ -287,7 +293,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
-                  Acknowledged - you can now save this student
+                  {t('students.duplicate.acknowledged')}
                 </p>
               )}
             </div>
@@ -317,34 +323,34 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-          Checking for duplicates...
+          {t('students.duplicate.checking')}
         </div>
       )}
 
       {/* Basic Information Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Basic Information</h3>
+        <h3 className="text-lg font-medium">{t('students.sections.basicInfo')}</h3>
         <div className="grid gap-6 md:grid-cols-3">
           {isEditMode && (
             <div className="space-y-2">
-              <Label htmlFor="prefix">Prefix</Label>
+              <Label htmlFor="prefix">{t('students.form.prefix')}</Label>
               <Input
                 id="prefix"
                 value={formData.prefix}
                 onChange={(e) => handleChange('prefix', e.target.value)}
-                placeholder="e.g., van, de"
+                placeholder={t('students.form.placeholders.prefix')}
               />
             </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="firstName">
-              First Name <span className="text-red-500">*</span>
+              {t('students.form.firstName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="firstName"
               value={formData.firstName}
               onChange={(e) => handleChange('firstName', e.target.value)}
-              placeholder="Enter first name"
+              placeholder={t('students.form.placeholders.firstName')}
               className={errors.firstName ? 'border-red-500' : ''}
             />
             {errors.firstName && (
@@ -354,13 +360,13 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
 
           <div className="space-y-2">
             <Label htmlFor="lastName">
-              Last Name <span className="text-red-500">*</span>
+              {t('students.form.lastName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="lastName"
               value={formData.lastName}
               onChange={(e) => handleChange('lastName', e.target.value)}
-              placeholder="Enter last name"
+              placeholder={t('students.form.placeholders.lastName')}
               className={errors.lastName ? 'border-red-500' : ''}
             />
             {errors.lastName && (
@@ -372,14 +378,14 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="email">
-              Email <span className="text-red-500">*</span>
+              {t('students.form.email')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              placeholder="Enter email address"
+              placeholder={t('students.form.placeholders.email')}
               className={errors.email ? 'border-red-500' : ''}
             />
             {errors.email && (
@@ -388,30 +394,30 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t('students.form.phone')}</Label>
             <Input
               id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
-              placeholder="Enter phone number"
+              placeholder={t('students.form.placeholders.phone')}
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
+          <Label htmlFor="status">{t('students.form.status')}</Label>
           <Select
             value={formData.status}
             onValueChange={(value) => handleChange('status', value)}
           >
             <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder="Select status" />
+              <SelectValue placeholder={t('students.form.placeholders.status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Inactive">Inactive</SelectItem>
-              <SelectItem value="Trial">Trial</SelectItem>
+              <SelectItem value="Active">{t('common.status.active')}</SelectItem>
+              <SelectItem value="Inactive">{t('common.status.inactive')}</SelectItem>
+              <SelectItem value="Trial">{t('common.status.trial')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -422,16 +428,16 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
         <>
           {/* Contact Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Contact</h3>
+            <h3 className="text-lg font-medium">{t('students.sections.contact')}</h3>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phoneAlt">Alternative Phone</Label>
+                <Label htmlFor="phoneAlt">{t('students.form.phoneAlt')}</Label>
                 <Input
                   id="phoneAlt"
                   type="tel"
                   value={formData.phoneAlt}
                   onChange={(e) => handleChange('phoneAlt', e.target.value)}
-                  placeholder="Enter alternative phone"
+                  placeholder={t('students.form.placeholders.phoneAlt')}
                 />
               </div>
             </div>
@@ -439,33 +445,33 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
 
           {/* Address Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Address</h3>
+            <h3 className="text-lg font-medium">{t('students.sections.address')}</h3>
             <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address">{t('students.form.address')}</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
-                placeholder="Street and number"
+                placeholder={t('students.form.placeholders.address')}
               />
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal Code</Label>
+                <Label htmlFor="postalCode">{t('students.form.postalCode')}</Label>
                 <Input
                   id="postalCode"
                   value={formData.postalCode}
                   onChange={(e) => handleChange('postalCode', e.target.value)}
-                  placeholder="e.g., 1234 AB"
+                  placeholder={t('students.form.placeholders.postalCode')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">{t('students.form.city')}</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
-                  placeholder="Enter city"
+                  placeholder={t('students.form.placeholders.city')}
                 />
               </div>
             </div>
@@ -473,10 +479,10 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
 
           {/* Personal Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Personal</h3>
+            <h3 className="text-lg font-medium">{t('students.sections.personal')}</h3>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth">{t('students.form.dateOfBirth')}</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
@@ -485,19 +491,19 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
+                <Label htmlFor="gender">{t('students.form.gender')}</Label>
                 <Select
                   value={formData.gender}
                   onValueChange={(value) => handleChange('gender', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
+                    <SelectValue placeholder={t('students.form.placeholders.gender')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                    <SelectItem value="PreferNotToSay">Prefer not to say</SelectItem>
+                    <SelectItem value="Male">{t('students.gender.male')}</SelectItem>
+                    <SelectItem value="Female">{t('students.gender.female')}</SelectItem>
+                    <SelectItem value="Other">{t('students.gender.other')}</SelectItem>
+                    <SelectItem value="PreferNotToSay">{t('students.gender.preferNotToSay')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -506,28 +512,28 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
 
           {/* Billing / Payer Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Billing / Payer</h3>
+            <h3 className="text-lg font-medium">{t('students.sections.billing')}</h3>
             <p className="text-sm text-muted-foreground">
-              Fill in these fields if someone else (e.g., a parent) should receive invoices.
+              {t('students.billingHelp')}
             </p>
             <div className="space-y-2">
-              <Label htmlFor="billingContactName">Contact Name</Label>
+              <Label htmlFor="billingContactName">{t('students.form.billingContactName')}</Label>
               <Input
                 id="billingContactName"
                 value={formData.billingContactName}
                 onChange={(e) => handleChange('billingContactName', e.target.value)}
-                placeholder="Name of person receiving invoices"
+                placeholder={t('students.form.placeholders.billingContactName')}
               />
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="billingContactEmail">Contact Email</Label>
+                <Label htmlFor="billingContactEmail">{t('students.form.billingContactEmail')}</Label>
                 <Input
                   id="billingContactEmail"
                   type="email"
                   value={formData.billingContactEmail}
                   onChange={(e) => handleChange('billingContactEmail', e.target.value)}
-                  placeholder="Email for invoices"
+                  placeholder={t('students.form.placeholders.billingContactEmail')}
                   className={errors.billingContactEmail ? 'border-red-500' : ''}
                 />
                 {errors.billingContactEmail && (
@@ -535,42 +541,42 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="billingContactPhone">Contact Phone</Label>
+                <Label htmlFor="billingContactPhone">{t('students.form.billingContactPhone')}</Label>
                 <Input
                   id="billingContactPhone"
                   type="tel"
                   value={formData.billingContactPhone}
                   onChange={(e) => handleChange('billingContactPhone', e.target.value)}
-                  placeholder="Phone for billing inquiries"
+                  placeholder={t('students.form.placeholders.billingContactPhone')}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="billingAddress">Billing Address</Label>
+              <Label htmlFor="billingAddress">{t('students.form.billingAddress')}</Label>
               <Input
                 id="billingAddress"
                 value={formData.billingAddress}
                 onChange={(e) => handleChange('billingAddress', e.target.value)}
-                placeholder="Street and number"
+                placeholder={t('students.form.placeholders.address')}
               />
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="billingPostalCode">Billing Postal Code</Label>
+                <Label htmlFor="billingPostalCode">{t('students.form.billingPostalCode')}</Label>
                 <Input
                   id="billingPostalCode"
                   value={formData.billingPostalCode}
                   onChange={(e) => handleChange('billingPostalCode', e.target.value)}
-                  placeholder="e.g., 1234 AB"
+                  placeholder={t('students.form.placeholders.postalCode')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="billingCity">Billing City</Label>
+                <Label htmlFor="billingCity">{t('students.form.billingCity')}</Label>
                 <Input
                   id="billingCity"
                   value={formData.billingCity}
                   onChange={(e) => handleChange('billingCity', e.target.value)}
-                  placeholder="Enter city"
+                  placeholder={t('students.form.placeholders.city')}
                 />
               </div>
             </div>
@@ -578,7 +584,7 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
 
           {/* Other Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Other</h3>
+            <h3 className="text-lg font-medium">{t('students.sections.other')}</h3>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="autoDebit"
@@ -586,16 +592,16 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
                 onCheckedChange={(checked) => handleChange('autoDebit', !!checked)}
               />
               <Label htmlFor="autoDebit" className="font-normal">
-                Enable automatic debit for this student
+                {t('students.form.autoDebit')}
               </Label>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t('students.form.notes')}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                placeholder="Additional notes about this student"
+                placeholder={t('students.form.placeholders.notes')}
                 rows={4}
               />
             </div>
@@ -612,12 +618,12 @@ export function StudentForm({ student, onSubmit, isSubmitting, error, onSuccess 
         </Button>
         {!onSuccess && (
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
         )}
         {hasDuplicates && !acknowledgedDuplicates && (
           <span className="flex items-center text-sm text-amber-600">
-            Please review potential duplicates above
+            {t('students.duplicate.reviewWarning')}
           </span>
         )}
       </div>

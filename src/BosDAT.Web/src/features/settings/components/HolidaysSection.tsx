@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +26,7 @@ interface FormData {
 }
 
 export function HolidaysSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA)
@@ -88,15 +90,15 @@ export function HolidaysSection() {
 
   const renderHeaderTitle = () => (
     <div>
-      <CardTitle>Holidays</CardTitle>
-      <CardDescription>Set school holidays and closures</CardDescription>
+      <CardTitle>{t('settings.holidays.title')}</CardTitle>
+      <CardDescription>{t('settings.holidays.description')}</CardDescription>
     </div>
   )
 
   const renderAddButton = () => (
     <Button onClick={handleShowAdd} size="sm">
       <Plus className="h-4 w-4 mr-2" />
-      Add
+      {t('settings.holidays.addHoliday')}
     </Button>
   )
 
@@ -109,10 +111,10 @@ export function HolidaysSection() {
 
   const renderNameField = () => (
     <div>
-      <Label>Name</Label>
+      <Label>{t('settings.holidays.name')}</Label>
       <Input
         onChange={handleNameChange}
-        placeholder="e.g., Summer Break"
+        placeholder={t('settings.holidays.form.namePlaceholder')}
         value={formData.name}
       />
     </div>
@@ -120,7 +122,7 @@ export function HolidaysSection() {
 
   const renderStartDateField = () => (
     <div>
-      <Label>Start Date</Label>
+      <Label>{t('settings.holidays.startDate')}</Label>
       <Input
         onChange={handleStartDateChange}
         type="date"
@@ -131,7 +133,7 @@ export function HolidaysSection() {
 
   const renderEndDateField = () => (
     <div>
-      <Label>End Date</Label>
+      <Label>{t('settings.holidays.endDate')}</Label>
       <Input
         onChange={handleEndDateChange}
         type="date"
@@ -150,13 +152,13 @@ export function HolidaysSection() {
 
   const renderCancelButton = () => (
     <Button onClick={handleCancelAdd} variant="outline">
-      Cancel
+      {t('common.actions.cancel')}
     </Button>
   )
 
   const renderCreateButton = () => (
     <Button disabled={isCreateDisabled} onClick={handleCreate}>
-      Create
+      {t('common.actions.create')}
     </Button>
   )
 
@@ -181,7 +183,7 @@ export function HolidaysSection() {
   )
 
   const renderEmptyState = () => (
-    <p className="text-muted-foreground">No holidays configured</p>
+    <p className="text-muted-foreground">{t('settings.holidays.empty')}</p>
   )
 
   const renderHolidayInfo = (holiday: Holiday) => (

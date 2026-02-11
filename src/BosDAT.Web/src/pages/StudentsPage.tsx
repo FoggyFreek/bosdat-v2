@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Plus, Search, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +11,7 @@ import type { StudentList } from '@/features/students/types'
 import { cn } from '@/lib/utils'
 
 export function StudentsPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
 
   const { data: students = [], isLoading } = useQuery<StudentList[]>({
@@ -32,24 +34,24 @@ export function StudentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Students</h1>
-          <p className="text-muted-foreground">Manage your music school students</p>
+          <h1 className="text-3xl font-bold">{t('students.title')}</h1>
+          <p className="text-muted-foreground">{t('students.subtitle')}</p>
         </div>
         <Button asChild>
           <Link to="/students/new">
             <Plus className="h-4 w-4 mr-2" />
-            Add Student
+            {t('students.addStudent')}
           </Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Students</CardTitle>
+          <CardTitle>{t('students.allStudents')}</CardTitle>
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search students..."
+              placeholder={t('students.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -65,7 +67,7 @@ export function StudentsPage() {
 
           {!isLoading && students.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No students found</p>
+              <p className="text-muted-foreground">{t('students.noStudentsFound')}</p>
             </div>
           )}
 

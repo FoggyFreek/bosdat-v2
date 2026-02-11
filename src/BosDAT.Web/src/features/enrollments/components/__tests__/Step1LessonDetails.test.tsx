@@ -118,7 +118,7 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/course type/i)).toBeInTheDocument()
+        expect(screen.getByLabelText('enrollments.step1.courseType')).toBeInTheDocument()
       })
     })
 
@@ -127,10 +127,10 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/course type/i)).toBeInTheDocument()
+        expect(screen.getByLabelText('enrollments.step1.courseType')).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
 
       await waitFor(() => {
@@ -146,7 +146,7 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/teacher/i)).toBeInTheDocument()
+        expect(screen.getByLabelText('enrollments.step1.teacher')).toBeInTheDocument()
       })
     })
 
@@ -154,7 +154,7 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+        const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
         expect(teacherSelect).toBeDisabled()
       })
     })
@@ -164,16 +164,16 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
       // Select Piano Individual course type
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       // Teacher dropdown should be enabled and show filtered teachers
-      const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+      const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
       expect(teacherSelect).not.toBeDisabled()
 
       await user.click(teacherSelect)
@@ -192,7 +192,7 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/start date/i)).toBeInTheDocument()
+        expect(screen.getByLabelText('enrollments.step1.startDate')).toBeInTheDocument()
       })
     })
 
@@ -201,15 +201,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/start date/i)).toBeInTheDocument()
+        expect(screen.getByLabelText('enrollments.step1.startDate')).toBeInTheDocument()
       })
 
-      const dateInput = screen.getByLabelText(/start date/i)
+      const dateInput = screen.getByLabelText('enrollments.step1.startDate')
       await user.clear(dateInput)
       await user.type(dateInput, '2024-01-15') // January 15, 2024 is a Monday
 
       await waitFor(() => {
-        expect(screen.getByText(/monday/i)).toBeInTheDocument()
+        expect(screen.getByText('Monday')).toBeInTheDocument()
       })
     })
   })
@@ -220,15 +220,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /trail \(single occurrence\)/i })).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.trial' })).toBeInTheDocument()
       })
     })
 
@@ -237,15 +237,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /guitar group/i }))
 
       await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /trail \(single occurrence\)/i })).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.trial' })).toBeInTheDocument()
       })
     })
 
@@ -254,15 +254,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano workshop/i }))
 
       await waitFor(() => {
-        expect(screen.queryByRole('radio', { name: /trail \(single occurrence\)/i })).not.toBeInTheDocument()
+        expect(screen.queryByRole('radio', { name: 'enrollments.step1.trial' })).not.toBeInTheDocument()
       })
     })
   })
@@ -272,8 +272,8 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /^weekly$/i })).toBeInTheDocument()
-        expect(screen.getByRole('radio', { name: /bi-weekly/i })).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.weekly' })).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.biweekly' })).toBeInTheDocument()
       })
     })
 
@@ -281,7 +281,7 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        const weeklyRadio = screen.getByRole('radio', { name: /^weekly$/i })
+        const weeklyRadio = screen.getByRole('radio', { name: 'enrollments.step1.weekly' })
         expect(weeklyRadio).toBeChecked()
       })
     })
@@ -291,14 +291,14 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /bi-weekly/i })).toBeInTheDocument()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.biweekly' })).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole('radio', { name: /bi-weekly/i }))
+      await user.click(screen.getByRole('radio', { name: 'enrollments.step1.biweekly' }))
 
       await waitFor(() => {
-        expect(screen.getByRole('radio', { name: /bi-weekly/i })).toBeChecked()
-        expect(screen.getByRole('radio', { name: /^weekly$/i })).not.toBeChecked()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.biweekly' })).toBeChecked()
+        expect(screen.getByRole('radio', { name: 'enrollments.step1.weekly' })).not.toBeChecked()
       })
     })
   })
@@ -309,15 +309,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano workshop/i }))
 
       await waitFor(() => {
-        const endDateInput = screen.getByLabelText(/end date/i)
+        const endDateInput = document.getElementById('endDate') as HTMLInputElement
         expect(endDateInput).toHaveAttribute('required')
       })
     })
@@ -329,15 +329,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       await waitFor(() => {
-        const endDateInput = screen.getByLabelText(/end date/i)
+        const endDateInput = screen.getByLabelText('enrollments.step1.endDate')
         expect(endDateInput).not.toHaveAttribute('required')
       })
     })
@@ -347,15 +347,15 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /guitar group/i }))
 
       await waitFor(() => {
-        const endDateInput = screen.getByLabelText(/end date/i)
+        const endDateInput = screen.getByLabelText('enrollments.step1.endDate')
         expect(endDateInput).not.toHaveAttribute('required')
       })
     })
@@ -367,24 +367,24 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
       // Select Individual course type
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       // Set start date
-      const startDateInput = screen.getByLabelText(/start date/i)
+      const startDateInput = screen.getByLabelText('enrollments.step1.startDate')
       await user.clear(startDateInput)
       await user.type(startDateInput, '2024-01-15')
 
       // Select Trail recurrence
-      await user.click(screen.getByRole('radio', { name: /trail \(single occurrence\)/i }))
+      await user.click(screen.getByRole('radio', { name: 'enrollments.step1.trial' }))
 
       await waitFor(() => {
-        const endDateInput = screen.getByLabelText(/end date/i) as HTMLInputElement
+        const endDateInput = screen.getByLabelText('enrollments.step1.endDate') as HTMLInputElement
         expect(endDateInput.value).toBe('2024-01-15')
       })
     })
@@ -394,19 +394,19 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
       // Select Individual course type
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       // Select Trail recurrence
-      await user.click(screen.getByRole('radio', { name: /trail \(single occurrence\)/i }))
+      await user.click(screen.getByRole('radio', { name: 'enrollments.step1.trial' }))
 
       await waitFor(() => {
-        const endDateInput = screen.getByLabelText(/end date/i)
+        const endDateInput = screen.getByLabelText('enrollments.step1.endDate')
         expect(endDateInput).toBeDisabled()
       })
     })
@@ -418,21 +418,21 @@ describe('Step1LessonDetails', () => {
       renderStep1()
 
       await waitFor(() => {
-        expect(screen.getByRole('combobox', { name: /course type/i })).toBeInTheDocument()
+        expect(screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })).toBeInTheDocument()
       })
 
       // Select course type
-      const courseTypeSelect = screen.getByRole('combobox', { name: /course type/i })
+      const courseTypeSelect = screen.getByRole('combobox', { name: 'enrollments.step1.courseType' })
       await user.click(courseTypeSelect)
       await user.click(screen.getByRole('option', { name: /piano individual/i }))
 
       // Select teacher
-      const teacherSelect = screen.getByRole('combobox', { name: /teacher/i })
+      const teacherSelect = screen.getByRole('combobox', { name: 'enrollments.step1.teacher' })
       await user.click(teacherSelect)
       await user.click(screen.getByRole('option', { name: /john smith/i }))
 
       // Set start date
-      const startDateInput = screen.getByLabelText(/start date/i)
+      const startDateInput = screen.getByLabelText('enrollments.step1.startDate')
       await user.clear(startDateInput)
       await user.type(startDateInput, '2024-01-15')
 

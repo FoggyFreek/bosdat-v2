@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -60,6 +61,7 @@ function isTeacherRole(value: string): value is TeacherRole {
 }
 
 export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherFormProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const isEditMode = !!teacher
@@ -67,8 +69,8 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
   const canViewHourlyRate = user?.roles.includes(FINANCIAL_ADMIN_ROLE) || user?.roles.includes('Admin')
 
   const getSubmitButtonText = () => {
-    if (isSubmitting) return 'Saving...'
-    return isEditMode ? 'Update Teacher' : 'Create Teacher'
+    if (isSubmitting) return t('teachers.actions.saving')
+    return isEditMode ? t('teachers.actions.updateTeacher') : t('teachers.actions.createTeacher')
   }
 
   const { data: instruments = [] } = useQuery<Instrument[]>({
@@ -112,23 +114,23 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
     const newErrors: FormErrors = {}
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = t('teachers.validation.firstNameRequired')
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = t('teachers.validation.lastNameRequired')
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = t('teachers.validation.emailRequired')
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = t('teachers.validation.emailInvalid')
     }
 
     if (canViewHourlyRate && formData.hourlyRate) {
       const rate = Number.parseFloat(formData.hourlyRate)
       if (Number.isNaN(rate) || rate < 0) {
-        newErrors.hourlyRate = 'Please enter a valid hourly rate'
+        newErrors.hourlyRate = t('teachers.validation.hourlyRateInvalid')
       }
     }
 
@@ -222,17 +224,17 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
 
       {/* Basic Information Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Basic Information</h3>
+        <h3 className="text-lg font-medium">{t('teachers.sections.basicInfo')}</h3>
         <div className="grid gap-6 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="firstName">
-              First Name <span className="text-red-500">*</span>
+              {t('teachers.form.firstName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="firstName"
               value={formData.firstName}
               onChange={(e) => handleChange('firstName', e.target.value)}
-              placeholder="Enter first name"
+              placeholder={t('teachers.form.placeholders.firstName')}
               className={errors.firstName ? 'border-red-500' : ''}
             />
             {errors.firstName && (
@@ -241,24 +243,24 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="prefix">Prefix</Label>
+            <Label htmlFor="prefix">{t('teachers.form.prefix')}</Label>
             <Input
               id="prefix"
               value={formData.prefix}
               onChange={(e) => handleChange('prefix', e.target.value)}
-              placeholder="e.g., van, de"
+              placeholder={t('teachers.form.placeholders.prefix')}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="lastName">
-              Last Name <span className="text-red-500">*</span>
+              {t('teachers.form.lastName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="lastName"
               value={formData.lastName}
               onChange={(e) => handleChange('lastName', e.target.value)}
-              placeholder="Enter last name"
+              placeholder={t('teachers.form.placeholders.lastName')}
               className={errors.lastName ? 'border-red-500' : ''}
             />
             {errors.lastName && (
@@ -270,14 +272,14 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="email">
-              Email <span className="text-red-500">*</span>
+              {t('teachers.form.email')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              placeholder="Enter email address"
+              placeholder={t('teachers.form.placeholders.email')}
               className={errors.email ? 'border-red-500' : ''}
             />
             {errors.email && (
@@ -286,20 +288,20 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t('teachers.form.phone')}</Label>
             <Input
               id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
-              placeholder="Enter phone number"
+              placeholder={t('teachers.form.placeholders.phone')}
             />
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role">{t('teachers.form.role')}</Label>
             <Select
               value={formData.role}
               onValueChange={(value) => {
@@ -309,19 +311,19 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={t('teachers.form.placeholders.role')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Teacher">Teacher</SelectItem>
-                <SelectItem value="Admin">Admin</SelectItem>
-                <SelectItem value="Staff">Staff</SelectItem>
+                <SelectItem value="Teacher">{t('teachers.roles.teacher')}</SelectItem>
+                <SelectItem value="Admin">{t('teachers.roles.admin')}</SelectItem>
+                <SelectItem value="Staff">{t('teachers.roles.staff')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {isEditMode && (
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label>{t('students.form.status')}</Label>
               <div className="flex items-center space-x-2 pt-2">
                 <Checkbox
                   id="isActive"
@@ -329,7 +331,7 @@ export function TeacherForm({ teacher, onSubmit, isSubmitting, error }: TeacherF
                   onCheckedChange={(checked) => handleChange('isActive', !!checked)}
                 />
                 <Label htmlFor="isActive" className="font-normal">
-                  Active
+                  {t('teachers.form.isActive')}
                 </Label>
               </div>
             </div>

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Database, RefreshCw, Trash2, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -64,28 +66,28 @@ const ACTION_CONFIGS: Record<SeederAction, ActionConfig> = {
 }
 
 // Sub-components to reduce cognitive complexity
-function StatusLoadingState() {
+function StatusLoadingState({ t }: { t: TFunction }) {
   return (
     <div className="flex items-center gap-2 text-muted-foreground">
       <Loader2 className="h-4 w-4 animate-spin" />
-      <span>Loading status...</span>
+      <span>{t('settings.seeding.statusLoading')}</span>
     </div>
   )
 }
 
-function StatusDisplay({ status }: { status: SeederStatusResponse }) {
+function StatusDisplay({ status, t }: { status: SeederStatusResponse; t: TFunction }) {
   const statusColor = status.isSeeded ? 'text-green-600' : 'text-gray-500'
   const StatusIcon = status.isSeeded ? CheckCircle2 : Database
-  const statusText = status.isSeeded ? 'Seeded' : 'Not Seeded'
+  const statusText = status.isSeeded ? t('settings.seeding.statusDisplay.seeded') : t('settings.seeding.statusDisplay.notSeeded')
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">Environment:</span>
+        <span className="text-sm text-muted-foreground">{t('settings.seeding.statusDisplay.environment')}:</span>
         <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{status.environment}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">Database Status:</span>
+        <span className="text-sm text-muted-foreground">{t('settings.seeding.statusDisplay.status')}:</span>
         <span className={`inline-flex items-center gap-1 text-sm font-medium ${statusColor}`}>
           <StatusIcon className="h-4 w-4" />
           {statusText}
@@ -95,11 +97,11 @@ function StatusDisplay({ status }: { status: SeederStatusResponse }) {
   )
 }
 
-function ResultAlert({ result }: { result: SeederActionResponse }) {
+function ResultAlert({ result, t }: { result: SeederActionResponse; t: TFunction }) {
   const alertVariant = result.success ? 'default' : 'destructive'
   const alertClassName = result.success ? 'border-green-200 bg-green-50 text-green-800' : ''
   const Icon = result.success ? CheckCircle2 : XCircle
-  const statusText = result.success ? 'Successful' : 'Failed'
+  const statusText = result.success ? t('common.states.success') : 'Failed'
 
   return (
     <Alert variant={alertVariant} className={alertClassName}>
@@ -116,9 +118,10 @@ interface ActionButtonProps {
   isPending: boolean
   isDisabled: boolean
   onClick: () => void
+  t: TFunction
 }
 
-function ActionButton({ action, config, isPending, isDisabled, onClick }: ActionButtonProps) {
+function ActionButton({ action, config, isPending, isDisabled, onClick, t }: ActionButtonProps) {
   const containerClass = config.isDestructive
     ? 'flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30'
     : 'flex items-start justify-between gap-4 p-4 rounded-lg border'
@@ -130,7 +133,7 @@ function ActionButton({ action, config, isPending, isDisabled, onClick }: Action
     ? <Loader2 className="h-4 w-4 animate-spin mr-2" />
     : config.icon
 
-  const buttonLabel = action.charAt(0).toUpperCase() + action.slice(1)
+  const buttonLabel = t(`settings.seeding.actions.${action}`)
 
   return (
     <div className={containerClass}>
@@ -150,19 +153,19 @@ function ActionButton({ action, config, isPending, isDisabled, onClick }: Action
   )
 }
 
-function ErrorState() {
+function ErrorState({ t }: { t: TFunction }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Database Seeding</CardTitle>
-        <CardDescription>Manage test data for development</CardDescription>
+        <CardTitle>{t('settings.seeding.title')}</CardTitle>
+        <CardDescription>{t('settings.seeding.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>{t('common.states.error')}</AlertTitle>
           <AlertDescription>
-            Failed to load seeder status. This feature may only be available in the Development environment or for Admin users.
+            {t('settings.seeding.errorState')}
           </AlertDescription>
         </Alert>
       </CardContent>
@@ -187,6 +190,7 @@ function createMutationOptions(
 }
 
 export function SeedingSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [confirmAction, setConfirmAction] = useState<SeederAction | null>(null)
   const [lastResult, setLastResult] = useState<SeederActionResponse | null>(null)
@@ -231,7 +235,7 @@ export function SeedingSection() {
   }
 
   if (statusError) {
-    return <ErrorState />
+    return <ErrorState t={t} />
   }
 
   const currentConfig = confirmAction ? ACTION_CONFIGS[confirmAction] : null
@@ -243,33 +247,32 @@ export function SeedingSection() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Database Seeding</CardTitle>
-          <CardDescription>Manage test data for development environments</CardDescription>
+          <CardTitle>{t('settings.seeding.title')}</CardTitle>
+          <CardDescription>{t('settings.seeding.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Warning Banner */}
           <Alert className="border-yellow-200 bg-yellow-50 text-yellow-800">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Development Only</AlertTitle>
+            <AlertTitle>{t('settings.seeding.warningBanner.title')}</AlertTitle>
             <AlertDescription>
-              These actions are intended for development and testing purposes only.
-              They will modify your database and can cause permanent data loss.
+              {t('settings.seeding.warningBanner.description')}
             </AlertDescription>
           </Alert>
 
           {/* Status Section */}
           <div className="rounded-lg border p-4">
-            <h3 className="font-medium mb-3">Current Status</h3>
-            {isLoadingStatus && <StatusLoadingState />}
-            {!isLoadingStatus && status && <StatusDisplay status={status} />}
+            <h3 className="font-medium mb-3">{t('settings.seeding.statusSection.title')}</h3>
+            {isLoadingStatus && <StatusLoadingState t={t} />}
+            {!isLoadingStatus && status && <StatusDisplay status={status} t={t} />}
           </div>
 
           {/* Last Result */}
-          {lastResult && <ResultAlert result={lastResult} />}
+          {lastResult && <ResultAlert result={lastResult} t={t} />}
 
           {/* Actions */}
           <div className="space-y-4">
-            <h3 className="font-medium">Actions</h3>
+            <h3 className="font-medium">{t('settings.seeding.actionsSection.title')}</h3>
 
             {(['seed', 'reset', 'reseed'] as const).map((action) => (
               <ActionButton
@@ -279,18 +282,19 @@ export function SeedingSection() {
                 isPending={mutations[action].isPending}
                 isDisabled={isActionDisabled(action)}
                 onClick={() => setConfirmAction(action)}
+                t={t}
               />
             ))}
           </div>
 
           {/* Data Preservation Info */}
           <div className="rounded-lg border p-4 bg-muted/30">
-            <h3 className="font-medium mb-2">What is preserved during reset?</h3>
+            <h3 className="font-medium mb-2">{t('settings.seeding.preservation.title')}</h3>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Admin user account</li>
-              <li>Global settings (VAT rate, registration fee, etc.)</li>
-              <li>Instruments</li>
-              <li>Rooms</li>
+              <li>{t('settings.seeding.preservation.admin')}</li>
+              <li>{t('settings.seeding.preservation.settings')}</li>
+              <li>{t('common.entities.instruments')}</li>
+              <li>{t('common.entities.rooms')}</li>
             </ul>
           </div>
         </CardContent>
@@ -310,13 +314,13 @@ export function SeedingSection() {
           </AlertDialogHeader>
           <Alert variant="destructive" className="my-2">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Warning</AlertTitle>
+            <AlertTitle>{t('common.states.warning')}</AlertTitle>
             <AlertDescription>
-              This action cannot be undone. Make sure you understand the consequences before proceeding.
+              {t('settings.seeding.confirmDialog.warning')}
             </AlertDescription>
           </Alert>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm} className={confirmButtonClass}>
               {currentConfig?.confirmButtonText}
             </AlertDialogAction>

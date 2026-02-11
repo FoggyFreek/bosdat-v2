@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -45,6 +46,7 @@ export function EnrollmentSummaryCard({
   className,
   children,
 }: EnrollmentSummaryCardProps) {
+  const { t } = useTranslation()
   const hasFields =
     courseTypeName || teacherName || startDate || dayOfWeek || endDate ||
     isTrial || frequency || maxStudents || startTime || roomName
@@ -55,32 +57,32 @@ export function EnrollmentSummaryCard({
       {hasFields && (
         <div className="grid gap-2 text-sm">
           {courseTypeName && (
-            <Row label="Course Type:">
+            <Row label={t('enrollments.summary.courseType')}>
               {courseTypeName}{' '}
               {courseTypeLabel && (
                 <span className="text-muted-foreground">({courseTypeLabel})</span>
               )}
             </Row>
           )}
-          {teacherName && <Row label="Teacher:">{teacherName}</Row>}
+          {teacherName && <Row label={t('enrollments.summary.teacher')}>{teacherName}</Row>}
           {startDate && (
-            <Row label="Start Date:">
+            <Row label={t('enrollments.summary.startDate')}>
               {startDate}{dayOfWeek && ` (${dayOfWeek})`}
             </Row>
           )}
-          {endDate && <Row label="End Date:">{endDate}</Row>}
-          {frequency && <Row label="Frequency:">{frequency}</Row>}
+          {endDate && <Row label={t('enrollments.summary.endDate')}>{endDate}</Row>}
+          {frequency && <Row label={t('enrollments.summary.frequency')}>{frequency}</Row>}
           {isTrial && (
-            <Row label="Type:"><span className="text-amber-600">Trial Lesson</span></Row>
+            <Row label={t('enrollments.summary.type')}><span className="text-amber-600">{t('enrollments.summary.trialLesson')}</span></Row>
           )}
           {maxStudents !== undefined && (
-            <Row label="Max Students:">{String(maxStudents)}</Row>
+            <Row label={t('enrollments.summary.maxStudents')}>{String(maxStudents)}</Row>
           )}
-          {dayOfWeek && !startDate && <Row label="Day:">{dayOfWeek}</Row>}
+          {dayOfWeek && !startDate && <Row label={t('enrollments.summary.day')}>{dayOfWeek}</Row>}
           {startTime && (
-            <Row label="Time:">{startTime}{endTime && ` – ${endTime}`}</Row>
+            <Row label={t('enrollments.summary.time')}>{startTime}{endTime && ` – ${endTime}`}</Row>
           )}
-          {roomName && <Row label="Room:">{roomName}</Row>}
+          {roomName && <Row label={t('enrollments.summary.room')}>{roomName}</Row>}
         </div>
       )}
       {children}

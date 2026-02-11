@@ -38,11 +38,11 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    expect(screen.getByLabelText(/first name/i)).toHaveValue('')
-    expect(screen.getByLabelText(/last name/i)).toHaveValue('')
-    expect(screen.getByLabelText(/email/i)).toHaveValue('')
-    expect(screen.getByLabelText(/phone/i)).toHaveValue('')
-    expect(screen.getByRole('button', { name: /create student/i })).toBeInTheDocument()
+    expect(document.getElementById('firstName')).toHaveValue('')
+    expect(document.getElementById('lastName')).toHaveValue('')
+    expect(document.getElementById('email')).toHaveValue('')
+    expect(document.getElementById('phone')).toHaveValue('')
+    expect(screen.getByRole('button', { name: 'students.actions.createStudent' })).toBeInTheDocument()
   })
 
   it('renders form with student data in edit mode', () => {
@@ -63,12 +63,12 @@ describe('StudentForm', () => {
       <StudentForm student={student} onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    expect(screen.getByLabelText(/first name/i)).toHaveValue('John')
-    expect(screen.getByLabelText(/last name/i)).toHaveValue('Doe')
+    expect(document.getElementById('firstName')).toHaveValue('John')
+    expect(document.getElementById('lastName')).toHaveValue('Doe')
     // Use input ID to avoid matching contact email
     expect(document.getElementById('email')).toHaveValue('john@example.com')
     expect(document.getElementById('phone')).toHaveValue('123-456-7890')
-    expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'students.actions.saveChanges' })).toBeInTheDocument()
   })
 
   it('shows validation errors for empty required fields', async () => {
@@ -77,12 +77,12 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.click(screen.getByRole('button', { name: /create student/i }))
+    await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
     await waitFor(() => {
-      expect(screen.getByText(/first name is required/i)).toBeInTheDocument()
-      expect(screen.getByText(/last name is required/i)).toBeInTheDocument()
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument()
+      expect(screen.getByText('students.validation.firstNameRequired')).toBeInTheDocument()
+      expect(screen.getByText('students.validation.lastNameRequired')).toBeInTheDocument()
+      expect(screen.getByText('students.validation.emailRequired')).toBeInTheDocument()
     })
 
     expect(mockOnSubmit).not.toHaveBeenCalled()
@@ -94,13 +94,13 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
-    await user.type(screen.getByLabelText(/email/i), 'invalid-email')
-    await user.click(screen.getByRole('button', { name: /create student/i }))
+    await user.type(document.getElementById('firstName')!, 'John')
+    await user.type(document.getElementById('lastName')!, 'Doe')
+    await user.type(document.getElementById('email')!, 'invalid-email')
+    await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
     await waitFor(() => {
-      expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument()
+      expect(screen.getByText('students.validation.emailInvalid')).toBeInTheDocument()
     })
 
     expect(mockOnSubmit).not.toHaveBeenCalled()
@@ -112,16 +112,16 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.click(screen.getByRole('button', { name: /create student/i }))
+    await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
     await waitFor(() => {
-      expect(screen.getByText(/first name is required/i)).toBeInTheDocument()
+      expect(screen.getByText('students.validation.firstNameRequired')).toBeInTheDocument()
     })
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
+    await user.type(document.getElementById('firstName')!, 'John')
 
     await waitFor(() => {
-      expect(screen.queryByText(/first name is required/i)).not.toBeInTheDocument()
+      expect(screen.queryByText('students.validation.firstNameRequired')).not.toBeInTheDocument()
     })
   })
 
@@ -133,11 +133,11 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
+    await user.type(document.getElementById('firstName')!, 'John')
+    await user.type(document.getElementById('lastName')!, 'Doe')
     await user.type(document.getElementById('email')!, 'john@example.com')
     await user.type(document.getElementById('phone')!, '123-456-7890')
-    await user.click(screen.getByRole('button', { name: /create student/i }))
+    await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({
@@ -157,10 +157,10 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
+    await user.type(document.getElementById('firstName')!, 'John')
+    await user.type(document.getElementById('lastName')!, 'Doe')
     await user.type(document.getElementById('email')!, 'john@example.com')
-    await user.click(screen.getByRole('button', { name: /create student/i }))
+    await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({
@@ -179,10 +179,10 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
-    await user.type(screen.getByLabelText(/email/i), 'john@example.com')
-    await user.click(screen.getByRole('button', { name: /create student/i }))
+    await user.type(document.getElementById('firstName')!, 'John')
+    await user.type(document.getElementById('lastName')!, 'Doe')
+    await user.type(document.getElementById('email')!, 'john@example.com')
+    await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/students/123')
@@ -206,7 +206,7 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={true} />
     )
 
-    expect(screen.getByRole('button', { name: /creating/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'students.actions.creating' })).toBeDisabled()
   })
 
   it('shows saving text in edit mode when submitting', () => {
@@ -226,7 +226,7 @@ describe('StudentForm', () => {
       <StudentForm student={student} onSubmit={mockOnSubmit} isSubmitting={true} />
     )
 
-    expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'students.actions.saving' })).toBeDisabled()
   })
 
   it('navigates back when cancel button is clicked', async () => {
@@ -235,7 +235,7 @@ describe('StudentForm', () => {
       <StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />
     )
 
-    await user.click(screen.getByRole('button', { name: /cancel/i }))
+    await user.click(screen.getByRole('button', { name: 'common.actions.cancel' }))
 
     expect(mockNavigate).toHaveBeenCalledWith(-1)
   })
@@ -262,15 +262,15 @@ describe('StudentForm', () => {
 
       render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
-      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+      await user.type(document.getElementById('firstName')!, 'John')
+      await user.type(document.getElementById('lastName')!, 'Doe')
+      await user.type(document.getElementById('email')!, 'john@example.com')
 
       await waitFor(() => {
-        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+        expect(screen.getByText('students.duplicate.title')).toBeInTheDocument()
         expect(screen.getByText('John Doe')).toBeInTheDocument()
         expect(screen.getByText('john@example.com')).toBeInTheDocument()
-        expect(screen.getByText(/exact email match/i)).toBeInTheDocument()
+        expect(screen.getByText('students.duplicate.match')).toBeInTheDocument()
       })
     })
 
@@ -280,15 +280,15 @@ describe('StudentForm', () => {
 
       render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
-      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+      await user.type(document.getElementById('firstName')!, 'John')
+      await user.type(document.getElementById('lastName')!, 'Doe')
+      await user.type(document.getElementById('email')!, 'john@example.com')
 
       await waitFor(() => {
-        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+        expect(screen.getByText('students.duplicate.title')).toBeInTheDocument()
       })
 
-      expect(screen.getByRole('button', { name: /create student/i })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'students.actions.createStudent' })).toBeDisabled()
     })
 
     it('enables submit button after acknowledging duplicates', async () => {
@@ -298,19 +298,19 @@ describe('StudentForm', () => {
 
       render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
-      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+      await user.type(document.getElementById('firstName')!, 'John')
+      await user.type(document.getElementById('lastName')!, 'Doe')
+      await user.type(document.getElementById('email')!, 'john@example.com')
 
       await waitFor(() => {
-        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+        expect(screen.getByText('students.duplicate.title')).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole('button', { name: /not a duplicate, continue anyway/i }))
+      await user.click(screen.getByRole('button', { name: 'students.duplicate.acknowledge' }))
 
       await waitFor(() => {
-        expect(screen.getByText(/acknowledged/i)).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: /create student/i })).not.toBeDisabled()
+        expect(screen.getByText('students.duplicate.acknowledged')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'students.actions.createStudent' })).not.toBeDisabled()
       })
     })
 
@@ -321,21 +321,21 @@ describe('StudentForm', () => {
 
       render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
-      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+      await user.type(document.getElementById('firstName')!, 'John')
+      await user.type(document.getElementById('lastName')!, 'Doe')
+      await user.type(document.getElementById('email')!, 'john@example.com')
 
       await waitFor(() => {
-        expect(screen.getByText(/potential duplicate students found/i)).toBeInTheDocument()
+        expect(screen.getByText('students.duplicate.title')).toBeInTheDocument()
       })
 
-      await user.click(screen.getByRole('button', { name: /not a duplicate, continue anyway/i }))
+      await user.click(screen.getByRole('button', { name: 'students.duplicate.acknowledge' }))
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /create student/i })).not.toBeDisabled()
+        expect(screen.getByRole('button', { name: 'students.actions.createStudent' })).not.toBeDisabled()
       })
 
-      await user.click(screen.getByRole('button', { name: /create student/i }))
+      await user.click(screen.getByRole('button', { name: 'students.actions.createStudent' }))
 
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalled()
@@ -348,9 +348,9 @@ describe('StudentForm', () => {
 
       render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
-      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+      await user.type(document.getElementById('firstName')!, 'John')
+      await user.type(document.getElementById('lastName')!, 'Doe')
+      await user.type(document.getElementById('email')!, 'john@example.com')
 
       await waitFor(() => {
         const link = screen.getByRole('link', { name: 'John Doe' })
@@ -369,14 +369,14 @@ describe('StudentForm', () => {
 
       render(<StudentForm onSubmit={mockOnSubmit} isSubmitting={false} />)
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
-      await user.type(screen.getByLabelText(/email/i), 'john@example.com')
+      await user.type(document.getElementById('firstName')!, 'John')
+      await user.type(document.getElementById('lastName')!, 'Doe')
+      await user.type(document.getElementById('email')!, 'john@example.com')
 
       // Wait for debounce and check
       await waitFor(
         () => {
-          expect(screen.getByText(/checking for duplicates/i)).toBeInTheDocument()
+          expect(screen.getByText('students.duplicate.checking')).toBeInTheDocument()
         },
         { timeout: 1000 }
       )
@@ -385,7 +385,7 @@ describe('StudentForm', () => {
       resolveCheck!({ hasDuplicates: false, duplicates: [] })
 
       await waitFor(() => {
-        expect(screen.queryByText(/checking for duplicates/i)).not.toBeInTheDocument()
+        expect(screen.queryByText('students.duplicate.checking')).not.toBeInTheDocument()
       })
     })
 
@@ -406,8 +406,9 @@ describe('StudentForm', () => {
       render(<StudentForm student={student} onSubmit={mockOnSubmit} isSubmitting={false} />)
 
       // Trigger a change to invoke duplicate check
-      await user.clear(screen.getByLabelText(/first name/i))
-      await user.type(screen.getByLabelText(/first name/i), 'Johnny')
+      const firstNameInput = document.getElementById('firstName')!
+      await user.clear(firstNameInput)
+      await user.type(firstNameInput, 'Johnny')
 
       await waitFor(() => {
         expect(studentsApi.checkDuplicates).toHaveBeenCalledWith(

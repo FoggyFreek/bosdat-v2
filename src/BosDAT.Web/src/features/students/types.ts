@@ -337,3 +337,50 @@ export interface InvoicePrintData {
   invoice: Invoice
   schoolInfo: SchoolBillingInfo
 }
+
+// Translation Mappings
+export const studentStatusTranslations = {
+  Active: 'students.status.active',
+  Inactive: 'students.status.inactive',
+  Trial: 'students.status.trial',
+} as const satisfies Record<StudentStatus, string>
+
+export const genderTranslations = {
+  Male: 'students.gender.male',
+  Female: 'students.gender.female',
+  Other: 'students.gender.other',
+  PreferNotToSay: 'students.gender.preferNotToSay',
+} as const satisfies Record<Gender, string>
+
+export const ledgerEntryTypeTranslations = {
+  Credit: 'students.balance.entryType.credit',
+  Debit: 'students.balance.entryType.debit',
+} as const satisfies Record<LedgerEntryType, string>
+
+export const ledgerEntryStatusTranslations = {
+  Open: 'students.balance.status.open',
+  Applied: 'students.balance.status.applied',
+  PartiallyApplied: 'students.balance.status.partially_applied',
+  Reversed: 'students.balance.status.reversed',
+} as const satisfies Record<LedgerEntryStatus, string>
+
+export const invoiceStatusTranslations = {
+  Draft: 'students.invoices.status.draft',
+  Sent: 'students.invoices.status.sent',
+  Paid: 'students.invoices.status.paid',
+  Overdue: 'students.invoices.status.overdue',
+  Cancelled: 'students.invoices.status.cancelled',
+} as const satisfies Record<InvoiceStatus, string>
+
+export const invoicingPreferenceTranslations = {
+  Monthly: 'students.invoicingPreference.monthly',
+  Quarterly: 'students.invoicingPreference.quarterly',
+} as const satisfies Record<InvoicingPreference, string>
+
+export const paymentMethodTranslations = {
+  Cash: 'students.paymentMethod.cash',
+  Bank: 'students.paymentMethod.bank',
+  Card: 'students.paymentMethod.card',
+  DirectDebit: 'students.paymentMethod.directDebit',
+  Other: 'students.paymentMethod.other',
+} as const satisfies Record<PaymentMethod, string>

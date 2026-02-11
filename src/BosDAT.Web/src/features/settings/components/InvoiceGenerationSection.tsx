@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Receipt, Loader2, CheckCircle2, XCircle, Play, AlertTriangle, Clock,
@@ -125,12 +127,12 @@ function RunItem({ run }: { run: InvoiceRun }) {
   )
 }
 
-function RunHistory({ runs, isLoading }: { runs: InvoiceRun[]; isLoading: boolean }) {
+function RunHistory({ runs, isLoading, t }: { runs: InvoiceRun[]; isLoading: boolean; t: TFunction }) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
-      <h3 className="font-medium">Recent Invoice Runs</h3>
+      <h3 className="font-medium">{t('settings.invoiceGeneration.runHistory.title')}</h3>
       {runs.length === 0 && !isLoading && (
-        <p className="text-sm text-muted-foreground">No invoice generation runs yet.</p>
+        <p className="text-sm text-muted-foreground">{t('settings.invoiceGeneration.runHistory.noRuns')}</p>
       )}
       {runs.length > 0 && (
         <div>{runs.map((run) => <RunItem key={run.id} run={run} />)}</div>
@@ -138,7 +140,7 @@ function RunHistory({ runs, isLoading }: { runs: InvoiceRun[]; isLoading: boolea
       {isLoading && (
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Loading...</span>
+          <span className="text-sm">{t('common.states.loading')}</span>
         </div>
       )}
     </div>
@@ -149,10 +151,12 @@ function GenerateArea({
   onRun,
   isPending,
   lastResult,
+  t,
 }: {
   onRun: (periodType: string, periodStart: string, periodEnd: string) => void
   isPending: boolean
   lastResult: InvoiceRunResult | null
+  t: TFunction
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [periodType, setPeriodType] = useState<string>('Monthly')
@@ -171,31 +175,30 @@ function GenerateArea({
     <div className="rounded-lg border border-yellow-200 bg-yellow-50/30 p-4 space-y-4">
       <h3 className="font-medium flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
-        Generate Invoices
+        {t('settings.invoiceGeneration.generateArea.title')}
       </h3>
       <p className="text-sm text-muted-foreground">
-        Generate invoices in bulk for all active enrollments matching the selected period type.
-        Enrollments that already have invoices for this period will be skipped.
+        {t('settings.invoiceGeneration.generateArea.description')}
       </p>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Period Type</Label>
+          <Label>{t('settings.invoiceGeneration.generateArea.periodType')}</Label>
           <Select value={periodType} onValueChange={handlePeriodTypeChange}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Monthly">Monthly</SelectItem>
-              <SelectItem value="Quarterly">Quarterly</SelectItem>
+              <SelectItem value="Monthly">{t('common.time.months.january').split(' ')[0].length > 5 ? t('enrollments.step2.monthly') : 'Monthly'}</SelectItem>
+              <SelectItem value="Quarterly">{t('enrollments.step2.quarterly')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Period</Label>
+          <Label>{t('settings.invoiceGeneration.generateArea.period')}</Label>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger>
-              <SelectValue placeholder="Select period..." />
+              <SelectValue placeholder={t('common.form.selectPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {periods.map((p) => (
@@ -217,15 +220,19 @@ function GenerateArea({
             ? <CheckCircle2 className="h-4 w-4" />
             : <XCircle className="h-4 w-4" />}
           <AlertTitle>
-            Invoice run {lastResult.status === 'Success' ? 'completed' : 'failed'}
+            {t('settings.invoiceGeneration.generateArea.resultTitle', { status: lastResult.status === 'Success' ? t('common.status.completed') : 'failed' })}
           </AlertTitle>
           <AlertDescription>
-            {lastResult.totalEnrollmentsProcessed} enrollments processed,{' '}
-            {lastResult.totalInvoicesGenerated} invoices generated,{' '}
-            {lastResult.totalSkipped} skipped
-            {lastResult.totalFailed > 0 && `, ${lastResult.totalFailed} failed`}.
-            {lastResult.totalAmount > 0 && ` Total: ${formatCurrency(lastResult.totalAmount)}.`}
-            {' '}Duration: {formatDuration(lastResult.durationMs)}.
+            {t('settings.invoiceGeneration.generateArea.resultDescription', {
+              enrollments: lastResult.totalEnrollmentsProcessed,
+              generated: lastResult.totalInvoicesGenerated,
+              skipped: lastResult.totalSkipped,
+              failed: lastResult.totalFailed,
+              amount: formatCurrency(lastResult.totalAmount),
+              duration: formatDuration(lastResult.durationMs),
+              hasFailed: lastResult.totalFailed > 0,
+              hasAmount: lastResult.totalAmount > 0
+            })}
           </AlertDescription>
         </Alert>
       )}
@@ -237,21 +244,22 @@ function GenerateArea({
         {isPending
           ? <Loader2 className="h-4 w-4 animate-spin mr-2" />
           : <Play className="h-4 w-4 mr-2" />}
-        Run Invoice Generation
+        {t('settings.invoiceGeneration.generateArea.runButton')}
       </Button>
 
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Run Bulk Invoice Generation?</AlertDialogTitle>
+            <AlertDialogTitle>{t('settings.invoiceGeneration.generateArea.confirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will generate {periodType.toLowerCase()} invoices for all active enrollments
-              in the period {selectedPeriodData?.label ?? selectedPeriod}.
-              Enrollments that already have invoices for this period will be skipped.
+              {t('settings.invoiceGeneration.generateArea.confirmDescription', {
+                periodType: periodType.toLowerCase(),
+                period: selectedPeriodData?.label ?? selectedPeriod
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (selectedPeriodData) {
@@ -260,7 +268,7 @@ function GenerateArea({
                 setShowConfirm(false)
               }}
             >
-              Yes, generate invoices
+              {t('settings.invoiceGeneration.generateArea.confirmButton')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -269,22 +277,22 @@ function GenerateArea({
   )
 }
 
-function ErrorState() {
+function ErrorState({ t }: { t: TFunction }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Receipt className="h-5 w-5" />
-          Invoice Generation
+          {t('settings.invoiceGeneration.title')}
         </CardTitle>
-        <CardDescription>Bulk invoice generation and run history</CardDescription>
+        <CardDescription>{t('settings.invoiceGeneration.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>{t('common.states.error')}</AlertTitle>
           <AlertDescription>
-            Failed to load invoice generation data. This feature may only be available for Admin users.
+            {t('settings.invoiceGeneration.errorState')}
           </AlertDescription>
         </Alert>
       </CardContent>
@@ -293,6 +301,7 @@ function ErrorState() {
 }
 
 export function InvoiceGenerationSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [lastResult, setLastResult] = useState<InvoiceRunResult | null>(null)
 
@@ -333,7 +342,7 @@ export function InvoiceGenerationSection() {
   })
 
   if (runsError) {
-    return <ErrorState />
+    return <ErrorState t={t} />
   }
 
   return (
@@ -341,14 +350,14 @@ export function InvoiceGenerationSection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Receipt className="h-5 w-5" />
-          Invoice Generation
+          {t('settings.invoiceGeneration.title')}
         </CardTitle>
         <CardDescription>
-          Generate invoices in bulk for all active enrollments. Each run is logged with statistics.
+          {t('settings.invoiceGeneration.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <RunHistory runs={runs} isLoading={isLoadingRuns} />
+        <RunHistory runs={runs} isLoading={isLoadingRuns} t={t} />
 
         <GenerateArea
           onRun={(periodType, periodStart, periodEnd) =>
@@ -356,6 +365,7 @@ export function InvoiceGenerationSection() {
           }
           isPending={runMutation.isPending}
           lastResult={lastResult}
+          t={t}
         />
       </CardContent>
     </Card>

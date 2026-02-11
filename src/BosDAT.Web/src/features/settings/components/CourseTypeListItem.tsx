@@ -1,9 +1,11 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Pencil, Trash2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn, formatCurrency } from '@/lib/utils'
 import { PricingHistoryCollapsible } from './PricingHistoryCollapsible'
 import type { CourseType } from '@/features/course-types/types'
+import { courseTypeCategoryTranslations } from '@/features/course-types/types'
 
 export interface CourseTypeListItemProps {
   readonly courseType: Readonly<CourseType>
@@ -29,6 +31,7 @@ export const CourseTypeListItem = memo(function CourseTypeListItem({
   isArchiving,
   isReactivating,
 }: CourseTypeListItemProps) {
+  const { t } = useTranslation()
   const { currentPricing, pricingHistory } = courseType
 
   return (
@@ -38,7 +41,7 @@ export const CourseTypeListItem = memo(function CourseTypeListItem({
           <div className="flex items-center gap-2">
             <p className="font-medium">{courseType.name}</p>
             <span className={getStatusBadgeClasses(courseType.isActive)}>
-              {courseType.isActive ? 'Active' : 'Archived'}
+              {courseType.isActive ? t('common.status.active') : t('settings.instruments.archived')}
             </span>
             {!courseType.hasTeachersForCourseType && (
               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800">
@@ -47,7 +50,7 @@ export const CourseTypeListItem = memo(function CourseTypeListItem({
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            {courseType.instrumentName} - {courseType.durationMinutes} min - {courseType.type}
+            {courseType.instrumentName} - {courseType.durationMinutes} min - {t(courseTypeCategoryTranslations[courseType.type])}
             {courseType.type !== 'Individual' && ` (max ${courseType.maxStudents})`}
           </p>
         </div>

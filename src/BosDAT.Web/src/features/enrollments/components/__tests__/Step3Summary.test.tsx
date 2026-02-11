@@ -92,19 +92,19 @@ describe('Step3Summary', () => {
   it('should render lesson configuration section', () => {
     renderWithProvider(<Step3Summary rooms={mockRooms} />)
 
-    expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.step2.lessonConfiguration/i)).toBeInTheDocument()
   })
 
   it('should render selected students section', () => {
     renderWithProvider(<Step3Summary rooms={mockRooms} />)
 
-    expect(screen.getByText(/selected students/i)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.step3.selectedStudents/i)).toBeInTheDocument()
   })
 
   it('should render room selection section', () => {
     renderWithProvider(<Step3Summary rooms={mockRooms} />)
 
-    expect(screen.getByText(/room selection/i)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.step3.roomSelection/i)).toBeInTheDocument()
   })
 
   it('should render room selector dropdown', () => {
@@ -210,15 +210,15 @@ describe('Step3Summary', () => {
     it('should render with undefined rooms array', () => {
       renderWithProvider(<Step3Summary rooms={undefined as unknown as typeof mockRooms} />)
 
-      expect(screen.getByText(/selected students/i)).toBeInTheDocument()
-      expect(screen.getByText(/room selection/i)).toBeInTheDocument()
+      expect(screen.getByText(/enrollments.step3.selectedStudents/i)).toBeInTheDocument()
+      expect(screen.getByText(/enrollments.step3.roomSelection/i)).toBeInTheDocument()
     })
 
     it('should render with empty rooms array', () => {
       renderWithProvider(<Step3Summary rooms={[]} />)
 
-      expect(screen.getByText(/selected students/i)).toBeInTheDocument()
-      expect(screen.getByText(/room selection/i)).toBeInTheDocument()
+      expect(screen.getByText(/enrollments.step3.selectedStudents/i)).toBeInTheDocument()
+      expect(screen.getByText(/enrollments.step3.roomSelection/i)).toBeInTheDocument()
       expect(screen.getByRole('combobox')).toBeInTheDocument()
     })
 
@@ -227,7 +227,7 @@ describe('Step3Summary', () => {
       renderWithProvider(<Step3Summary rooms={mockRooms} />)
 
       // Should render the selected students section even with no students
-      expect(screen.getByText(/selected students/i)).toBeInTheDocument()
+      expect(screen.getByText(/enrollments.step3.selectedStudents/i)).toBeInTheDocument()
     })
   })
 })

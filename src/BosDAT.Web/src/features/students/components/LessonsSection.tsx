@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { lessonsApi } from '@/features/lessons/api'
@@ -11,6 +12,7 @@ interface LessonsSectionProps {
 }
 
 export function LessonsSection({ studentId }: LessonsSectionProps) {
+  const { t } = useTranslation()
   const [filters, setFilters] = useState<LessonFilters>({})
   const [cancelLesson, setCancelLesson] = useState<Lesson | null>(null)
 
@@ -47,7 +49,7 @@ export function LessonsSection({ studentId }: LessonsSectionProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Lessons</h2>
+      <h2 className="text-2xl font-bold">{t('students.sections.lessons')}</h2>
 
       <CourseLessonHistoryCard
         lessons={filteredLessons}

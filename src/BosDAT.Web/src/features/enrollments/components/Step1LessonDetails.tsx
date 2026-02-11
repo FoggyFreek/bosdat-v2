@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import {
@@ -13,6 +14,7 @@ import { teachersApi } from '@/features/teachers/api'
 import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { CourseType } from '@/features/course-types/types'
+import { courseTypeCategoryTranslations } from '@/features/course-types/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { RecurrenceType } from '../types'
 
@@ -21,6 +23,7 @@ interface Step1LessonDetailsProps {
 }
 
 export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => {
+  const { t } = useTranslation()
   const { formData, updateStep1 } = useEnrollmentForm()
   const { step1 } = formData
 
@@ -96,18 +99,18 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Course Type */}
         <div className="space-y-2">
-          <Label htmlFor="courseType">Course Type</Label>
+          <Label htmlFor="courseType">{t('enrollments.step1.courseType')}</Label>
           <Select
             value={step1.courseTypeId || ''}
             onValueChange={handleCourseTypeChange}
           >
-            <SelectTrigger id="courseType" aria-label="Course Type">
-              <SelectValue placeholder="Select a course type" />
+            <SelectTrigger id="courseType" aria-label={t('enrollments.step1.courseType')}>
+              <SelectValue placeholder={t('enrollments.step1.selectCourseType')} />
             </SelectTrigger>
             <SelectContent>
               {courseTypes.map((ct) => (
                 <SelectItem key={ct.id} value={ct.id}>
-                  {ct.name} ({ct.type})
+                  {ct.name} ({t(courseTypeCategoryTranslations[ct.type])})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -116,18 +119,18 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
 
         {/* Teacher */}
         <div className="space-y-2">
-          <Label htmlFor="teacher">Teacher</Label>
+          <Label htmlFor="teacher">{t('enrollments.step1.teacher')}</Label>
           <Select
             value={step1.teacherId || ''}
             onValueChange={handleTeacherChange}
             disabled={!step1.courseTypeId}>
-            <SelectTrigger id="teacher" aria-label="Teacher">
-              <SelectValue placeholder={!step1.courseTypeId ? 'Select a course type first' : 'Select a teacher'} />
+            <SelectTrigger id="teacher" aria-label={t('enrollments.step1.teacher')}>
+              <SelectValue placeholder={!step1.courseTypeId ? t('enrollments.step1.selectCourseTypeFirst') : t('enrollments.step1.selectTeacher')} />
             </SelectTrigger>
             <SelectContent>
-              {filteredTeachers.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.fullName}
+              {filteredTeachers.map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  {b.fullName}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -138,7 +141,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Start Date */}
         <div className="space-y-2">
-          <Label htmlFor="startDate">Start Date</Label>
+          <Label htmlFor="startDate">{t('enrollments.step1.startDate')}</Label>
           <div className="flex items-center gap-2">
             <Input
               id="startDate"
@@ -157,7 +160,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
         {/* End Date */}
         <div className="space-y-2">
           <Label htmlFor="endDate">
-            End Date {isEndDateRequired && <span className="text-destructive">*</span>}
+            {t('enrollments.step1.endDate')} {isEndDateRequired && <span className="text-destructive">*</span>}
           </Label>
           <Input
             id="endDate"
@@ -170,7 +173,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
           />
           {isEndDateDisabled && (
             <p className="text-xs text-muted-foreground">
-              End date is set to start date for trial lessons
+              {t('enrollments.step1.endDateAutoSet')}
             </p>
           )}
         </div>
@@ -178,8 +181,8 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
 
       {/* Recurrence Options */}
       <div className="space-y-2">
-        <Label>Recurrence</Label>
-        
+        <Label>{t('enrollments.step1.recurrence')}</Label>
+
         <div className="flex gap-4">
           {isIndividualOrGroup && (<label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -191,7 +194,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
               className="h-4 w-4"
               disabled={isWorkshop}
             />
-            <span>Trail (single occurrence)</span>
+            <span>{t('enrollments.step1.trial')}</span>
           </label>)}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -202,7 +205,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
               onChange={() => handleRecurrenceChange('Weekly')}
               className="h-4 w-4"
             />
-            <span>Weekly</span>
+            <span>{t('enrollments.step1.weekly')}</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -213,7 +216,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
               onChange={() => handleRecurrenceChange('Biweekly')}
               className="h-4 w-4"
             />
-            <span>Bi-weekly</span>
+            <span>{t('enrollments.step1.biweekly')}</span>
           </label>
         </div>
       </div>

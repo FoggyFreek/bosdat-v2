@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Dialog,
@@ -21,6 +22,7 @@ export const AddStudentModal = ({
   onOpenChange,
   onStudentCreated,
 }: AddStudentModalProps) => {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [error, setError] = useState<string>()
 
@@ -45,7 +47,7 @@ export const AddStudentModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Student</DialogTitle>
+          <DialogTitle>{t('enrollments.addStudent.title')}</DialogTitle>
         </DialogHeader>
         <StudentForm
           onSubmit={handleSubmit}

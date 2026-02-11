@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
@@ -22,6 +23,7 @@ type CalculationMethod = 'manual' | 'course-based'
 type StatusFilter = 'active' | 'all'
 
 export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [showAddForm, setShowAddForm] = useState(false)
   const [reverseDialog, setReverseDialog] = useState<{ open: boolean; entryId?: string }>({
@@ -182,20 +184,20 @@ export function CorrectionsSection({ studentId }: CorrectionsSectionProps) {
     )
   }
 
-  const emptyMessage = statusFilter === 'active' ? 'No active corrections' : 'No corrections yet'
+  const emptyMessage = statusFilter === 'active' ? t('students.corrections.noActiveCorrections') : t('students.corrections.noCorrections')
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Corrections</h2>
+      <h2 className="text-2xl font-bold">{t('students.sections.corrections')}</h2>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Ledger Entries</CardTitle>
+          <CardTitle>{t('students.corrections.ledgerEntries')}</CardTitle>
           <div className="flex items-center gap-4">
             <StatusFilterToggle value={statusFilter} onChange={setStatusFilter} />
             <Button size="sm" onClick={() => setShowAddForm(!showAddForm)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Correction
+              {t('students.corrections.addCorrection')}
             </Button>
           </div>
         </CardHeader>
@@ -270,6 +272,8 @@ interface StatusFilterToggleProps {
 }
 
 function StatusFilterToggle({ value, onChange }: StatusFilterToggleProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="flex items-center rounded-md border">
       <Button
@@ -279,7 +283,7 @@ function StatusFilterToggle({ value, onChange }: StatusFilterToggleProps) {
         className="rounded-r-none"
         onClick={() => onChange('active')}
       >
-        Active
+        {t('common.status.active')}
       </Button>
       <Button
         type="button"
@@ -288,7 +292,7 @@ function StatusFilterToggle({ value, onChange }: StatusFilterToggleProps) {
         className="rounded-l-none"
         onClick={() => onChange('all')}
       >
-        All
+        {t('students.corrections.all')}
       </Button>
     </div>
   )

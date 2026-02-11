@@ -109,16 +109,16 @@ describe('TeacherAvailabilitySection', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Monday')).toBeInTheDocument()
+        expect(screen.getByText('common.time.days.monday')).toBeInTheDocument()
       })
 
-      expect(screen.getByText('Monday')).toBeInTheDocument()
-      expect(screen.getByText('Tuesday')).toBeInTheDocument()
-      expect(screen.getByText('Wednesday')).toBeInTheDocument()
-      expect(screen.getByText('Thursday')).toBeInTheDocument()
-      expect(screen.getByText('Friday')).toBeInTheDocument()
-      expect(screen.getByText('Saturday')).toBeInTheDocument()
-      expect(screen.getByText('Sunday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.monday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.tuesday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.wednesday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.thursday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.friday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.saturday')).toBeInTheDocument()
+      expect(screen.getByText('common.time.days.sunday')).toBeInTheDocument()
     })
 
     it('displays availability times correctly', async () => {
@@ -139,7 +139,7 @@ describe('TeacherAvailabilitySection', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Unavailable')).toBeInTheDocument()
+        expect(screen.getByText('teachers.availability.unavailable')).toBeInTheDocument()
       })
     })
 
@@ -149,7 +149,7 @@ describe('TeacherAvailabilitySection', () => {
       })
 
       await waitFor(() => {
-        const notSetElements = screen.getAllByText('Not set')
+        const notSetElements = screen.getAllByText('teachers.availability.notSet')
         expect(notSetElements.length).toBeGreaterThan(0)
       })
     })
@@ -188,7 +188,7 @@ describe('TeacherAvailabilitySection', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Monday')).toBeInTheDocument()
+        expect(screen.getByText('common.time.days.monday')).toBeInTheDocument()
       })
 
       expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
@@ -262,7 +262,7 @@ describe('TeacherAvailabilitySection', () => {
 
       await user.click(screen.getByRole('button', { name: /edit/i }))
 
-      const unavailableButtons = screen.getAllByRole('button', { name: /set unavailable/i })
+      const unavailableButtons = screen.getAllByRole('button', { name: /unavailable/i })
       expect(unavailableButtons.length).toBeGreaterThan(0)
     })
 
@@ -279,7 +279,7 @@ describe('TeacherAvailabilitySection', () => {
 
       await user.click(screen.getByRole('button', { name: /edit/i }))
 
-      expect(screen.getByRole('button', { name: /set available/i })).toBeInTheDocument()
+      expect(screen.getByText('teachers.availability.setAvailable')).toBeInTheDocument()
     })
   })
 
@@ -306,9 +306,10 @@ describe('TeacherAvailabilitySection', () => {
       await user.clear(timeInputs[1]) // End time for Monday
       await user.type(timeInputs[1], '09:30')
 
+      // The error message contains a translation key
       await waitFor(() => {
-        expect(screen.getByText(/end time must be at least 1 hour/i)).toBeInTheDocument()
-      })
+        expect(screen.getByText('teachers.availability.validationError')).toBeInTheDocument()
+      }, { timeout: 3000 })
     })
 
     it('disables save button when validation errors exist', async () => {

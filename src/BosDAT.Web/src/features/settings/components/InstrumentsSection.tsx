@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +23,7 @@ const initialFormData: InstrumentFormData = {
 }
 
 export function InstrumentsSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [showAdd, setShowAdd] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
@@ -94,12 +96,12 @@ export function InstrumentsSection() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Instruments</CardTitle>
-          <CardDescription>Manage available instruments for lessons</CardDescription>
+          <CardTitle>{t('settings.instruments.title')}</CardTitle>
+          <CardDescription>{t('settings.instruments.description')}</CardDescription>
         </div>
         <Button size="sm" onClick={handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
-          Add
+          {t('settings.instruments.addInstrument')}
         </Button>
       </CardHeader>
       <CardContent>
@@ -122,7 +124,7 @@ export function InstrumentsSection() {
         )}
 
         {!isLoading && instruments.length === 0 && (
-          <p className="text-muted-foreground">No instruments configured</p>
+          <p className="text-muted-foreground">{t('settings.instruments.empty')}</p>
         )}
 
         {!isLoading && instruments.length > 0 && (

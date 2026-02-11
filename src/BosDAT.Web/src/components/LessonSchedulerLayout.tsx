@@ -146,9 +146,3 @@ export function LessonSchedulerLayout({
     </div>
   )
 }
-
-export function getDurationMinutes(startTime: string, endTime: string): number {
-  const [sh, sm] = startTime.split(':').map(Number)
-  const [eh, em] = endTime.split(':').map(Number)
-  return eh * 60 + em - (sh * 60 + sm)
-}

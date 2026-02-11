@@ -57,6 +57,9 @@ Keep conditional rendering flat and readable—avoid deeply nested conditionals;
 - Import from `@/test/utils` (NOT `@testing-library/react`)
 - Fresh `QueryClient` per test (`createTestQueryClient()`)
 - Co-locate in `__tests__/` folders
+- `react-i18next` globally mocked in `test/setup.ts` - translation keys returned as-is
+- NEVER import `@/i18n/config` in test utils (breaks mock hoisting)
+- Use `import type { TFunction } from 'i18next'` for typing `t` function parameters
 
 ## Component Rules
 - UI in components, logic in hooks

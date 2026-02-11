@@ -84,7 +84,7 @@ describe('Step3CalendarSlotSelection', () => {
   it('should render loading state initially', () => {
     renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByText('enrollments.step3.loadingCalendar')).toBeInTheDocument()
   })
 
   it('should render summary panel after loading', async () => {
@@ -93,7 +93,7 @@ describe('Step3CalendarSlotSelection', () => {
     await waitFor(() => {
       // Summary now uses Step2Summary which gets data from context
       // Check for summary section instead of specific text
-      expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
     })
   })
 
@@ -102,8 +102,8 @@ describe('Step3CalendarSlotSelection', () => {
 
     await waitFor(() => {
       // Navigation is in CalendarComponent header
-      expect(screen.getByLabelText(/previous week/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/next week/i)).toBeInTheDocument()
+      expect(screen.getByLabelText('calendar.navigation.previousWeek')).toBeInTheDocument()
+      expect(screen.getByLabelText('calendar.navigation.nextWeek')).toBeInTheDocument()
     })
   })
 
@@ -130,7 +130,7 @@ describe('Step3CalendarSlotSelection', () => {
     renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
     await waitFor(() => {
-      expect(screen.getByText(/error/i)).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step3.errorLoadingData')).toBeInTheDocument()
     })
   })
 
@@ -327,7 +327,7 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+        expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
       })
     })
 
@@ -342,7 +342,7 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+        expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
       })
     })
 
@@ -352,7 +352,7 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+        expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
       })
     })
 
@@ -362,7 +362,7 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+        expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
       })
     })
 
@@ -394,7 +394,7 @@ describe('Step3CalendarSlotSelection', () => {
       renderWithProviders(<Step3CalendarSlotSelection {...mockProps} />)
 
       await waitFor(() => {
-        expect(screen.getByText(/lesson configuration/i)).toBeInTheDocument()
+        expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
       })
     })
   })

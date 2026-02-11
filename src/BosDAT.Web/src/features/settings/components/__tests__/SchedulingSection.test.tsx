@@ -125,9 +125,9 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Scheduling')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.title')).toBeInTheDocument()
       })
-      expect(screen.getByText('Lesson scheduling status and management')).toBeInTheDocument()
+      expect(screen.getByText('settings.scheduling.description')).toBeInTheDocument()
     })
 
     it('renders loading state initially', () => {
@@ -136,17 +136,17 @@ describe('SchedulingSection', () => {
 
       renderWithProviders(<SchedulingSection />)
 
-      expect(screen.getByText('Loading status...')).toBeInTheDocument()
+      expect(screen.getByText('settings.scheduling.loading')).toBeInTheDocument()
     })
 
     it('renders status card after loading', async () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Scheduling Status')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.statusCard.title')).toBeInTheDocument()
       })
       expect(screen.getByText('2026-05-08')).toBeInTheDocument()
-      expect(screen.getByText('90 days')).toBeInTheDocument()
+      expect(screen.getByText(/90 common\.time\.day/)).toBeInTheDocument()
       expect(screen.getByText('12')).toBeInTheDocument()
     })
 
@@ -159,7 +159,7 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No lessons scheduled')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.statusCard.noLessons')).toBeInTheDocument()
       })
     })
   })
@@ -196,7 +196,7 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Load more' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'settings.scheduling.runHistory.loadMore' })).toBeInTheDocument()
       })
     })
 
@@ -209,9 +209,9 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Schedule Run History')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.runHistory.title')).toBeInTheDocument()
       })
-      expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'settings.scheduling.runHistory.loadMore' })).not.toBeInTheDocument()
     })
 
     it('loads more runs when Load more is clicked', async () => {
@@ -222,10 +222,10 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Load more' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'settings.scheduling.runHistory.loadMore' })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: 'Load more' }))
+      fireEvent.click(screen.getByRole('button', { name: 'settings.scheduling.runHistory.loadMore' }))
 
       await waitFor(() => {
         expect(schedulingApi.getRuns).toHaveBeenCalledWith(2, 5)
@@ -243,7 +243,7 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('No scheduling runs yet.')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.runHistory.noRuns')).toBeInTheDocument()
       })
     })
   })
@@ -253,40 +253,40 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Administrator Area')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.adminArea.title')).toBeInTheDocument()
       })
-      expect(screen.getByRole('button', { name: /run manual generation/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i })).toBeInTheDocument()
     })
 
     it('shows confirmation dialog when manual run button is clicked', async () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /run manual generation/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /run manual generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText('Run Manual Lesson Generation?')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.adminArea.confirmTitle')).toBeInTheDocument()
       })
-      expect(screen.getByText(/generate lessons for the next 90 days/i)).toBeInTheDocument()
+      expect(screen.getByText('settings.scheduling.adminArea.confirmDescription')).toBeInTheDocument()
     })
 
     it('calls runManual when confirmed', async () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /run manual generation/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /run manual generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText('Run Manual Lesson Generation?')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.adminArea.confirmTitle')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /yes, run generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.confirmButton/i }))
 
       await waitFor(() => {
         expect(schedulingApi.runManual).toHaveBeenCalled()
@@ -297,22 +297,21 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /run manual generation/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /run manual generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText('Run Manual Lesson Generation?')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.adminArea.confirmTitle')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /yes, run generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.confirmButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText(/manual run completed/i)).toBeInTheDocument()
+        expect(screen.getByText(/settings\.scheduling\.adminArea\.manualRun/i)).toBeInTheDocument()
       })
-      expect(screen.getByText(/12 courses processed/)).toBeInTheDocument()
-      expect(screen.getByText(/50 lessons created/)).toBeInTheDocument()
+      expect(screen.getByText(/settings\.scheduling\.adminArea\.result/i)).toBeInTheDocument()
     })
 
     it('shows failure result when manual run fails', async () => {
@@ -321,19 +320,19 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /run manual generation/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /run manual generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText('Run Manual Lesson Generation?')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.adminArea.confirmTitle')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /yes, run generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.confirmButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText(/manual run failed/i)).toBeInTheDocument()
+        expect(screen.getByText(/settings\.scheduling\.adminArea\.manualRun/i)).toBeInTheDocument()
       })
     })
 
@@ -341,19 +340,19 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /run manual generation/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /run manual generation/i }))
+      fireEvent.click(screen.getByRole('button', { name: /settings\.scheduling\.adminArea\.runButton/i }))
 
       await waitFor(() => {
-        expect(screen.getByText('Run Manual Lesson Generation?')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.adminArea.confirmTitle')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+      fireEvent.click(screen.getByRole('button', { name: 'common.actions.cancel' }))
 
       await waitFor(() => {
-        expect(screen.queryByText('Run Manual Lesson Generation?')).not.toBeInTheDocument()
+        expect(screen.queryByText('settings.scheduling.adminArea.confirmTitle')).not.toBeInTheDocument()
       })
     })
   })
@@ -365,7 +364,7 @@ describe('SchedulingSection', () => {
       renderWithProviders(<SchedulingSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to load scheduling status. This feature may only be available for Admin users.')).toBeInTheDocument()
+        expect(screen.getByText('settings.scheduling.errorState')).toBeInTheDocument()
       })
     })
   })

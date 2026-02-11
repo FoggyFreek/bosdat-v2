@@ -104,11 +104,11 @@ describe('TeacherForm', () => {
       wrapper: createWrapper(),
     })
 
-    expect(screen.getByLabelText(/first name/i)).toHaveValue('')
-    expect(screen.getByLabelText(/last name/i)).toHaveValue('')
+    expect(screen.getByLabelText(/firstName/i)).toHaveValue('')
+    expect(screen.getByLabelText(/lastName/i)).toHaveValue('')
     expect(document.getElementById('email')).toHaveValue('')
     expect(document.getElementById('phone')).toHaveValue('')
-    expect(screen.getByRole('button', { name: /create teacher/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /createTeacher/i })).toBeInTheDocument()
   })
 
   it('renders form with teacher data in edit mode', async () => {
@@ -138,13 +138,13 @@ describe('TeacherForm', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/first name/i)).toHaveValue('John')
+      expect(screen.getByLabelText(/firstName/i)).toHaveValue('John')
     })
-    expect(screen.getByLabelText(/last name/i)).toHaveValue('Doe')
+    expect(screen.getByLabelText(/lastName/i)).toHaveValue('Doe')
     expect(screen.getByLabelText(/prefix/i)).toHaveValue('van')
     expect(document.getElementById('email')).toHaveValue('john@example.com')
     expect(document.getElementById('phone')).toHaveValue('123-456-7890')
-    expect(screen.getByRole('button', { name: /update teacher/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /updateTeacher/i })).toBeInTheDocument()
   })
 
   it('shows validation errors for empty required fields', async () => {
@@ -153,12 +153,12 @@ describe('TeacherForm', () => {
       wrapper: createWrapper(),
     })
 
-    await user.click(screen.getByRole('button', { name: /create teacher/i }))
+    await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/first name is required/i)).toBeInTheDocument()
-      expect(screen.getByText(/last name is required/i)).toBeInTheDocument()
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument()
+      expect(screen.getByText(/firstNameRequired/i)).toBeInTheDocument()
+      expect(screen.getByText(/lastNameRequired/i)).toBeInTheDocument()
+      expect(screen.getByText(/emailRequired/i)).toBeInTheDocument()
     })
 
     expect(mockOnSubmit).not.toHaveBeenCalled()
@@ -170,13 +170,13 @@ describe('TeacherForm', () => {
       wrapper: createWrapper(),
     })
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
+    await user.type(screen.getByLabelText(/firstName/i), 'John')
+    await user.type(screen.getByLabelText(/lastName/i), 'Doe')
     await user.type(document.getElementById('email')!, 'invalid-email')
-    await user.click(screen.getByRole('button', { name: /create teacher/i }))
+    await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument()
+      expect(screen.getByText(/emailInvalid/i)).toBeInTheDocument()
     })
 
     expect(mockOnSubmit).not.toHaveBeenCalled()
@@ -188,16 +188,16 @@ describe('TeacherForm', () => {
       wrapper: createWrapper(),
     })
 
-    await user.click(screen.getByRole('button', { name: /create teacher/i }))
+    await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/first name is required/i)).toBeInTheDocument()
+      expect(screen.getByText(/firstNameRequired/i)).toBeInTheDocument()
     })
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
+    await user.type(screen.getByLabelText(/firstName/i), 'John')
 
     await waitFor(() => {
-      expect(screen.queryByText(/first name is required/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/firstNameRequired/i)).not.toBeInTheDocument()
     })
   })
 
@@ -209,11 +209,11 @@ describe('TeacherForm', () => {
       wrapper: createWrapper(),
     })
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
+    await user.type(screen.getByLabelText(/firstName/i), 'John')
+    await user.type(screen.getByLabelText(/lastName/i), 'Doe')
     await user.type(document.getElementById('email')!, 'john@example.com')
     await user.type(document.getElementById('phone')!, '123-456-7890')
-    await user.click(screen.getByRole('button', { name: /create teacher/i }))
+    await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(
@@ -235,10 +235,10 @@ describe('TeacherForm', () => {
       wrapper: createWrapper(),
     })
 
-    await user.type(screen.getByLabelText(/first name/i), 'John')
-    await user.type(screen.getByLabelText(/last name/i), 'Doe')
+    await user.type(screen.getByLabelText(/firstName/i), 'John')
+    await user.type(screen.getByLabelText(/lastName/i), 'Doe')
     await user.type(document.getElementById('email')!, 'john@example.com')
-    await user.click(screen.getByRole('button', { name: /create teacher/i }))
+    await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/teachers/123')
@@ -302,14 +302,14 @@ describe('TeacherForm', () => {
         expect(screen.getByLabelText('Piano')).toBeInTheDocument()
       })
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/firstName/i), 'John')
+      await user.type(screen.getByLabelText(/lastName/i), 'Doe')
       await user.type(document.getElementById('email')!, 'john@example.com')
 
       await user.click(screen.getByLabelText('Piano'))
       await user.click(screen.getByLabelText('Guitar'))
 
-      await user.click(screen.getByRole('button', { name: /create teacher/i }))
+      await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalledWith(
@@ -400,14 +400,14 @@ describe('TeacherForm', () => {
         expect(screen.getByLabelText(/hourly rate/i)).toBeInTheDocument()
       })
 
-      await user.type(screen.getByLabelText(/first name/i), 'John')
-      await user.type(screen.getByLabelText(/last name/i), 'Doe')
+      await user.type(screen.getByLabelText(/firstName/i), 'John')
+      await user.type(screen.getByLabelText(/lastName/i), 'Doe')
       await user.type(document.getElementById('email')!, 'john@example.com')
       await user.type(screen.getByLabelText(/hourly rate/i), '-50')
-      await user.click(screen.getByRole('button', { name: /create teacher/i }))
+      await user.click(screen.getByRole('button', { name: /createTeacher/i }))
 
       await waitFor(() => {
-        expect(screen.getByText(/please enter a valid hourly rate/i)).toBeInTheDocument()
+        expect(screen.getByText(/hourlyRateInvalid/i)).toBeInTheDocument()
       })
     })
   })

@@ -113,12 +113,89 @@ arr.sort()     // ❌ Mutation
 - Route-level lazy only, never barrels
 - `queryClient.invalidateQueries(['key'])` after mutations
 
+**i18n (react-i18next):**
+```ts
+// Usage in components
+import { useTranslation } from 'react-i18next'
+
+const { t } = useTranslation()
+<button>{t('common.actions.save')}</button>  // "Opslaan" (nl) / "Save" (en)
+<h1>{t('common.entities.students')}</h1>  // "Leerlingen" (nl) / "Students" (en)
+
+//declaration for Typescript Types
+export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
+export const courseStatusTranslations = {
+    'Active': 'courses.status.active',
+    'Paused': 'courses.status.paused',
+    'Completed': 'courses.status.completed',
+    'Cancelled': 'courses.status.cancelled',
+  } as const satisfies Record<CourseStatus, string>;
+//usage of Typescript Types
+ {t(courseStatusTranslations[course.status])}
+
+//declaration for Enums
+export type DayOfWeek = keyof typeof DAY_NAME_TO_NUMBER
+export const dayOfWeekTranslations = {
+    'Sunday': 'common.time.days.sunday',
+    'Monday': 'common.time.days.monday',
+    'Tuesday': 'common.time.days.tuesday',
+    'Wednesday': 'common.time.days.wednesday',
+    'Thursday': 'common.time.days.thursday',
+    'Friday': 'common.time.days.friday',
+    'Saturday': 'common.time.days.saturday',
+  } as const satisfies Record<DayOfWeek, string>;
+// usage of Enums
+{t(dayOfWeekTranslations[course.dayOfWeek])}
+
+// With interpolation
+<p>{t('dashboard.stats.totalStudents', { count: 25 })}</p>  // "25 totaal leerlingen"
+```
+
+**Structure:**
+- Config: `src/i18n/config.ts` (auto-imported in `main.tsx`)
+- Translations: `src/i18n/locales/{nl,en}.json` (namespace-based)
+- Switcher: `<LanguageSwitcher />` in Layout top bar
+- Default: Dutch (nl), fallback: Dutch, persisted in localStorage
+- Docs: `src/i18n/README.md` (complete namespace documentation)
+
+**Namespaces:**
+- `common.*` - Shared library (actions, entities, status, states, form, time)
+  - Use for terms used in 3+ places
+  - `common.actions.*` - save, cancel, edit, delete, etc.
+  - `common.entities.*` - student, teacher, course, lesson, etc.
+  - `common.status.*` - active, inactive, trial, etc.
+- `dashboard.*` - Dashboard page
+- `students.*` - Student management
+- `teachers.*` - Teacher management
+- `courses.*` - Course management
+- `lessons.*` - Lesson management
+- `enrollments.*` - Enrollment process
+- `invoices.*` - Invoice management
+- `settings.*` - Settings page
+- `auth.*` - Authentication
+- `navigation.*` - Navigation items
+
+**Adding translations:**
+1. Choose namespace: common (shared) vs feature-specific
+2. Add to both `locales/nl.json` AND `locales/en.json`
+3. Use hierarchical keys: `students.form.firstName` not `student_first_name`
+4. Run `npm run check:i18n` to verify consistency
+5. See `src/i18n/README.md` for complete guide
+
+**Testing:**
+- Global mock in `src/test/setup.ts` handles `react-i18next` for all tests
+- Mock returns translation keys as-is: `t('common.actions.save')` → `'common.actions.save'`
+- **CRITICAL:** Do NOT import `@/i18n/config` in `src/test/utils.tsx` (breaks mock hoisting)
+- For `TFunction` type: `import type { TFunction } from 'i18next'`
+- Tests use mocked `useTranslation` - no actual i18n initialization needed
+
 ## Tech Stack
 
 | Layer | Tech | Version |
 |-------|------|---------|
 | Backend | .NET, C#, EF Core | 8, 12, 8 |
-| Frontend | React, TS, Vite | 18, 5, 5 |
+| Frontend | React, TS, Vite | 19, 5, 7 |
+| i18n | react-i18next | Latest |
 | DB | PostgreSQL | 16 |
 | Testing | xUnit, Vitest+RTL | 2.6, 4.0 |
 | Auth | Identity + JWT | 8.0 |

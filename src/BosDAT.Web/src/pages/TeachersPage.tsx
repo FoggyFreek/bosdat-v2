@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Plus, Search, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +11,7 @@ import type { TeacherList } from '@/features/teachers/types'
 import { cn } from '@/lib/utils'
 
 export function TeachersPage() {
+  const { t } = useTranslation()
   const [search, setSearch] = useState('')
 
   const { data: teachers = [], isLoading } = useQuery<TeacherList[]>({
@@ -27,24 +29,24 @@ export function TeachersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Teachers</h1>
-          <p className="text-muted-foreground">Manage your music school teachers</p>
+          <h1 className="text-3xl font-bold">{t('teachers.title')}</h1>
+          <p className="text-muted-foreground">{t('teachers.subtitle')}</p>
         </div>
         <Button asChild>
           <Link to="/teachers/new">
             <Plus className="h-4 w-4 mr-2" />
-            Add Teacher
+            {t('teachers.addTeacher')}
           </Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Teachers</CardTitle>
+          <CardTitle>{t('teachers.allTeachers')}</CardTitle>
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search teachers..."
+              placeholder={t('teachers.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -60,7 +62,7 @@ export function TeachersPage() {
 
           {!isLoading && filteredTeachers.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No teachers found</p>
+              <p className="text-muted-foreground">{t('teachers.noTeachersFound')}</p>
             </div>
           )}
 
@@ -102,7 +104,7 @@ export function TeachersPage() {
                           : 'bg-gray-100 text-gray-800'
                       )}
                     >
-                      {teacher.isActive ? 'Active' : 'Inactive'}
+                      {teacher.isActive ? t('common.status.active') : t('common.status.inactive')}
                     </span>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>

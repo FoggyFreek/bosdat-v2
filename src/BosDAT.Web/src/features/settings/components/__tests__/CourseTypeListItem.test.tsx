@@ -50,7 +50,7 @@ describe('CourseTypeListItem', () => {
 
     it('renders course type details', () => {
       render(<CourseTypeListItem {...defaultProps} />)
-      expect(screen.getByText('Piano - 30 min - Individual')).toBeInTheDocument()
+      expect(screen.getByText(/Piano - 30 min - settings\.courseTypes\.types\.Individual/)).toBeInTheDocument()
     })
 
     it('renders max students for non-Individual types', () => {
@@ -87,7 +87,7 @@ describe('CourseTypeListItem', () => {
   describe('status badges', () => {
     it('renders Active badge for active course types', () => {
       render(<CourseTypeListItem {...defaultProps} />)
-      expect(screen.getByText('Active')).toBeInTheDocument()
+      expect(screen.getByText('common.status.active')).toBeInTheDocument()
     })
 
     it('renders Archived badge for inactive course types', () => {
@@ -96,7 +96,7 @@ describe('CourseTypeListItem', () => {
         isActive: false,
       }
       render(<CourseTypeListItem {...defaultProps} courseType={inactiveCourseType} />)
-      expect(screen.getByText('Archived')).toBeInTheDocument()
+      expect(screen.getByText('settings.instruments.archived')).toBeInTheDocument()
     })
 
     it('renders "No teachers" badge when hasTeachersForCourseType is false', () => {

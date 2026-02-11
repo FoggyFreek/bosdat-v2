@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -49,6 +50,8 @@ export function InstrumentForm({
   onSubmit,
   onCancel,
 }: InstrumentFormProps) {
+  const { t } = useTranslation()
+
   const handleNameChange = (name: string) => {
     onFormDataChange({ ...formData, name })
   }
@@ -69,7 +72,7 @@ export function InstrumentForm({
     <div className="flex gap-2 items-center">
       <Input
         className="flex-1"
-        placeholder="Instrument name"
+        placeholder={t('settings.instruments.form.namePlaceholder')}
         value={formData.name}
         onChange={(e) => handleNameChange(e.target.value)}
       />
@@ -87,7 +90,7 @@ export function InstrumentForm({
         <SelectContent>
           {categories.map((cat) => (
             <SelectItem key={cat} value={cat}>
-              {cat}
+              {t(`settings.instruments.categories.${cat}`)}
             </SelectItem>
           ))}
         </SelectContent>

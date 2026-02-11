@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { courseTypesApi } from '@/features/course-types/api'
 import { teachersApi } from '@/features/teachers/api'
@@ -8,18 +9,13 @@ import { useEnrollmentForm } from '../context/EnrollmentFormContext'
 import { getDayNameFromNumber } from '@/lib/datetime-helpers'
 import type { RecurrenceType } from '../types'
 
-const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
-  Trial: 'Once',
-  Weekly: 'Once per week',
-  Biweekly: 'Every two weeks',
-}
-
 const formatDate = (date: string | null) => {
   if (!date) return undefined
   return new Date(date).toLocaleDateString('nl-NL')
 }
 
 export const Step2Summary = () => {
+  const { t } = useTranslation()
   const { formData } = useEnrollmentForm()
   const { step1 } = formData
 
@@ -40,9 +36,15 @@ export const Step2Summary = () => {
     ? getDayNameFromNumber(new Date(step1.startDate).getDay())
     : undefined
 
+  const recurrenceLabels: Record<RecurrenceType, string> = {
+    Trial: t('enrollments.step4.once'),
+    Weekly: t('enrollments.step4.oncePerWeek'),
+    Biweekly: t('enrollments.step4.everyTwoWeeks'),
+  }
+
   return (
     <EnrollmentSummaryCard
-      title="Lesson Configuration"
+      title={t('enrollments.step2.lessonConfiguration')}
       courseTypeName={selectedCourseType?.name}
       courseTypeLabel={selectedCourseType?.type}
       teacherName={selectedTeacher?.fullName}
@@ -50,7 +52,7 @@ export const Step2Summary = () => {
       dayOfWeek={dayOfWeek ?? undefined}
       endDate={formatDate(step1.endDate)}
       isTrial={step1.recurrence === 'Trial'}
-      frequency={RECURRENCE_LABELS[step1.recurrence]}
+      frequency={recurrenceLabels[step1.recurrence]}
       maxStudents={selectedCourseType?.maxStudents}
     />
   )

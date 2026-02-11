@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import type { LedgerEntryType, LedgerEntryStatus } from '@/features/students/types'
+import { ledgerEntryTypeTranslations, ledgerEntryStatusTranslations } from '@/features/students/types'
 
 const ENTRY_TYPE_STYLES: Record<LedgerEntryType, string> = {
   Credit: 'bg-green-100 text-green-800',
@@ -20,9 +22,10 @@ interface EntryTypeBadgeProps {
 }
 
 export function EntryTypeBadge({ type }: EntryTypeBadgeProps) {
+  const { t } = useTranslation()
   return (
     <span className={cn(badgeBaseClasses, ENTRY_TYPE_STYLES[type])}>
-      {type}
+      {t(ledgerEntryTypeTranslations[type])}
     </span>
   )
 }
@@ -32,9 +35,10 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
+  const { t } = useTranslation()
   return (
     <span className={cn(badgeBaseClasses, STATUS_STYLES[status])}>
-      {status}
+      {t(ledgerEntryStatusTranslations[status])}
     </span>
   )
 }

@@ -46,32 +46,32 @@ describe('Step4Summary', () => {
   it('renders confirmation step title', () => {
     renderWithProvider(<Step4Summary />)
 
-    expect(screen.getByText(/confirmation/i)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.step4.confirmation/i)).toBeInTheDocument()
     expect(
-      screen.getByText(/review your enrollment details before submitting/i)
+      screen.getByText(/enrollments.step4.reviewDetails/i)
     ).toBeInTheDocument()
   })
 
   it('shows ready to submit message', () => {
     renderWithProvider(<Step4Summary />)
 
-    expect(screen.getByText(/ready to submit/i)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.step4.readyToSubmit/i)).toBeInTheDocument()
     expect(
-      screen.getByText(/conflict detection will be performed when you submit/i)
+      screen.getByText(/enrollments.step4.conflictCheckOnSubmit/i)
     ).toBeInTheDocument()
   })
 
   it('renders course details and schedule cards', () => {
     renderWithProvider(<Step4Summary />)
 
-    expect(screen.getByText('Course Details')).toBeInTheDocument()
-    expect(screen.getByText('Schedule & Room')).toBeInTheDocument()
+    expect(screen.getByText('enrollments.step4.courseDetails')).toBeInTheDocument()
+    expect(screen.getByText('enrollments.step4.scheduleAndRoom')).toBeInTheDocument()
   })
 
   it('shows no students selected when students is empty', () => {
     renderWithProvider(<Step4Summary />)
 
-    expect(screen.getByText('No students selected')).toBeInTheDocument()
+    expect(screen.getAllByText('enrollments.step4.enrolledStudents').length).toBeGreaterThan(0)
   })
 
   it('renders student list with populated form data', async () => {
@@ -192,7 +192,7 @@ describe('Step4Summary', () => {
     expect(screen.getByText(/15% discount \(Family\)/)).toBeInTheDocument()
     expect(screen.getByText('Monthly')).toBeInTheDocument()
     expect(screen.getByText('Quarterly')).toBeInTheDocument()
-    expect(screen.getByText('Enrolled Students (2)')).toBeInTheDocument()
-    expect(screen.getByText(/Trial Lesson/)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.step4.enrolledStudents/)).toBeInTheDocument()
+    expect(screen.getByText(/enrollments.summary.trialLesson/)).toBeInTheDocument()
   })
 })

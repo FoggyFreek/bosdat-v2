@@ -6,9 +6,9 @@ import type { CalendarEvent } from '@/components/calendar/types'
 import { useToast } from '@/hooks/use-toast'
 import { lessonsApi } from '@/features/lessons/api'
 import { useScheduleCalendarData } from '@/features/lessons/hooks/useScheduleCalendarData'
-import { formatDate, formatTime } from '@/lib/datetime-helpers'
+import { formatDate, formatTime, getDurationMinutes } from '@/lib/datetime-helpers'
 import type { Lesson } from '@/features/lessons/types'
-import { LessonSchedulerLayout, getDurationMinutes } from '@/components/LessonSchedulerLayout'
+import { LessonSchedulerLayout } from '@/components/LessonSchedulerLayout'
 
 function LessonSummaryCard({ lesson }: { lesson: Lesson }) {
   return (

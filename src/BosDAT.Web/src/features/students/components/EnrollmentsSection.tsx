@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Music, Trash2, ArrowUpCircle } from 'lucide-react'
@@ -14,6 +15,7 @@ import { enrollmentsApi } from '@/features/enrollments/api'
 import { coursesApi } from '@/features/courses/api'
 import type { StudentEnrollment } from '@/features/students/types'
 import type { CourseList } from '@/features/courses/types'
+import { enrollmentStatusTranslations } from '@/features/enrollments/types'
 import { cn } from '@/lib/utils'
 import { formatTime } from '@/lib/datetime-helpers'
 
@@ -22,6 +24,7 @@ interface EnrollmentsSectionProps {
 }
 
 export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [showEnrollForm, setShowEnrollForm] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState('')
@@ -40,7 +43,11 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
 
   const enrollMutation = useMutation({
     mutationFn: (courseId: string) =>
-      enrollmentsApi.create({ studentId, courseId }),
+      enrollmentsApi.create({
+        studentId,
+        courseId,
+        invoicingPreference: 'Monthly'
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrollments', 'student', studentId] })
       setShowEnrollForm(false)
@@ -76,14 +83,14 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Enrollments</h2>
+      <h2 className="text-2xl font-bold">{t('students.sections.enrollments')}</h2>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Course Enrollments</CardTitle>
+          <CardTitle>{t('students.enrollments.courseEnrollments')}</CardTitle>
           <Button size="sm" onClick={() => setShowEnrollForm(!showEnrollForm)}>
             <Plus className="h-4 w-4 mr-2" />
-            Enroll in Course
+            {t('students.enrollments.enrollInCourse')}
           </Button>
         </CardHeader>
         <CardContent>
@@ -91,12 +98,12 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
             <div className="flex gap-2 mb-4 p-4 bg-muted/50 rounded-lg">
               <Select value={selectedCourse} onValueChange={setSelectedCourse}>
                 <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select a course" />
+                  <SelectValue placeholder={t('students.enrollments.selectCourse')} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableCourses.length === 0 ? (
                     <SelectItem value="" disabled>
-                      No available courses
+                      {t('students.enrollments.noAvailableCourses')}
                     </SelectItem>
                   ) : (
                     availableCourses.map((course) => (
@@ -108,16 +115,16 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
                 </SelectContent>
               </Select>
               <Button onClick={handleEnroll} disabled={!selectedCourse || enrollMutation.isPending}>
-                {enrollMutation.isPending ? 'Enrolling...' : 'Enroll'}
+                {enrollMutation.isPending ? t('students.enrollments.enrolling') : t('students.enrollments.enroll')}
               </Button>
               <Button variant="outline" onClick={() => setShowEnrollForm(false)}>
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </div>
           )}
 
           {enrollments.length === 0 ? (
-            <p className="text-muted-foreground">No enrollments yet</p>
+            <p className="text-muted-foreground">{t('students.enrollments.noEnrollments')}</p>
           ) : (
             <div className="divide-y">
               {enrollments.map((enrollment) => (
@@ -143,7 +150,7 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
                         enrollment.status !== 'Active' && enrollment.status !== 'Trail' && 'bg-gray-100 text-gray-800'
                       )}
                     >
-                      {enrollment.status}
+                      {t(enrollmentStatusTranslations[enrollment.status])}
                     </span>
                     {enrollment.status === 'Trail' && (
                       <Button
@@ -154,7 +161,7 @@ export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {
                         disabled={promoteMutation.isPending}
                       >
                         <ArrowUpCircle className="h-4 w-4 mr-1" />
-                        Promote
+                        {t('students.enrollments.promote')}
                       </Button>
                     )}
                     {(enrollment.status === 'Active' || enrollment.status === 'Trail') && (

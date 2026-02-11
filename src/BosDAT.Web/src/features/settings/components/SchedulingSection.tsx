@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Clock, CalendarCheck, Loader2, CheckCircle2, XCircle, Play, AlertTriangle,
@@ -20,26 +22,26 @@ import {
 import { schedulingApi } from '@/features/settings/api'
 import type { SchedulingStatus, ScheduleRun, ScheduleRunsResponse, ManualRunResult } from '@/features/settings/types'
 
-function StatusCard({ status }: { status: SchedulingStatus }) {
+function StatusCard({ status, t }: { status: SchedulingStatus; t: TFunction }) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
       <h3 className="font-medium flex items-center gap-2">
         <CalendarCheck className="h-4 w-4" />
-        Scheduling Status
+        {t('settings.scheduling.statusCard.title')}
       </h3>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Planned until:</span>
+          <span className="text-sm text-muted-foreground">{t('settings.scheduling.statusCard.plannedUntil')}:</span>
           <span className="text-sm font-medium">
-            {status.lastScheduledDate ?? 'No lessons scheduled'}
+            {status.lastScheduledDate ?? t('settings.scheduling.statusCard.noLessons')}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Days ahead:</span>
-          <span className="text-sm font-medium">{status.daysAhead} days</span>
+          <span className="text-sm text-muted-foreground">{t('settings.scheduling.statusCard.daysAhead')}:</span>
+          <span className="text-sm font-medium">{status.daysAhead} {t('common.time.day', { count: status.daysAhead })}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Active courses:</span>
+          <span className="text-sm text-muted-foreground">{t('settings.scheduling.statusCard.activeCourses')}:</span>
           <span className="text-sm font-medium">{status.activeCourseCount}</span>
         </div>
       </div>
@@ -79,17 +81,19 @@ function RunHistory({
   totalCount,
   isLoading,
   onLoadMore,
+  t,
 }: {
   runs: ScheduleRun[]
   totalCount: number
   isLoading: boolean
   onLoadMore: () => void
+  t: TFunction
 }) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
-      <h3 className="font-medium">Schedule Run History</h3>
+      <h3 className="font-medium">{t('settings.scheduling.runHistory.title')}</h3>
       {runs.length === 0 && !isLoading && (
-        <p className="text-sm text-muted-foreground">No scheduling runs yet.</p>
+        <p className="text-sm text-muted-foreground">{t('settings.scheduling.runHistory.noRuns')}</p>
       )}
       {runs.length > 0 && (
         <div>{runs.map((run) => <RunItem key={run.id} run={run} />)}</div>
@@ -97,12 +101,12 @@ function RunHistory({
       {isLoading && (
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Loading...</span>
+          <span className="text-sm">{t('common.states.loading')}</span>
         </div>
       )}
       {runs.length < totalCount && !isLoading && (
         <Button variant="outline" size="sm" onClick={onLoadMore}>
-          Load more
+          {t('settings.scheduling.runHistory.loadMore')}
         </Button>
       )}
     </div>
@@ -113,10 +117,12 @@ function AdminArea({
   onRunManual,
   isPending,
   lastResult,
+  t,
 }: {
   onRunManual: () => void
   isPending: boolean
   lastResult: ManualRunResult | null
+  t: TFunction
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -124,10 +130,10 @@ function AdminArea({
     <div className="rounded-lg border border-yellow-200 bg-yellow-50/30 p-4 space-y-3">
       <h3 className="font-medium flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
-        Administrator Area
+        {t('settings.scheduling.adminArea.title')}
       </h3>
       <p className="text-sm text-muted-foreground">
-        Trigger a manual bulk lesson generation for the next 90 days across all active courses.
+        {t('settings.scheduling.adminArea.description')}
       </p>
 
       {lastResult && (
@@ -139,39 +145,36 @@ function AdminArea({
             ? <CheckCircle2 className="h-4 w-4" />
             : <XCircle className="h-4 w-4" />}
           <AlertTitle>
-            Manual run {lastResult.status === 'Success' ? 'completed' : 'failed'}
+            {t('settings.scheduling.adminArea.manualRun', { status: lastResult.status === 'Success' ? t('common.status.completed') : 'failed' })}
           </AlertTitle>
           <AlertDescription>
-            {lastResult.totalCoursesProcessed} courses processed,{' '}
-            {lastResult.totalLessonsCreated} lessons created,{' '}
-            {lastResult.totalLessonsSkipped} skipped.
+            {t('settings.scheduling.adminArea.result', { courses: lastResult.totalCoursesProcessed, created: lastResult.totalLessonsCreated, skipped: lastResult.totalLessonsSkipped })}
           </AlertDescription>
         </Alert>
       )}
 
       <Button onClick={() => setShowConfirm(true)} disabled={isPending}>
         {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-        Run Manual Generation
+        {t('settings.scheduling.adminArea.runButton')}
       </Button>
 
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Run Manual Lesson Generation?</AlertDialogTitle>
+            <AlertDialogTitle>{t('settings.scheduling.adminArea.confirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will generate lessons for the next 90 days for all active courses.
-              Existing lessons will not be duplicated.
+              {t('settings.scheduling.adminArea.confirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 onRunManual()
                 setShowConfirm(false)
               }}
             >
-              Yes, run generation
+              {t('settings.scheduling.adminArea.confirmButton')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -180,22 +183,22 @@ function AdminArea({
   )
 }
 
-function ErrorState() {
+function ErrorState({ t }: { t: TFunction }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Scheduling
+          {t('settings.scheduling.title')}
         </CardTitle>
-        <CardDescription>Lesson scheduling status and management</CardDescription>
+        <CardDescription>{t('settings.scheduling.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>{t('common.states.error')}</AlertTitle>
           <AlertDescription>
-            Failed to load scheduling status. This feature may only be available for Admin users.
+            {t('settings.scheduling.errorState')}
           </AlertDescription>
         </Alert>
       </CardContent>
@@ -204,6 +207,7 @@ function ErrorState() {
 }
 
 export function SchedulingSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [allRuns, setAllRuns] = useState<ScheduleRun[]>([])
@@ -254,7 +258,7 @@ export function SchedulingSection() {
   })
 
   if (statusError) {
-    return <ErrorState />
+    return <ErrorState t={t} />
   }
 
   return (
@@ -262,30 +266,32 @@ export function SchedulingSection() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Scheduling
+          {t('settings.scheduling.title')}
         </CardTitle>
-        <CardDescription>Lesson scheduling status and management</CardDescription>
+        <CardDescription>{t('settings.scheduling.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {isLoadingStatus && (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading status...</span>
+            <span>{t('settings.scheduling.loading')}</span>
           </div>
         )}
-        {!isLoadingStatus && status && <StatusCard status={status} />}
+        {!isLoadingStatus && status && <StatusCard status={status} t={t} />}
 
         <RunHistory
           runs={runs}
           totalCount={totalCount}
           isLoading={isLoadingRuns}
           onLoadMore={handleLoadMore}
+          t={t}
         />
 
         <AdminArea
           onRunManual={() => runMutation.mutate()}
           isPending={runMutation.isPending}
           lastResult={lastResult}
+          t={t}
         />
       </CardContent>
     </Card>

@@ -101,8 +101,8 @@ describe('CourseTypesList', () => {
     it('renders each course type with proper structure', () => {
       render(<CourseTypesList {...defaultProps} />)
 
-      expect(screen.getByText('Piano - 30 min - Individual')).toBeInTheDocument()
-      expect(screen.getByText('Guitar - 45 min - Individual')).toBeInTheDocument()
+      expect(screen.getByText(/Piano - 30 min - settings\.courseTypes\.types\.Individual/)).toBeInTheDocument()
+      expect(screen.getByText(/Guitar - 45 min - settings\.courseTypes\.types\.Individual/)).toBeInTheDocument()
     })
   })
 

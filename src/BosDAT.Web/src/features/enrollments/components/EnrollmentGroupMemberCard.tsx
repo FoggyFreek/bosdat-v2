@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -30,6 +31,7 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
   onUpdate,
   onRemove,
 }: EnrollmentGroupMemberCardProps) {
+  const { t } = useTranslation()
   const handleDiscountTypeChange = (value: DiscountType) => {
     let discountPercentage = 0
     if (value === 'Family') {
@@ -68,12 +70,12 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
             <h4 className="font-medium truncate">{member.studentName}</h4>
             {member.isEligibleForCourseDiscount && (
               <Badge variant="secondary" className="text-xs">
-                Has active enrollments
+                {t('enrollments.step2.hasActiveEnrollments')}
               </Badge>
             )}
             {isStartingOnCourseStart && (
               <Badge variant="outline" className="text-xs text-green-600">
-                Starts on course date
+                {t('enrollments.step2.startsOnCourseDate')}
               </Badge>
             )}
           </div>
@@ -83,7 +85,7 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
           size="sm"
           onClick={onRemove}
           className="text-destructive hover:text-destructive"
-          title="Remove student"
+          title={t('enrollments.step2.removeStudent')}
         >
           <svg
             className="h-4 w-4"
@@ -99,7 +101,7 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor={`enrolledAt-${member.studentId}`}>Enrollment Date</Label>
+          <Label htmlFor={`enrolledAt-${member.studentId}`}>{t('enrollments.step2.enrollmentDate')}</Label>
           <Input
             id={`enrolledAt-${member.studentId}`}
             type="date"
@@ -110,64 +112,64 @@ export const EnrollmentGroupMemberCard = memo(function EnrollmentGroupMemberCard
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`discount-${member.studentId}`}>Discount Type</Label>
+          <Label htmlFor={`discount-${member.studentId}`}>{t('enrollments.step2.discountType')}</Label>
           <Select
             value={member.discountType}
             onValueChange={handleDiscountTypeChange}
           >
             <SelectTrigger id={`discount-${member.studentId}`}>
-              <SelectValue placeholder="Select discount" />
+              <SelectValue placeholder={t('enrollments.step2.selectDiscount')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="None">No Discount</SelectItem>
+              <SelectItem value="None">{t('enrollments.step2.noDiscount')}</SelectItem>
               <SelectItem value="Family">
-                Family Discount ({familyDiscountPercent}%)
+                {t('enrollments.step2.familyDiscount', { percent: familyDiscountPercent })}
               </SelectItem>
               <SelectItem
                 value="Course"
                 disabled={!member.isEligibleForCourseDiscount}
               >
-                Course Discount ({courseDiscountPercent}%)
-                {!member.isEligibleForCourseDiscount && ' - Not eligible'}
+                {t('enrollments.step2.courseDiscount', { percent: courseDiscountPercent })}
+                {!member.isEligibleForCourseDiscount && ` - ${t('enrollments.step2.courseDiscountNotEligible', { percent: courseDiscountPercent })}`}
               </SelectItem>
             </SelectContent>
           </Select>
           {member.discountType !== 'None' && (
             <p className="text-xs text-muted-foreground">
-              {member.discountPercentage}% discount will be applied
+              {t('enrollments.step2.discountApplied', { percent: member.discountPercentage })}
             </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`invoicing-${member.studentId}`}>Invoice Frequency</Label>
+          <Label htmlFor={`invoicing-${member.studentId}`}>{t('enrollments.step2.invoiceFrequency')}</Label>
           <Select
             value={member.invoicingPreference}
             onValueChange={handleInvoicingPreferenceChange}
           >
             <SelectTrigger id={`invoicing-${member.studentId}`}>
-              <SelectValue placeholder="Select frequency" />
+              <SelectValue placeholder={t('enrollments.step2.selectFrequency')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Monthly">Monthly</SelectItem>
-              <SelectItem value="Quarterly">Quarterly</SelectItem>
+              <SelectItem value="Monthly">{t('enrollments.step2.monthly')}</SelectItem>
+              <SelectItem value="Quarterly">{t('enrollments.step2.quarterly')}</SelectItem>
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
             {member.invoicingPreference === 'Monthly'
-              ? 'Invoiced each month (e.g., jan26)'
-              : 'Invoiced each quarter (e.g., jan-mar26)'}
+              ? t('enrollments.step2.monthlyHint')
+              : t('enrollments.step2.quarterlyHint')}
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`note-${member.studentId}`}>Note (optional)</Label>
+        <Label htmlFor={`note-${member.studentId}`}>{t('enrollments.step2.noteLabel')}</Label>
         <Textarea
           id={`note-${member.studentId}`}
           value={member.note}
           onChange={handleNoteChange}
-          placeholder="Add a note for this enrollment..."
+          placeholder={t('enrollments.step2.notePlaceholder')}
           rows={2}
         />
       </div>

@@ -42,19 +42,19 @@ describe('Layout', () => {
 
   it('renders disabled search input', () => {
     render(<Layout>content</Layout>)
-    const searchInput = screen.getByPlaceholderText('Search...')
+    const searchInput = screen.getByPlaceholderText('common.form.searchPlaceholder')
     expect(searchInput).toBeDisabled()
   })
 
   it('renders sign out button with title', () => {
     render(<Layout>content</Layout>)
-    const signOutBtn = screen.getByTitle('Sign out')
+    const signOutBtn = screen.getByTitle('auth.logoutButton')
     expect(signOutBtn).toBeInTheDocument()
   })
 
   it('renders settings button with title', () => {
     render(<Layout>content</Layout>)
-    const settingsBtn = screen.getByTitle('Settings')
+    const settingsBtn = screen.getByTitle('navigation.settings')
     expect(settingsBtn).toBeInTheDocument()
   })
 
@@ -71,7 +71,7 @@ describe('Layout', () => {
 
   it('calls logout and navigates on sign out click', async () => {
     render(<Layout>content</Layout>)
-    const signOutBtn = screen.getByTitle('Sign out')
+    const signOutBtn = screen.getByTitle('auth.logoutButton')
     await fireEvent.click(signOutBtn)
     expect(mockLogout).toHaveBeenCalled()
     expect(mockNavigate).toHaveBeenCalledWith('/login')
@@ -79,7 +79,7 @@ describe('Layout', () => {
 
   it('navigates to /settings on settings button click', () => {
     render(<Layout>content</Layout>)
-    const settingsBtn = screen.getByTitle('Settings')
+    const settingsBtn = screen.getByTitle('navigation.settings')
     fireEvent.click(settingsBtn)
     expect(mockNavigate).toHaveBeenCalledWith('/settings')
   })
@@ -100,12 +100,11 @@ describe('Layout', () => {
 
   it('includes expected sidebar navigation items', () => {
     render(<Layout>content</Layout>)
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Students')).toBeInTheDocument()
-    expect(screen.getByText('Teachers')).toBeInTheDocument()
-    expect(screen.getByText('Courses')).toBeInTheDocument()
-    expect(screen.getByText('Schedule')).toBeInTheDocument()
-    expect(screen.getByText('Invoices')).toBeInTheDocument()
+    expect(screen.getByText('navigation.dashboard')).toBeInTheDocument()
+    expect(screen.getByText('navigation.students')).toBeInTheDocument()
+    expect(screen.getByText('navigation.teachers')).toBeInTheDocument()
+    expect(screen.getByText('navigation.courses')).toBeInTheDocument()
+    expect(screen.getByText('navigation.schedule')).toBeInTheDocument()
   })
 
   it('renders children content', () => {

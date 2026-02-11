@@ -59,7 +59,12 @@
       "draft": "Concept",
       "paid": "Betaald",
       "unpaid": "Onbetaald",
-      "overdue": "Achterstallig"
+      "overdue": "Achterstallig",
+      "withdrawn": "Uitgeschreven",
+      "suspended": "Opgeschort",
+      "sent": "Verzonden",
+      "noShow": "Niet Verschenen",
+      "paused": "Gepauzeerd"
     },
     "states": {
       "loading": "Laden...",
@@ -95,6 +100,8 @@
       "thisWeek": "Deze week",
       "thisMonth": "Deze maand",
       "thisYear": "Dit jaar",
+      "day": "dag",
+      "day_other": "dagen",
       "days": {
         "monday": "Maandag",
         "tuesday": "Dinsdag",
@@ -178,6 +185,22 @@
     "allStudents": "Alle Leerlingen",
     "searchPlaceholder": "Zoek leerlingen...",
     "noStudentsFound": "Geen leerlingen gevonden",
+    "status": {
+      "active": "Actief",
+      "inactive": "Inactief",
+      "trial": "Proefles"
+    },
+    "paymentMethod": {
+      "cash": "Contant",
+      "bank": "Bank",
+      "card": "Kaart",
+      "directDebit": "Automatische Incasso",
+      "other": "Anders"
+    },
+    "invoicingPreference": {
+      "monthly": "Maandelijks",
+      "quarterly": "Per kwartaal"
+    },
     "profile": {
       "title": "Profiel",
       "personalInfo": "Persoonlijke Informatie",
@@ -456,7 +479,7 @@
     "editCourse": "Cursus Bewerken",
     "courseDetails": "Cursus Details",
     "subtitle": "Beheer uw terugkerende cursussen",
-    "noCourses Found": "Geen cursussen gevonden",
+    "noCoursesFound": "Geen cursussen gevonden",
     "loadFailed": "Cursussen laden mislukt. Probeer het later opnieuw.",
     "form": {
       "name": "Naam",
@@ -473,7 +496,7 @@
       "maxStudents": "Maximaal Aantal Leerlingen",
       "status": "Status"
     },
-    "weekParity": {
+    "parity": {
       "odd": "Oneven",
       "even": "Even",
       "all": "Alle"
@@ -482,6 +505,48 @@
       "summary": "Samenvatting",
       "enrollments": "Inschrijvingen",
       "lessonHistory": "Les Geschiedenis"
+    },
+    "list": {
+      "enrolled": "Ingeschreven"
+    },
+    "status": {
+      "active": "Ingeschreven",
+      "paused": "Ingeschreven",
+      "completed": "Ingeschreven",
+      "cancelled": "Ingeschreven"
+    },
+    "summary": {
+      "courseType": "Cursustype",
+      "day": "Dag",
+      "time": "Tijd",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "frequency": "Frequentie",
+      "status": "Status",
+      "type": "Type",
+      "workshop": "Workshop",
+      "notes": "Notities"
+    },
+   "frequency": {
+      "once": "Eenmalig",
+      "weekly": "Wekelijks",
+      "biweekly": "Tweewekelijks"
+    },
+    "lessonHistory": {
+      "results": "{{count}} les gevonden",
+      "results_other": "{{count}} lessen gevonden",
+      "recentTitle": "Recente Lessen",
+      "from": "Van",
+      "to": "Tot",
+      "clear": "Wissen",
+      "noLessons": "Geen lessen gevonden",
+      "table": {
+        "date": "Datum",
+        "time": "Tijd",
+        "status": "Status",
+        "invoiced": "Gefactureerd",
+        "actions": "Acties"
+      }
     }
   },
   "lessons": {
@@ -563,8 +628,28 @@
   },
   "enrollments": {
     "title": "Inschrijvingen",
+    "noStudents": "Nog geen leerlingen",
+    "enrolledAt": "Ingeschreven op",
+    "discount": "Korting",
     "addEnrollment": "Inschrijving Toevoegen",
     "newEnrollment": "Nieuwe Inschrijving",
+    "status": {
+      "trail": "Proefles",
+      "active": "Actief",
+      "withdrawn": "Uitgeschreven",
+      "completed": "Afgerond",
+      "suspended": "Opgeschort"
+    },
+    "recurrenceType": {
+      "trial": "Proefles",
+      "weekly": "Wekelijks",
+      "biweekly": "Tweewekelijks"
+    },
+    "discountType": {
+      "none": "Geen Korting",
+      "family": "Gezinskorting",
+      "course": "Cursuskorting"
+    },
     "stepper": {
       "lessonDetails": "Les Details",
       "lessonDetailsDesc": "Configureer cursus en schema",
@@ -839,6 +924,7 @@
       "empty": "Geen ruimtes geconfigureerd",
       "noEquipment": "Geen apparatuur",
       "floor": "Verdieping {{level}}",
+      "archived": "Gearchiveerd",
       "linkedData": {
         "activeCourses": "{{count}} actieve cursus",
         "activeCourses_plural": "{{count}} actieve cursussen",

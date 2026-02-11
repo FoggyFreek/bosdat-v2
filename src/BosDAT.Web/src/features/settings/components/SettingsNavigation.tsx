@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
   User, SlidersHorizontal, Music, BookOpen,
   DoorOpen, CalendarDays, Clock, Settings2, Database, Receipt
@@ -5,45 +7,45 @@ import {
 import { cn } from '@/lib/utils'
 import type { SettingKey, NavGroup } from '@/features/settings/types'
 
-const navigationGroups: NavGroup[] = [
+const getNavigationGroups = (t: TFunction): NavGroup[] => [
   {
-    label: 'ACCOUNT',
+    label: t('settings.navigation.account'),
     items: [
-      { key: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
-      { key: 'preferences', label: 'Preferences', icon: <SlidersHorizontal className="h-4 w-4" /> },
+      { key: 'profile', label: t('settings.sections.profile'), icon: <User className="h-4 w-4" /> },
+      { key: 'preferences', label: t('settings.sections.preferences'), icon: <SlidersHorizontal className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'LESSONS',
+    label: t('settings.navigation.lessons'),
     items: [
-      { key: 'instruments', label: 'Instruments', icon: <Music className="h-4 w-4" /> },
-      { key: 'course-types', label: 'Course types', icon: <BookOpen className="h-4 w-4" /> },
+      { key: 'instruments', label: t('settings.sections.instruments'), icon: <Music className="h-4 w-4" /> },
+      { key: 'course-types', label: t('settings.sections.courseTypes'), icon: <BookOpen className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'SCHEDULING',
+    label: t('settings.navigation.scheduling'),
     items: [
-      { key: 'rooms', label: 'Rooms', icon: <DoorOpen className="h-4 w-4" /> },
-      { key: 'holidays', label: 'Holidays', icon: <CalendarDays className="h-4 w-4" /> },
-      { key: 'scheduling', label: 'Scheduling', icon: <Clock className="h-4 w-4" /> },
+      { key: 'rooms', label: t('settings.sections.rooms'), icon: <DoorOpen className="h-4 w-4" /> },
+      { key: 'holidays', label: t('settings.sections.holidays'), icon: <CalendarDays className="h-4 w-4" /> },
+      { key: 'scheduling', label: t('settings.sections.scheduling'), icon: <Clock className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'FINANCE',
+    label: t('settings.navigation.finance'),
     items: [
-      { key: 'invoice-generation', label: 'Invoice generation', icon: <Receipt className="h-4 w-4" /> },
+      { key: 'invoice-generation', label: t('settings.sections.invoiceGeneration'), icon: <Receipt className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'GENERAL',
+    label: t('settings.navigation.general'),
     items: [
-      { key: 'system', label: 'System settings', icon: <Settings2 className="h-4 w-4" /> },
+      { key: 'system', label: t('settings.sections.system'), icon: <Settings2 className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'DATA AND STORAGE',
+    label: t('settings.navigation.dataAndStorage'),
     items: [
-      { key: 'seeding', label: 'Seeding', icon: <Database className="h-4 w-4" /> },
+      { key: 'seeding', label: t('settings.sections.seeding'), icon: <Database className="h-4 w-4" /> },
     ],
   },
 ]
@@ -54,9 +56,12 @@ interface SettingsNavigationProps {
 }
 
 export function SettingsNavigation({ selectedSetting, onNavigate }: SettingsNavigationProps) {
+  const { t } = useTranslation()
+  const navigationGroups = getNavigationGroups(t)
+
   return (
     <nav className="w-auto min-w-[200px] border-r bg-muted/30 p-4 overflow-y-auto">
-      <h1 className="text-xl font-bold mb-6">Settings</h1>
+      <h1 className="text-xl font-bold mb-6">{t('settings.title')}</h1>
       <div className="space-y-6">
         {navigationGroups.map((group) => (
           <div key={group.label}>

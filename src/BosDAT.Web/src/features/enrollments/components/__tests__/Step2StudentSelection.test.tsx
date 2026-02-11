@@ -136,7 +136,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider()
 
     await waitFor(() => {
-      expect(screen.getByText('Lesson Configuration')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step2.lessonConfiguration')).toBeInTheDocument()
     })
   })
 
@@ -144,8 +144,8 @@ describe('Step2StudentSelection', () => {
     renderWithProvider()
 
     await waitFor(() => {
-      expect(screen.getByText('Search Students')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText(/search by name or email/i)).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step2.searchStudents')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('enrollments.step2.searchPlaceholder')).toBeInTheDocument()
     })
   })
 
@@ -153,7 +153,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider()
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /new student/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'enrollments.step2.newStudent' })).toBeInTheDocument()
     })
   })
 
@@ -161,7 +161,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider()
 
     await waitFor(() => {
-      expect(screen.getByText('No students selected')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step2.noStudentsSelected')).toBeInTheDocument()
     })
   })
 
@@ -169,7 +169,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider()
 
     await waitFor(() => {
-      expect(screen.getByText('At least one student must be selected')).toBeInTheDocument()
+      expect(screen.getByText(/at least one student must be selected/i)).toBeInTheDocument()
     })
   })
 
@@ -177,7 +177,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider()
 
     await waitFor(() => {
-      expect(screen.getByText(/enter at least 2 characters/i)).toBeInTheDocument()
+      expect(screen.getByText('enrollments.step2.searchHint')).toBeInTheDocument()
     })
   })
 
@@ -185,7 +185,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider('ct-2')
 
     await waitFor(() => {
-      expect(screen.getByText('Max Students:')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.summary.maxStudents')).toBeInTheDocument()
       expect(screen.getByText('4')).toBeInTheDocument()
     })
   })
@@ -194,7 +194,7 @@ describe('Step2StudentSelection', () => {
     renderWithProvider('ct-1')
 
     await waitFor(() => {
-      expect(screen.getByText('Max Students:')).toBeInTheDocument()
+      expect(screen.getByText('enrollments.summary.maxStudents')).toBeInTheDocument()
       expect(screen.getByText('1')).toBeInTheDocument()
     })
   })

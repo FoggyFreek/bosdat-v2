@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { invoicesApi } from '@/features/students/api'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
+import { invoiceStatusTranslations } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
 import { formatDate } from '@/lib/datetime-helpers'
 
@@ -38,6 +40,7 @@ const statusColors: Record<InvoiceStatus, string> = {
 }
 
 export function InvoicesSection({ studentId }: InvoicesSectionProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null)
   const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(null)
@@ -86,7 +89,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Invoices</h2>
+        <h2 className="text-2xl font-bold">{t('students.sections.invoices')}</h2>
         <Card>
           <CardContent className="py-12">
             <div className="flex items-center justify-center">
@@ -100,22 +103,22 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Invoices</h2>
+      <h2 className="text-2xl font-bold">{t('students.sections.invoices')}</h2>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Receipt className="h-5 w-5" />
-            Invoice History
+            {t('students.invoices.invoiceHistory')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Receipt className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">No invoices yet</p>
+              <p className="text-lg font-medium text-muted-foreground">{t('students.invoices.noInvoices')}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Invoices will appear here once they are generated for this student.
+                {t('students.invoices.noInvoicesDesc')}
               </p>
             </div>
           ) : (
@@ -150,11 +153,11 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                         <div className="font-medium">{formatCurrency(invoice.total)}</div>
                         {invoice.balance > 0 && (
                           <div className="text-sm text-muted-foreground">
-                            Balance: {formatCurrency(invoice.balance)}
+                            {t('students.invoices.balance')}: {formatCurrency(invoice.balance)}
                           </div>
                         )}
                       </div>
-                      <Badge className={statusColors[invoice.status]}>{invoice.status}</Badge>
+                      <Badge className={statusColors[invoice.status]}>{t(invoiceStatusTranslations[invoice.status])}</Badge>
                       {expandedInvoiceId === invoice.id ? (
                         <ChevronUp className="h-5 w-5" />
                       ) : (
@@ -173,24 +176,24 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <div>
-                              <div className="text-muted-foreground">Issue Date</div>
+                              <div className="text-muted-foreground">{t('students.invoices.issueDate')}</div>
                               <div>{formatDate(selectedInvoice.issueDate)}</div>
                             </div>
                             <div>
-                              <div className="text-muted-foreground">Due Date</div>
+                              <div className="text-muted-foreground">{t('students.invoices.dueDate')}</div>
                               <div>{formatDate(selectedInvoice.dueDate)}</div>
                             </div>
                             {selectedInvoice.periodStart && selectedInvoice.periodEnd && (
                               <>
                                 <div>
-                                  <div className="text-muted-foreground">Period</div>
+                                  <div className="text-muted-foreground">{t('students.invoices.period')}</div>
                                   <div>
                                     {formatDate(selectedInvoice.periodStart)} -{' '}
                                     {formatDate(selectedInvoice.periodEnd)}
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="text-muted-foreground">Billing Type</div>
+                                  <div className="text-muted-foreground">{t('students.invoices.billingType')}</div>
                                   <div>{selectedInvoice.periodType}</div>
                                 </div>
                               </>
@@ -201,11 +204,11 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                             <table className="w-full text-sm">
                               <thead className="bg-muted">
                                 <tr>
-                                  <th className="text-left p-2">Description</th>
-                                  <th className="text-right p-2">Qty</th>
-                                  <th className="text-right p-2">Unit Price</th>
-                                  <th className="text-right p-2">VAT</th>
-                                  <th className="text-right p-2">Total</th>
+                                  <th className="text-left p-2">{t('students.invoices.description')}</th>
+                                  <th className="text-right p-2">{t('students.invoices.qty')}</th>
+                                  <th className="text-right p-2">{t('students.invoices.unitPrice')}</th>
+                                  <th className="text-right p-2">{t('students.invoices.vat')}</th>
+                                  <th className="text-right p-2">{t('common.entities.invoice')}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -222,7 +225,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                               <tfoot className="border-t bg-muted/50">
                                 <tr>
                                   <td colSpan={4} className="text-right p-2 font-medium">
-                                    Subtotal
+                                    {t('students.invoices.subtotal')}
                                   </td>
                                   <td className="text-right p-2">
                                     {formatCurrency(selectedInvoice.subtotal)}
@@ -230,7 +233,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                 </tr>
                                 <tr>
                                   <td colSpan={4} className="text-right p-2 font-medium">
-                                    VAT
+                                    {t('students.invoices.vat')}
                                   </td>
                                   <td className="text-right p-2">
                                     {formatCurrency(selectedInvoice.vatAmount)}
@@ -239,7 +242,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                 {selectedInvoice.ledgerCreditsApplied > 0 && (
                                   <tr>
                                     <td colSpan={4} className="text-right p-2 font-medium text-green-600">
-                                      Credits Applied
+                                      {t('students.invoices.creditsApplied')}
                                     </td>
                                     <td className="text-right p-2 text-green-600">
                                       -{formatCurrency(selectedInvoice.ledgerCreditsApplied)}
@@ -249,7 +252,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                 {selectedInvoice.ledgerDebitsApplied > 0 && (
                                   <tr>
                                     <td colSpan={4} className="text-right p-2 font-medium text-red-600">
-                                      Debits Applied
+                                      {t('students.invoices.debitsApplied')}
                                     </td>
                                     <td className="text-right p-2 text-red-600">
                                       +{formatCurrency(selectedInvoice.ledgerDebitsApplied)}
@@ -258,7 +261,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                 )}
                                 <tr className="font-bold">
                                   <td colSpan={4} className="text-right p-2">
-                                    Total
+                                    {t('students.invoices.total')}
                                   </td>
                                   <td className="text-right p-2">
                                     {formatCurrency(
@@ -274,7 +277,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
 
                           {selectedInvoice.ledgerApplications.length > 0 && (
                             <div>
-                              <h4 className="font-medium mb-2">Applied Corrections</h4>
+                              <h4 className="font-medium mb-2">{t('students.invoices.appliedCorrections')}</h4>
                               <div className="space-y-1 text-sm">
                                 {selectedInvoice.ledgerApplications.map((app) => (
                                   <div
@@ -309,7 +312,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                 <RefreshCw
                                   className={`h-4 w-4 mr-2 ${recalculateMutation.isPending ? 'animate-spin' : ''}`}
                                 />
-                                Recalculate
+                                {t('students.invoices.recalculate')}
                               </Button>
                             )}
                             <Button
@@ -318,7 +321,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                               onClick={() => handleViewInvoice(selectedInvoice.id)}
                             >
                               <ExternalLink className="h-4 w-4 mr-2" />
-                              View Full Invoice
+                              {t('students.invoices.viewFullInvoice')}
                             </Button>
                           </div>
                         </div>
@@ -335,9 +338,9 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Invoice {selectedInvoice?.invoiceNumber}</DialogTitle>
+            <DialogTitle>{t('students.invoices.invoice')} {selectedInvoice?.invoiceNumber}</DialogTitle>
             <DialogDescription>
-              Print or download this invoice for your records.
+              {t('students.invoices.printOrDownload')}
             </DialogDescription>
           </DialogHeader>
           {selectedInvoice && (
@@ -355,6 +358,7 @@ interface InvoicePrintViewProps {
 }
 
 function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
+  const { t } = useTranslation()
   const { data: schoolInfo } = useQuery({
     queryKey: ['school-billing-info'],
     queryFn: () => invoicesApi.getSchoolBillingInfo(),
@@ -370,11 +374,11 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onPrint}>
             <Printer className="h-4 w-4 mr-2" />
-            Print
+            {t('common.actions.download')}
           </Button>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            Download PDF
+            {t('students.invoices.downloadPdf')}
           </Button>
         </div>
       </div>
@@ -383,7 +387,7 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold">{schoolInfo?.name || 'Music School'}</h1>
+            <h1 className="text-2xl font-bold">{schoolInfo?.name || t('students.invoices.musicSchool')}</h1>
             {schoolInfo && (
               <div className="text-sm text-muted-foreground mt-1">
                 {schoolInfo.address && <div>{schoolInfo.address}</div>}
@@ -392,14 +396,14 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
                     {schoolInfo.postalCode} {schoolInfo.city}
                   </div>
                 )}
-                {schoolInfo.phone && <div>Tel: {schoolInfo.phone}</div>}
-                {schoolInfo.email && <div>Email: {schoolInfo.email}</div>}
-                {schoolInfo.kvkNumber && <div>KvK: {schoolInfo.kvkNumber}</div>}
+                {schoolInfo.phone && <div>{t('students.invoices.tel')}: {schoolInfo.phone}</div>}
+                {schoolInfo.email && <div>{t('students.invoices.email')}: {schoolInfo.email}</div>}
+                {schoolInfo.kvkNumber && <div>{t('students.invoices.kvk')}: {schoolInfo.kvkNumber}</div>}
               </div>
             )}
           </div>
           <div className="text-right">
-            <h2 className="text-xl font-bold">INVOICE</h2>
+            <h2 className="text-xl font-bold">{t('students.invoices.invoice')}</h2>
             <div className="text-sm mt-1">
               <div className="font-medium">#{invoice.invoiceNumber}</div>
               {invoice.description && (
@@ -412,7 +416,7 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
         {/* Billing Info */}
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <h3 className="font-medium mb-2">Bill To:</h3>
+            <h3 className="font-medium mb-2">{t('students.invoices.billTo')}:</h3>
             {invoice.billingContact && (
               <div className="text-sm">
                 <div>{invoice.billingContact.name}</div>
@@ -429,16 +433,16 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
           <div className="text-right">
             <div className="text-sm space-y-1">
               <div>
-                <span className="text-muted-foreground">Issue Date:</span>{' '}
+                <span className="text-muted-foreground">{t('students.invoices.issueDate')}:</span>{' '}
                 {formatDate(invoice.issueDate)}
               </div>
               <div>
-                <span className="text-muted-foreground">Due Date:</span>{' '}
+                <span className="text-muted-foreground">{t('students.invoices.dueDate')}:</span>{' '}
                 {formatDate(invoice.dueDate)}
               </div>
               {invoice.periodStart && invoice.periodEnd && (
                 <div>
-                  <span className="text-muted-foreground">Period:</span>{' '}
+                  <span className="text-muted-foreground">{t('students.invoices.period')}:</span>{' '}
                   {formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)}
                 </div>
               )}
@@ -450,11 +454,11 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
         <table className="w-full text-sm">
           <thead className="border-b">
             <tr>
-              <th className="text-left py-2">Description</th>
-              <th className="text-right py-2">Qty</th>
-              <th className="text-right py-2">Unit Price</th>
-              <th className="text-right py-2">VAT</th>
-              <th className="text-right py-2">Total</th>
+              <th className="text-left py-2">{t('students.invoices.description')}</th>
+              <th className="text-right py-2">{t('students.invoices.qty')}</th>
+              <th className="text-right py-2">{t('students.invoices.unitPrice')}</th>
+              <th className="text-right py-2">{t('students.invoices.vat')}</th>
+              <th className="text-right py-2">{t('students.invoices.total')}</th>
             </tr>
           </thead>
           <tbody>
@@ -474,37 +478,37 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
         <div className="flex justify-end">
           <div className="w-64 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span>Subtotal</span>
+              <span>{t('students.invoices.subtotal')}</span>
               <span>{formatCurrency(invoice.subtotal)}</span>
             </div>
             <div className="flex justify-between">
-              <span>VAT ({schoolInfo?.vatRate || 21}%)</span>
+              <span>{t('students.invoices.vat')} ({schoolInfo?.vatRate || 21}%)</span>
               <span>{formatCurrency(invoice.vatAmount)}</span>
             </div>
             {invoice.ledgerCreditsApplied > 0 && (
               <div className="flex justify-between text-green-600">
-                <span>Credits Applied</span>
+                <span>{t('students.invoices.creditsApplied')}</span>
                 <span>-{formatCurrency(invoice.ledgerCreditsApplied)}</span>
               </div>
             )}
             {invoice.ledgerDebitsApplied > 0 && (
               <div className="flex justify-between text-red-600">
-                <span>Outstanding Charges</span>
+                <span>{t('students.invoices.outstandingCharges')}</span>
                 <span>+{formatCurrency(invoice.ledgerDebitsApplied)}</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>Total Due</span>
+              <span>{t('students.invoices.totalDue')}</span>
               <span>{formatCurrency(totalOwed)}</span>
             </div>
             {invoice.amountPaid > 0 && (
               <>
                 <div className="flex justify-between text-green-600">
-                  <span>Amount Paid</span>
+                  <span>{t('students.invoices.amountPaid')}</span>
                   <span>-{formatCurrency(invoice.amountPaid)}</span>
                 </div>
                 <div className="flex justify-between font-bold">
-                  <span>Balance</span>
+                  <span>{t('students.invoices.balance')}</span>
                   <span>{formatCurrency(invoice.balance)}</span>
                 </div>
               </>
@@ -514,14 +518,13 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
 
         {/* Payment Instructions */}
         <div className="border-t pt-4 text-sm">
-          <h4 className="font-medium mb-2">Payment Instructions</h4>
+          <h4 className="font-medium mb-2">{t('students.invoices.paymentInstructions')}</h4>
           <p className="text-muted-foreground">
-            Please transfer the amount to the following bank account, using invoice number{' '}
-            <strong>{invoice.invoiceNumber}</strong> as the payment reference.
+            {t('students.invoices.paymentInstructionsText', { invoiceNumber: invoice.invoiceNumber })}
           </p>
           {schoolInfo?.iban && (
             <div className="mt-2">
-              <span className="text-muted-foreground">IBAN:</span>{' '}
+              <span className="text-muted-foreground">{t('students.invoices.iban')}:</span>{' '}
               <span className="font-mono">{schoolInfo.iban}</span>
             </div>
           )}

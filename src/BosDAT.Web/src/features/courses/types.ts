@@ -4,8 +4,29 @@ import type { Enrollment } from '@/features/enrollments/types'
 import { DayOfWeek } from '@/lib/datetime-helpers'
 
 export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
+// needed to properly translate Typescript Type
+export const courseStatusTranslations = {
+    'Active': 'courses.status.active',
+    'Paused': 'courses.status.paused',
+    'Completed': 'courses.status.completed',
+    'Cancelled': 'courses.status.cancelled',
+  } as const satisfies Record<CourseStatus, string>;
+
+  
 export type CourseFrequency = 'Once' | 'Weekly' | 'Biweekly'
+// needed to properly translate Typescript Type
+export const courseFrequencyTranslations = {
+    'Once': 'courses.frequency.once',
+    'Weekly': 'courses.frequency.weekly',
+    'Biweekly': 'courses.frequency.biweekly',
+  } as const satisfies Record<CourseFrequency, string>;
+
 export type WeekParity = 'All' | 'Odd' | 'Even'
+export const weekParityTranslations = {
+    'All': 'courses.parity.all',
+    'Odd': 'courses.parity.odd',
+    'Even': 'courses.parity.even',
+  } as const satisfies Record<WeekParity, string>;
 
 export interface Course {
   id: string

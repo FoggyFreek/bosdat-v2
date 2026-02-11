@@ -50,20 +50,20 @@ describe('CourseLessonHistoryCard', () => {
   it('renders the lessons table with correct data', () => {
     render(<CourseLessonHistoryCard {...defaultProps} />)
 
-    expect(screen.getByText('Recent Lessons')).toBeInTheDocument()
-    expect(screen.getByText('Scheduled')).toBeInTheDocument()
-    expect(screen.getByText('Cancelled')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.recentTitle')).toBeInTheDocument()
+    expect(screen.getByText('lessons.status.scheduled')).toBeInTheDocument()
+    expect(screen.getByText('lessons.status.cancelled')).toBeInTheDocument()
     // Table header columns
-    expect(screen.getByText('Date')).toBeInTheDocument()
-    expect(screen.getByText('Time')).toBeInTheDocument()
-    expect(screen.getByText('Student')).toBeInTheDocument()
-    expect(screen.getByText('Status')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.table.date')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.table.time')).toBeInTheDocument()
+    expect(screen.getByText('common.entities.student')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.table.status')).toBeInTheDocument()
   })
 
   it('shows "No lessons found" when lessons array is empty', () => {
     render(<CourseLessonHistoryCard {...defaultProps} lessons={[]} />)
 
-    expect(screen.getByText('No lessons found')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.noLessons')).toBeInTheDocument()
   })
 
   it('shows filtered count header when date filters are active', () => {
@@ -74,18 +74,18 @@ describe('CourseLessonHistoryCard', () => {
       />
     )
 
-    expect(screen.getByText('Lessons (2 results)')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.results')).toBeInTheDocument()
   })
 
   it('toggles the filter panel when Filter button is clicked', () => {
     render(<CourseLessonHistoryCard {...defaultProps} />)
 
-    expect(screen.queryByLabelText('From')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('courses.lessonHistory.from')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Filter'))
+    fireEvent.click(screen.getByText('common.actions.filter'))
 
-    expect(screen.getByLabelText('From')).toBeInTheDocument()
-    expect(screen.getByLabelText('To')).toBeInTheDocument()
+    expect(screen.getByLabelText('courses.lessonHistory.from')).toBeInTheDocument()
+    expect(screen.getByLabelText('courses.lessonHistory.to')).toBeInTheDocument()
   })
 
   it('calls onFiltersChange when date inputs change', () => {
@@ -97,8 +97,8 @@ describe('CourseLessonHistoryCard', () => {
       />
     )
 
-    fireEvent.click(screen.getByText('Filter'))
-    fireEvent.change(screen.getByLabelText('From'), {
+    fireEvent.click(screen.getByText('common.actions.filter'))
+    fireEvent.change(screen.getByLabelText('courses.lessonHistory.from'), {
       target: { value: '2026-01-01' },
     })
 
@@ -118,7 +118,7 @@ describe('CourseLessonHistoryCard', () => {
       />
     )
 
-    fireEvent.click(screen.getByText('Clear'))
+    fireEvent.click(screen.getByText('courses.lessonHistory.clear'))
 
     expect(onFiltersChange).toHaveBeenCalledWith({
       startDate: undefined,
@@ -129,8 +129,8 @@ describe('CourseLessonHistoryCard', () => {
   it('shows enabled move and cancel buttons for scheduled lessons', () => {
     render(<CourseLessonHistoryCard {...defaultProps} lessons={[baseLesson]} />)
 
-    const moveButton = screen.getByTitle('Move lesson')
-    const cancelButton = screen.getByTitle('Cancel lesson')
+    const moveButton = screen.getByTitle('lessons.moveLesson')
+    const cancelButton = screen.getByTitle('lessons.cancelLesson')
 
     expect(moveButton).not.toBeDisabled()
     expect(cancelButton).not.toBeDisabled()
@@ -144,8 +144,8 @@ describe('CourseLessonHistoryCard', () => {
       />
     )
 
-    const moveButton = screen.getByTitle('Move lesson')
-    const cancelButton = screen.getByTitle('Cancel lesson')
+    const moveButton = screen.getByTitle('lessons.moveLesson')
+    const cancelButton = screen.getByTitle('lessons.cancelLesson')
 
     expect(moveButton).toBeDisabled()
     expect(cancelButton).toBeDisabled()
@@ -154,7 +154,7 @@ describe('CourseLessonHistoryCard', () => {
   it('navigates to move lesson page when move button is clicked', () => {
     render(<CourseLessonHistoryCard {...defaultProps} lessons={[baseLesson]} />)
 
-    fireEvent.click(screen.getByTitle('Move lesson'))
+    fireEvent.click(screen.getByTitle('lessons.moveLesson'))
 
     expect(mockNavigate).toHaveBeenCalledWith(
       '/courses/course-1/lessons/lesson-1/move'
@@ -171,7 +171,7 @@ describe('CourseLessonHistoryCard', () => {
       />
     )
 
-    fireEvent.click(screen.getByTitle('Cancel lesson'))
+    fireEvent.click(screen.getByTitle('lessons.cancelLesson'))
 
     expect(onCancelLesson).toHaveBeenCalledWith(baseLesson)
   })
@@ -179,7 +179,7 @@ describe('CourseLessonHistoryCard', () => {
   it('navigates to add lesson page when Add lesson button is clicked', () => {
     render(<CourseLessonHistoryCard {...defaultProps} />)
 
-    fireEvent.click(screen.getByText('Add lesson'))
+    fireEvent.click(screen.getByText('lessons.addLesson'))
 
     expect(mockNavigate).toHaveBeenCalledWith('/courses/course-1/add-lesson')
   })
@@ -187,6 +187,6 @@ describe('CourseLessonHistoryCard', () => {
   it('renders Actions column header', () => {
     render(<CourseLessonHistoryCard {...defaultProps} />)
 
-    expect(screen.getByText('Actions')).toBeInTheDocument()
+    expect(screen.getByText('courses.lessonHistory.table.actions')).toBeInTheDocument()
   })
 })

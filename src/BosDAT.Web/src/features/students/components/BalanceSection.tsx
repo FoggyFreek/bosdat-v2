@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Wallet, TrendingUp, TrendingDown, CreditCard, FileText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { studentLedgerApi } from '@/features/students/api'
 import type { StudentLedgerSummary, StudentLedgerEntry } from '@/features/students/types'
+import { ledgerEntryTypeTranslations, ledgerEntryStatusTranslations } from '@/features/students/types'
 import { formatDate } from '@/lib/datetime-helpers'
 import { cn } from '@/lib/utils'
 
@@ -11,6 +13,7 @@ interface BalanceSectionProps {
 }
 
 export function BalanceSection({ studentId }: BalanceSectionProps) {
+  const { t } = useTranslation()
   const { data: summary, isLoading: summaryLoading } = useQuery<StudentLedgerSummary>({
     queryKey: ['student-ledger-summary', studentId],
     queryFn: () => studentLedgerApi.getSummary(studentId),
@@ -38,13 +41,13 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Balance</h2>
+      <h2 className="text-2xl font-bold">{t('students.sections.balance')}</h2>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Credit</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('students.balance.availableCredit')}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -60,7 +63,7 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Credits</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('students.balance.totalCredits')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -72,7 +75,7 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Debits</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('students.balance.totalDebits')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -84,7 +87,7 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Open Entries</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('students.balance.openEntries')}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -100,12 +103,12 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            Open Balance Entries
+            {t('students.balance.openBalanceEntries')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {openEntries.length === 0 ? (
-            <p className="text-muted-foreground">No open balance entries</p>
+            <p className="text-muted-foreground">{t('students.balance.noOpenBalanceEntries')}</p>
           ) : (
             <div className="divide-y">
               {openEntries.map((entry) => (
@@ -122,7 +125,7 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
                           entry.entryType === 'Debit' && 'bg-red-100 text-red-800'
                         )}
                       >
-                        {entry.entryType}
+                        {t(ledgerEntryTypeTranslations[entry.entryType])}
                       </span>
                     </div>
                     <p className="font-medium">{entry.description}</p>
@@ -140,7 +143,7 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
                     </p>
                     {entry.appliedAmount > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Applied: {entry.appliedAmount.toFixed(2)}
+                        {t('students.balance.applied')}: {entry.appliedAmount.toFixed(2)}
                       </p>
                     )}
                   </div>
@@ -154,11 +157,11 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
       {/* All Entries History */}
       <Card>
         <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
+          <CardTitle>{t('students.balance.transactionHistory')}</CardTitle>
         </CardHeader>
         <CardContent>
           {entries.length === 0 ? (
-            <p className="text-muted-foreground">No transactions yet</p>
+            <p className="text-muted-foreground">{t('students.balance.noTransactions')}</p>
           ) : (
             <div className="divide-y">
               {entries.map((entry) => (
@@ -177,12 +180,12 @@ export function BalanceSection({ studentId }: BalanceSectionProps) {
                           entry.status === 'Reversed' && 'bg-red-100 text-red-800'
                         )}
                       >
-                        {entry.status}
+                        {t(ledgerEntryStatusTranslations[entry.status])}
                       </span>
                     </div>
                     <p className="text-sm">{entry.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(entry.createdAt)} by {entry.createdByName}
+                      {formatDate(entry.createdAt)} {t('students.balance.by')} {entry.createdByName}
                     </p>
                   </div>
                   <div className={cn(

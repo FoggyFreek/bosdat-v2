@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { roomsApi } from '@/features/rooms/api'
 import { calendarApi } from '@/features/schedule/api'
@@ -32,6 +33,7 @@ export const Step3CalendarSlotSelection = ({
   teacherId,
   durationMinutes,
 }: Step3CalendarSlotSelectionProps) => {
+  const { t } = useTranslation()
   const { formData, updateStep3, syncStartDate } = useEnrollmentForm()
   const { step1, step2, step3 } = formData
   const { toast } = useToast()
@@ -46,12 +48,12 @@ export const Step3CalendarSlotSelection = ({
 
   const [placeholderEvent, setPlaceholderEvent] = useState<CalendarEvent | null>(null)
 
-  const handleDateChange = (date: Date) => {
+  const handleDateChange = useCallback((date: Date) => {
     const newDate = formatDateForApi(date)
     if (step1.startDate !== newDate) {
       syncStartDate(newDate)
     }
-  }
+  }, [step1.startDate, syncStartDate])
 
   const weekStart = useMemo(() => {
     return getWeekStart(selectedDate)
@@ -148,6 +150,7 @@ export const Step3CalendarSlotSelection = ({
         title: 'Selected Slot',
         frequency: step1.recurrence === 'Biweekly' ? 'bi-weekly' : 'weekly',
         eventType: 'placeholder',
+        status: "Scheduled",
         attendees: students.map(s => s.studentName),
       }
     },
@@ -160,8 +163,8 @@ export const Step3CalendarSlotSelection = ({
     async (time: string, date?: Date) => {
       if (!step3.selectedRoomId) {
         toast({
-          title: 'Room Required',
-          description: 'Please select a room first.',
+          title: t('enrollments.step3.roomRequired'),
+          description: t('enrollments.step3.selectRoomFirst'),
           variant: 'destructive',
         })
         return
@@ -183,8 +186,8 @@ export const Step3CalendarSlotSelection = ({
 
         if (!availability.isAvailable) {
           toast({
-            title: 'Time Slot Unavailable',
-            description: availability.conflicts?.[0]?.description || 'This time slot is not available.',
+            title: t('enrollments.step3.timeSlotUnavailable'),
+            description: availability.conflicts?.[0]?.description || t('enrollments.step3.timeSlotUnavailableDesc'),
             variant: 'destructive',
           })
           return
@@ -207,19 +210,23 @@ export const Step3CalendarSlotSelection = ({
         //setSelectedDate(targetDate)
 
         toast({
-          title: 'Time Slot Selected',
-          description: `Selected ${formatDateForApi(targetDate)} ${time} - ${endTime}`,
+          title: t('enrollments.step3.timeSlotSelected'),
+          description: t('enrollments.step3.timeSlotSelectedDesc', {
+            date: formatDateForApi(targetDate),
+            startTime: time,
+            endTime,
+          }),
         })
       } catch (error) {
         console.error('Failed to check availability:', error)
         toast({
-          title: 'Error',
-          description: 'Failed to check availability. Please try again.',
+          title: t('common.states.error'),
+          description: t('enrollments.error.checkAvailabilityFailed'),
           variant: 'destructive',
         })
       }
     },
-    [step3.selectedRoomId, createPlaceholderEvent, durationMinutes, selectedDate, teacherId, updateStep3, toast]
+    [step3.selectedRoomId, createPlaceholderEvent, durationMinutes, selectedDate, teacherId, updateStep3, toast, t, handleDateChange]
   )
 
   const handleTimeslotClick = useCallback(
@@ -235,7 +242,7 @@ export const Step3CalendarSlotSelection = ({
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <p className="text-red-600 font-medium">Error loading data</p>
+          <p className="text-red-600 font-medium">{t('enrollments.step3.errorLoadingData')}</p>
           <p className="text-sm text-slate-600 mt-2">
             {(roomsError as Error)?.message}
           </p>
@@ -247,7 +254,7 @@ export const Step3CalendarSlotSelection = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-slate-600">Loading calendar...</p>
+        <p className="text-slate-600">{t('enrollments.step3.loadingCalendar')}</p>
       </div>
     )
   }
@@ -262,7 +269,7 @@ export const Step3CalendarSlotSelection = ({
       {/* Right side: Calendar - takes remaining space on desktop, full width on mobile */}
       <div className="overflow-hidden">
         <CalendarComponent
-          title={`Week of ${formatDateForApi(weekStart)}`}
+          title={t('enrollments.step3.weekOf', { date: formatDateForApi(weekStart) })}
           events={allEvents}
           dates={weekDays}
           dayStartTime={8}

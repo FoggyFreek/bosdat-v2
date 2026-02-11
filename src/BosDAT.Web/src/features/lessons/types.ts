@@ -77,3 +77,11 @@ export interface BulkGenerateLessonsResult {
   totalLessonsSkipped: number
   courseResults: GenerateLessonsResult[]
 }
+
+// Translation Mappings
+export const lessonStatusTranslations = {
+  Scheduled: 'lessons.status.scheduled',
+  Completed: 'lessons.status.completed',
+  Cancelled: 'lessons.status.cancelled',
+  NoShow: 'lessons.status.noShow',
+} as const satisfies Record<LessonStatus, string>

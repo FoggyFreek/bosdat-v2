@@ -59,7 +59,12 @@
       "draft": "Draft",
       "paid": "Paid",
       "unpaid": "Unpaid",
-      "overdue": "Overdue"
+      "overdue": "Overdue",
+      "withdrawn": "Withdrawn",
+      "suspended": "Suspended",
+      "sent": "Sent",
+      "noShow": "No Show",
+      "paused": "Paused"
     },
     "states": {
       "loading": "Loading...",
@@ -95,6 +100,8 @@
       "thisWeek": "This Week",
       "thisMonth": "This Month",
       "thisYear": "This Year",
+      "day": "day",
+      "day_other": "days",
       "days": {
         "monday": "Monday",
         "tuesday": "Tuesday",
@@ -178,6 +185,22 @@
     "allStudents": "All Students",
     "searchPlaceholder": "Search students...",
     "noStudentsFound": "No students found",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "trial": "Trial"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "bank": "Bank",
+      "card": "Card",
+      "directDebit": "Direct Debit",
+      "other": "Other"
+    },
+    "invoicingPreference": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly"
+    },
     "profile": {
       "title": "Profile",
       "personalInfo": "Personal Information",
@@ -473,7 +496,7 @@
       "maxStudents": "Maximum Students",
       "status": "Status"
     },
-    "weekParity": {
+    "parity": {
       "odd": "Odd",
       "even": "Even",
       "all": "All"
@@ -482,6 +505,48 @@
       "summary": "Summary",
       "enrollments": "Enrollments",
       "lessonHistory": "Lesson History"
+    },
+    "summary": {
+      "courseType": "Course Type",
+      "day": "Day",
+      "time": "Time",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "frequency": "Frequency",
+      "status": "Status",
+      "type": "Type",
+      "workshop": "Workshop",
+      "notes": "Notes"
+    },
+    "list": {
+      "enrolled": "Ingeschreven"
+    },
+    "status": {
+      "active": "Ingeschreven",
+      "paused": "Ingeschreven",
+      "completed": "Ingeschreven",
+      "cancelled": "Ingeschreven"
+    },
+    "frequency": {
+      "once": "Once",
+      "weekly": "Weekly",
+      "biweekly": "Bi-weekly"
+    },
+    "lessonHistory": {
+      "results": "{{count}} lesson found",
+      "results_other": "{{count}} lessons found",
+      "recentTitle": "Recent Lessons",
+      "from": "From",
+      "to": "To",
+      "clear": "Clear",
+      "noLessons": "No lessons found",
+      "table": {
+        "date": "Date",
+        "time": "Time",
+        "status": "Status",
+        "invoiced": "Invoiced",
+        "actions": "Actions"
+      }
     }
   },
   "lessons": {
@@ -563,8 +628,28 @@
   },
   "enrollments": {
     "title": "Enrollments",
+    "noStudents":"No students yet",
+    "enrolledAt": "Enrolled at",
+    "discount": "Discount",
     "addEnrollment": "Add Enrollment",
     "newEnrollment": "New Enrollment",
+    "status": {
+      "trail": "Trial",
+      "active": "Active",
+      "withdrawn": "Withdrawn",
+      "completed": "Completed",
+      "suspended": "Suspended"
+    },
+    "recurrenceType": {
+      "trial": "Trial",
+      "weekly": "Weekly",
+      "biweekly": "Bi-weekly"
+    },
+    "discountType": {
+      "none": "No Discount",
+      "family": "Family Discount",
+      "course": "Course Discount"
+    },
     "stepper": {
       "lessonDetails": "Lesson Details",
       "lessonDetailsDesc": "Configure course and schedule",
@@ -731,15 +816,85 @@
     },
     "instruments": {
       "title": "Instruments",
+      "description": "Manage available instruments for lessons",
       "addInstrument": "Add Instrument",
-      "name": "Name"
+      "editInstrument": "Edit Instrument",
+      "newInstrument": "New Instrument",
+      "name": "Name",
+      "category": "Category",
+      "categories": {
+        "String": "String",
+        "Percussion": "Percussion",
+        "Vocal": "Vocal",
+        "Keyboard": "Keyboard",
+        "Wind": "Wind",
+        "Brass": "Brass",
+        "Electronic": "Electronic",
+        "Other": "Other"
+      },
+      "form": {
+        "namePlaceholder": "Instrument name"
+      },
+      "empty": "No instruments configured",
+      "archived": "Archived"
     },
     "courseTypes": {
       "title": "Course Types",
+      "description": "Configure course types and pricing",
       "addCourseType": "Add Course Type",
+      "editCourseType": "Edit Course Type",
+      "newCourseType": "New Course Type",
       "name": "Name",
       "pricing": "Pricing",
-      "pricingHistory": "Pricing History"
+      "pricingHistory": {
+        "versions": "{{count}} historical pricing version",
+        "versions_plural": "{{count}} historical pricing versions",
+        "until": "until",
+        "from": "from"
+      },
+      "type": "Type",
+      "types": {
+        "Individual": "Individual",
+        "Group": "Group",
+        "Workshop": "Workshop"
+      },
+      "form": {
+        "namePlaceholder": "e.g., Piano 30 min",
+        "instrumentPlaceholder": "Select instrument",
+        "duration": "Duration (min)",
+        "customDuration": "Custom duration",
+        "customDurationPlaceholder": "Custom",
+        "preset": "Preset",
+        "custom": "Custom",
+        "priceAdult": "Adult Price",
+        "priceChild": "Child Price",
+        "priceAdultPlaceholder": "0.00",
+        "priceChildPlaceholder": "0.00",
+        "maxStudents": "Max Students",
+        "childDiscountNote": "Default: {{percent}}% discount on adult price"
+      },
+      "warnings": {
+        "noTeachers": "No teachers",
+        "noTeachersForInstrument": "No teachers available for selected instrument and type",
+        "pricingLocked": "Pricing has been used in invoices. Changing the price will create a new pricing version.",
+        "cannotArchive": "Cannot archive: {{count}} active courses"
+      },
+      "pricingDialog": {
+        "title": "Create New Pricing Version",
+        "description": "Create a new pricing version for \"{{name}}\". The current prices have been used in invoices and cannot be directly edited.",
+        "activationDate": "Activation Date",
+        "activationDateNote": "The new prices will become active on this date. Current prices will remain in effect until the day before.",
+        "createVersion": "Create New Version",
+        "validation": {
+          "priceMin": "Price must be 0 or higher",
+          "childPriceHigh": "Child price cannot be higher than adult price",
+          "dateRequired": "Activation date is required"
+        }
+      },
+      "empty": "No course types configured",
+      "noPricing": "No pricing",
+      "adult": "Adult",
+      "child": "Child"
     },
     "rooms": {
       "title": "Rooms",

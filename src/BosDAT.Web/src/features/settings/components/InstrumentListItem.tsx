@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Instrument, InstrumentCategory } from '@/features/instruments/types'
+import { instrumentCategoryTranslations } from '@/features/instruments/types'
 import { InstrumentForm } from './InstrumentForm'
 
 interface InstrumentFormData {
@@ -28,10 +30,6 @@ const getStatusBadgeClassName = (isActive: boolean): string => {
   )
 }
 
-const getStatusLabel = (isActive: boolean): string => {
-  return isActive ? 'Active' : 'Inactive'
-}
-
 export function InstrumentListItem({
   instrument,
   isEditing,
@@ -42,6 +40,11 @@ export function InstrumentListItem({
   onUpdate,
   onCancelEdit,
 }: InstrumentListItemProps) {
+  const { t } = useTranslation()
+
+  const getStatusLabel = (isActive: boolean): string => {
+    return isActive ? t('common.status.active') : t('common.status.inactive')
+  }
   if (isEditing) {
     return (
       <div className="flex items-center py-2">
@@ -61,7 +64,7 @@ export function InstrumentListItem({
     <div className="flex items-center justify-between py-2">
       <div>
         <p className="font-medium">{instrument.name}</p>
-        <p className="text-sm text-muted-foreground">{instrument.category}</p>
+        <p className="text-sm text-muted-foreground">{t(instrumentCategoryTranslations[instrument.category])}</p>
       </div>
       <div className="flex items-center gap-2">
         <span className={getStatusBadgeClassName(instrument.isActive)}>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,6 +12,7 @@ import { useCourseTypesData, useCourseTypeForm, useCourseTypeMutations } from '.
 import type { CourseType, CreateCourseTypePricingVersion } from '@/features/course-types/types'
 
 export function CourseTypesSection() {
+  const { t } = useTranslation()
   const { setIsDirty } = useFormDirty()
 
   // State for pricing version dialog
@@ -116,12 +118,12 @@ export function CourseTypesSection() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Course Types</CardTitle>
-          <CardDescription>Configure types of courses and pricing</CardDescription>
+          <CardTitle>{t('settings.courseTypes.title')}</CardTitle>
+          <CardDescription>{t('settings.courseTypes.description')}</CardDescription>
         </div>
         <Button size="sm" onClick={form.handleShowAdd}>
           <Plus className="h-4 w-4 mr-2" />
-          Add
+          {t('common.actions.add')}
         </Button>
       </CardHeader>
 

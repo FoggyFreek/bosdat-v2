@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, X, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { useFormDirty } from '@/context/FormDirtyContext'
 import type { SystemSetting } from '@/features/settings/types'
 
 export function SystemSettingsSection() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editKey, setEditKey] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -48,8 +50,8 @@ export function SystemSettingsSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>System Settings</CardTitle>
-        <CardDescription>Configure application-wide settings</CardDescription>
+        <CardTitle>{t('settings.system.title')}</CardTitle>
+        <CardDescription>{t('settings.system.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading && (
@@ -59,7 +61,7 @@ export function SystemSettingsSection() {
         )}
 
         {!isLoading && settings.length === 0 && (
-          <p className="text-muted-foreground">No settings configured</p>
+          <p className="text-muted-foreground">{t('settings.system.empty')}</p>
         )}
 
         {!isLoading && settings.length > 0 && (
@@ -80,10 +82,11 @@ export function SystemSettingsSection() {
                       size="icon"
                       onClick={() => updateMutation.mutate({ key: setting.key, value: editValue })}
                       disabled={updateMutation.isPending}
+                      title={t('common.actions.save')}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={cancelEdit}>
+                    <Button size="icon" variant="ghost" onClick={cancelEdit} title={t('common.actions.cancel')}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -101,6 +104,7 @@ export function SystemSettingsSection() {
                         variant="ghost"
                         size="icon"
                         onClick={() => startEdit(setting.key, setting.value)}
+                        title={t('common.actions.edit')}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>

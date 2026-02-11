@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EnrollmentSummaryCard } from './EnrollmentSummaryCard'
@@ -12,6 +13,7 @@ interface Step3SummaryProps {
 }
 
 export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryProps) {
+  const { t } = useTranslation()
   const { formData, updateStep3 } = useEnrollmentForm()
   const { step2, step3 } = formData
   const students = step2.students || []
@@ -24,7 +26,7 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
     <div className="space-y-4">
       <Step2Summary />
 
-      <EnrollmentSummaryCard title="Selected Students">
+      <EnrollmentSummaryCard title={t('enrollments.step3.selectedStudents')}>
         <div className="flex flex-wrap gap-2">
           {students.map((student) => (
             <Badge
@@ -39,13 +41,13 @@ export const Step3Summary = memo(function Step3Summary({ rooms }: Step3SummaryPr
       </EnrollmentSummaryCard>
 
       <div className="rounded-lg border bg-muted/50 p-4">
-        <h3 className="font-medium mb-3 text-sm">Room Selection</h3>
+        <h3 className="font-medium mb-3 text-sm">{t('enrollments.step3.roomSelection')}</h3>
         <Select
           value={step3.selectedRoomId?.toString() || ''}
           onValueChange={handleRoomChange}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a room" />
+            <SelectValue placeholder={t('enrollments.step3.selectRoom')} />
           </SelectTrigger>
           <SelectContent>
             {(rooms || []).map((room) => (

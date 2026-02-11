@@ -114,9 +114,9 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Course Types')).toBeInTheDocument()
+        expect(screen.getByText('settings.courseTypes.title')).toBeInTheDocument()
       })
-      expect(screen.getByText('Configure types of courses and pricing')).toBeInTheDocument()
+      expect(screen.getByText('settings.courseTypes.description')).toBeInTheDocument()
     })
 
     it('renders Add button', async () => {
@@ -150,10 +150,10 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'common.actions.add' })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /add/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'common.actions.add' }))
 
       expect(screen.getByText('New Course Type')).toBeInTheDocument()
     })
@@ -162,10 +162,10 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'common.actions.add' })).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /add/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'common.actions.add' }))
       expect(screen.getByText('New Course Type')).toBeInTheDocument()
 
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
@@ -178,11 +178,11 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'common.actions.add' })).toBeInTheDocument()
       })
 
       // Open the form
-      fireEvent.click(screen.getByRole('button', { name: /add/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'common.actions.add' }))
 
       // Fill in required fields
       const nameInput = screen.getByPlaceholderText('e.g., Piano 30 min')
@@ -284,7 +284,7 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByText('Archived')).toBeInTheDocument()
+        expect(screen.getByText('settings.instruments.archived')).toBeInTheDocument()
       })
 
       fireEvent.click(screen.getByTitle('Reactivate'))
@@ -304,11 +304,11 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'common.actions.add' })).toBeInTheDocument()
       })
 
       // Open form
-      fireEvent.click(screen.getByRole('button', { name: /add/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'common.actions.add' }))
 
       // Fill required fields
       const nameInput = screen.getByPlaceholderText('e.g., Piano 30 min')
@@ -337,11 +337,11 @@ describe('CourseTypesSection', () => {
       renderWithProviders(<CourseTypesSection />)
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /add/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'common.actions.add' })).toBeInTheDocument()
       })
 
       // Open form and submit to trigger error
-      fireEvent.click(screen.getByRole('button', { name: /add/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'common.actions.add' }))
 
       const nameInput = screen.getByPlaceholderText('e.g., Piano 30 min')
       fireEvent.change(nameInput, { target: { value: 'Test' } })

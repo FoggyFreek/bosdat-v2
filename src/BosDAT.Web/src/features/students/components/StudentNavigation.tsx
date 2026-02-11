@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import {
   User, Settings2, BookOpen, CalendarDays,
   CalendarX, Receipt, PenLine, Wallet
@@ -5,28 +7,28 @@ import {
 import { cn } from '@/lib/utils'
 import type { StudentSectionKey, StudentNavGroup } from '@/features/students/types'
 
-const navigationGroups: StudentNavGroup[] = [
+const getNavigationGroups = (t: TFunction): StudentNavGroup[] => [
   {
-    label: 'GENERAL',
+    label: t('students.navigation.general'),
     items: [
-      { key: 'profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
-      { key: 'preferences', label: 'Preferences', icon: <Settings2 className="h-4 w-4" /> },
+      { key: 'profile', label: t('students.sections.profile'), icon: <User className="h-4 w-4" /> },
+      { key: 'preferences', label: t('students.sections.preferences'), icon: <Settings2 className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'SCHEDULING',
+    label: t('students.navigation.scheduling'),
     items: [
-      { key: 'enrollments', label: 'Enrollments', icon: <BookOpen className="h-4 w-4" /> },
-      { key: 'lessons', label: 'Lessons', icon: <CalendarDays className="h-4 w-4" /> },
-      { key: 'absence', label: 'Absence', icon: <CalendarX className="h-4 w-4" /> },
+      { key: 'enrollments', label: t('students.sections.enrollments'), icon: <BookOpen className="h-4 w-4" /> },
+      { key: 'lessons', label: t('students.sections.lessons'), icon: <CalendarDays className="h-4 w-4" /> },
+      { key: 'absence', label: t('students.sections.absences'), icon: <CalendarX className="h-4 w-4" /> },
     ],
   },
   {
-    label: 'FINANCE',
+    label: t('students.navigation.finance'),
     items: [
-      { key: 'invoices', label: 'Invoices', icon: <Receipt className="h-4 w-4" /> },
-      { key: 'corrections', label: 'Corrections', icon: <PenLine className="h-4 w-4" /> },
-      { key: 'balance', label: 'Balance', icon: <Wallet className="h-4 w-4" /> },
+      { key: 'invoices', label: t('students.sections.invoices'), icon: <Receipt className="h-4 w-4" /> },
+      { key: 'corrections', label: t('students.sections.corrections'), icon: <PenLine className="h-4 w-4" /> },
+      { key: 'balance', label: t('students.sections.balance'), icon: <Wallet className="h-4 w-4" /> },
     ],
   },
 ]
@@ -37,6 +39,9 @@ interface StudentNavigationProps {
 }
 
 export function StudentNavigation({ selectedSection, onNavigate }: StudentNavigationProps) {
+  const { t } = useTranslation()
+  const navigationGroups = getNavigationGroups(t)
+
   return (
     <nav className="w-auto min-w-[200px] border-r bg-muted/30 p-4 overflow-y-auto">
       <div className="space-y-6">

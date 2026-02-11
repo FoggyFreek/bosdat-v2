@@ -82,8 +82,8 @@ describe('CalendarComponent', () => {
         />
       )
 
-      // Check for day labels (MON, TUE, WED, THU, FRI, SAT, SUN)
-      const dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+      // Check for day labels using translation keys
+      const dayLabels = ['calendar.days.mon', 'calendar.days.tue', 'calendar.days.wed', 'calendar.days.thu', 'calendar.days.fri', 'calendar.days.sat', 'calendar.days.sun']
       dayLabels.forEach(label => {
         expect(screen.getByText(label)).toBeInTheDocument()
       })
@@ -148,7 +148,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const prevButton = screen.getByRole('button', { name: /previous week/i })
+      const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previousWeek' })
       expect(prevButton).toBeInTheDocument()
     })
 
@@ -162,7 +162,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const nextButton = screen.getByRole('button', { name: /next week/i })
+      const nextButton = screen.getByRole('button', { name: 'calendar.navigation.nextWeek' })
       expect(nextButton).toBeInTheDocument()
     })
 
@@ -177,7 +177,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const prevButton = screen.getByRole('button', { name: /previous week/i })
+      const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previousWeek' })
       await user.click(prevButton)
 
       expect(mockOnNavigatePrevious).toHaveBeenCalledTimes(1)
@@ -194,7 +194,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const nextButton = screen.getByRole('button', { name: /next week/i })
+      const nextButton = screen.getByRole('button', { name: 'calendar.navigation.nextWeek' })
       await user.click(nextButton)
 
       expect(mockOnNavigateNext).toHaveBeenCalledTimes(1)
@@ -213,9 +213,9 @@ describe('CalendarComponent', () => {
       )
 
       const dayButtons = screen.getAllByRole('button').filter(
-        btn => btn.getAttribute('aria-label')?.includes('MON') ||
-               btn.getAttribute('aria-label')?.includes('TUE') ||
-               btn.getAttribute('aria-label')?.includes('WED')
+        btn => btn.getAttribute('aria-label')?.includes('calendar.days.mon') ||
+               btn.getAttribute('aria-label')?.includes('calendar.days.tue') ||
+               btn.getAttribute('aria-label')?.includes('calendar.days.wed')
       )
       expect(dayButtons.length).toBeGreaterThan(0)
     })
@@ -471,7 +471,7 @@ describe('CalendarComponent', () => {
 
       await waitFor(
         () => {
-          expect(screen.getByText('Attendees')).toBeInTheDocument()
+          expect(screen.getByText('calendar.event.attendees')).toBeInTheDocument()
           expect(screen.getByLabelText('John Doe')).toBeInTheDocument()
           expect(screen.getByLabelText('Jane Smith')).toBeInTheDocument()
         },

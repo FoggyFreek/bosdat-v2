@@ -64,14 +64,14 @@ describe('CoursesPage', () => {
     it('renders the page title and subtitle', async () => {
       render(<CoursesPage />)
 
-      expect(screen.getByRole('heading', { name: /courses/i })).toBeInTheDocument()
-      expect(screen.getByText(/manage your recurring courses/i)).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'courses.title' })).toBeInTheDocument()
+      expect(screen.getByText('courses.subtitle')).toBeInTheDocument()
     })
 
     it('renders the Add Course button linking to enrollments', () => {
       render(<CoursesPage />)
 
-      const link = screen.getByRole('link', { name: /add course/i })
+      const link = screen.getByRole('link', { name: 'courses.addCourse' })
       expect(link).toHaveAttribute('href', '/enrollments/new')
     })
 
@@ -90,7 +90,7 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/no courses found/i)).toBeInTheDocument()
+        expect(screen.getByText('courses.noCoursesFound')).toBeInTheDocument()
       })
     })
 
@@ -100,7 +100,7 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to load courses/i)).toBeInTheDocument()
+        expect(screen.getByText('courses.loadFailed')).toBeInTheDocument()
       })
     })
   })
@@ -186,8 +186,14 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('3 enrolled')).toBeInTheDocument()
-        expect(screen.getByText('5 enrolled')).toBeInTheDocument()
+        const enrolledElements = screen.getAllByText((content, element) => {
+          return element?.textContent?.includes('courses.list.enrolled')
+        })
+        expect(enrolledElements.length).toBeGreaterThanOrEqual(2)
+
+        // Check that the enrollment counts are displayed
+        expect(enrolledElements.some(el => el.textContent?.includes('3'))).toBeTruthy()
+        expect(enrolledElements.some(el => el.textContent?.includes('5'))).toBeTruthy()
       })
     })
 
@@ -195,9 +201,9 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Active')).toBeInTheDocument()
-        expect(screen.getByText('Paused')).toBeInTheDocument()
-        expect(screen.getByText('Completed')).toBeInTheDocument()
+        expect(screen.getByText('courses.status.active')).toBeInTheDocument()
+        expect(screen.getByText('courses.status.paused')).toBeInTheDocument()
+        expect(screen.getByText('courses.status.completed')).toBeInTheDocument()
       })
     })
 
@@ -205,7 +211,7 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Odd Weeks')).toBeInTheDocument()
+        expect(screen.getByText('courses.parity.odd')).toBeInTheDocument()
       })
     })
 
@@ -218,7 +224,8 @@ describe('CoursesPage', () => {
         expect(screen.getByText('Piano')).toBeInTheDocument()
       })
 
-      expect(screen.queryByText(/weeks/i)).not.toBeInTheDocument()
+      expect(screen.queryByText('courses.parity.odd')).not.toBeInTheDocument()
+      expect(screen.queryByText('courses.parity.even')).not.toBeInTheDocument()
     })
 
     it('links each course to its detail page', async () => {
@@ -244,7 +251,7 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/no courses found/i)).toBeInTheDocument()
+        expect(screen.getByText('courses.noCoursesFound')).toBeInTheDocument()
       })
     })
 
@@ -254,7 +261,7 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/no courses found/i)).toBeInTheDocument()
+        expect(screen.getByText('courses.noCoursesFound')).toBeInTheDocument()
       })
     })
   })

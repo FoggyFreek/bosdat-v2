@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { formatDate } from '@/lib/datetime-helpers'
 import type { Enrollment } from '@/features/enrollments/types'
+import { enrollmentStatusTranslations } from '@/features/enrollments/types'
 
 const ENROLLMENT_STATUS_COLORS: Record<string, string> = {
   Active: 'bg-green-100 text-green-800',
@@ -15,11 +17,15 @@ interface CourseEnrollmentsCardProps {
 }
 
 export function CourseEnrollmentsCard({ enrollments }: CourseEnrollmentsCardProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="rounded-lg border bg-muted/50 p-4">
-      <h3 className="font-medium mb-3 text-sm">{`Enrolled Students (${enrollments.length})`}</h3>
+      <h3 className="font-medium mb-3 text-sm">
+        {t('enrollments.title', { count: enrollments.length })}
+      </h3>
       {enrollments.length === 0 && (
-        <p className="text-sm text-muted-foreground">No students enrolled</p>
+        <p className="text-sm text-muted-foreground">{t('enrollments.noStudents')}</p>
       )}
       {enrollments.length > 0 && (
         <div className="space-y-3">
@@ -31,9 +37,12 @@ export function CourseEnrollmentsCard({ enrollments }: CourseEnrollmentsCardProp
               <div>
                 <p className="font-medium">{enrollment.studentName}</p>
                 <p className="text-xs text-muted-foreground">
-                  Enrolled {formatDate(enrollment.enrolledAt)}
+                  {t('enrollments.enrolledAt')} {formatDate(enrollment.enrolledAt)}
                   {enrollment.discountPercent > 0 && (
-                    <> &middot; {enrollment.discountPercent}% discount ({enrollment.discountType})</>
+                    <> &middot; {t('enrollments.discount', {
+                      percent: enrollment.discountPercent,
+                      type: enrollment.discountType
+                    })}</>
                   )}
                 </p>
               </div>
@@ -43,7 +52,7 @@ export function CourseEnrollmentsCard({ enrollments }: CourseEnrollmentsCardProp
                   ENROLLMENT_STATUS_COLORS[enrollment.status] ?? 'bg-gray-100 text-gray-800'
                 )}
               >
-                {enrollment.status}
+                {t(enrollmentStatusTranslations[enrollment.status])}
               </span>
             </div>
           ))}

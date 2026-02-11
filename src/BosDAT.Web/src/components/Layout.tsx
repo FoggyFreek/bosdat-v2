@@ -4,7 +4,6 @@ import {
   Users,
   GraduationCap,
   Calendar,
-  FileText,
   Settings,
   Menu,
   X,
@@ -13,9 +12,11 @@ import {
   Music,
   Search,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { LanguageSwitcher } from '@/components/ui/language-switcher'
 import { useAuth } from '@/context/AuthContext'
 import { useSchoolName } from '@/hooks/useSchoolName'
 
@@ -24,12 +25,12 @@ interface LayoutProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Students', href: '/students', icon: Users },
-  { name: 'Teachers', href: '/teachers', icon: GraduationCap },
-  { name: 'Courses', href: '/courses', icon: Music },
-  { name: 'Schedule', href: '/schedule', icon: Calendar },
-]
+  { name: 'navigation.dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'navigation.students', href: '/students', icon: Users },
+  { name: 'navigation.teachers', href: '/teachers', icon: GraduationCap },
+  { name: 'navigation.courses', href: '/courses', icon: Music },
+  { name: 'navigation.schedule', href: '/schedule', icon: Calendar },
+] as const
 
 export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -37,6 +38,7 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const { schoolName } = useSchoolName()
+  const { t } = useTranslation()
 
   const handleLogout = async () => {
     await logout()
@@ -60,7 +62,7 @@ export function Layout({ children }: LayoutProps) {
             setSidebarOpen(false)
           }
         }}
-        aria-label="Close sidebar"
+        aria-label={t('common.actions.closeSidebar')}
       />
 
       <div
@@ -94,7 +96,7 @@ export function Layout({ children }: LayoutProps) {
                 )}
               >
                 <item.icon className="h-5 w-5" />
-                {item.name}
+                {t(item.name)}
               </Link>
             )
           })}
@@ -120,7 +122,7 @@ export function Layout({ children }: LayoutProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 disabled
-                placeholder="Search..."
+                placeholder={t('common.form.searchPlaceholder')}
                 className="pl-9"
               />
             </div>
@@ -128,10 +130,11 @@ export function Layout({ children }: LayoutProps) {
 
           {/* Right: User actions */}
           <div className="flex items-center gap-1 shrink-0">
+            <LanguageSwitcher />
             <Button
               variant="ghost"
               size="icon"
-              title="Sign out"
+              title={t('auth.logoutButton')}
               onClick={handleLogout}
             >
               <LogOut className="h-5 w-5" />
@@ -139,7 +142,7 @@ export function Layout({ children }: LayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              title="Settings"
+              title={t('navigation.settings')}
               onClick={() => navigate('/settings')}
             >
               <Settings className="h-5 w-5" />

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -12,18 +13,13 @@ import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import type { RecurrenceType } from '../types'
 
-const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
-  Trial: 'Once',
-  Weekly: 'Once per week',
-  Biweekly: 'Every two weeks',
-}
-
 const formatDate = (date: string | null) => {
   if (!date) return undefined
   return new Date(date).toLocaleDateString('nl-NL')
 }
 
 export function Step4Summary() {
+  const { t } = useTranslation()
   const { formData } = useEnrollmentForm()
   const { step1, step2, step3 } = formData
   const students = step2.students ?? []
@@ -59,28 +55,34 @@ export function Step4Summary() {
     ? formatTime(step3.selectedEndTime)
     : undefined
 
+  const recurrenceLabels: Record<RecurrenceType, string> = {
+    Trial: t('enrollments.step4.once'),
+    Weekly: t('enrollments.step4.oncePerWeek'),
+    Biweekly: t('enrollments.step4.everyTwoWeeks'),
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium">Confirmation</h3>
+        <h3 className="text-lg font-medium">{t('enrollments.step4.confirmation')}</h3>
         <p className="text-sm text-muted-foreground">
-          Review your enrollment details before submitting
+          {t('enrollments.step4.reviewDetails')}
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <EnrollmentSummaryCard
-          title="Course Details"
+          title={t('enrollments.step4.courseDetails')}
           courseTypeName={selectedCourseType?.name}
           courseTypeLabel={selectedCourseType?.type}
           teacherName={selectedTeacher?.fullName}
           startDate={formatDate(step1.startDate)}
           endDate={formatDate(step1.endDate)}
-          frequency={RECURRENCE_LABELS[step1.recurrence]}
+          frequency={recurrenceLabels[step1.recurrence]}
           isTrial={step1.recurrence === 'Trial'}
         />
         <EnrollmentSummaryCard
-          title="Schedule & Room"
+          title={t('enrollments.step4.scheduleAndRoom')}
           dayOfWeek={dayOfWeek}
           startTime={timeDisplay}
           endTime={endTimeDisplay}
@@ -88,9 +90,9 @@ export function Step4Summary() {
         />
       </div>
 
-      <EnrollmentSummaryCard title={`Enrolled Students (${students.length})`}>
+      <EnrollmentSummaryCard title={t('enrollments.step4.enrolledStudents', { count: students.length })}>
         {students.length === 0 && (
-          <p className="text-sm text-muted-foreground">No students selected</p>
+          <p className="text-sm text-muted-foreground">{t('enrollments.step4.enrolledStudents')}</p>
         )}
         {students.length > 0 && (
           <div className="space-y-3">
@@ -102,7 +104,7 @@ export function Step4Summary() {
                 <div>
                   <p className="font-medium">{student.studentName}</p>
                   <p className="text-xs text-muted-foreground">
-                    Starts {formatDate(student.enrolledAt) ?? '-'}
+                    {t('enrollments.step4.starts', { date: formatDate(student.enrolledAt) ?? '-' })}
                     {student.discountPercentage > 0 && (
                       <> &middot; {student.discountPercentage}% discount ({student.discountType})</>
                     )}
@@ -120,10 +122,10 @@ export function Step4Summary() {
       <Alert className="border-green-200 bg-green-50">
         <CheckCircle className="h-4 w-4 text-green-600" />
         <AlertTitle className="text-green-900">
-          Ready to submit
+          {t('enrollments.step4.readyToSubmit')}
         </AlertTitle>
         <AlertDescription className="text-green-800">
-          Your enrollment details have been configured. Conflict detection will be performed when you submit.
+          {t('enrollments.step4.conflictCheckOnSubmit')}
         </AlertDescription>
       </Alert>
     </div>

@@ -178,7 +178,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'enrollments.actions.submit' })).toBeInTheDocument()
   })
 
   it('creates course with correct data on submit', async () => {
@@ -186,7 +186,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith({
@@ -210,7 +210,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(enrollmentsApi.create).toHaveBeenCalledTimes(2)
@@ -240,7 +240,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(schedulingApi.runSingle).toHaveBeenCalledWith('new-course-1')
@@ -267,7 +267,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(callOrder).toEqual(['create', 'enrollment', 'enrollment', 'runSingle'])
@@ -287,13 +287,13 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
-    expect(screen.getByRole('button', { name: /submitting/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'enrollments.actions.submitting' })).toBeInTheDocument()
 
     resolveCreate(mockCreatedCourse)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'enrollments.actions.submit' })).toBeInTheDocument()
     })
   })
 
@@ -310,13 +310,13 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
-    expect(screen.getByRole('button', { name: /submitting/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'enrollments.actions.submitting' })).toBeDisabled()
 
     resolveCreate(mockCreatedCourse)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /submit/i })).not.toBeDisabled()
+      expect(screen.getByRole('button', { name: 'enrollments.actions.submit' })).not.toBeDisabled()
     })
   })
 
@@ -325,11 +325,11 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Enrollment created' })
+        expect.objectContaining({ title: 'enrollments.success.title' })
       )
     })
 
@@ -344,7 +344,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
@@ -355,7 +355,7 @@ describe('EnrollmentStepper - Submit', () => {
     expect(enrollmentsApi.create).not.toHaveBeenCalled()
     expect(schedulingApi.runSingle).not.toHaveBeenCalled()
 
-    expect(screen.getByRole('button', { name: /submit/i })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'enrollments.actions.submit' })).not.toBeDisabled()
   })
 
   it('handles enrollment error gracefully', async () => {
@@ -366,7 +366,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
@@ -377,7 +377,7 @@ describe('EnrollmentStepper - Submit', () => {
     expect(coursesApi.create).toHaveBeenCalled()
     expect(schedulingApi.runSingle).not.toHaveBeenCalled()
 
-    expect(screen.getByRole('button', { name: /submit/i })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'enrollments.actions.submit' })).not.toBeDisabled()
   })
 
   it('handles scheduling error gracefully', async () => {
@@ -390,7 +390,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith(
@@ -401,7 +401,7 @@ describe('EnrollmentStepper - Submit', () => {
     expect(coursesApi.create).toHaveBeenCalled()
     expect(enrollmentsApi.create).toHaveBeenCalledTimes(2)
 
-    expect(screen.getByRole('button', { name: /submit/i })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'enrollments.actions.submit' })).not.toBeDisabled()
   })
 
   it('calculates weekParity as Even for biweekly on even ISO week', async () => {
@@ -444,7 +444,7 @@ describe('EnrollmentStepper - Submit', () => {
     })
 
     render(<EnrollmentStepper />)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith(
@@ -496,7 +496,7 @@ describe('EnrollmentStepper - Submit', () => {
     })
 
     render(<EnrollmentStepper />)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith(
@@ -513,7 +513,7 @@ describe('EnrollmentStepper - Submit', () => {
     await mockContextAtStep4()
     render(<EnrollmentStepper />)
 
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith(
@@ -563,7 +563,7 @@ describe('EnrollmentStepper - Submit', () => {
     })
 
     render(<EnrollmentStepper />)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith(
@@ -614,7 +614,7 @@ describe('EnrollmentStepper - Submit', () => {
     })
 
     render(<EnrollmentStepper />)
-    await user.click(screen.getByRole('button', { name: /submit/i }))
+    await user.click(screen.getByRole('button', { name: 'enrollments.actions.submit' }))
 
     await waitFor(() => {
       expect(coursesApi.create).toHaveBeenCalledWith(

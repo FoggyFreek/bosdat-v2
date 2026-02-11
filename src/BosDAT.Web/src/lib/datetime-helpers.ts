@@ -258,6 +258,19 @@ export const getDurationInHours = (startDateTime: string, endDateTime: string): 
 }
 
 /**
+ * Calculates duration in minutes between two time strings.
+ *
+ * @param startTime - Start time in HH:mm format
+ * @param endTime - End time in HH:mm format
+ * @returns Duration in minutes
+ */
+export const getDurationMinutes = (startTime: string, endTime: string): number => {
+  const [sh, sm] = startTime.split(':').map(Number)
+  const [eh, em] = endTime.split(':').map(Number)
+  return eh * 60 + em - (sh * 60 + sm)
+}
+
+/**
  * Formats datetime range to display time string.
  *
  * @param startDateTime - Datetime string
@@ -386,6 +399,21 @@ export const DAY_NAME_TO_NUMBER = {
 } as const
 
 export type DayOfWeek = keyof typeof DAY_NAME_TO_NUMBER
+export const dayOfWeekTranslations = {
+    'Sunday': 'common.time.days.sunday',
+    'Monday': 'common.time.days.monday',
+    'Tuesday': 'common.time.days.tuesday',
+    'Wednesday': 'common.time.days.wednesday',
+    'Thursday': 'common.time.days.thursday',
+    'Friday': 'common.time.days.friday',
+    'Saturday': 'common.time.days.saturday',
+  } as const satisfies Record<DayOfWeek, string>;
+
+export const weekParityTranslations = {
+    'All': 'courses.parity.all',
+    'Odd': 'courses.parity.odd',
+    'Even': 'courses.parity.even',
+  } as const satisfies Record<WeekParity, string>;
 
 /**
  * Converts a day name to its JavaScript Date.getDay() number.

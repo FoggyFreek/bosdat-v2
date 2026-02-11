@@ -70,3 +70,10 @@ export interface UpdateTeacherAvailability {
   fromTime: string
   untilTime: string
 }
+
+// Translation Mappings
+export const teacherRoleTranslations = {
+  Teacher: 'teachers.roles.teacher',
+  Admin: 'teachers.roles.admin',
+  Staff: 'teachers.roles.staff',
+} as const satisfies Record<TeacherRole, string>

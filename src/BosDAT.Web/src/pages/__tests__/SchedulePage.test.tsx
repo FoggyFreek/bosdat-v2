@@ -9,8 +9,6 @@ import type { WeekCalendar, CalendarLesson, Holiday } from '@/features/schedule/
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import type { SchedulerProps } from '@/components'
-import { fa } from 'zod/v4/locales'
-
 
 // Mock API modules
 vi.mock('@/features/schedule/api', () => ({
@@ -189,7 +187,7 @@ describe('SchedulePage', () => {
     it('renders the schedule title', async () => {
       render(<SchedulePage />)
 
-      expect(screen.getByRole('heading', { name: /schedule/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'schedule.title' })).toBeInTheDocument()
     })
 
     it('shows loading state initially', () => {
@@ -217,8 +215,8 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All teachers')).toBeInTheDocument()
-        expect(screen.getByText('All rooms')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allTeachers')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allRooms')).toBeInTheDocument()
       })
     })
 
@@ -235,7 +233,7 @@ describe('SchedulePage', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('calendar-component')).toBeInTheDocument()
-        expect(screen.getByTestId('calendar-title')).toHaveTextContent(/Week \d+/)
+        expect(screen.getByTestId('calendar-title')).toHaveTextContent('schedule.week')
       })
     })
   })
@@ -337,13 +335,13 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All teachers')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allTeachers')).toBeInTheDocument()
       })
 
       // Click teacher filter
       const comboboxButtons = screen.getAllByRole('combobox')
       const teacherSelect = comboboxButtons.find(btn =>
-        btn.textContent?.includes('All teachers')
+        btn.textContent?.includes('schedule.filters.allTeachers')
       )
       await user.click(teacherSelect!)
 
@@ -368,13 +366,13 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All rooms')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allRooms')).toBeInTheDocument()
       })
 
       // Click room filter
       const comboboxButtons = screen.getAllByRole('combobox')
       const roomSelect = comboboxButtons.find(btn =>
-        btn.textContent?.includes('All rooms')
+        btn.textContent?.includes('schedule.filters.allRooms')
       )
       await user.click(roomSelect!)
 
@@ -399,13 +397,13 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All teachers')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allTeachers')).toBeInTheDocument()
       })
 
       // First select a teacher
       const comboboxButtons = screen.getAllByRole('combobox')
       const teacherSelect = comboboxButtons.find(btn =>
-        btn.textContent?.includes('All teachers')
+        btn.textContent?.includes('schedule.filters.allTeachers')
       )
       await user.click(teacherSelect!)
 
@@ -429,11 +427,11 @@ describe('SchedulePage', () => {
       await user.click(teacherSelectAgain!)
 
       await waitFor(() => {
-        const allTeachersOptions = screen.getAllByText('All teachers')
+        const allTeachersOptions = screen.getAllByText('schedule.filters.allTeachers')
         expect(allTeachersOptions.length).toBeGreaterThan(0)
       })
 
-      const allTeachersOptions = screen.getAllByText('All teachers')
+      const allTeachersOptions = screen.getAllByText('schedule.filters.allTeachers')
       const allTeachersOption = allTeachersOptions[allTeachersOptions.length - 1]
 
       await user.click(allTeachersOption)
@@ -452,14 +450,14 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All teachers')).toBeInTheDocument()
-        expect(screen.getByText('All rooms')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allTeachers')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allRooms')).toBeInTheDocument()
       })
 
       // Select teacher
       const comboboxButtons = screen.getAllByRole('combobox')
       const teacherSelect = comboboxButtons.find(btn =>
-        btn.textContent?.includes('All teachers')
+        btn.textContent?.includes('schedule.filters.allTeachers')
       )
       await user.click(teacherSelect!)
       await waitFor(() => {
@@ -469,7 +467,7 @@ describe('SchedulePage', () => {
 
       // Select room
       const roomSelect = screen.getAllByRole('combobox').find(btn =>
-        btn.textContent?.includes('All rooms')
+        btn.textContent?.includes('schedule.filters.allRooms')
       )
       await user.click(roomSelect!)
       await waitFor(() => {
@@ -493,10 +491,10 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('Scheduled')).toBeInTheDocument()
-        expect(screen.getByText('Completed')).toBeInTheDocument()
-        expect(screen.getByText('Cancelled')).toBeInTheDocument()
-        expect(screen.getByText('No Show')).toBeInTheDocument()
+        expect(screen.getByText('schedule.legend.scheduled')).toBeInTheDocument()
+        expect(screen.getByText('schedule.legend.completed')).toBeInTheDocument()
+        expect(screen.getByText('schedule.legend.cancelled')).toBeInTheDocument()
+        expect(screen.getByText('schedule.legend.noShow')).toBeInTheDocument()
       })
     })
 
@@ -504,12 +502,12 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        const legendSection = screen.getByText('Scheduled').closest('div')?.parentElement
+        const legendSection = screen.getByText('schedule.legend.scheduled').closest('div')?.parentElement
 
-        const scheduledBox = within(legendSection!).getByText('Scheduled').previousElementSibling
-        const completedBox = within(legendSection!).getByText('Completed').previousElementSibling
-        const cancelledBox = within(legendSection!).getByText('Cancelled').previousElementSibling
-        const noShowBox = within(legendSection!).getByText('No Show').previousElementSibling
+        const scheduledBox = within(legendSection!).getByText('schedule.legend.scheduled').previousElementSibling
+        const completedBox = within(legendSection!).getByText('schedule.legend.completed').previousElementSibling
+        const cancelledBox = within(legendSection!).getByText('schedule.legend.cancelled').previousElementSibling
+        const noShowBox = within(legendSection!).getByText('schedule.legend.noShow').previousElementSibling
 
         expect(scheduledBox?.className).toContain('bg-blue-100')
         expect(completedBox?.className).toContain('bg-green-100')
@@ -551,7 +549,7 @@ describe('SchedulePage', () => {
 
       await waitFor(() => {
         // Should still render the page structure even on error
-        expect(screen.getByRole('heading', { name: /schedule/i })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { name: 'schedule.title' })).toBeInTheDocument()
       })
     })
 
@@ -561,18 +559,18 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All teachers')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allTeachers')).toBeInTheDocument()
       })
 
       const user = userEvent.setup({ delay: null })
       const comboboxButtons = screen.getAllByRole('combobox')
       const teacherSelect = comboboxButtons.find(btn =>
-        btn.textContent?.includes('All teachers')
+        btn.textContent?.includes('schedule.filters.allTeachers')
       )
       await user.click(teacherSelect!)
 
       // Should only show "All teachers" option
-      const allTeachersOptions = screen.getAllByText('All teachers')
+      const allTeachersOptions = screen.getAllByText('schedule.filters.allTeachers')
       expect(allTeachersOptions.length).toBe(2) // Trigger + option
     })
 
@@ -582,18 +580,18 @@ describe('SchedulePage', () => {
       render(<SchedulePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('All rooms')).toBeInTheDocument()
+        expect(screen.getByText('schedule.filters.allRooms')).toBeInTheDocument()
       })
 
       const user = userEvent.setup({ delay: null })
       const comboboxButtons = screen.getAllByRole('combobox')
       const roomSelect = comboboxButtons.find(btn =>
-        btn.textContent?.includes('All rooms')
+        btn.textContent?.includes('schedule.filters.allRooms')
       )
       await user.click(roomSelect!)
 
       // Should only show "All rooms" option
-      const allRoomsOptions = screen.getAllByText('All rooms')
+      const allRoomsOptions = screen.getAllByText('schedule.filters.allRooms')
       expect(allRoomsOptions.length).toBe(2) // Trigger + option
     })
   })

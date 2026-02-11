@@ -1,6 +1,23 @@
-import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi, beforeAll } from 'vitest'
+
+// Mock react-i18next globally - must be before any imports that use it
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      language: 'nl',
+      changeLanguage: vi.fn(),
+    },
+  }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+import '@testing-library/jest-dom'
 
 // Suppress unhandled promise rejection warnings from react-query error tests
 beforeAll(() => {

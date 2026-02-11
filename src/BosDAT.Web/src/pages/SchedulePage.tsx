@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw, UnfoldHorizontal } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { CalendarComponent } from '@/components'
 import type { CalendarEvent, ColorScheme } from '@/components'
-import type { DayAvailability, EventFrequency } from '@/components/calendar/types'
+import type { DayAvailability } from '@/components/calendar/types'
 import { calendarApi } from '@/features/schedule/api'
 import { teachersApi } from '@/features/teachers/api'
 import { roomsApi } from '@/features/rooms/api'
@@ -21,7 +22,6 @@ import { groupLessonsByCourseAndDate, type GroupedLesson } from '@/features/sche
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
 import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/datetime-helpers'
-import { en } from 'zod/v4/locales'
 
 // --- Constants ---
 
@@ -56,7 +56,7 @@ function splitHolidays(holiday: Holiday): Holiday[] {
     const end = new Date(holiday.endDate);
 
     // Create a tracking date starting at the holiday's beginning
-    let current = new Date(start);
+    const current = new Date(start);
 
     while (current <= end) {
       const dayStart = new Date(current);
@@ -147,6 +147,7 @@ const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailabil
 // --- Component ---
 
 export const SchedulePage = () => {
+  const { t } = useTranslation()
   // State
   const [currentDate, setCurrentDate] = useState(() => getWeekStart(new Date()))
   const [filterTeacher, setFilterTeacher] = useState<string>('all')
@@ -197,7 +198,7 @@ export const SchedulePage = () => {
     const grouped = groupLessonsByCourseAndDate(lessons)
 
     return [... holidays, ...grouped.map(convertGroupedLessonToEvent)]
-  }, [calendarData?.lessons])
+  }, [calendarData?.lessons, calendarData?.holidays])
 
   const availability = useMemo(
     () => mapToDayAvailability(teacherAvailability),
@@ -217,11 +218,13 @@ export const SchedulePage = () => {
     setCurrentDate(newDate)
   }
 
+  const weekNumber = Math.ceil((currentDate.getDate() - currentDate.getDay() + 1) / 7)
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Schedule</h1>
+          <h1 className="text-3xl font-bold">{t('schedule.title')}</h1>
           <p className="text-muted-foreground">
             {formatDateDisplay(currentDate)} - {formatDateDisplay(weekEnd)}
           </p>
@@ -230,10 +233,10 @@ export const SchedulePage = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Select value={filterTeacher} onValueChange={setFilterTeacher}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All teachers" />
+              <SelectValue placeholder={t('schedule.filters.allTeachers')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All teachers</SelectItem>
+              <SelectItem value="all">{t('schedule.filters.allTeachers')}</SelectItem>
               {teachers.map((teacher) => (
                 <SelectItem key={teacher.id} value={teacher.id}>
                   {teacher.fullName}
@@ -244,10 +247,10 @@ export const SchedulePage = () => {
 
           <Select value={filterRoom} onValueChange={setFilterRoom}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All rooms" />
+              <SelectValue placeholder={t('schedule.filters.allRooms')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All rooms</SelectItem>
+              <SelectItem value="all">{t('schedule.filters.allRooms')}</SelectItem>
               {rooms.map((room) => (
                 <SelectItem key={room.id} value={room.id.toString()}>
                   {room.name}
@@ -270,7 +273,7 @@ export const SchedulePage = () => {
 
       {!showLoading && (
         <CalendarComponent
-          title={`Week ${Math.ceil((currentDate.getDate() - currentDate.getDay() + 1) / 7)}`}
+          title={t('schedule.week', { number: weekNumber })}
           events={events}
           dates={weekDays}
           colorScheme={statusColorScheme}
@@ -289,19 +292,19 @@ export const SchedulePage = () => {
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-blue-100 border border-blue-300" />
-              <span>Scheduled</span>
+              <span>{t('schedule.legend.scheduled')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-100 border border-green-300" />
-              <span>Completed</span>
+              <span>{t('schedule.legend.completed')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-red-100 border border-red-300" />
-              <span>Cancelled</span>
+              <span>{t('schedule.legend.cancelled')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-orange-100 border border-orange-300" />
-              <span>No Show</span>
+              <span>{t('schedule.legend.noShow')}</span>
             </div>
           </div>
         </CardContent>

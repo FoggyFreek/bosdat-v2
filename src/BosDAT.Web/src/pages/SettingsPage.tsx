@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +36,7 @@ function SettingsLoadingFallback() {
 }
 
 function SettingsContent() {
+  const { t } = useTranslation()
   const [selectedSetting, setSelectedSetting] = useState<SettingKey>('profile')
   const [pendingNavigation, setPendingNavigation] = useState<SettingKey | null>(null)
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
@@ -104,14 +106,14 @@ function SettingsContent() {
       <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved changes</AlertDialogTitle>
+            <AlertDialogTitle>{t('settings.unsavedChanges.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes. Do you want to discard them and navigate away?
+              {t('settings.unsavedChanges.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelNavigation}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscardChanges}>Discard changes</AlertDialogAction>
+            <AlertDialogCancel onClick={handleCancelNavigation}>{t('common.actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDiscardChanges}>{t('settings.unsavedChanges.discard')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
