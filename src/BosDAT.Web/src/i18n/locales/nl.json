@@ -395,11 +395,11 @@
   },
   "teachers": {
     "title": "Docenten",
-    "addTeacher": "Docent Toevoegen",
-    "editTeacher": "Docent Bewerken",
-    "teacherDetails": "Docent Details",
+    "addTeacher": "Docent toevoegen",
+    "editTeacher": "Docent bewerken",
+    "teacherDetails": "Docent details",
     "subtitle": "Beheer uw muziekschool docenten",
-    "allTeachers": "Alle Docenten",
+    "allTeachers": "Alle docenten",
     "searchPlaceholder": "Zoek docenten...",
     "noTeachersFound": "Geen docenten gevonden",
     "form": {

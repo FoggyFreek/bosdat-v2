@@ -92,25 +92,33 @@ export function AddLessonPage() {
   }, [calendar.events, selectedSlotEvent])
 
   const createMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async(data: {
       scheduledDate: string
       startTime: string
       endTime: string
       teacherId: string
       roomId?: number
-    }) =>
-      lessonsApi.create({
-        courseId: courseId!,
-        teacherId: data.teacherId,
-        roomId: data.roomId,
-        scheduledDate: data.scheduledDate,
-        startTime: `${data.startTime}:00`,
-        endTime: `${data.endTime}:00`,
-        notes: 'Extra lesson',
-      }),
+    }) => {
+        if (!course?.enrollments?.length) return
+        
+        return Promise.all(
+        course.enrollments.map((enrollment) => 
+          lessonsApi.create({
+            courseId: courseId!,
+            teacherId: data.teacherId,
+            studentId: enrollment.studentId,
+            roomId: data.roomId,
+            scheduledDate: data.scheduledDate,
+            startTime: `${data.startTime}:00`,
+            endTime: `${data.endTime}:00`,
+            notes: 'Extra lesson',
+          })
+        )
+      )
+    },
     onSuccess: () => {
       toast({
-        title: 'Lesson added',
+        title: 'Lessons for all attendees were added',
         description: 'The extra lesson has been added.',
       })
       queryClient.invalidateQueries({ queryKey: ['course', courseId, 'lessons'] })
