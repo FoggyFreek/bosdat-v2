@@ -54,6 +54,10 @@ export type DayAvailability = {
   untilTime: number;  // hour (22 for 22:00)
 };
 
+export type CalendarView = 'week' | 'day' | 'list';
+
+export type CalendarListAction = 'cancel' | 'move';
+
 export type SchedulerProps = {
   title: string;
   events: CalendarEvent[];
@@ -68,4 +72,9 @@ export type SchedulerProps = {
   onDateSelect?: (date: Date) => void;
   highlightedDate?: Date;
   availability?: DayAvailability[];
+  view?: CalendarView;
+  onViewChange?: (view: CalendarView) => void;
+  showViewSelector?: boolean;
+  selectedDate?: Date;
+  onEventAction?: (event: CalendarEvent, action: CalendarListAction) => void;
 };

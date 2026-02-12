@@ -102,8 +102,8 @@ describe('Step3CalendarSlotSelection', () => {
 
     await waitFor(() => {
       // Navigation is in CalendarComponent header
-      expect(screen.getByLabelText('calendar.navigation.previousWeek')).toBeInTheDocument()
-      expect(screen.getByLabelText('calendar.navigation.nextWeek')).toBeInTheDocument()
+      expect(screen.getByLabelText('calendar.navigation.previous')).toBeInTheDocument()
+      expect(screen.getByLabelText('calendar.navigation.next')).toBeInTheDocument()
     })
   })
 

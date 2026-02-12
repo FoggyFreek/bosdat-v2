@@ -1078,7 +1078,19 @@
     "navigation": {
       "previousWeek": "Previous week",
       "nextWeek": "Next week",
+      "previous": "Previous",
+      "next": "Next",
       "calendarNavigation": "Calendar navigation"
+    },
+    "views": {
+      "label": "Calendar view",
+      "week": "Week",
+      "day": "Day",
+      "list": "List"
+    },
+    "list": {
+      "label": "Events list",
+      "noEvents": "No events for this day"
     },
     "days": {
       "mon": "MON",
