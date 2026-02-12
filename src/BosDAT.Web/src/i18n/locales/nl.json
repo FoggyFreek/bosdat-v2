@@ -1079,7 +1079,19 @@
     "navigation": {
       "previousWeek": "Vorige week",
       "nextWeek": "Volgende week",
+      "previous": "Vorige",
+      "next": "Volgende",
       "calendarNavigation": "Kalendernavigatie"
+    },
+    "views": {
+      "label": "Kalenderweergave",
+      "week": "Week",
+      "day": "Dag",
+      "list": "Lijst"
+    },
+    "list": {
+      "label": "Evenementenlijst",
+      "noEvents": "Geen evenementen voor deze dag"
     },
     "days": {
       "mon": "MA",

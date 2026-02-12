@@ -8,6 +8,7 @@ import type { EventLayout } from './eventOverlapUtils';
 type EventItemProps = {
   readonly event: Readonly<CalendarEvent>;
   readonly dayIndex: number;
+  readonly totalDays?: number;
   readonly hourHeight: number;
   readonly minHour: number;
   readonly colorScheme?: ColorScheme;
@@ -18,7 +19,6 @@ type EventItemProps = {
 const HOVER_DELAY_MS = 300;
 const MIN_EVENT_HEIGHT_PX = 20;
 const DAYS_IN_WEEK = 7;
-const LAST_DAY_INDEX = 6;
 
 // Default colors for event types - uses Partial since not all categories need defaults
 // LessonStatus colors should be provided via colorScheme prop
@@ -36,6 +36,7 @@ const FALLBACK_COLORS: EventColors = { background: '#f3f4f6', border: '#9ca3af',
 const EventItemComponent: React.FC<EventItemProps> = ({
   event,
   dayIndex,
+  totalDays = DAYS_IN_WEEK,
   hourHeight,
   minHour,
   colorScheme,
@@ -109,7 +110,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
     return null;
   }
 
-  const columnWidthPercent = 100 / DAYS_IN_WEEK;
+  const columnWidthPercent = 100 / totalDays;
 
   // Calculate position and width based on layout
   const column = layout?.column ?? 0;
@@ -169,7 +170,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
         <EventHoverNote
           event={event}
           colors={colors}
-          isLastColumn={dayIndex === LAST_DAY_INDEX}
+          isLastColumn={dayIndex === totalDays - 1}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         />

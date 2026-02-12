@@ -148,7 +148,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previousWeek' })
+      const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previous' })
       expect(prevButton).toBeInTheDocument()
     })
 
@@ -162,7 +162,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const nextButton = screen.getByRole('button', { name: 'calendar.navigation.nextWeek' })
+      const nextButton = screen.getByRole('button', { name: 'calendar.navigation.next' })
       expect(nextButton).toBeInTheDocument()
     })
 
@@ -177,7 +177,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previousWeek' })
+      const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previous' })
       await user.click(prevButton)
 
       expect(mockOnNavigatePrevious).toHaveBeenCalledTimes(1)
@@ -194,7 +194,7 @@ describe('CalendarComponent', () => {
         />
       )
 
-      const nextButton = screen.getByRole('button', { name: 'calendar.navigation.nextWeek' })
+      const nextButton = screen.getByRole('button', { name: 'calendar.navigation.next' })
       await user.click(nextButton)
 
       expect(mockOnNavigateNext).toHaveBeenCalledTimes(1)

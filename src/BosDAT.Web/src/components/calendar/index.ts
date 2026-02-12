@@ -7,6 +7,10 @@ export { DayHeaders } from './DayHeaders';
 export { TimeColumn } from './TimeColumn';
 export { EventsGrid } from './EventsGrid';
 export { EventItem } from './EventItem';
+export { ViewSelector } from './ViewSelector';
+export { DayEventsGrid } from './DayEventsGrid';
+export { CalendarListView } from './CalendarListView';
+export { CalendarListItem } from './CalendarListItem';
 
 // Types
 export type {
@@ -20,4 +24,6 @@ export type {
   LessonStatus,
   EventCategory,
   DayAvailability,
+  CalendarView,
+  CalendarListAction,
 } from './types';
