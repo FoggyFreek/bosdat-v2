@@ -55,6 +55,16 @@ public interface IInvoiceService
     /// Gets school billing information from settings.
     /// </summary>
     Task<SchoolBillingInfoDto> GetSchoolBillingInfoAsync(CancellationToken ct = default);
+
+    /// <summary
+    /// Records a payment against an invoice and creates a ledger transaction.
+    /// </summary>
+    Task<PaymentDto> RecordPaymentandLedgerTransaction(Guid invoiceId, Guid userId, RecordPaymentDto dto, CancellationToken ct = default);
+
+    /// <summary>
+    /// Gets all payments for an invoice.
+    /// </summary>
+    Task<IEnumerable<PaymentDto>> GetPaymentsAsync(Guid invoiceId, CancellationToken ct = default);
 }
 
 public record SchoolBillingInfoDto

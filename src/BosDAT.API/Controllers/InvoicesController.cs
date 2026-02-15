@@ -11,7 +11,8 @@ namespace BosDAT.API.Controllers;
 [Authorize]
 public class InvoicesController(
     IInvoiceService invoiceService,
-    ICurrentUserService currentUserService) : ControllerBase
+    ICurrentUserService currentUserService
+    ) : ControllerBase
 {
     /// <summary>
     /// Gets an invoice by ID with all details including lines, payments, and billing info.
@@ -210,6 +211,58 @@ public class InvoicesController(
             Invoice = invoice,
             SchoolInfo = schoolInfo
         });
+    }
+
+    /// <summary>
+    /// Records a payment against an invoice and creates a ledger transaction.
+    /// </summary>
+    [HttpPost("{invoiceId:guid}/payments")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<PaymentDto>> RecordPayment(
+        Guid invoiceId,
+        [FromBody] RecordPaymentDto dto,
+        CancellationToken ct)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+        
+        if (dto.Amount <= 0)
+        {
+            return BadRequest(new { message = "Payment amount must be greater than zero." });
+        }
+
+        try
+        {
+            var payment = await invoiceService.RecordPaymentandLedgerTransaction(invoiceId, userId.Value, dto, ct);
+            return CreatedAtAction(nameof(GetPayments), new { invoiceId }, payment);
+        }
+        catch
+        {
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Gets all payments for an invoice.
+    /// </summary>
+    [HttpGet("{invoiceId:guid}/payments")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetPayments(
+        Guid invoiceId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var paymentDtos = await invoiceService.GetPaymentsAsync(invoiceId, cancellationToken);
+            return Ok(paymentDtos);
+        }
+        catch
+        {
+            return BadRequest(new { message = "Payments for invoice not found" });
+        }
+        
     }
 }
 

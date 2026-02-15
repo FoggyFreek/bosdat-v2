@@ -30,6 +30,21 @@ vi.mock('@/hooks/useSchoolName', () => ({
   }),
 }))
 
+vi.mock('@/hooks/useGlobalSearch', () => ({
+  useGlobalSearch: () => ({
+    term: '',
+    setTerm: vi.fn(),
+    debouncedTerm: '',
+    isOpen: false,
+    close: vi.fn(),
+    results: [],
+    isLoading: false,
+    activeIndex: -1,
+    setActiveIndex: vi.fn(),
+    onSelect: vi.fn(),
+  }),
+}))
+
 describe('Layout', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -40,10 +55,11 @@ describe('Layout', () => {
     expect(screen.getByText('Test Music Academy')).toBeInTheDocument()
   })
 
-  it('renders disabled search input', () => {
+  it('renders search input', () => {
     render(<Layout>content</Layout>)
-    const searchInput = screen.getByPlaceholderText('common.form.searchPlaceholder')
-    expect(searchInput).toBeDisabled()
+    const searchInput = screen.getByPlaceholderText('search.placeholder')
+    expect(searchInput).toBeInTheDocument()
+    expect(searchInput).not.toBeDisabled()
   })
 
   it('renders sign out button with title', () => {

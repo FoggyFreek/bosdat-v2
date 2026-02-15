@@ -127,12 +127,11 @@ export function LessonSchedulerLayout({
           )}
           {!calendar.isLoading && (
             <CalendarComponent
-              title="Schedule"
               events={allEvents}
               dates={calendar.weekDays}
+              initialDate={calendar.currentDate}
+              onDateChange={calendar.setCurrentDate}
               colorScheme={calendar.colorScheme}
-              onNavigatePrevious={calendar.goToPreviousWeek}
-              onNavigateNext={calendar.goToNextWeek}
               onTimeslotClick={calendar.handleTimeslotClick}
               availability={calendar.availability}
               highlightedDate={calendar.highlightedDate}

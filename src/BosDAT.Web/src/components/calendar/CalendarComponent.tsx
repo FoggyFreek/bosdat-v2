@@ -17,24 +17,23 @@ const MAX_HOUR = Math.max(...HOURS);
 const DAY_LABEL_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 export const CalendarComponent: React.FC<SchedulerProps> = ({
-  title,
   events,
   dates,
   dayStartTime = 9,
   dayEndTime = 21,
   hourHeight = 100,
   colorScheme,
-  onNavigatePrevious,
-  onNavigateNext,
+  onDateChange,
   onTimeslotClick,
   onDateSelect,
   highlightedDate,
   availability,
-  view = 'week',
+  initialView = 'week',
   onViewChange,
   showViewSelector = true,
   selectedDate,
   onEventAction,
+  initialDate,
 }) => {
   const { t } = useTranslation();
 
@@ -55,9 +54,9 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
     return `${t(`calendar.days.${dayKey}`)} ${activeDayDate.getDate()}`;
   }, [activeDayDate, t]);
 
-  const ariaLabel = view === 'week'
+  const ariaLabel = initialView === 'week'
     ? 'Weekly calendar scheduler'
-    : view === 'day'
+    : initialView === 'day'
       ? 'Daily calendar scheduler'
       : 'Calendar list view';
 
@@ -68,16 +67,15 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
       aria-label={ariaLabel}
     >
       <SchedulerHeader
-        title={title}
-        onNavigatePrevious={onNavigatePrevious}
-        onNavigateNext={onNavigateNext}
-        view={view}
+        initialDate={initialDate}
+        initialView={initialView}
+        onDateChange={onDateChange}
         onViewChange={onViewChange}
         showViewSelector={showViewSelector}
       />
 
       {/* Week View */}
-      {view === 'week' && (
+      {initialView === 'week' && (
         <div className="flex flex-col flex-1 overflow-x-visible overflow-y-hidden">
           <DayHeaders dates={dates} highlightedDate={highlightedDate} onDateSelect={onDateSelect} />
 
@@ -104,7 +102,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
       )}
 
       {/* Day View */}
-      {view === 'day' && activeDayDate && (
+      {initialView === 'day' && activeDayDate && (
         <div className="flex flex-col flex-1 overflow-x-visible overflow-y-hidden">
           {/* Single Day Header */}
           <div className="border-b">
@@ -139,7 +137,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
       )}
 
       {/* List View */}
-      {view === 'list' && activeDayDate && (
+      {initialView === 'list' && activeDayDate && (
         <div className="flex flex-col flex-1 overflow-y-hidden">
           {/* Single Day Header */}
           <div className="border-b px-6 py-4">

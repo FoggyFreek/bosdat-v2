@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     ILessonRepository Lessons { get; }
     IInvoiceRepository Invoices { get; }
     IStudentLedgerRepository StudentLedgerEntries { get; }
+    IStudentTransactionRepository StudentTransactions { get; }
     IRepository<T> Repository<T>() where T : class;
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

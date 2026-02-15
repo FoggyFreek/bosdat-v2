@@ -121,12 +121,10 @@ export const Step3CalendarSlotSelection = ({
 
   const isLoading = isLoadingRooms || isLoadingAllCourses || isLoadingTeacherCourses || isLoadingTeacherAvailability
 
-  const handleWeekChange = (days: number) => {
-    const newDate = new Date(selectedDate)
-    newDate.setDate(newDate.getDate() + days)
+  const handleWeekChange = useCallback((newDate: Date) => {
     const newWeekStart = getWeekStart(newDate)
     setSelectedDate(newWeekStart)
-  }
+  }, [])
 
   const handleDateSelect = (date: Date) => {
     //setSelectedDate(date)
@@ -269,16 +267,15 @@ export const Step3CalendarSlotSelection = ({
       {/* Right side: Calendar - takes remaining space on desktop, full width on mobile */}
       <div className="overflow-hidden">
         <CalendarComponent
-          title={t('enrollments.step3.weekOf', { date: formatDateForApi(weekStart) })}
           events={allEvents}
           dates={weekDays}
+          initialDate={weekStart}
+          onDateChange={handleWeekChange}
           dayStartTime={8}
           dayEndTime={23}
           hourHeight={80}
           availability={availability}
           colorScheme={colorScheme}
-          onNavigatePrevious={() => handleWeekChange(-7)}
-          onNavigateNext={() => handleWeekChange(7)}
           onTimeslotClick={handleTimeslotClick}
           onDateSelect={handleDateSelect}
           highlightedDate={selectedDate}

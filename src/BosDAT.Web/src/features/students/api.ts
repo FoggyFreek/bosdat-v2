@@ -9,11 +9,14 @@ import type {
   DecoupleApplicationResult,
   Invoice,
   InvoiceListItem,
+  InvoicePayment,
   GenerateInvoice,
   GenerateBatchInvoices,
   SchoolBillingInfo,
   InvoicePrintData,
   InvoiceStatus,
+  StudentLedgerView,
+  RecordPayment,
 } from '@/features/students/types'
 
 export const studentsApi = {
@@ -153,6 +156,28 @@ export const invoicesApi = {
 
   getPrintData: async (id: string): Promise<InvoicePrintData> => {
     const response = await api.get<InvoicePrintData>(`/invoices/${id}/print`)
+    return response.data
+  },
+
+  recordPayment: async (invoiceId: string, data: RecordPayment): Promise<InvoicePayment> => {
+    const response = await api.post<InvoicePayment>(`/invoices/${invoiceId}/payments`, data)
+    return response.data
+  },
+
+  getPayments: async (invoiceId: string): Promise<InvoicePayment[]> => {
+    const response = await api.get<InvoicePayment[]>(`/invoices/${invoiceId}/payments`)
+    return response.data
+  },
+}
+
+export const studentTransactionsApi = {
+  getLedger: async (studentId: string): Promise<StudentLedgerView> => {
+    const response = await api.get<StudentLedgerView>(`/students/${studentId}/transactions`)
+    return response.data
+  },
+
+  getBalance: async (studentId: string): Promise<{ balance: number }> => {
+    const response = await api.get<{ balance: number }>(`/students/${studentId}/transactions/balance`)
     return response.data
   },
 }

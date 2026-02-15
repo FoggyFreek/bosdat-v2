@@ -167,6 +167,8 @@ public record PaymentDto
     public PaymentMethod Method { get; init; }
     public string? Reference { get; init; }
     public string? Notes { get; init; }
+    public string RecordedByName { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
 }
 
 public record CreatePaymentDto

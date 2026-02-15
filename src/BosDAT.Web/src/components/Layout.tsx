@@ -10,13 +10,12 @@ import {
   LogOut,
   LayoutDashboard,
   Music,
-  Search,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { LanguageSwitcher } from '@/components/ui/language-switcher'
+import { GlobalSearch } from '@/components/GlobalSearch'
 import { useAuth } from '@/context/AuthContext'
 import { useSchoolName } from '@/hooks/useSchoolName'
 
@@ -117,16 +116,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
 
           {/* Center: Search */}
-          <div className="flex-1 max-w-md mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                disabled
-                placeholder={t('common.form.searchPlaceholder')}
-                className="pl-9"
-              />
-            </div>
-          </div>
+          <GlobalSearch />
 
           {/* Right: User actions */}
           <div className="flex items-center gap-1 shrink-0">

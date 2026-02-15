@@ -320,6 +320,51 @@
       },
       "by": "door"
     },
+    "ledger": {
+      "title": "Grootboek",
+      "currentBalance": "Huidig saldo",
+      "totalDebited": "Totaal gedebiteerd",
+      "totalCredited": "Totaal gecrediteerd",
+      "transactions": "Transacties",
+      "noTransactions": "Nog geen transacties vastgelegd",
+      "filterByType": "Filter op type",
+      "allTypes": "Alle types",
+      "owes": "Leerling heeft schuld",
+      "credit": "Leerling heeft tegoed",
+      "settled": "Vereffend",
+      "transactionType": {
+        "invoiceCharge": "Factuur",
+        "payment": "Betaling",
+        "creditCorrection": "Creditcorrectie",
+        "debitCorrection": "Debetcorrectie",
+        "reversal": "Terugboeking",
+        "invoiceCancellation": "Annulering",
+        "invoiceAdjustment": "Aanpassing",
+        "correctionApplied": "Correctie toegepast"
+      },
+      "table": {
+        "date": "Datum",
+        "description": "Omschrijving",
+        "reference": "Referentie",
+        "type": "Type",
+        "debit": "Debet",
+        "credit": "Credit",
+        "balance": "Saldo"
+      }
+    },
+    "payments": {
+      "recordPayment": "Betaling registreren",
+      "recordPaymentDesc": "Registreer een betaling voor factuur {{invoiceNumber}} (resterend: {{balance}})",
+      "amount": "Bedrag",
+      "paymentDate": "Betaaldatum",
+      "method": "Betaalmethode",
+      "reference": "Referentie",
+      "referencePlaceholder": "Bankreferentie of bonnetjesnummer",
+      "notes": "Notities",
+      "notesPlaceholder": "Optionele notities over deze betaling",
+      "exceedsBalance": "Bedrag overschrijdt resterend saldo",
+      "invalidAmount": "Voer een geldig bedrag groter dan nul in"
+    },
     "invoices": {
       "invoiceHistory": "Factuurgeschiedenis",
       "noInvoices": "Nog geen facturen",
@@ -341,8 +386,8 @@
       "unitPrice": "Eenheidsprijs",
       "vat": "Btw",
       "subtotal": "Subtotaal",
-      "creditsApplied": "Tegoedengebruikt",
-      "debitsApplied": "Belastingen toegepast",
+      "creditsApplied": "Tegoeden",
+      "debitsApplied": "Kosten",
       "total": "Totaal",
       "appliedCorrections": "Toegepaste correcties",
       "recalculate": "Herberekenen",
@@ -1064,6 +1109,7 @@
   "schedule": {
     "title": "Rooster",
     "week": "Week {{number}}",
+    "list": "Lijst",
     "filters": {
       "allTeachers": "Alle docenten",
       "allRooms": "Alle ruimtes"
@@ -1107,5 +1153,10 @@
       "original": "origineel",
       "placeholder": "placeholder"
     }
+  },
+  "search": {
+    "placeholder": "Zoek leerlingen, docenten...",
+    "minCharacters": "Typ minimaal 2 tekens om te zoeken",
+    "noResults": "Geen resultaten gevonden"
   }
 }

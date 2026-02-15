@@ -9,6 +9,7 @@ type EventHoverNoteProps = {
   event: CalendarEvent;
   colors: EventColors;
   isLastColumn: boolean;
+  isDayView?: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 };
@@ -26,6 +27,7 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
   event,
   colors,
   isLastColumn,
+  isDayView = false,
   onMouseEnter,
   onMouseLeave,
 }) => {
@@ -34,8 +36,13 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
   return (
     <div
       className={cn(
-        'absolute top-0 z-9999 bg-white rounded-lg shadow-lg border border-slate-200 p-3 min-w-[200px]',
-        isLastColumn ? 'right-full mr-2' : 'left-full ml-2'
+        'absolute z-9999 bg-white rounded-lg shadow-lg border border-slate-200 p-3',
+        isDayView
+          ? 'bottom-full mb-2 left-0 w-max max-w-[300px]'
+          : cn(
+              'top-0 min-w-[200px]',
+              isLastColumn ? 'right-full mr-2' : 'left-full ml-2'
+            )
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

@@ -33,12 +33,17 @@ vi.mock('@/features/rooms/api', () => ({
 vi.mock('@/components', () => ({
   CalendarComponent: (props: SchedulerProps) => (
     <div data-testid="calendar-component">
-      <div data-testid="calendar-title">{props.title}</div>
       <div data-testid="calendar-events-count">{props.events.length}</div>
-      <button onClick={props.onNavigatePrevious} aria-label="Previous week">
+      <button
+        onClick={() => props.onDateChange?.(new Date(2024, 0, 8))}
+        aria-label="Previous week"
+      >
         Previous
       </button>
-      <button onClick={props.onNavigateNext} aria-label="Next week">
+      <button
+        onClick={() => props.onDateChange?.(new Date(2024, 0, 22))}
+        aria-label="Next week"
+      >
         Next
       </button>
     </div>
@@ -201,15 +206,7 @@ describe('SchedulePage', () => {
       expect(spinner).toBeInTheDocument()
     })
 
-    it('displays week range in header', async () => {
-      render(<SchedulePage />)
-
-      // Current week starts on Monday (26 jan) and ends on Sunday (1 feb)
-      await waitFor(() => {
-        const dateRange = screen.getByText(/26 jan.*-.*1 feb/i)
-        expect(dateRange).toBeInTheDocument()
-      })
-    })
+    // Note: Week range display is now managed by SchedulerHeader (tested in calendar component tests)
 
     it('renders filter controls', async () => {
       render(<SchedulePage />)
@@ -233,7 +230,7 @@ describe('SchedulePage', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('calendar-component')).toBeInTheDocument()
-        expect(screen.getByTestId('calendar-title')).toHaveTextContent('schedule.week')
+        // Title is now managed by SchedulerHeader inside CalendarComponent
       })
     })
   })
@@ -307,26 +304,7 @@ describe('SchedulePage', () => {
       })
     })
 
-    it('updates week range display when navigating', async () => {
-      render(<SchedulePage />)
-
-      // Wait for calendar to load
-      await waitFor(() => {
-        expect(screen.getByTestId('calendar-component')).toBeInTheDocument()
-      })
-
-      const initialDateRange = screen.getByText(/\d{1,2} \w{3}.*-.*\d{1,2} \w{3}/i)
-      const initialText = initialDateRange.textContent
-
-      const user = userEvent.setup({ delay: null })
-      const nextButton = screen.getByRole('button', { name: /next week/i })
-      await user.click(nextButton)
-
-      await waitFor(() => {
-        const updatedDateRange = screen.getByText(/\d{1,2} \w{3}.*-.*\d{1,2} \w{3}/i)
-        expect(updatedDateRange.textContent).not.toBe(initialText)
-      })
-    })
+    // Note: Date range display is now managed by SchedulerHeader (tested in calendar component tests)
   })
 
   describe('Filters', () => {

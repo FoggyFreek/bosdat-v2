@@ -11,6 +11,8 @@ vi.mock('@/features/students/api', () => ({
     getById: vi.fn(),
     recalculate: vi.fn(),
     getSchoolBillingInfo: vi.fn(),
+    recordPayment: vi.fn(),
+    getPayments: vi.fn(),
   },
 }))
 

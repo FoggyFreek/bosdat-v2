@@ -215,14 +215,10 @@ dotnet run --project src/BosDAT.API
 dotnet test
 
 # Create new migration
-dotnet ef migrations add [MigrationName] \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
+dotnet ef migrations add [MigrationName]  --project src/BosDAT.Infrastructure --startup-project src/BosDAT.API
 
 # Apply migrations
-dotnet ef database update \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
+dotnet ef database update --project src/BosDAT.Infrastructure --startup-project src/BosDAT.API
 
 # Rollback to specific migration
 dotnet ef database update [MigrationName] \

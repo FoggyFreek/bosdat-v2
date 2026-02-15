@@ -47,6 +47,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<StudentLedgerEntry> StudentLedgerEntries => Set<StudentLedgerEntry>();
     public DbSet<StudentLedgerApplication> StudentLedgerApplications => Set<StudentLedgerApplication>();
+    public DbSet<StudentTransaction> StudentTransactions => Set<StudentTransaction>();
     public DbSet<TeacherAvailability> TeacherAvailabilities => Set<TeacherAvailability>();
     public DbSet<ScheduleRun> ScheduleRuns => Set<ScheduleRun>();
     public DbSet<InvoiceRun> InvoiceRuns => Set<InvoiceRun>();
@@ -76,6 +77,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<Setting>().ToTable("settings");
         modelBuilder.Entity<StudentLedgerEntry>().ToTable("student_ledger_entries");
         modelBuilder.Entity<StudentLedgerApplication>().ToTable("student_ledger_applications");
+        modelBuilder.Entity<StudentTransaction>().ToTable("student_transactions");
         modelBuilder.Entity<TeacherAvailability>().ToTable("teacher_availability");
         modelBuilder.Entity<ScheduleRun>().ToTable("schedule_runs");
         modelBuilder.Entity<InvoiceRun>().ToTable("invoice_runs");
@@ -521,6 +523,46 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
             entity.HasIndex(e => e.LedgerEntryId);
             entity.HasIndex(e => e.InvoiceId);
+        });
+
+        // StudentTransaction configuration
+        modelBuilder.Entity<StudentTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.ReferenceNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Debit).HasPrecision(10, 2);
+            entity.Property(e => e.Credit).HasPrecision(10, 2);
+            entity.Property(e => e.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Transactions)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Invoice)
+                .WithMany()
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Payment)
+                .WithMany()
+                .HasForeignKey(e => e.PaymentId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.LedgerEntry)
+                .WithMany()
+                .HasForeignKey(e => e.LedgerEntryId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.StudentId, e.TransactionDate });
         });
 
         // Seed initial data

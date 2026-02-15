@@ -258,6 +258,8 @@ export interface InvoicePayment {
   method: PaymentMethod
   reference?: string
   notes?: string
+  recordedByName?: string
+  createdAt?: string
 }
 
 export interface Invoice {
@@ -338,6 +340,51 @@ export interface InvoicePrintData {
   schoolInfo: SchoolBillingInfo
 }
 
+// Student Transaction Types (Unified Ledger)
+export type TransactionType =
+  | 'InvoiceCharge'
+  | 'Payment'
+  | 'CreditCorrection'
+  | 'DebitCorrection'
+  | 'Reversal'
+  | 'InvoiceCancellation'
+  | 'InvoiceAdjustment'
+  | 'CorrectionApplied'
+
+export interface StudentTransaction {
+  id: string
+  studentId: string
+  transactionDate: string
+  type: TransactionType
+  description: string
+  referenceNumber: string
+  debit: number
+  credit: number
+  runningBalance: number
+  invoiceId?: string
+  paymentId?: string
+  ledgerEntryId?: string
+  createdAt: string
+  createdByName: string
+}
+
+export interface StudentLedgerView {
+  studentId: string
+  studentName: string
+  currentBalance: number
+  totalDebited: number
+  totalCredited: number
+  transactions: StudentTransaction[]
+}
+
+export interface RecordPayment {
+  amount: number
+  paymentDate: string
+  method: PaymentMethod
+  reference?: string
+  notes?: string
+}
+
 // Translation Mappings
 export const studentStatusTranslations = {
   Active: 'students.status.active',
@@ -384,3 +431,14 @@ export const paymentMethodTranslations = {
   DirectDebit: 'students.paymentMethod.directDebit',
   Other: 'students.paymentMethod.other',
 } as const satisfies Record<PaymentMethod, string>
+
+export const transactionTypeTranslations = {
+  InvoiceCharge: 'students.ledger.transactionType.invoiceCharge',
+  Payment: 'students.ledger.transactionType.payment',
+  CreditCorrection: 'students.ledger.transactionType.creditCorrection',
+  DebitCorrection: 'students.ledger.transactionType.debitCorrection',
+  Reversal: 'students.ledger.transactionType.reversal',
+  InvoiceCancellation: 'students.ledger.transactionType.invoiceCancellation',
+  InvoiceAdjustment: 'students.ledger.transactionType.invoiceAdjustment',
+  CorrectionApplied: 'students.ledger.transactionType.correctionApplied',
+} as const satisfies Record<TransactionType, string>

@@ -30,10 +30,11 @@ public class InvoiceServiceTests : IDisposable
         SetupMockInvoiceRepository();
 
         var queryService = new InvoiceQueryService(_context);
-        var ledgerService = new InvoiceLedgerService(_context, _mockUnitOfWork.Object, queryService);
+        var mockStudentTransactionService = new Mock<IStudentTransactionService>();
+        var ledgerService = new InvoiceLedgerService(_context, _mockUnitOfWork.Object, queryService, mockStudentTransactionService.Object);
         var generationService = new InvoiceGenerationService(
-            _context, _mockUnitOfWork.Object, _mockPricingService.Object, ledgerService, queryService);
-        _service = new InvoiceService(generationService, ledgerService, queryService);
+            _context, _mockUnitOfWork.Object, _mockPricingService.Object, ledgerService, queryService, mockStudentTransactionService.Object);
+        _service = new InvoiceService(_mockUnitOfWork.Object, mockStudentTransactionService.Object, generationService, ledgerService, queryService);
 
         SeedBaseData();
     }
@@ -510,9 +511,9 @@ public class InvoiceServiceTests : IDisposable
         // Act
         var result = await _service.GenerateInvoiceAsync(dto, _userId);
 
-        // Assert - Total is 121, credit of 30 applied
+        // Assert - Total is 4x 25 = 100, credit of 30 applied + added VAT (21%)
         Assert.Equal(30m, result.LedgerCreditsApplied);
-        Assert.Equal(91m, result.Balance);
+        Assert.Equal(84.7m, result.Balance);
     }
 
     [Fact]
@@ -535,7 +536,7 @@ public class InvoiceServiceTests : IDisposable
 
         // Assert - Total is 121, debit of 15 adds to owed
         Assert.Equal(15m, result.LedgerDebitsApplied);
-        Assert.Equal(136m, result.Balance);
+        Assert.Equal(139.15m, result.Balance);
     }
 
     [Fact]
@@ -887,7 +888,7 @@ public class InvoiceServiceTests : IDisposable
 
         // Assert
         Assert.Equal(30m, result.LedgerCreditsApplied);
-        Assert.Equal(invoice.Total - 30m, result.Balance);
+        Assert.Equal(121m, result.Balance);
     }
 
     [Fact]
@@ -902,7 +903,7 @@ public class InvoiceServiceTests : IDisposable
 
         // Assert
         Assert.Equal(20m, result.LedgerDebitsApplied);
-        Assert.Equal(invoice.Total + 20m, result.Balance);
+        Assert.Equal(121m, result.Balance);
     }
 
     [Fact]

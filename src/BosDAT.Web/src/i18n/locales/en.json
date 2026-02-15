@@ -320,6 +320,51 @@
       },
       "by": "by"
     },
+    "ledger": {
+      "title": "Ledger",
+      "currentBalance": "Current Balance",
+      "totalDebited": "Total Debited",
+      "totalCredited": "Total Credited",
+      "transactions": "Transactions",
+      "noTransactions": "No transactions recorded yet",
+      "filterByType": "Filter by type",
+      "allTypes": "All Types",
+      "owes": "Student owes",
+      "credit": "Student has credit",
+      "settled": "Settled",
+      "transactionType": {
+        "invoiceCharge": "Invoice",
+        "payment": "Payment",
+        "creditCorrection": "Credit Correction",
+        "debitCorrection": "Debit Correction",
+        "reversal": "Reversal",
+        "invoiceCancellation": "Cancellation",
+        "invoiceAdjustment": "Adjustment",
+        "correctionApplied": "Correction Applied"
+      },
+      "table": {
+        "date": "Date",
+        "description": "Description",
+        "reference": "Reference",
+        "type": "Type",
+        "debit": "Debit",
+        "credit": "Credit",
+        "balance": "Balance"
+      }
+    },
+    "payments": {
+      "recordPayment": "Record Payment",
+      "recordPaymentDesc": "Record a payment for invoice {{invoiceNumber}} (remaining: {{balance}})",
+      "amount": "Amount",
+      "paymentDate": "Payment Date",
+      "method": "Payment Method",
+      "reference": "Reference",
+      "referencePlaceholder": "Bank reference or receipt number",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional notes about this payment",
+      "exceedsBalance": "Amount exceeds remaining balance",
+      "invalidAmount": "Enter a valid amount greater than zero"
+    },
     "invoices": {
       "invoiceHistory": "Invoice History",
       "noInvoices": "No invoices yet",
@@ -1063,6 +1108,7 @@
   "schedule": {
     "title": "Schedule",
     "week": "Week {{number}}",
+    "list": "List",
     "filters": {
       "allTeachers": "All teachers",
       "allRooms": "All rooms"
@@ -1106,5 +1152,10 @@
       "original": "original",
       "placeholder": "placeholder"
     }
+  },
+  "search": {
+    "placeholder": "Search students, teachers...",
+    "minCharacters": "Type at least 2 characters to search",
+    "noResults": "No results found"
   }
 }

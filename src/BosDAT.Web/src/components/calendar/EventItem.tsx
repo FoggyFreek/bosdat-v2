@@ -171,6 +171,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
           event={event}
           colors={colors}
           isLastColumn={dayIndex === totalDays - 1}
+          isDayView={totalDays === 1}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         />

@@ -6,6 +6,7 @@ using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
+using Moq;
 
 namespace BosDAT.API.Tests.Services;
 
@@ -22,6 +23,8 @@ internal class TestUnitOfWork(ApplicationDbContext context, IStudentLedgerReposi
     public ILessonRepository Lessons => throw new NotImplementedException();
     public IInvoiceRepository Invoices => throw new NotImplementedException();
     public IStudentLedgerRepository StudentLedgerEntries => ledgerRepository;
+
+    public IStudentTransactionRepository StudentTransactions => throw new NotImplementedException();
 
     public IRepository<T> Repository<T>() where T : class => throw new NotImplementedException();
 
@@ -45,8 +48,11 @@ public class StudentLedgerServiceTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly StudentLedgerRepository _ledgerRepository;
     private readonly TestUnitOfWork _unitOfWork;
+    private readonly Mock<IUnitOfWork> _unitOfWork2;
     private readonly StudentLedgerService _service;
-    private readonly Guid _testStudentId = Guid.NewGuid();
+    private readonly StudentTransactionRepository _studentTransactionRepository;
+    private readonly StudentTransactionService _studentTransactionService;
+        private readonly Guid _testStudentId = Guid.NewGuid();
     private readonly Guid _testUserId = Guid.NewGuid();
     private readonly Guid _testCourseId = Guid.NewGuid();
     private readonly Guid _testInvoiceId = Guid.NewGuid();
@@ -59,8 +65,11 @@ public class StudentLedgerServiceTests : IDisposable
 
         _context = new ApplicationDbContext(options, null!);
         _ledgerRepository = new StudentLedgerRepository(_context);
+        _studentTransactionRepository = new StudentTransactionRepository(_context);
         _unitOfWork = new TestUnitOfWork(_context, _ledgerRepository);
-        _service = new StudentLedgerService(_context, _ledgerRepository, _unitOfWork);
+        _unitOfWork2 = new Mock<IUnitOfWork>();
+        _studentTransactionService = new StudentTransactionService(_context, _studentTransactionRepository, _unitOfWork2.Object);
+        _service = new StudentLedgerService(_context, _ledgerRepository, _unitOfWork, _studentTransactionService);
 
         SeedTestData();
     }

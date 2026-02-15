@@ -23,7 +23,7 @@ import {
   AbsenceSection,
   InvoicesSection,
   CorrectionsSection,
-  BalanceSection,
+  LedgerSection,
 } from '@/features/students/components'
 import { studentsApi } from '@/features/students/api'
 import type { Student, StudentSectionKey } from '@/features/students/types'
@@ -94,7 +94,7 @@ function StudentDetailContent() {
       case 'corrections':
         return <CorrectionsSection studentId={id} />
       case 'balance':
-        return <BalanceSection studentId={id} />
+        return <LedgerSection studentId={id} />
       default:
         return null
     }

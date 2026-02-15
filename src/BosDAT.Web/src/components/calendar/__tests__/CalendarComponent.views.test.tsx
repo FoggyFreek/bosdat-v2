@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { CalendarComponent } from '../CalendarComponent'
-import type { CalendarEvent, EventFrequency, EventType, CalendarView } from '../types'
+import type { CalendarEvent, EventFrequency, EventType } from '../types'
 
 const createMockDate = (dateStr: string): Date => new Date(dateStr)
 
@@ -40,10 +40,9 @@ describe('CalendarComponent - View Switching', () => {
     it('shows view selector by default when view and onViewChange are provided', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="week"
+          initialView="week"
           onViewChange={mockOnViewChange}
         />
       )
@@ -54,10 +53,9 @@ describe('CalendarComponent - View Switching', () => {
     it('hides view selector when showViewSelector is false', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="week"
+          initialView="week"
           onViewChange={mockOnViewChange}
           showViewSelector={false}
         />
@@ -66,17 +64,17 @@ describe('CalendarComponent - View Switching', () => {
       expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
     })
 
-    it('hides view selector when onViewChange is not provided', () => {
+    it('shows view selector even when onViewChange is not provided (SchedulerHeader manages its own view)', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="week"
+          initialView="week"
         />
       )
 
-      expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+      // SchedulerHeader now manages view internally, so it shows by default
+      expect(screen.getByRole('tablist')).toBeInTheDocument()
     })
   })
 
@@ -84,10 +82,9 @@ describe('CalendarComponent - View Switching', () => {
     it('renders week view with 7 day headers', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="week"
+          initialView="week"
           onViewChange={mockOnViewChange}
         />
       )
@@ -101,7 +98,6 @@ describe('CalendarComponent - View Switching', () => {
     it('defaults to week view when no view prop is provided', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
         />
@@ -115,10 +111,9 @@ describe('CalendarComponent - View Switching', () => {
     it('renders day view with single day header', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="day"
+          initialView="day"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
         />
@@ -146,10 +141,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[mondayEvent, tuesdayEvent]}
           dates={mockDates}
-          view="day"
+          initialView="day"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
         />
@@ -162,10 +156,9 @@ describe('CalendarComponent - View Switching', () => {
     it('renders the selected date number in the day header', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="day"
+          initialView="day"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]} // January 15
         />
@@ -179,10 +172,9 @@ describe('CalendarComponent - View Switching', () => {
     it('renders list view with day header', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
         />
@@ -194,10 +186,9 @@ describe('CalendarComponent - View Switching', () => {
     it('shows empty state when no events for the day', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
         />
@@ -216,10 +207,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[event]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
         />
@@ -240,10 +230,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[event]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
           onEventAction={mockOnEventAction}
@@ -266,10 +255,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[event]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
           onEventAction={mockOnEventAction}
@@ -287,10 +275,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="week"
+          initialView="week"
           onViewChange={mockOnViewChange}
         />
       )
@@ -304,10 +291,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="week"
+          initialView="week"
           onViewChange={mockOnViewChange}
         />
       )
@@ -321,10 +307,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="day"
+          initialView="day"
           onViewChange={mockOnViewChange}
           selectedDate={mockDates[0]}
         />
@@ -346,10 +331,9 @@ describe('CalendarComponent - View Switching', () => {
 
       render(
         <CalendarComponent
-          title="Schedule"
           events={[event]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
           highlightedDate={mockDates[1]} // Tuesday
         />
@@ -361,10 +345,9 @@ describe('CalendarComponent - View Switching', () => {
     it('uses first date in dates array as last fallback', () => {
       render(
         <CalendarComponent
-          title="Schedule"
           events={[]}
           dates={mockDates}
-          view="list"
+          initialView="list"
           onViewChange={mockOnViewChange}
         />
       )

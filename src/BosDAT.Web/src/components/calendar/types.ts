@@ -59,20 +59,19 @@ export type CalendarView = 'week' | 'day' | 'list';
 export type CalendarListAction = 'cancel' | 'move';
 
 export type SchedulerProps = {
-  title: string;
   events: CalendarEvent[];
   dates: Date[];
+  initialDate?: Date;
+  initialView?: CalendarView;
   dayStartTime?: number;
   dayEndTime?: number;
   hourHeight?: number;
   colorScheme?: ColorScheme;
-  onNavigatePrevious?: () => void;
-  onNavigateNext?: () => void;
+  onDateChange?: (date: Date) => void;
   onTimeslotClick?: (timeslot: TimeSlot) => void;
   onDateSelect?: (date: Date) => void;
   highlightedDate?: Date;
   availability?: DayAvailability[];
-  view?: CalendarView;
   onViewChange?: (view: CalendarView) => void;
   showViewSelector?: boolean;
   selectedDate?: Date;

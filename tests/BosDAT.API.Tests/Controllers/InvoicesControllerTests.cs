@@ -13,6 +13,8 @@ public class InvoicesControllerTests
 {
     private readonly Mock<IInvoiceService> _mockInvoiceService;
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
+    private readonly Mock<IStudentTransactionService> _mockStudentTransactionService;
+    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly InvoicesController _controller;
     private readonly Guid _testUserId = Guid.NewGuid();
     private readonly Guid _testInvoiceId = Guid.NewGuid();
@@ -23,6 +25,8 @@ public class InvoicesControllerTests
     {
         _mockInvoiceService = new Mock<IInvoiceService>();
         _mockCurrentUserService = new Mock<ICurrentUserService>();
+        _mockStudentTransactionService = new Mock<IStudentTransactionService>();
+        _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockCurrentUserService.Setup(s => s.UserId).Returns(_testUserId);
 
         _controller = new InvoicesController(

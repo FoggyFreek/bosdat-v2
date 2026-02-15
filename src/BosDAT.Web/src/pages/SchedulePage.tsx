@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select'
 import { CalendarComponent } from '@/components'
 import type { CalendarEvent, ColorScheme } from '@/components'
-import type { DayAvailability } from '@/components/calendar/types'
+import type { CalendarView, DayAvailability } from '@/components/calendar/types'
 import { calendarApi } from '@/features/schedule/api'
 import { teachersApi } from '@/features/teachers/api'
 import { roomsApi } from '@/features/rooms/api'
@@ -128,14 +128,11 @@ const convertGroupedLessonToEvent = (group: GroupedLesson): CalendarEvent => {
     title: group.title + (group.isTrial ? ' (Trail)' : ''),
     frequency: group.frequency,
     eventType: group.isTrial? 'trial' : group.isWorkshop? 'workshop' : 'course',
-    status: group.status,  
+    status: group.status,
     attendees,
     room: group.roomName,
   }
 }
-
-const formatDateDisplay = (date: Date): string =>
-  date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
 
 const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailability[] =>
   availability.map((item) => ({
@@ -150,8 +147,31 @@ export const SchedulePage = () => {
   const { t } = useTranslation()
   // State
   const [currentDate, setCurrentDate] = useState(() => getWeekStart(new Date()))
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date())
   const [filterTeacher, setFilterTeacher] = useState<string>('all')
   const [filterRoom, setFilterRoom] = useState<string>('all')
+  const [currentView, setCurrentView] = useState<CalendarView>('week')
+
+  // Handlers for SchedulerHeader callbacks
+  const handleDateChange = (date: Date) => {
+    if (currentView === 'week') {
+      // For week view, normalize to week start
+      setCurrentDate(getWeekStart(date))
+      setSelectedDate(date)
+    } else {
+      // For day/list view, keep exact date and update week if needed
+      setSelectedDate(date)
+      const weekStart = getWeekStart(date)
+      // Only update currentDate if we've moved to a different week
+      if (formatDateForApi(weekStart) !== formatDateForApi(currentDate)) {
+        setCurrentDate(weekStart)
+      }
+    }
+  }
+
+  const handleViewChange = (view: CalendarView) => {
+    setCurrentView(view)
+  }
 
   // Queries
   const { data: calendarData, isLoading, isFetching, refetch } = useQuery<WeekCalendar>({
@@ -184,12 +204,6 @@ export const SchedulePage = () => {
   })
 
   // Derived state
-  const weekEnd = useMemo(() => {
-    const end = new Date(currentDate)
-    end.setDate(end.getDate() + 6)
-    return end
-  }, [currentDate])
-
   const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate])
 
   const events = useMemo(() => {
@@ -205,29 +219,11 @@ export const SchedulePage = () => {
     [teacherAvailability]
   )
 
-  // Handlers
-  const goToPreviousWeek = () => {
-    const newDate = new Date(currentDate)
-    newDate.setDate(newDate.getDate() - 7)
-    setCurrentDate(newDate)
-  }
-
-  const goToNextWeek = () => {
-    const newDate = new Date(currentDate)
-    newDate.setDate(newDate.getDate() + 7)
-    setCurrentDate(newDate)
-  }
-
-  const weekNumber = Math.ceil((currentDate.getDate() - currentDate.getDay() + 1) / 7)
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t('schedule.title')}</h1>
-          <p className="text-muted-foreground">
-            {formatDateDisplay(currentDate)} - {formatDateDisplay(weekEnd)}
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -273,12 +269,14 @@ export const SchedulePage = () => {
 
       {!showLoading && (
         <CalendarComponent
-          title={t('schedule.week', { number: weekNumber })}
           events={events}
           dates={weekDays}
+          initialDate={currentView === 'week' ? currentDate : selectedDate}
+          initialView={currentView}
+          selectedDate={currentView !== 'week' ? selectedDate : undefined}
           colorScheme={statusColorScheme}
-          onNavigatePrevious={goToPreviousWeek}
-          onNavigateNext={goToNextWeek}
+          onDateChange={handleDateChange}
+          onViewChange={handleViewChange}
           availability={availability}
           dayStartTime={8}
           dayEndTime={21}

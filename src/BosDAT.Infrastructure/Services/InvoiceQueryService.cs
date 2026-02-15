@@ -34,7 +34,6 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
 
         return MapToDto(invoice);
     }
-
     public async Task<IReadOnlyList<InvoiceListDto>> GetStudentInvoicesAsync(Guid studentId, CancellationToken ct = default)
     {
         var invoices = await context.Invoices
@@ -114,13 +113,28 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         return int.TryParse(setting?.Value, out var days) ? days : 14;
     }
 
+     internal static PaymentDto MapToDto(Payment payment)
+    {
+        return new PaymentDto
+            {
+                Id = payment.Id,
+                InvoiceId = payment.InvoiceId,
+                Amount = payment.Amount,
+                PaymentDate = payment.PaymentDate,
+                Method = payment.Method,
+                Reference = payment.Reference,
+                Notes = payment.Notes,
+                CreatedAt = payment.CreatedAt
+            };
+    }
+    
     internal static InvoiceDto MapToDto(Invoice invoice)
     {
         var student = invoice.Student;
         var billingContact = BuildBillingContact(student);
 
-        var amountPaid = invoice.Payments.Sum(p => p.Amount) + invoice.LedgerCreditsApplied;
-        var totalOwed = invoice.Total + invoice.LedgerDebitsApplied;
+        var amountPaid = invoice.Payments.Sum(p => p.Amount);
+        var totalOwed = invoice.Total;
         var balance = totalOwed - amountPaid;
 
         return new InvoiceDto
@@ -190,8 +204,8 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
 
     internal static InvoiceListDto MapToListDto(Invoice invoice)
     {
-        var amountPaid = invoice.Payments.Sum(p => p.Amount) + invoice.LedgerCreditsApplied;
-        var totalOwed = invoice.Total + invoice.LedgerDebitsApplied;
+        var amountPaid = invoice.Payments.Sum(p => p.Amount);
+        var totalOwed = invoice.Total;
 
         return new InvoiceListDto
         {

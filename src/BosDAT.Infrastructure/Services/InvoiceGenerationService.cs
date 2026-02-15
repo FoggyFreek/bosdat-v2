@@ -5,6 +5,7 @@ using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
 using BosDAT.Core.Utilities;
 using BosDAT.Infrastructure.Data;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BosDAT.Infrastructure.Services;
 
@@ -13,7 +14,8 @@ public class InvoiceGenerationService(
     IUnitOfWork unitOfWork,
     ICourseTypePricingService pricingService,
     IInvoiceLedgerService ledgerService,
-    IInvoiceQueryService queryService) : IInvoiceGenerationService
+    IInvoiceQueryService queryService,
+    IStudentTransactionService studentTransactionService) : IInvoiceGenerationService
 {
     public async Task<InvoiceDto> GenerateInvoiceAsync(GenerateInvoiceDto dto, Guid userId, CancellationToken ct = default)
     {
@@ -79,18 +81,22 @@ public class InvoiceGenerationService(
                 Status = InvoiceStatus.Draft
             };
 
-            AddInvoiceLines(invoice, lessons, pricing.Id, pricePerLesson, vatRate, courseName);
-
-            invoice.Subtotal = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity);
-            invoice.VatAmount = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity * (l.VatRate / 100m));
-            invoice.Total = invoice.Subtotal + invoice.VatAmount;
-
+            //first add the lesson lines to the invoice
+            AddInvoiceLines(invoice, lessons, pricing.Id, pricePerLesson, courseName);
+            //subtotal of all lesson lines
+            invoice.Subtotal = invoice.Lines.Sum(l => l.LineTotal);
+            
+            //apply ledger correction to the subtotal
             if (dto.ApplyLedgerCorrections)
             {
                 await ledgerService.ApplyLedgerCorrectionsToInvoiceAsync(invoice, enrollment.StudentId, userId, ct);
             }
 
+            CalculateInvoiceTotals(invoice, vatRate);
+            
             context.Invoices.Add(invoice);
+            await studentTransactionService.RecordInvoiceChargeAsync(invoice, userId, ct);
+
             await context.SaveChangesAsync(ct);
             await unitOfWork.CommitTransactionAsync(ct);
 
@@ -166,6 +172,8 @@ public class InvoiceGenerationService(
             throw new InvalidOperationException("Invoice is missing enrollment or period information required for recalculation.");
         }
 
+        var oldTotal = invoice.Total;
+
         await unitOfWork.BeginTransactionAsync(ct);
         try
         {
@@ -179,6 +187,8 @@ public class InvoiceGenerationService(
             if (lessons.Count == 0)
             {
                 CancelInvoice(invoice);
+                await context.SaveChangesAsync(ct);
+                await studentTransactionService.RecordInvoiceCancellationAsync(invoice, oldTotal, userId, ct);
             }
             else
             {
@@ -191,12 +201,16 @@ public class InvoiceGenerationService(
                 var vatRate = await queryService.GetVatRateAsync(ct);
                 var courseName = invoice.Enrollment.Course.CourseType.Name;
 
-                AddInvoiceLines(invoice, lessons, pricing.Id, pricePerLesson, vatRate, courseName);
-                RecalculateInvoiceTotals(invoice);
+                AddInvoiceLines(invoice, lessons, pricing.Id, pricePerLesson, courseName);
+                //subtotal of all lesson lines
+                invoice.Subtotal = invoice.Lines.Sum(l => l.LineTotal);
+
                 await ledgerService.ApplyLedgerCorrectionsToInvoiceAsync(invoice, invoice.StudentId, userId, ct);
+                CalculateInvoiceTotals(invoice, vatRate);
+                await studentTransactionService.RecordInvoiceAdjustmentAsync(invoice, oldTotal, userId, ct);
+                await context.SaveChangesAsync(ct);
             }
 
-            await context.SaveChangesAsync(ct);
             await unitOfWork.CommitTransactionAsync(ct);
 
             return await queryService.GetInvoiceAsync(invoice.Id, ct)
@@ -239,7 +253,7 @@ public class InvoiceGenerationService(
 
     private static void AddInvoiceLines(
         Invoice invoice, List<Lesson> lessons, Guid pricingVersionId,
-        decimal pricePerLesson, decimal vatRate, string courseName)
+        decimal pricePerLesson, string courseName)
     {
         foreach (var lesson in lessons)
         {
@@ -251,8 +265,7 @@ public class InvoiceGenerationService(
                 Description = $"{courseName} - {lesson.ScheduledDate:dd MMM yyyy}",
                 Quantity = 1,
                 UnitPrice = pricePerLesson,
-                VatRate = vatRate,
-                LineTotal = pricePerLesson * (1 + vatRate / 100m)
+                LineTotal = pricePerLesson
             };
 
             invoice.Lines.Add(line);
@@ -260,13 +273,14 @@ public class InvoiceGenerationService(
         }
     }
 
-    private static void RecalculateInvoiceTotals(Invoice invoice)
+    private static void CalculateInvoiceTotals(Invoice invoice, decimal vatRate)
     {
-        invoice.Subtotal = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity);
-        invoice.VatAmount = invoice.Lines.Sum(l => l.UnitPrice * l.Quantity * (l.VatRate / 100m));
-        invoice.Total = invoice.Subtotal + invoice.VatAmount;
-        invoice.LedgerCreditsApplied = 0;
-        invoice.LedgerDebitsApplied = 0;
+        var sumCorrections = invoice.LedgerDebitsApplied - invoice.LedgerCreditsApplied;
+        //subtotal of all lesson lines
+        invoice.Subtotal = invoice.Lines.Sum(l => l.LineTotal);
+        //add the correction amount
+        invoice.VatAmount = (invoice.Subtotal + sumCorrections) * (vatRate / 100m);
+        invoice.Total = invoice.Subtotal + sumCorrections + invoice.VatAmount;
     }
 
     private void UnInvoiceAndClearLines(Invoice invoice)

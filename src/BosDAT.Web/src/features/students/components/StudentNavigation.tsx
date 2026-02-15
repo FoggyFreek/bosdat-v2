@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
   User, Settings2, BookOpen, CalendarDays,
-  CalendarX, Receipt, PenLine, Wallet
+  CalendarX, Receipt, PenLine, BookOpenCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { StudentSectionKey, StudentNavGroup } from '@/features/students/types'
@@ -28,7 +28,7 @@ const getNavigationGroups = (t: TFunction): StudentNavGroup[] => [
     items: [
       { key: 'invoices', label: t('students.sections.invoices'), icon: <Receipt className="h-4 w-4" /> },
       { key: 'corrections', label: t('students.sections.corrections'), icon: <PenLine className="h-4 w-4" /> },
-      { key: 'balance', label: t('students.sections.balance'), icon: <Wallet className="h-4 w-4" /> },
+      { key: 'balance', label: t('students.ledger.title'), icon: <BookOpenCheck className="h-4 w-4" /> },
     ],
   },
 ]

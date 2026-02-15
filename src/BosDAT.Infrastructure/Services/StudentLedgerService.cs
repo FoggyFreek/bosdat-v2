@@ -10,7 +10,8 @@ namespace BosDAT.Infrastructure.Services;
 public class StudentLedgerService(
     ApplicationDbContext context,
     IStudentLedgerRepository ledgerRepository,
-    IUnitOfWork unitOfWork) : IStudentLedgerService
+    IUnitOfWork unitOfWork,
+    IStudentTransactionService studentTransactionService) : IStudentLedgerService
 {
     private const int MaxDescriptionLength = 500;
     private const string UnknownUserName = "Unknown";
@@ -68,6 +69,7 @@ public class StudentLedgerService(
 
                 context.StudentLedgerEntries.Add(entry);
                 await context.SaveChangesAsync(ct);
+                await studentTransactionService.RecordCorrectionAsync(entry, userId, ct);
                 await unitOfWork.CommitTransactionAsync(ct);
 
                 return await LoadEntryAndMapToDtoAsync(entry.Id, ct);
@@ -143,6 +145,7 @@ public class StudentLedgerService(
 
                 context.StudentLedgerEntries.Add(reversalEntry);
                 await context.SaveChangesAsync(ct);
+                await studentTransactionService.RecordReversalAsync(reversalEntry, originalEntry, userId, ct);
                 await unitOfWork.CommitTransactionAsync(ct);
 
                 return await LoadEntryAndMapToDtoAsync(reversalEntry.Id, ct);

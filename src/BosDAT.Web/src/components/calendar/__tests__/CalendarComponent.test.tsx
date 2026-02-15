@@ -38,8 +38,7 @@ describe('CalendarComponent', () => {
     createMockDate('2024-01-21T00:00:00'), // Sunday
   ]
 
-  const mockOnNavigatePrevious = vi.fn()
-  const mockOnNavigateNext = vi.fn()
+  const mockOnDateChange = vi.fn()
   const mockOnTimeslotClick = vi.fn()
   const mockOnDateSelect = vi.fn()
 
@@ -48,24 +47,25 @@ describe('CalendarComponent', () => {
   })
 
   describe('Basic Rendering', () => {
-    it('renders the scheduler with correct title', () => {
+    it('renders the scheduler with calculated title', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
+          initialDate={mockDates[0]}
         />
       )
 
-      expect(screen.getByText('Weekly Schedule')).toBeInTheDocument()
+      // Title is now calculated in SchedulerHeader based on week number
+      expect(screen.getByText('schedule.week')).toBeInTheDocument()
     })
 
     it('renders with application role and aria-label', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
+          initialView="week"
         />
       )
 
@@ -76,7 +76,6 @@ describe('CalendarComponent', () => {
     it('renders 7 day columns', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
         />
@@ -92,7 +91,6 @@ describe('CalendarComponent', () => {
     it('renders correct day numbers', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
         />
@@ -109,7 +107,6 @@ describe('CalendarComponent', () => {
     it('renders time column with hours 8-22', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
         />
@@ -126,7 +123,6 @@ describe('CalendarComponent', () => {
     it('renders grid with role', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
         />
@@ -141,10 +137,9 @@ describe('CalendarComponent', () => {
     it('renders previous navigation button', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
-          onNavigatePrevious={mockOnNavigatePrevious}
+          onDateChange={mockOnDateChange}
         />
       )
 
@@ -155,10 +150,9 @@ describe('CalendarComponent', () => {
     it('renders next navigation button', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
-          onNavigateNext={mockOnNavigateNext}
+          onDateChange={mockOnDateChange}
         />
       )
 
@@ -166,38 +160,44 @@ describe('CalendarComponent', () => {
       expect(nextButton).toBeInTheDocument()
     })
 
-    it('calls onNavigatePrevious when previous button is clicked', async () => {
+    it('calls onDateChange when previous button is clicked', async () => {
       const user = userEvent.setup()
+      const initialDate = mockDates[0]
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
-          onNavigatePrevious={mockOnNavigatePrevious}
+          initialDate={initialDate}
+          onDateChange={mockOnDateChange}
         />
       )
 
       const prevButton = screen.getByRole('button', { name: 'calendar.navigation.previous' })
       await user.click(prevButton)
 
-      expect(mockOnNavigatePrevious).toHaveBeenCalledTimes(1)
+      expect(mockOnDateChange).toHaveBeenCalledTimes(1)
+      // Date should be 7 days earlier for week view
+      expect(mockOnDateChange).toHaveBeenCalledWith(expect.any(Date))
     })
 
-    it('calls onNavigateNext when next button is clicked', async () => {
+    it('calls onDateChange when next button is clicked', async () => {
       const user = userEvent.setup()
+      const initialDate = mockDates[0]
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
-          onNavigateNext={mockOnNavigateNext}
+          initialDate={initialDate}
+          onDateChange={mockOnDateChange}
         />
       )
 
       const nextButton = screen.getByRole('button', { name: 'calendar.navigation.next' })
       await user.click(nextButton)
 
-      expect(mockOnNavigateNext).toHaveBeenCalledTimes(1)
+      expect(mockOnDateChange).toHaveBeenCalledTimes(1)
+      // Date should be 7 days later for week view
+      expect(mockOnDateChange).toHaveBeenCalledWith(expect.any(Date))
     })
   })
 
@@ -205,7 +205,6 @@ describe('CalendarComponent', () => {
     it('renders date headers as buttons when onDateSelect is provided', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           onDateSelect={mockOnDateSelect}
@@ -224,7 +223,6 @@ describe('CalendarComponent', () => {
       const user = userEvent.setup()
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           onDateSelect={mockOnDateSelect}
@@ -242,7 +240,6 @@ describe('CalendarComponent', () => {
       const user = userEvent.setup()
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           onDateSelect={mockOnDateSelect}
@@ -261,7 +258,6 @@ describe('CalendarComponent', () => {
       const user = userEvent.setup()
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           onDateSelect={mockOnDateSelect}
@@ -279,7 +275,6 @@ describe('CalendarComponent', () => {
     it('highlights selected date when highlightedDate is provided', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           highlightedDate={mockDates[0]}
@@ -301,7 +296,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -326,7 +320,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={events}
           dates={mockDates}
         />
@@ -344,7 +337,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[invalidEvent]}
           dates={mockDates}
         />
@@ -361,7 +353,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[outsideEvent]}
           dates={mockDates}
         />
@@ -377,7 +368,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -392,7 +382,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
           colorScheme={mockColorScheme}
@@ -412,7 +401,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
           colorScheme={mockColorScheme}
@@ -434,7 +422,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -460,7 +447,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -487,7 +473,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -510,7 +495,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -539,7 +523,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -566,7 +549,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -593,7 +575,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -621,7 +602,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -639,7 +619,6 @@ describe('CalendarComponent', () => {
 
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[event]}
           dates={mockDates}
         />
@@ -654,7 +633,6 @@ describe('CalendarComponent', () => {
     it('has keyboard-accessible grid', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           onTimeslotClick={mockOnTimeslotClick}
@@ -670,7 +648,6 @@ describe('CalendarComponent', () => {
     it('renders clickable grid when onTimeslotClick is provided', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           onTimeslotClick={mockOnTimeslotClick}
@@ -685,7 +662,6 @@ describe('CalendarComponent', () => {
     it('renders grid without errors when onTimeslotClick is not provided', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
         />
@@ -700,7 +676,6 @@ describe('CalendarComponent', () => {
     it('shows unavailable time overlay before day start', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           dayStartTime={9}
@@ -714,7 +689,6 @@ describe('CalendarComponent', () => {
     it('shows unavailable time overlay after day end', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           dayEndTime={18}
@@ -730,7 +704,6 @@ describe('CalendarComponent', () => {
     it('uses custom hourHeight prop', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
           hourHeight={120}
@@ -745,7 +718,6 @@ describe('CalendarComponent', () => {
     it('renders with default hourHeight when not provided', () => {
       render(
         <CalendarComponent
-          title="Weekly Schedule"
           events={[]}
           dates={mockDates}
         />

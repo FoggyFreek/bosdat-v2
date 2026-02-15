@@ -10,6 +10,7 @@ import {
   ChevronUp,
   ExternalLink,
   Download,
+  CreditCard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { invoicesApi } from '@/features/students/api'
+import { RecordPaymentDialog } from '@/features/students/components/invoices/RecordPaymentDialog'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
 import { invoiceStatusTranslations } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
@@ -45,6 +47,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null)
   const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(null)
   const [showPrintDialog, setShowPrintDialog] = useState(false)
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false)
 
   const { data: invoices = [], isLoading } = useQuery<InvoiceListItem[]>({
     queryKey: ['invoices', 'student', studentId],
@@ -84,6 +87,10 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
 
   const canRecalculate = (status: InvoiceStatus) => {
     return status === 'Draft' || status === 'Sent' || status === 'Overdue'
+  }
+
+  const canRecordPayment = (invoice: Invoice) => {
+    return invoice.status !== 'Cancelled' && invoice.status !== 'Paid' && invoice.balance > 0
   }
 
   if (isLoading) {
@@ -207,7 +214,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                   <th className="text-left p-2">{t('students.invoices.description')}</th>
                                   <th className="text-right p-2">{t('students.invoices.qty')}</th>
                                   <th className="text-right p-2">{t('students.invoices.unitPrice')}</th>
-                                  <th className="text-right p-2">{t('students.invoices.vat')}</th>
+                                  <th className="text-right p-2"></th>
                                   <th className="text-right p-2">{t('common.entities.invoice')}</th>
                                 </tr>
                               </thead>
@@ -217,7 +224,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                     <td className="p-2">{line.description}</td>
                                     <td className="text-right p-2">{line.quantity}</td>
                                     <td className="text-right p-2">{formatCurrency(line.unitPrice)}</td>
-                                    <td className="text-right p-2">{line.vatRate}%</td>
+                                    <td className="text-right p-2"></td>
                                     <td className="text-right p-2">{formatCurrency(line.lineTotal)}</td>
                                   </tr>
                                 ))}
@@ -231,14 +238,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                     {formatCurrency(selectedInvoice.subtotal)}
                                   </td>
                                 </tr>
-                                <tr>
-                                  <td colSpan={4} className="text-right p-2 font-medium">
-                                    {t('students.invoices.vat')}
-                                  </td>
-                                  <td className="text-right p-2">
-                                    {formatCurrency(selectedInvoice.vatAmount)}
-                                  </td>
-                                </tr>
+
                                 {selectedInvoice.ledgerCreditsApplied > 0 && (
                                   <tr>
                                     <td colSpan={4} className="text-right p-2 font-medium text-green-600">
@@ -259,16 +259,21 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                     </td>
                                   </tr>
                                 )}
+                                <tr>
+                                  <td colSpan={4} className="text-right p-2 font-medium">
+                                    {t('students.invoices.vat')}
+                                  </td>
+                                  <td className="text-right p-2">
+                                    {formatCurrency(selectedInvoice.vatAmount)}
+                                  </td>
+                                </tr>
                                 <tr className="font-bold">
                                   <td colSpan={4} className="text-right p-2">
                                     {t('students.invoices.total')}
                                   </td>
                                   <td className="text-right p-2">
                                     {formatCurrency(
-                                      selectedInvoice.total +
-                                        selectedInvoice.ledgerDebitsApplied -
-                                        selectedInvoice.ledgerCreditsApplied
-                                    )}
+                                      selectedInvoice.total)}
                                   </td>
                                 </tr>
                               </tfoot>
@@ -302,6 +307,15 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                           )}
 
                           <div className="flex justify-end gap-2">
+                            {canRecordPayment(selectedInvoice) && (
+                              <Button
+                                size="sm"
+                                onClick={() => setShowPaymentDialog(true)}
+                              >
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                {t('students.payments.recordPayment')}
+                              </Button>
+                            )}
                             {canRecalculate(selectedInvoice.status) && (
                               <Button
                                 variant="outline"
@@ -348,6 +362,17 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {selectedInvoice && (
+        <RecordPaymentDialog
+          open={showPaymentDialog}
+          onOpenChange={setShowPaymentDialog}
+          invoiceId={selectedInvoice.id}
+          invoiceNumber={selectedInvoice.invoiceNumber}
+          remainingBalance={selectedInvoice.balance}
+          studentId={studentId}
+        />
+      )}
     </div>
   )
 }
@@ -365,7 +390,7 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
   })
 
   const totalOwed =
-    invoice.total + invoice.ledgerDebitsApplied - invoice.ledgerCreditsApplied
+    invoice.total
 
   return (
     <div className="space-y-6 print:p-8">
@@ -457,7 +482,7 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
               <th className="text-left py-2">{t('students.invoices.description')}</th>
               <th className="text-right py-2">{t('students.invoices.qty')}</th>
               <th className="text-right py-2">{t('students.invoices.unitPrice')}</th>
-              <th className="text-right py-2">{t('students.invoices.vat')}</th>
+              <th className="text-right py-2"></th>
               <th className="text-right py-2">{t('students.invoices.total')}</th>
             </tr>
           </thead>
@@ -467,12 +492,14 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
                 <td className="py-2">{line.description}</td>
                 <td className="text-right py-2">{line.quantity}</td>
                 <td className="text-right py-2">{formatCurrency(line.unitPrice)}</td>
-                <td className="text-right py-2">{line.vatRate}%</td>
+                <td className="text-right py-2"></td>
                 <td className="text-right py-2">{formatCurrency(line.lineTotal)}</td>
               </tr>
             ))}
           </tbody>
         </table>
+
+
 
         {/* Totals */}
         <div className="flex justify-end">
@@ -481,22 +508,44 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
               <span>{t('students.invoices.subtotal')}</span>
               <span>{formatCurrency(invoice.subtotal)}</span>
             </div>
+          </div>
+        </div>
+        
+        {invoice.ledgerApplications.length > 0 && (
+          <div>
+            <h4 className="font-medium mb-2">{t('students.invoices.appliedCorrections')}</h4>
+            <div className="space-y-1 text-sm">
+              {invoice.ledgerApplications.map((app) => (
+                <div
+                  key={app.id}
+                  className="flex justify-between items-center p-2 bg-muted/30 rounded"
+                >
+                  <span>
+                    {app.correctionRefName}: {app.description}
+                  </span>
+                  <span
+                    className={
+                      app.entryType === 'Credit' ? 'text-green-600' : 'text-red-600'
+                    }
+                  >
+                    {app.entryType === 'Credit' ? '-' : '+'}
+                    {formatCurrency(app.appliedAmount)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex justify-end">
+          <div className="w-64 space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span>{t('students.invoices.total')}</span>
+              <span>{formatCurrency(invoice.subtotal + (invoice.ledgerDebitsApplied - invoice.ledgerCreditsApplied))}</span>
+            </div>
             <div className="flex justify-between">
               <span>{t('students.invoices.vat')} ({schoolInfo?.vatRate || 21}%)</span>
               <span>{formatCurrency(invoice.vatAmount)}</span>
             </div>
-            {invoice.ledgerCreditsApplied > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>{t('students.invoices.creditsApplied')}</span>
-                <span>-{formatCurrency(invoice.ledgerCreditsApplied)}</span>
-              </div>
-            )}
-            {invoice.ledgerDebitsApplied > 0 && (
-              <div className="flex justify-between text-red-600">
-                <span>{t('students.invoices.outstandingCharges')}</span>
-                <span>+{formatCurrency(invoice.ledgerDebitsApplied)}</span>
-              </div>
-            )}
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span>{t('students.invoices.totalDue')}</span>
               <span>{formatCurrency(totalOwed)}</span>
