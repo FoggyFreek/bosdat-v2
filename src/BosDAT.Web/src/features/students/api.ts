@@ -3,10 +3,6 @@ import type {
   CheckDuplicatesDto,
   DuplicateCheckResult,
   RegistrationFeeStatus,
-  StudentLedgerEntry,
-  StudentLedgerSummary,
-  CreateStudentLedgerEntry,
-  DecoupleApplicationResult,
   Invoice,
   InvoiceListItem,
   InvoicePayment,
@@ -15,8 +11,8 @@ import type {
   SchoolBillingInfo,
   InvoicePrintData,
   InvoiceStatus,
-  StudentLedgerView,
   RecordPayment,
+  StudentTransaction,
 } from '@/features/students/types'
 
 export const studentsApi = {
@@ -65,46 +61,6 @@ export const studentsApi = {
   },
 }
 
-export const studentLedgerApi = {
-  getByStudent: async (studentId: string): Promise<StudentLedgerEntry[]> => {
-    const response = await api.get<StudentLedgerEntry[]>(`/studentledger/student/${studentId}`)
-    return response.data
-  },
-
-  getSummary: async (studentId: string): Promise<StudentLedgerSummary> => {
-    const response = await api.get<StudentLedgerSummary>(`/studentledger/student/${studentId}/summary`)
-    return response.data
-  },
-
-  getById: async (id: string): Promise<StudentLedgerEntry> => {
-    const response = await api.get<StudentLedgerEntry>(`/studentledger/${id}`)
-    return response.data
-  },
-
-  create: async (data: CreateStudentLedgerEntry): Promise<StudentLedgerEntry> => {
-    const response = await api.post<StudentLedgerEntry>('/studentledger', data)
-    return response.data
-  },
-
-  reverse: async (id: string, reason: string): Promise<StudentLedgerEntry> => {
-    const response = await api.post<StudentLedgerEntry>(`/studentledger/${id}/reverse`, { reason })
-    return response.data
-  },
-
-  getAvailableCredit: async (studentId: string): Promise<{ availableCredit: number }> => {
-    const response = await api.get<{ availableCredit: number }>(`/studentledger/student/${studentId}/available-credit`)
-    return response.data
-  },
-
-  decouple: async (applicationId: string, reason: string): Promise<DecoupleApplicationResult> => {
-    const response = await api.post<DecoupleApplicationResult>(
-      `/studentledger/applications/${applicationId}/decouple`,
-      { reason },
-    )
-    return response.data
-  },
-}
-
 export const invoicesApi = {
   getById: async (id: string): Promise<Invoice> => {
     const response = await api.get<Invoice>(`/invoices/${id}`)
@@ -141,14 +97,6 @@ export const invoicesApi = {
     return response.data
   },
 
-  applyCorrection: async (invoiceId: string, ledgerEntryId: string, amount: number): Promise<Invoice> => {
-    const response = await api.post<Invoice>(`/invoices/${invoiceId}/apply-correction`, {
-      ledgerEntryId,
-      amount,
-    })
-    return response.data
-  },
-
   getSchoolBillingInfo: async (): Promise<SchoolBillingInfo> => {
     const response = await api.get<SchoolBillingInfo>('/invoices/school-billing-info')
     return response.data
@@ -171,13 +119,9 @@ export const invoicesApi = {
 }
 
 export const studentTransactionsApi = {
-  getLedger: async (studentId: string): Promise<StudentLedgerView> => {
-    const response = await api.get<StudentLedgerView>(`/students/${studentId}/transactions`)
-    return response.data
-  },
-
-  getBalance: async (studentId: string): Promise<{ balance: number }> => {
-    const response = await api.get<{ balance: number }>(`/students/${studentId}/transactions/balance`)
+  getAll: async (studentId: string): Promise<StudentTransaction[]> => {
+    const response = await api.get<StudentTransaction[]>(`/students/${studentId}/transactions`)
     return response.data
   },
 }
+

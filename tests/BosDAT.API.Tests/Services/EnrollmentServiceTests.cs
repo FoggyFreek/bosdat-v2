@@ -24,8 +24,7 @@ public class EnrollmentServiceTests
         _mockRegistrationFeeService = MockHelpers.CreateMockRegistrationFeeService();
         _service = new EnrollmentService(
             _mockUnitOfWork.Object,
-            _mockScheduleConflictService.Object,
-            _mockRegistrationFeeService.Object);
+            _mockScheduleConflictService.Object);
     }
 
     #region GetAllAsync Tests
@@ -477,87 +476,6 @@ public class EnrollmentServiceTests
         Assert.False(notFound);
         Assert.Contains("Schedule conflict", error);
     }
-
-    [Fact]
-    public async Task CreateAsync_WithEligibleStudent_AppliesRegistrationFee()
-    {
-        // Arrange
-        var student = CreateStudent();
-        var teacher = CreateTeacher();
-        var instrument = CreateInstrument();
-        var courseType = CreateCourseType(instrument);
-        var course = CreateCourse(teacher, courseType, isTrial: false);
-
-        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(new List<Course> { course });
-        var mockStudentRepo = MockHelpers.CreateMockStudentRepository(new List<Student> { student });
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(new List<Enrollment>());
-
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockScheduleConflictService
-            .Setup(s => s.HasConflictAsync(student.Id, course.Id))
-            .ReturnsAsync(new ConflictCheckResult { HasConflict = false });
-
-        _mockRegistrationFeeService
-            .Setup(s => s.IsStudentEligibleForFeeAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        var dto = new CreateEnrollmentDto
-        {
-            StudentId = student.Id,
-            CourseId = course.Id,
-            InvoicingPreference = InvoicingPreference.Monthly
-        };
-
-        // Act
-        await _service.CreateAsync(course.Id, dto);
-
-        // Assert
-        _mockRegistrationFeeService.Verify(
-            s => s.ApplyRegistrationFeeAsync(student.Id, It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task CreateAsync_WithTrialCourse_DoesNotApplyRegistrationFee()
-    {
-        // Arrange
-        var student = CreateStudent();
-        var teacher = CreateTeacher();
-        var instrument = CreateInstrument();
-        var courseType = CreateCourseType(instrument);
-        var course = CreateCourse(teacher, courseType, isTrial: true);
-
-        var mockCourseRepo = MockHelpers.CreateMockCourseRepository(new List<Course> { course });
-        var mockStudentRepo = MockHelpers.CreateMockStudentRepository(new List<Student> { student });
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(new List<Enrollment>());
-
-        _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Students).Returns(mockStudentRepo.Object);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockScheduleConflictService
-            .Setup(s => s.HasConflictAsync(student.Id, course.Id))
-            .ReturnsAsync(new ConflictCheckResult { HasConflict = false });
-
-        var dto = new CreateEnrollmentDto
-        {
-            StudentId = student.Id,
-            CourseId = course.Id,
-            InvoicingPreference = InvoicingPreference.Monthly
-        };
-
-        // Act
-        await _service.CreateAsync(course.Id, dto);
-
-        // Assert
-        _mockRegistrationFeeService.Verify(
-            s => s.ApplyRegistrationFeeAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
-            Times.Never);
-    }
-
     #endregion
 
     #region UpdateAsync Tests
@@ -646,34 +564,6 @@ public class EnrollmentServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(EnrollmentStatus.Active, result.Status);
-    }
-
-    [Fact]
-    public async Task PromoteFromTrailAsync_WithEligibleStudent_AppliesRegistrationFee()
-    {
-        // Arrange
-        var student = CreateStudent();
-        var teacher = CreateTeacher();
-        var instrument = CreateInstrument();
-        var courseType = CreateCourseType(instrument);
-        var course = CreateCourse(teacher, courseType, isTrial: true);
-        var enrollment = CreateEnrollment(student, course, EnrollmentStatus.Trail);
-        var enrollments = new List<Enrollment> { enrollment };
-
-        var mockEnrollmentRepo = MockHelpers.CreateMockRepository(enrollments);
-        _mockUnitOfWork.Setup(u => u.Repository<Enrollment>()).Returns(mockEnrollmentRepo.Object);
-
-        _mockRegistrationFeeService
-            .Setup(s => s.IsStudentEligibleForFeeAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        // Act
-        await _service.PromoteFromTrailAsync(enrollment.Id);
-
-        // Assert
-        _mockRegistrationFeeService.Verify(
-            s => s.ApplyRegistrationFeeAsync(student.Id, It.IsAny<CancellationToken>()),
-            Times.Once);
     }
 
     [Fact]

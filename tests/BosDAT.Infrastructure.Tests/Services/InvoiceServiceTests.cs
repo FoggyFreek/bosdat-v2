@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
@@ -6,24 +7,31 @@ using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Services;
+using BosDAT.Infrastructure.Repositories;
 
 namespace BosDAT.Infrastructure.Tests.Services;
 
 public class InvoiceServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
+
+    private readonly UnitOfWork _unitOfWork;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ICourseTypePricingService> _mockPricingService;
     private readonly InvoiceService _service;
+
+    private readonly InvoiceService _serviceUoWMock;
     private readonly Guid _userId = Guid.NewGuid();
 
     public InvoiceServiceTests()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: $"InvoiceServiceTest_{Guid.NewGuid()}")
+            .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
         _context = new ApplicationDbContext(options);
+        _unitOfWork = new UnitOfWork(_context);
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockPricingService = new Mock<ICourseTypePricingService>();
 
@@ -31,17 +39,24 @@ public class InvoiceServiceTests : IDisposable
 
         var queryService = new InvoiceQueryService(_context);
         var mockStudentTransactionService = new Mock<IStudentTransactionService>();
-        var ledgerService = new InvoiceLedgerService(_context, _mockUnitOfWork.Object, queryService, mockStudentTransactionService.Object);
-        var generationService = new InvoiceGenerationService(
-            _context, _mockUnitOfWork.Object, _mockPricingService.Object, ledgerService, queryService, mockStudentTransactionService.Object);
-        _service = new InvoiceService(_mockUnitOfWork.Object, mockStudentTransactionService.Object, generationService, ledgerService, queryService);
+        var mockStudentRegistrationFeeService = new Mock<IRegistrationFeeService>();
 
+        // Create generation service with real UnitOfWork for _service
+        var generationService = new InvoiceGenerationService(
+            _context, _unitOfWork, _mockPricingService.Object, queryService, mockStudentRegistrationFeeService.Object, mockStudentTransactionService.Object);
+        _service = new InvoiceService(_unitOfWork, mockStudentTransactionService.Object, generationService, queryService);
+
+        // Create separate generation service with mocked UnitOfWork for _serviceUoWMock
+        var generationServiceWithMock = new InvoiceGenerationService(
+            _context, _mockUnitOfWork.Object, _mockPricingService.Object, queryService, mockStudentRegistrationFeeService.Object, mockStudentTransactionService.Object);
+        _serviceUoWMock = new InvoiceService(_mockUnitOfWork.Object, mockStudentTransactionService.Object, generationServiceWithMock, queryService);
         SeedBaseData();
     }
 
     private void SetupMockInvoiceRepository()
     {
         var mockInvoiceRepository = new Mock<IInvoiceRepository>();
+        var mockEnrollmentRepository = new Mock<IEnrollmentRepository>();
         var invoiceCounter = 0;
 
         mockInvoiceRepository
@@ -61,7 +76,18 @@ public class InvoiceServiceTests : IDisposable
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync((Invoice?)null);
 
+        // Mock enrollment repository to fetch from real context
+        mockEnrollmentRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid id, CancellationToken ct) =>
+                _context.Enrollments
+                    .Include(e => e.Course)
+                        .ThenInclude(c => c.CourseType)
+                    .Include(e => e.Student)
+                    .FirstOrDefault(e => e.Id == id));
+
         _mockUnitOfWork.Setup(u => u.Invoices).Returns(mockInvoiceRepository.Object);
+        _mockUnitOfWork.Setup(u => u.Enrollments).Returns(mockEnrollmentRepository.Object);
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
         _mockUnitOfWork.Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         _mockUnitOfWork.Setup(u => u.CommitTransactionAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -261,7 +287,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -332,7 +357,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -353,7 +377,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -374,7 +397,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -416,7 +438,7 @@ public class InvoiceServiceTests : IDisposable
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.GenerateInvoiceAsync(dto, _userId));
+            () => _serviceUoWMock.GenerateInvoiceAsync(dto, _userId));
         Assert.Contains("already exists", exception.Message);
     }
 
@@ -462,7 +484,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -483,7 +504,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -492,76 +512,6 @@ public class InvoiceServiceTests : IDisposable
         // Assert - only 2 lessons belong to this student
         Assert.Equal(2, result.Lines.Count);
     }
-
-    [Fact]
-    public async Task GenerateInvoiceAsync_WithLedgerCredits_AppliesCredits()
-    {
-        // Arrange
-        var (student, enrollment) = await SetupEnrollmentWithLessons(lessonCount: 4);
-        await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 30m, LedgerEntryStatus.Open);
-
-        var dto = new GenerateInvoiceDto
-        {
-            EnrollmentId = enrollment.Id,
-            PeriodStart = new DateOnly(2026, 1, 1),
-            PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = true
-        };
-
-        // Act
-        var result = await _service.GenerateInvoiceAsync(dto, _userId);
-
-        // Assert - Total is 4x 25 = 100, credit of 30 applied + added VAT (21%)
-        Assert.Equal(30m, result.LedgerCreditsApplied);
-        Assert.Equal(84.7m, result.Balance);
-    }
-
-    [Fact]
-    public async Task GenerateInvoiceAsync_WithLedgerDebits_AppliesDebits()
-    {
-        // Arrange
-        var (student, enrollment) = await SetupEnrollmentWithLessons(lessonCount: 4);
-        await SeedLedgerEntry(student.Id, LedgerEntryType.Debit, 15m, LedgerEntryStatus.Open);
-
-        var dto = new GenerateInvoiceDto
-        {
-            EnrollmentId = enrollment.Id,
-            PeriodStart = new DateOnly(2026, 1, 1),
-            PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = true
-        };
-
-        // Act
-        var result = await _service.GenerateInvoiceAsync(dto, _userId);
-
-        // Assert - Total is 121, debit of 15 adds to owed
-        Assert.Equal(15m, result.LedgerDebitsApplied);
-        Assert.Equal(139.15m, result.Balance);
-    }
-
-    [Fact]
-    public async Task GenerateInvoiceAsync_WithCreditsExceedingTotal_SetsStatusToPaid()
-    {
-        // Arrange
-        var (student, enrollment) = await SetupEnrollmentWithLessons(lessonCount: 4);
-        // Total will be 121, credit of 150 exceeds it
-        await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 150m, LedgerEntryStatus.Open);
-
-        var dto = new GenerateInvoiceDto
-        {
-            EnrollmentId = enrollment.Id,
-            PeriodStart = new DateOnly(2026, 1, 1),
-            PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = true
-        };
-
-        // Act
-        var result = await _service.GenerateInvoiceAsync(dto, _userId);
-
-        // Assert - credits cover entire total, invoice should be paid
-        Assert.Equal(InvoiceStatus.Paid, result.Status);
-    }
-
     #endregion
 
     #region GetStudentInvoicesAsync Tests
@@ -634,7 +584,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
 
@@ -663,7 +612,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
 
@@ -692,7 +640,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
 
@@ -729,7 +676,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         await _service.GenerateInvoiceAsync(dto, _userId);
 
@@ -784,7 +730,7 @@ public class InvoiceServiceTests : IDisposable
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _service.RecalculateInvoiceAsync(invoice.Id, _userId));
-        Assert.Contains("Paid", exception.Message);
+        Assert.Contains("Cannot recalculate invoice with status other than Draft", exception.Message);
     }
 
     [Fact]
@@ -797,7 +743,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
 
@@ -808,7 +753,7 @@ public class InvoiceServiceTests : IDisposable
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _service.RecalculateInvoiceAsync(invoice.Id, _userId));
-        Assert.Contains("Cancelled", exception.Message);
+        Assert.Contains("Cannot recalculate invoice with status other than Draft.", exception.Message);
     }
 
     [Fact]
@@ -821,13 +766,12 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
 
-        // Mark invoice as Sent so recalculate is allowed, and un-invoice all lessons
+        // Mark invoice as Draft so recalculate is allowed, and un-invoice all lessons
         var dbInvoice = await _context.Invoices.FirstAsync(i => i.Id == invoice.Id);
-        dbInvoice.Status = InvoiceStatus.Sent;
+        dbInvoice.Status = InvoiceStatus.Draft;
         var lessons = await _context.Lessons
             .Where(l => l.CourseId == enrollment.CourseId)
             .ToListAsync();
@@ -853,7 +797,6 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
 
@@ -874,195 +817,6 @@ public class InvoiceServiceTests : IDisposable
 
     #endregion
 
-    #region ApplyLedgerCorrectionAsync Tests
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_WithValidCredit_ReducesInvoiceBalance()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 30m, LedgerEntryStatus.Open);
-
-        // Act
-        var result = await _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 30m, _userId);
-
-        // Assert
-        Assert.Equal(30m, result.LedgerCreditsApplied);
-        Assert.Equal(121m, result.Balance);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_WithValidDebit_IncreasesInvoiceOwed()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Debit, 20m, LedgerEntryStatus.Open);
-
-        // Act
-        var result = await _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 20m, _userId);
-
-        // Assert
-        Assert.Equal(20m, result.LedgerDebitsApplied);
-        Assert.Equal(121m, result.Balance);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_FullyPaysInvoice_SetsStatusToPaid()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        // Create a credit that covers the entire invoice total
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, invoice.Total + 10m, LedgerEntryStatus.Open);
-
-        // Act
-        var result = await _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, invoice.Total, _userId);
-
-        // Assert
-        Assert.Equal(InvoiceStatus.Paid, result.Status);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_PartialCredit_DoesNotChangeToPaid()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 10m, LedgerEntryStatus.Open);
-
-        // Act
-        var result = await _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 10m, _userId);
-
-        // Assert
-        Assert.Equal(InvoiceStatus.Draft, result.Status);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_FullyAppliesLedgerEntry_SetsStatusFullyApplied()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 30m, LedgerEntryStatus.Open);
-
-        // Act
-        await _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 30m, _userId);
-
-        // Assert
-        var updatedEntry = await _context.StudentLedgerEntries.FirstAsync(e => e.Id == ledgerEntry.Id);
-        Assert.Equal(LedgerEntryStatus.FullyApplied, updatedEntry.Status);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_PartiallyAppliesLedgerEntry_SetsStatusPartiallyApplied()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 50m, LedgerEntryStatus.Open);
-
-        // Act
-        await _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 20m, _userId);
-
-        // Assert
-        var updatedEntry = await _context.StudentLedgerEntries.FirstAsync(e => e.Id == ledgerEntry.Id);
-        Assert.Equal(LedgerEntryStatus.PartiallyApplied, updatedEntry.Status);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_InvoiceNotFound_Throws()
-    {
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyLedgerCorrectionAsync(Guid.NewGuid(), Guid.NewGuid(), 10m, _userId));
-        Assert.Contains("Invoice", exception.Message);
-        Assert.Contains("not found", exception.Message);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_LedgerEntryNotFound_Throws()
-    {
-        // Arrange
-        var (_, invoice) = await CreateInvoiceForStudent();
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyLedgerCorrectionAsync(invoice.Id, Guid.NewGuid(), 10m, _userId));
-        Assert.Contains("Ledger entry", exception.Message);
-        Assert.Contains("not found", exception.Message);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_PaidInvoice_Throws()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var dbInvoice = await _context.Invoices.FirstAsync(i => i.Id == invoice.Id);
-        dbInvoice.Status = InvoiceStatus.Paid;
-        await _context.SaveChangesAsync();
-
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 10m, LedgerEntryStatus.Open);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 10m, _userId));
-        Assert.Contains("Paid", exception.Message);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_CancelledInvoice_Throws()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var dbInvoice = await _context.Invoices.FirstAsync(i => i.Id == invoice.Id);
-        dbInvoice.Status = InvoiceStatus.Cancelled;
-        await _context.SaveChangesAsync();
-
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 10m, LedgerEntryStatus.Open);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 10m, _userId));
-        Assert.Contains("Cancelled", exception.Message);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_AmountExceedsAvailable_Throws()
-    {
-        // Arrange
-        var (student, invoice) = await CreateInvoiceForStudent();
-        var ledgerEntry = await SeedLedgerEntry(student.Id, LedgerEntryType.Credit, 30m, LedgerEntryStatus.Open);
-
-        // Act & Assert - try to apply 50 when only 30 available
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 50m, _userId));
-        Assert.Contains("exceeds available", exception.Message);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrectionAsync_LedgerEntryBelongsToDifferentStudent_Throws()
-    {
-        // Arrange
-        var (_, invoice) = await CreateInvoiceForStudent();
-        var otherStudentId = Guid.NewGuid();
-        var otherStudent = new Student
-        {
-            Id = otherStudentId,
-            FirstName = "Other",
-            LastName = "Student",
-            Email = "other@test.com",
-            Phone = "0600000000",
-            Status = StudentStatus.Active
-        };
-        _context.Students.Add(otherStudent);
-        await _context.SaveChangesAsync();
-
-        var ledgerEntry = await SeedLedgerEntry(otherStudentId, LedgerEntryType.Credit, 30m, LedgerEntryStatus.Open);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyLedgerCorrectionAsync(invoice.Id, ledgerEntry.Id, 30m, _userId));
-        Assert.Contains("does not belong", exception.Message);
-    }
-
-    #endregion
-
     #region GenerateBatchInvoicesAsync Tests
 
     [Fact]
@@ -1077,7 +831,6 @@ public class InvoiceServiceTests : IDisposable
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
             PeriodType = InvoicingPreference.Monthly,
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -1099,7 +852,6 @@ public class InvoiceServiceTests : IDisposable
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
             PeriodType = InvoicingPreference.Monthly,
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -1121,7 +873,6 @@ public class InvoiceServiceTests : IDisposable
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 3, 31),
             PeriodType = InvoicingPreference.Quarterly,
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -1141,7 +892,6 @@ public class InvoiceServiceTests : IDisposable
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
             PeriodType = InvoicingPreference.Monthly,
-            ApplyLedgerCorrections = false
         };
 
         // Act
@@ -1603,33 +1353,10 @@ public class InvoiceServiceTests : IDisposable
             EnrollmentId = enrollment.Id,
             PeriodStart = new DateOnly(2026, 1, 1),
             PeriodEnd = new DateOnly(2026, 1, 31),
-            ApplyLedgerCorrections = false
         };
 
         var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
         return (student, invoice);
     }
-
-    private async Task<StudentLedgerEntry> SeedLedgerEntry(
-        Guid studentId, LedgerEntryType entryType, decimal amount, LedgerEntryStatus status)
-    {
-        var entry = new StudentLedgerEntry
-        {
-            Id = Guid.NewGuid(),
-            StudentId = studentId,
-            CorrectionRefName = $"TEST-{Guid.NewGuid():N}"[..16],
-            Description = $"Test {entryType} entry",
-            Amount = amount,
-            EntryType = entryType,
-            Status = status,
-            CreatedById = _userId
-        };
-
-        _context.StudentLedgerEntries.Add(entry);
-        await _context.SaveChangesAsync();
-
-        return entry;
-    }
-
     #endregion
 }

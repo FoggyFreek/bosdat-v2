@@ -1,17 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
-using BosDAT.Infrastructure.Utilities;
 
 namespace BosDAT.Infrastructure.Services;
 
 public class RegistrationFeeService(
-    ApplicationDbContext context,
-    IStudentLedgerRepository ledgerRepository,
-    IUnitOfWork unitOfWork,
-    ICurrentUserService currentUserService) : IRegistrationFeeService
+    ApplicationDbContext context) : IRegistrationFeeService
 {
     public async Task<bool> IsStudentEligibleForFeeAsync(Guid studentId, CancellationToken ct = default)
     {
@@ -39,65 +34,7 @@ public class RegistrationFeeService(
         return !course.IsTrial;
     }
 
-    public async Task<Guid> ApplyRegistrationFeeAsync(Guid studentId, CancellationToken ct = default)
-    {
-        var userId = currentUserService.UserId
-            ?? throw new InvalidOperationException("No authenticated user found. Cannot apply registration fee.");
-
-        var student = await context.Students
-            .FirstOrDefaultAsync(s => s.Id == studentId, ct);
-
-        if (student == null)
-        {
-            throw new InvalidOperationException($"Student with ID {studentId} not found.");
-        }
-
-        if (student.RegistrationFeePaidAt != null)
-        {
-            throw new InvalidOperationException($"Registration fee has already been applied for student {studentId}.");
-        }
-
-        var feeAmount = await GetFeeAmountAsync(ct);
-        var feeDescription = await GetFeeDescriptionAsync(ct);
-
-        return await DbOperationRetryHelper.ExecuteWithRetryAsync(async () =>
-        {
-            await unitOfWork.BeginTransactionAsync(ct);
-            try
-            {
-                var correctionRefName = await ledgerRepository.GenerateCorrectionRefNameAsync(ct);
-
-                var ledgerEntry = new StudentLedgerEntry
-                {
-                    Id = Guid.NewGuid(),
-                    CorrectionRefName = correctionRefName,
-                    Description = feeDescription,
-                    StudentId = studentId,
-                    CourseId = null,
-                    Amount = feeAmount,
-                    EntryType = LedgerEntryType.Debit,
-                    Status = LedgerEntryStatus.Open,
-                    CreatedById = userId,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                context.StudentLedgerEntries.Add(ledgerEntry);
-
-                student.RegistrationFeePaidAt = DateTime.UtcNow;
-
-                await context.SaveChangesAsync(ct);
-                await unitOfWork.CommitTransactionAsync(ct);
-
-                return ledgerEntry.Id;
-            }
-            catch
-            {
-                await unitOfWork.RollbackTransactionAsync(ct);
-                throw;
-            }
-        }, ct);
-    }
+   
 
     public async Task<RegistrationFeeStatusDto> GetFeeStatusAsync(Guid studentId, CancellationToken ct = default)
     {
@@ -122,23 +59,18 @@ public class RegistrationFeeService(
         }
 
         var feeDescription = await GetFeeDescriptionAsync(ct);
-        var ledgerEntry = await context.StudentLedgerEntries
-            .Where(e => e.StudentId == studentId &&
-                        e.Description == feeDescription &&
-                        e.EntryType == LedgerEntryType.Debit)
-            .OrderByDescending(e => e.CreatedAt)
-            .FirstOrDefaultAsync(ct);
 
+        //todo
         return new RegistrationFeeStatusDto
         {
             HasPaid = true,
             PaidAt = student.RegistrationFeePaidAt,
-            Amount = ledgerEntry?.Amount,
-            LedgerEntryId = ledgerEntry?.Id
+            //Amount = feeAmount,
+            //LedgerEntryId = ledgerEntry?.Id
         };
     }
 
-    private async Task<decimal> GetFeeAmountAsync(CancellationToken ct)
+    public async Task<decimal> GetFeeAmountAsync(CancellationToken ct)
     {
         var setting = await context.Settings
             .FirstOrDefaultAsync(s => s.Key == "registration_fee", ct);
@@ -151,7 +83,7 @@ public class RegistrationFeeService(
         return amount;
     }
 
-    private async Task<string> GetFeeDescriptionAsync(CancellationToken ct)
+    public async Task<string> GetFeeDescriptionAsync(CancellationToken ct)
     {
         var setting = await context.Settings
             .FirstOrDefaultAsync(s => s.Key == "registration_fee_description", ct);

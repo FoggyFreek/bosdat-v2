@@ -1,4 +1,5 @@
 using BosDAT.Core.DTOs;
+using BosDAT.Core.Entities;
 
 namespace BosDAT.Core.Interfaces;
 
@@ -15,14 +16,10 @@ public interface IRegistrationFeeService
     Task<bool> ShouldApplyFeeForCourseAsync(Guid courseId, CancellationToken ct = default);
 
     /// <summary>
-    /// Applies the registration fee to the student by creating a ledger entry (Debit).
-    /// The fee will be invoiced during the next invoice calculation run.
-    /// Returns the ledger entry ID.
-    /// </summary>
-    Task<Guid> ApplyRegistrationFeeAsync(Guid studentId, CancellationToken ct = default);
-
-    /// <summary>
     /// Gets the registration fee status for a student.
     /// </summary>
     Task<RegistrationFeeStatusDto> GetFeeStatusAsync(Guid studentId, CancellationToken ct = default);
+
+    Task<decimal> GetFeeAmountAsync(CancellationToken ct = default);
+    Task<string> GetFeeDescriptionAsync(CancellationToken ct = default);
 }

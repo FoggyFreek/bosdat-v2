@@ -25,8 +25,6 @@ public record InvoiceDto
     public decimal VatAmount { get; init; }
     public decimal Total { get; init; }
     public decimal DiscountAmount { get; init; }
-    public decimal LedgerCreditsApplied { get; init; }
-    public decimal LedgerDebitsApplied { get; init; }
 
     public InvoiceStatus Status { get; init; }
     public DateTime? PaidAt { get; init; }
@@ -34,7 +32,6 @@ public record InvoiceDto
     public string? Notes { get; init; }
     public List<InvoiceLineDto> Lines { get; init; } = new();
     public List<PaymentDto> Payments { get; init; } = new();
-    public List<InvoiceLedgerApplicationDto> LedgerApplications { get; init; } = new();
     public decimal AmountPaid { get; init; }
     public decimal Balance { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -59,18 +56,6 @@ public record InvoiceLineDto
     public DateOnly? LessonDate { get; init; }
     public string? CourseName { get; init; }
 }
-
-public record InvoiceLedgerApplicationDto
-{
-    public Guid Id { get; init; }
-    public Guid LedgerEntryId { get; init; }
-    public string? CorrectionRefName { get; init; }
-    public string? Description { get; init; }
-    public decimal AppliedAmount { get; init; }
-    public DateTime AppliedAt { get; init; }
-    public LedgerEntryType EntryType { get; init; }
-}
-
 public record BillingContactDto
 {
     public string Name { get; init; } = string.Empty;
@@ -103,7 +88,6 @@ public record GenerateInvoiceDto
     public Guid EnrollmentId { get; init; }
     public DateOnly PeriodStart { get; init; }
     public DateOnly PeriodEnd { get; init; }
-    public bool ApplyLedgerCorrections { get; init; } = true;
 }
 
 /// <summary>
@@ -114,7 +98,6 @@ public record GenerateBatchInvoicesDto
     public DateOnly PeriodStart { get; init; }
     public DateOnly PeriodEnd { get; init; }
     public InvoicingPreference PeriodType { get; init; }
-    public bool ApplyLedgerCorrections { get; init; } = true;
 }
 
 /// <summary>
@@ -123,7 +106,6 @@ public record GenerateBatchInvoicesDto
 public record RecalculateInvoiceDto
 {
     public Guid InvoiceId { get; init; }
-    public bool ApplyLedgerCorrections { get; init; } = true;
 }
 
 public record CreateInvoiceLineDto

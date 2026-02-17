@@ -22,7 +22,6 @@ public class InvoiceRunService(
             PeriodStart = dto.PeriodStart,
             PeriodEnd = dto.PeriodEnd,
             PeriodType = dto.PeriodType,
-            ApplyLedgerCorrections = dto.ApplyLedgerCorrections
         };
 
         var enrollmentCount = await context.Enrollments

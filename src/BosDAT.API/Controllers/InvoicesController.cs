@@ -147,39 +147,6 @@ public class InvoicesController(
     }
 
     /// <summary>
-    /// Applies a specific ledger correction to an unpaid invoice.
-    /// </summary>
-    [HttpPost("{invoiceId:guid}/apply-correction")]
-    [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<InvoiceDto>> ApplyLedgerCorrection(
-        Guid invoiceId,
-        [FromBody] ApplyLedgerCorrectionDto dto,
-        CancellationToken cancellationToken)
-    {
-        var userId = currentUserService.UserId;
-        if (userId == null)
-        {
-            return Unauthorized();
-        }
-
-        if (dto.Amount <= 0)
-        {
-            return BadRequest(new { message = "Amount must be greater than zero." });
-        }
-
-        try
-        {
-            var invoice = await invoiceService.ApplyLedgerCorrectionAsync(
-                invoiceId, dto.LedgerEntryId, dto.Amount, userId.Value, cancellationToken);
-            return Ok(invoice);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
-    /// <summary>
     /// Gets school billing information from settings.
     /// </summary>
     [HttpGet("school-billing-info")]

@@ -11,8 +11,7 @@ export type StudentSectionKey =
   | 'lessons'
   | 'absence'
   | 'invoices'
-  | 'corrections'
-  | 'balance'
+  | 'transactions'
 
 export interface StudentNavItem {
   key: StudentSectionKey
@@ -139,80 +138,6 @@ export interface StudentEnrollment {
   status: EnrollmentStatus
 }
 
-// Student Ledger Types
-export type LedgerEntryType = 'Credit' | 'Debit'
-export type LedgerEntryStatus = 'Open' | 'Applied' | 'PartiallyApplied' | 'Reversed'
-
-export interface LedgerApplication {
-  id: string
-  invoiceId: string
-  invoiceNumber: string
-  appliedAmount: number
-  appliedAt: string
-  appliedByName: string
-}
-
-export interface StudentLedgerEntry {
-  id: string
-  correctionRefName: string
-  description: string
-  studentId: string
-  studentName: string
-  courseId?: string
-  courseName?: string
-  amount: number
-  entryType: LedgerEntryType
-  status: LedgerEntryStatus
-  appliedAmount: number
-  remainingAmount: number
-  createdAt: string
-  createdByName: string
-  applications: LedgerApplication[]
-}
-
-export interface StudentLedgerSummary {
-  studentId: string
-  studentName: string
-  totalCredits: number
-  totalDebits: number
-  availableCredit: number
-  openEntryCount: number
-}
-
-export interface CreateStudentLedgerEntry {
-  description: string
-  studentId: string
-  courseId?: string
-  amount: number
-  entryType: LedgerEntryType
-}
-
-export interface DecoupleApplicationResult {
-  ledgerEntryId: string
-  correctionRefName: string
-  invoiceId: string
-  invoiceNumber: string
-  decoupledAmount: number
-  newEntryStatus: LedgerEntryStatus
-  newInvoiceStatus: string
-  decoupledAt: string
-  decoupledByName: string
-}
-
-// Enrollment Pricing Types
-export interface EnrollmentPricing {
-  enrollmentId: string
-  courseId: string
-  courseName: string
-  basePriceAdult: number
-  basePriceChild: number
-  isChildPricing: boolean
-  applicableBasePrice: number
-  discountPercent: number
-  discountAmount: number
-  pricePerLesson: number
-}
-
 // Invoice Types
 export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Cancelled'
 export type InvoicingPreference = 'Monthly' | 'Quarterly'
@@ -238,16 +163,6 @@ export interface InvoiceLine {
   lineTotal: number
   lessonDate?: string
   courseName?: string
-}
-
-export interface InvoiceLedgerApplication {
-  id: string
-  ledgerEntryId: string
-  correctionRefName?: string
-  description?: string
-  appliedAmount: number
-  appliedAt: string
-  entryType: LedgerEntryType
 }
 
 export interface InvoicePayment {
@@ -279,15 +194,12 @@ export interface Invoice {
   vatAmount: number
   total: number
   discountAmount: number
-  ledgerCreditsApplied: number
-  ledgerDebitsApplied: number
   status: InvoiceStatus
   paidAt?: string
   paymentMethod?: string
   notes?: string
   lines: InvoiceLine[]
   payments: InvoicePayment[]
-  ledgerApplications: InvoiceLedgerApplication[]
   amountPaid: number
   balance: number
   createdAt: string
@@ -313,14 +225,12 @@ export interface GenerateInvoice {
   enrollmentId: string
   periodStart: string
   periodEnd: string
-  applyLedgerCorrections?: boolean
 }
 
 export interface GenerateBatchInvoices {
   periodStart: string
   periodEnd: string
   periodType: InvoicingPreference
-  applyLedgerCorrections?: boolean
 }
 
 export interface SchoolBillingInfo {
@@ -340,16 +250,12 @@ export interface InvoicePrintData {
   schoolInfo: SchoolBillingInfo
 }
 
-// Student Transaction Types (Unified Ledger)
+// Student Transaction Types
 export type TransactionType =
   | 'InvoiceCharge'
   | 'Payment'
-  | 'CreditCorrection'
-  | 'DebitCorrection'
-  | 'Reversal'
   | 'InvoiceCancellation'
   | 'InvoiceAdjustment'
-  | 'CorrectionApplied'
 
 export interface StudentTransaction {
   id: string
@@ -363,19 +269,16 @@ export interface StudentTransaction {
   runningBalance: number
   invoiceId?: string
   paymentId?: string
-  ledgerEntryId?: string
   createdAt: string
   createdByName: string
 }
 
-export interface StudentLedgerView {
-  studentId: string
-  studentName: string
-  currentBalance: number
-  totalDebited: number
-  totalCredited: number
-  transactions: StudentTransaction[]
-}
+export const transactionTypeTranslations = {
+  InvoiceCharge: 'students.transactions.type.invoiceCharge',
+  Payment: 'students.transactions.type.payment',
+  InvoiceCancellation: 'students.transactions.type.invoiceCancellation',
+  InvoiceAdjustment: 'students.transactions.type.invoiceAdjustment',
+} as const satisfies Record<TransactionType, string>
 
 export interface RecordPayment {
   amount: number
@@ -399,18 +302,6 @@ export const genderTranslations = {
   PreferNotToSay: 'students.gender.preferNotToSay',
 } as const satisfies Record<Gender, string>
 
-export const ledgerEntryTypeTranslations = {
-  Credit: 'students.balance.entryType.credit',
-  Debit: 'students.balance.entryType.debit',
-} as const satisfies Record<LedgerEntryType, string>
-
-export const ledgerEntryStatusTranslations = {
-  Open: 'students.balance.status.open',
-  Applied: 'students.balance.status.applied',
-  PartiallyApplied: 'students.balance.status.partially_applied',
-  Reversed: 'students.balance.status.reversed',
-} as const satisfies Record<LedgerEntryStatus, string>
-
 export const invoiceStatusTranslations = {
   Draft: 'students.invoices.status.draft',
   Sent: 'students.invoices.status.sent',
@@ -432,13 +323,3 @@ export const paymentMethodTranslations = {
   Other: 'students.paymentMethod.other',
 } as const satisfies Record<PaymentMethod, string>
 
-export const transactionTypeTranslations = {
-  InvoiceCharge: 'students.ledger.transactionType.invoiceCharge',
-  Payment: 'students.ledger.transactionType.payment',
-  CreditCorrection: 'students.ledger.transactionType.creditCorrection',
-  DebitCorrection: 'students.ledger.transactionType.debitCorrection',
-  Reversal: 'students.ledger.transactionType.reversal',
-  InvoiceCancellation: 'students.ledger.transactionType.invoiceCancellation',
-  InvoiceAdjustment: 'students.ledger.transactionType.invoiceAdjustment',
-  CorrectionApplied: 'students.ledger.transactionType.correctionApplied',
-} as const satisfies Record<TransactionType, string>

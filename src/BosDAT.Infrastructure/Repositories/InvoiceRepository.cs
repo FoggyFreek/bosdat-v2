@@ -30,6 +30,20 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
     }
 
+    public async Task<Invoice?> GetWithLinesAndEnrollmentsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(i => i.Lines)
+                .ThenInclude(l => l.Lesson)
+            .Include(i => i.Payments)
+            .Include(i => i.Enrollment)
+                .ThenInclude(e => e!.Student)
+            .Include(i => i.Enrollment)
+                .ThenInclude(e => e!.Course)
+                    .ThenInclude(c => c.CourseType)
+            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Invoice>> GetByStudentAsync(Guid studentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
@@ -103,7 +117,6 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
                         i.PeriodEnd == periodEnd)
             .Include(i => i.Lines)
             .Include(i => i.Payments)
-            .Include(i => i.LedgerApplications)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -114,7 +127,6 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
                         (i.Status == InvoiceStatus.Draft || i.Status == InvoiceStatus.Sent || i.Status == InvoiceStatus.Overdue))
             .Include(i => i.Lines)
             .Include(i => i.Payments)
-            .Include(i => i.LedgerApplications)
             .OrderBy(i => i.IssueDate)
             .ToListAsync(cancellationToken);
     }

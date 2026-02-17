@@ -408,119 +408,6 @@ public class InvoicesControllerTests
 
     #endregion
 
-    #region ApplyLedgerCorrection Tests
-
-    [Fact]
-    public async Task ApplyLedgerCorrection_WithValidData_ReturnsUpdatedInvoice()
-    {
-        // Arrange
-        var ledgerEntryId = Guid.NewGuid();
-        var dto = new ApplyLedgerCorrectionDto
-        {
-            LedgerEntryId = ledgerEntryId,
-            Amount = 50m
-        };
-        var invoice = CreateTestInvoiceDto();
-
-        _mockInvoiceService
-            .Setup(s => s.ApplyLedgerCorrectionAsync(
-                _testInvoiceId, ledgerEntryId, 50m, _testUserId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(invoice);
-
-        // Act
-        var result = await _controller.ApplyLedgerCorrection(_testInvoiceId, dto, CancellationToken.None);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedInvoice = Assert.IsType<InvoiceDto>(okResult.Value);
-        Assert.Equal(_testInvoiceId, returnedInvoice.Id);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrection_WithZeroAmount_ReturnsBadRequest()
-    {
-        // Arrange
-        var dto = new ApplyLedgerCorrectionDto
-        {
-            LedgerEntryId = Guid.NewGuid(),
-            Amount = 0m
-        };
-
-        // Act
-        var result = await _controller.ApplyLedgerCorrection(_testInvoiceId, dto, CancellationToken.None);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.NotNull(badRequestResult.Value);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrection_WithNegativeAmount_ReturnsBadRequest()
-    {
-        // Arrange
-        var dto = new ApplyLedgerCorrectionDto
-        {
-            LedgerEntryId = Guid.NewGuid(),
-            Amount = -10m
-        };
-
-        // Act
-        var result = await _controller.ApplyLedgerCorrection(_testInvoiceId, dto, CancellationToken.None);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.NotNull(badRequestResult.Value);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrection_WithNoAuthenticatedUser_ReturnsUnauthorized()
-    {
-        // Arrange
-        _mockCurrentUserService.Setup(s => s.UserId).Returns((Guid?)null);
-
-        var controller = new InvoicesController(
-            _mockInvoiceService.Object,
-            _mockCurrentUserService.Object);
-
-        var dto = new ApplyLedgerCorrectionDto
-        {
-            LedgerEntryId = Guid.NewGuid(),
-            Amount = 50m
-        };
-
-        // Act
-        var result = await controller.ApplyLedgerCorrection(_testInvoiceId, dto, CancellationToken.None);
-
-        // Assert
-        Assert.IsType<UnauthorizedResult>(result.Result);
-    }
-
-    [Fact]
-    public async Task ApplyLedgerCorrection_WithInvalidOperation_ReturnsBadRequest()
-    {
-        // Arrange
-        var ledgerEntryId = Guid.NewGuid();
-        var dto = new ApplyLedgerCorrectionDto
-        {
-            LedgerEntryId = ledgerEntryId,
-            Amount = 50m
-        };
-
-        _mockInvoiceService
-            .Setup(s => s.ApplyLedgerCorrectionAsync(
-                _testInvoiceId, ledgerEntryId, 50m, _testUserId, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new InvalidOperationException("Invoice is already paid."));
-
-        // Act
-        var result = await _controller.ApplyLedgerCorrection(_testInvoiceId, dto, CancellationToken.None);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.NotNull(badRequestResult.Value);
-    }
-
-    #endregion
-
     #region GetSchoolBillingInfo Tests
 
     [Fact]
@@ -613,7 +500,6 @@ public class InvoicesControllerTests
             Status = InvoiceStatus.Draft,
             Lines = new List<InvoiceLineDto>(),
             Payments = new List<PaymentDto>(),
-            LedgerApplications = new List<InvoiceLedgerApplicationDto>(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

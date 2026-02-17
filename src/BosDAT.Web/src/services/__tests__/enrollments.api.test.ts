@@ -81,12 +81,4 @@ describe('enrollmentsApi', () => {
     expect(result).toEqual(promoted)
   })
 
-  it('getEnrollmentPricing returns pricing', async () => {
-    const pricing = { price: 50, discount: 5 }
-    mock.onGet('/enrollments/student/s-1/course/c-1/pricing').reply(200, pricing)
-
-    const result = await enrollmentsApi.getEnrollmentPricing('s-1', 'c-1')
-
-    expect(result).toEqual(pricing)
-  })
 })

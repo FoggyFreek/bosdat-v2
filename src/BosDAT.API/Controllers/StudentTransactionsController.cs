@@ -13,18 +13,11 @@ public class StudentTransactionsController(
 {
     [HttpGet]
     [Authorize(Policy = "TeacherOrAdmin")]
-    public async Task<ActionResult<StudentLedgerViewDto>> GetStudentLedger(
+    public async Task<ActionResult<IReadOnlyList<StudentTransactionDto>>> GetStudentTransactions(
         Guid studentId, CancellationToken cancellationToken)
     {
-        try
-        {
-            var ledger = await transactionService.GetStudentLedgerAsync(studentId, cancellationToken);
-            return Ok(ledger);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
+        var transactions = await transactionService.GetTransactionsAsync(studentId, cancellationToken);
+        return Ok(transactions);
     }
 
     [HttpGet("balance")]

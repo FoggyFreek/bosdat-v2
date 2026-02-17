@@ -8,8 +8,7 @@ namespace BosDAT.Infrastructure.Services;
 
 public class EnrollmentService(
     IUnitOfWork unitOfWork,
-    IScheduleConflictService scheduleConflictService,
-    IRegistrationFeeService registrationFeeService) : IEnrollmentService
+    IScheduleConflictService scheduleConflictService) : IEnrollmentService
 {
     public async Task<IEnumerable<EnrollmentDto>> GetAllAsync(
         Guid? studentId = null,
@@ -172,12 +171,6 @@ public class EnrollmentService(
         await unitOfWork.Repository<Enrollment>().AddAsync(enrollment, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
-        // Apply registration fee for non-trial courses if student is eligible
-        if (!course.IsTrial && await registrationFeeService.IsStudentEligibleForFeeAsync(dto.StudentId, ct))
-        {
-            await registrationFeeService.ApplyRegistrationFeeAsync(dto.StudentId, ct);
-        }
-
         return (new EnrollmentDto
         {
             Id = enrollment.Id,
@@ -246,12 +239,6 @@ public class EnrollmentService(
 
         enrollment.Status = EnrollmentStatus.Active;
         await unitOfWork.SaveChangesAsync(ct);
-
-        // Apply registration fee if student is eligible
-        if (await registrationFeeService.IsStudentEligibleForFeeAsync(enrollment.StudentId, ct))
-        {
-            await registrationFeeService.ApplyRegistrationFeeAsync(enrollment.StudentId, ct);
-        }
 
         return new EnrollmentDto
         {

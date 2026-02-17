@@ -263,8 +263,7 @@
       "enrollments": "Inschrijvingen",
       "lessons": "Lessen",
       "invoices": "Facturen",
-      "balance": "Saldo",
-      "corrections": "Correcties",
+      "transactions": "Transacties",
       "absences": "Afwezigheden",
       "preferences": "Voorkeuren"
     },
@@ -430,6 +429,29 @@
       "emailRequired": "E-mail is verplicht",
       "emailInvalid": "Voer een geldig e-mailadres in",
       "billingEmailInvalid": "Voer een geldig e-mailadres in"
+    },
+    "transactions": {
+      "history": "Transactiegeschiedenis",
+      "noTransactions": "Nog geen transacties",
+      "noTransactionsDesc": "Transacties verschijnen hier zodra facturen zijn aangemaakt of betalingen zijn geregistreerd.",
+      "currentBalance": "Huidig saldo",
+      "outstanding": "Openstaand bedrag",
+      "noBalance": "Geen openstaand saldo",
+      "totalTransactions": "Transacties",
+      "date": "Datum",
+      "description": "Omschrijving",
+      "reference": "Referentie",
+      "typeLabel": "Type",
+      "debit": "Af",
+      "credit": "Bij",
+      "balance": "Saldo",
+      "owed": "te betalen",
+      "type": {
+        "invoiceCharge": "Factuur",
+        "payment": "Betaling",
+        "invoiceCancellation": "Annulering",
+        "invoiceAdjustment": "Aanpassing"
+      }
     },
     "actions": {
       "creating": "Aanmaken...",

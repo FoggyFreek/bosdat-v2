@@ -9,14 +9,12 @@ public class UnitOfWork : IUnitOfWork
     private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
     private readonly Dictionary<Type, object> _repositories = new();
-
     private IStudentRepository? _students;
     private ITeacherRepository? _teachers;
     private ICourseRepository? _courses;
     private IEnrollmentRepository? _enrollments;
     private ILessonRepository? _lessons;
     private IInvoiceRepository? _invoices;
-    private IStudentLedgerRepository? _studentLedgerEntries;
     private IStudentTransactionRepository? _studentTransactions;
 
     public UnitOfWork(ApplicationDbContext context)
@@ -41,9 +39,6 @@ public class UnitOfWork : IUnitOfWork
 
     public IInvoiceRepository Invoices =>
         _invoices ??= new InvoiceRepository(_context);
-
-    public IStudentLedgerRepository StudentLedgerEntries =>
-        _studentLedgerEntries ??= new StudentLedgerRepository(_context);
 
     public IStudentTransactionRepository StudentTransactions =>
         _studentTransactions ??= new StudentTransactionRepository(_context);

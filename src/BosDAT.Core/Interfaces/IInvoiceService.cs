@@ -41,11 +41,6 @@ public interface IInvoiceService
     Task<IReadOnlyList<InvoiceListDto>> GetByStatusAsync(Entities.InvoiceStatus status, CancellationToken ct = default);
 
     /// <summary>
-    /// Applies a ledger correction to an unpaid invoice.
-    /// </summary>
-    Task<InvoiceDto> ApplyLedgerCorrectionAsync(Guid invoiceId, Guid ledgerEntryId, decimal amount, Guid userId, CancellationToken ct = default);
-
-    /// <summary>
     /// Generates the period description based on the period type.
     /// Monthly: "jan26", Quarterly: "jan-mar26"
     /// </summary>

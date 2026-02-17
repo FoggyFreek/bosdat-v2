@@ -263,8 +263,7 @@
       "enrollments": "Enrollments",
       "lessons": "Lessons",
       "invoices": "Invoices",
-      "balance": "Balance",
-      "corrections": "Corrections",
+      "transactions": "Transactions",
       "absences": "Absences",
       "preferences": "Preferences"
     },
@@ -430,6 +429,29 @@
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email address",
       "billingEmailInvalid": "Please enter a valid email address"
+    },
+    "transactions": {
+      "history": "Transaction History",
+      "noTransactions": "No transactions yet",
+      "noTransactionsDesc": "Transactions will appear here once invoices are generated or payments are recorded.",
+      "currentBalance": "Current Balance",
+      "outstanding": "Outstanding",
+      "noBalance": "No outstanding balance",
+      "totalTransactions": "Transactions",
+      "date": "Date",
+      "description": "Description",
+      "reference": "Reference",
+      "typeLabel": "Type",
+      "debit": "Debit",
+      "credit": "Credit",
+      "balance": "Balance",
+      "owed": "owed",
+      "type": {
+        "invoiceCharge": "Invoice",
+        "payment": "Payment",
+        "invoiceCancellation": "Cancellation",
+        "invoiceAdjustment": "Adjustment"
+      }
     },
     "actions": {
       "creating": "Creating...",

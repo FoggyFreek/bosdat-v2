@@ -7,7 +7,6 @@ using BosDAT.Infrastructure.Data;
 namespace BosDAT.Infrastructure.Services;
 
 public class StudentTransactionService(
-    ApplicationDbContext context,
     IStudentTransactionRepository transactionRepository,
     IUnitOfWork unitOfWork) : IStudentTransactionService
 {
@@ -45,50 +44,6 @@ public class StudentTransactionService(
             Credit = payment.Amount,
             InvoiceId = invoice.Id,
             PaymentId = payment.Id,
-            CreatedById = userId
-        };
-
-        await transactionRepository.AddAsync(transaction, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-    }
-
-    public async Task RecordCorrectionAsync(StudentLedgerEntry entry, Guid userId, CancellationToken ct = default)
-    {
-        var type = entry.EntryType == LedgerEntryType.Credit
-            ? TransactionType.CreditCorrection
-            : TransactionType.DebitCorrection;
-
-        var transaction = new StudentTransaction
-        {
-            Id = Guid.NewGuid(),
-            StudentId = entry.StudentId,
-            TransactionDate = DateOnly.FromDateTime(entry.CreatedAt),
-            Type = type,
-            Description = $"{entry.CorrectionRefName}: {entry.Description}",
-            ReferenceNumber = entry.CorrectionRefName,
-            Debit = entry.EntryType == LedgerEntryType.Debit ? entry.Amount : 0,
-            Credit = entry.EntryType == LedgerEntryType.Credit ? entry.Amount : 0,
-            LedgerEntryId = entry.Id,
-            CreatedById = userId
-        };
-
-        await transactionRepository.AddAsync(transaction, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-    }
-
-    public async Task RecordReversalAsync(StudentLedgerEntry reversal, StudentLedgerEntry original, Guid userId, CancellationToken ct = default)
-    {
-        var transaction = new StudentTransaction
-        {
-            Id = Guid.NewGuid(),
-            StudentId = reversal.StudentId,
-            TransactionDate = DateOnly.FromDateTime(reversal.CreatedAt),
-            Type = TransactionType.Reversal,
-            Description = $"Reversal of {original.CorrectionRefName}",
-            ReferenceNumber = reversal.CorrectionRefName,
-            Debit = reversal.EntryType == LedgerEntryType.Debit ? reversal.Amount : 0,
-            Credit = reversal.EntryType == LedgerEntryType.Credit ? reversal.Amount : 0,
-            LedgerEntryId = reversal.Id,
             CreatedById = userId
         };
 
@@ -141,76 +96,34 @@ public class StudentTransactionService(
         await unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task RecordCorrectionAppliedAsync(StudentLedgerEntry entry, Invoice invoice, decimal appliedAmount, Guid userId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<StudentTransactionDto>> GetTransactionsAsync(Guid studentId, CancellationToken ct = default)
     {
-        var description = entry.EntryType == LedgerEntryType.Credit
-            ? $"{entry.CorrectionRefName} applied to invoice {invoice.InvoiceNumber} (-{appliedAmount:F2})"
-            : $"{entry.CorrectionRefName} applied to invoice {invoice.InvoiceNumber} (+{appliedAmount:F2})";
-
-        //do the INVERSE to book the correction
-        var transaction = new StudentTransaction
-        {
-            Id = Guid.NewGuid(),
-            StudentId = invoice.StudentId,
-            TransactionDate = DateOnly.FromDateTime(DateTime.UtcNow),
-            Type = TransactionType.CorrectionApplied,
-            Description = description,
-            ReferenceNumber = entry.CorrectionRefName,
-            Debit = entry.EntryType == LedgerEntryType.Credit ? appliedAmount : 0,
-            Credit = entry.EntryType == LedgerEntryType.Debit ? appliedAmount : 0,
-            InvoiceId = invoice.Id,
-            LedgerEntryId = entry.Id,
-            CreatedById = userId
-        };  
-
-        await transactionRepository.AddAsync(transaction, ct);
-        await unitOfWork.SaveChangesAsync(ct);
-    }
-
-    public async Task<StudentLedgerViewDto> GetStudentLedgerAsync(Guid studentId, CancellationToken ct = default)
-    {
-        var student = await context.Students.FindAsync([studentId], ct)
-            ?? throw new InvalidOperationException($"Student with ID {studentId} not found.");
-
         var transactions = await transactionRepository.GetByStudentAsync(studentId, ct);
 
-        var totalDebited = transactions.Sum(t => t.Debit);
-        var totalCredited = transactions.Sum(t => t.Credit);
-
-        var transactionDtos = new List<StudentTransactionDto>();
         var runningBalance = 0m;
-
-        foreach (var tx in transactions)
+        var dtos = new List<StudentTransactionDto>();
+        foreach (var t in transactions)
         {
-            runningBalance += tx.Debit - tx.Credit;
-            transactionDtos.Add(new StudentTransactionDto
+            runningBalance += t.Debit - t.Credit;
+            dtos.Add(new StudentTransactionDto
             {
-                Id = tx.Id,
-                StudentId = tx.StudentId,
-                TransactionDate = tx.TransactionDate,
-                Type = tx.Type,
-                Description = tx.Description,
-                ReferenceNumber = tx.ReferenceNumber,
-                Debit = tx.Debit,
-                Credit = tx.Credit,
+                Id = t.Id,
+                StudentId = t.StudentId,
+                TransactionDate = t.TransactionDate,
+                Type = t.Type,
+                Description = t.Description,
+                ReferenceNumber = t.ReferenceNumber,
+                Debit = t.Debit,
+                Credit = t.Credit,
                 RunningBalance = runningBalance,
-                InvoiceId = tx.InvoiceId,
-                PaymentId = tx.PaymentId,
-                LedgerEntryId = tx.LedgerEntryId,
-                CreatedAt = tx.CreatedAt,
-                CreatedByName = ResolveUserName(tx.CreatedBy)
+                InvoiceId = t.InvoiceId,
+                PaymentId = t.PaymentId,
+                LedgerEntryId = t.LedgerEntryId,
+                CreatedAt = t.CreatedAt,
+                CreatedByName = ResolveUserName(t.CreatedBy),
             });
         }
-
-        return new StudentLedgerViewDto
-        {
-            StudentId = studentId,
-            StudentName = student.FullName,
-            CurrentBalance = runningBalance,
-            TotalDebited = totalDebited,
-            TotalCredited = totalCredited,
-            Transactions = transactionDtos
-        };
+        return dtos;
     }
 
     public async Task<decimal> GetStudentBalanceAsync(Guid studentId, CancellationToken ct = default)

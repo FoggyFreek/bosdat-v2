@@ -9,7 +9,6 @@ public class InvoiceService(
     IUnitOfWork unitOfWork,
     IStudentTransactionService studentTransactionService,
     IInvoiceGenerationService generation,
-    IInvoiceLedgerService ledger,
     IInvoiceQueryService query) : IInvoiceService
 {
 
@@ -33,9 +32,6 @@ public class InvoiceService(
 
     public Task<IReadOnlyList<InvoiceListDto>> GetByStatusAsync(InvoiceStatus status, CancellationToken ct = default)
         => query.GetByStatusAsync(status, ct);
-
-    public Task<InvoiceDto> ApplyLedgerCorrectionAsync(Guid invoiceId, Guid ledgerEntryId, decimal amount, Guid userId, CancellationToken ct = default)
-        => ledger.ApplyLedgerCorrectionAsync(invoiceId, ledgerEntryId, amount, userId, ct);
 
     public async Task<PaymentDto> RecordPaymentandLedgerTransaction(Guid invoiceId, Guid userId, RecordPaymentDto dto, CancellationToken ct = default)
     {

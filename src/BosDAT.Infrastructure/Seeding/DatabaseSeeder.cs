@@ -106,12 +106,7 @@ public class DatabaseSeeder : IDatabaseSeeder
             _logger.LogInformation("Seeding payments...");
             await supportGenerator.GeneratePaymentsAsync(invoices, cancellationToken);
 
-            // 11. Seed Ledger Entries (open corrections)
-            _logger.LogInformation("Seeding ledger entries...");
-            var ledgerParams = new LedgerEntryGenerationParams(students, courses, adminUser.Id);
-            await supportGenerator.GenerateLedgerEntriesAsync(ledgerParams, cancellationToken);
-
-            // 12. Seed Holidays
+            // 11. Seed Holidays
             _logger.LogInformation("Seeding holidays...");
             await supportGenerator.GenerateHolidaysAsync(cancellationToken);
 
@@ -182,12 +177,6 @@ public class DatabaseSeeder : IDatabaseSeeder
         // Using RemoveRange instead of ExecuteDelete for in-memory database compatibility
 
         // Financial data
-        var ledgerApplications = await _context.StudentLedgerApplications.ToListAsync(cancellationToken);
-        _context.StudentLedgerApplications.RemoveRange(ledgerApplications);
-
-        var ledgerEntries = await _context.StudentLedgerEntries.ToListAsync(cancellationToken);
-        _context.StudentLedgerEntries.RemoveRange(ledgerEntries);
-
         var payments = await _context.Payments.ToListAsync(cancellationToken);
         _context.Payments.RemoveRange(payments);
 

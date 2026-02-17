@@ -84,67 +84,6 @@ public class SupportDataGenerator
         };
     }
 
-    public async Task GenerateLedgerEntriesAsync(LedgerEntryGenerationParams entryParams, CancellationToken cancellationToken)
-    {
-        var existingCount = await _context.StudentLedgerEntries.CountAsync(cancellationToken);
-        if (existingCount > 0)
-        {
-            return;
-        }
-
-        var ledgerEntries = new List<StudentLedgerEntry>();
-        var activeStudents = entryParams.Students
-            .Where(s => s.Status == StudentStatus.Active)
-            .Take(8)
-            .ToList();
-
-        foreach (var student in activeStudents)
-        {
-            var entryCount = _seederContext.NextInt(1, 3);
-
-            for (int i = 0; i < entryCount; i++)
-            {
-                ledgerEntries.Add(CreateLedgerEntry(student, entryParams));
-            }
-        }
-
-        await _context.StudentLedgerEntries.AddRangeAsync(ledgerEntries, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    private StudentLedgerEntry CreateLedgerEntry(Student student, LedgerEntryGenerationParams entryParams)
-    {
-        var entryType = _seederContext.NextBool(70) ? LedgerEntryType.Credit : LedgerEntryType.Debit;
-        var status = DetermineLedgerStatus(_seederContext);
-        var amount = Math.Round((decimal)(_seederContext.Random.NextDouble() * 50 + 10), 2);
-        var descriptions = entryType == LedgerEntryType.Credit ? CreditDescriptions : DebitDescriptions;
-
-        return new StudentLedgerEntry
-        {
-            Id = _seederContext.NextLedgerEntryId(),
-            CorrectionRefName = _seederContext.NextLedgerRefName(),
-            Description = _seederContext.GetRandomItem(descriptions),
-            StudentId = student.Id,
-            CourseId = _seederContext.NextBool(30) ? entryParams.Courses.FirstOrDefault()?.Id : null,
-            Amount = amount,
-            EntryType = entryType,
-            Status = status,
-            CreatedById = entryParams.AdminUserId,
-            CreatedAt = DateTime.UtcNow.AddDays(-_seederContext.NextInt(1, 90)),
-            UpdatedAt = DateTime.UtcNow.AddDays(-_seederContext.NextInt(1, 30))
-        };
-    }
-
-    private static LedgerEntryStatus DetermineLedgerStatus(SeederContext seederContext)
-    {
-        if (seederContext.NextBool(60))
-            return LedgerEntryStatus.Open;
-
-        return seederContext.NextBool(50)
-            ? LedgerEntryStatus.PartiallyApplied
-            : LedgerEntryStatus.FullyApplied;
-    }
-
     public async Task GenerateHolidaysAsync(CancellationToken cancellationToken)
     {
         var existingCount = await _context.Holidays.CountAsync(cancellationToken);

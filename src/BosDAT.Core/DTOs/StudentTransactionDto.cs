@@ -21,16 +21,6 @@ public record StudentTransactionDto
     public string CreatedByName { get; init; } = string.Empty;
 }
 
-public record StudentLedgerViewDto
-{
-    public Guid StudentId { get; init; }
-    public string StudentName { get; init; } = string.Empty;
-    public decimal CurrentBalance { get; init; }
-    public decimal TotalDebited { get; init; }
-    public decimal TotalCredited { get; init; }
-    public IReadOnlyList<StudentTransactionDto> Transactions { get; init; } = [];
-}
-
 public record RecordPaymentDto
 {
     public required decimal Amount { get; init; }

@@ -1,5 +1,5 @@
 import { api } from '@/services/api'
-import type { InvoicingPreference, EnrollmentPricing } from '@/features/students/types'
+import type { InvoicingPreference } from '@/features/students/types'
 
 export const enrollmentsApi = {
   getAll: async (params?: { studentId?: string; courseId?: string; status?: string }) => {
@@ -41,11 +41,4 @@ export const enrollmentsApi = {
     const response = await api.put(`/enrollments/${id}/promote`)
     return response.data
   },
-
-  getEnrollmentPricing: async (studentId: string, courseId: string): Promise<EnrollmentPricing> => {
-    const response = await api.get<EnrollmentPricing>(
-      `/enrollments/student/${studentId}/course/${courseId}/pricing`
-    )
-    return response.data
-  }
 }

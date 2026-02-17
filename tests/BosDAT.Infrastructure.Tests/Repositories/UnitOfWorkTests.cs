@@ -79,17 +79,6 @@ public class UnitOfWorkTests : RepositoryTestBase
     }
 
     [Fact]
-    public void StudentLedgerEntries_ShouldReturnSameInstanceOnMultipleCalls()
-    {
-        // Act
-        var ledger1 = _unitOfWork.StudentLedgerEntries;
-        var ledger2 = _unitOfWork.StudentLedgerEntries;
-
-        // Assert
-        Assert.Same(ledger2, ledger1);
-    }
-
-    [Fact]
     public void Repository_ShouldReturnSameInstanceOnMultipleCalls()
     {
         // Act

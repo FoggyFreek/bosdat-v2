@@ -11,6 +11,17 @@ public class EnrollmentRepository : Repository<Enrollment>, IEnrollmentRepositor
     {
     }
 
+    public override async Task<Enrollment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(e => e.Student)
+            .Include(e => e.Course)
+                .ThenInclude(c => c.CourseType)
+                    .ThenInclude(ct => ct.Instrument)
+            .Include(e => e.Course.Teacher)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
     public async Task<IEnumerable<Enrollment>> GetActiveEnrollmentsByStudentIdAsync(
         Guid studentId,
         CancellationToken cancellationToken = default)

@@ -44,17 +44,6 @@ public class Invoice : BaseEntity
     public decimal VatAmount { get; set; }
     public decimal Total { get; set; }
     public decimal DiscountAmount { get; set; }
-
-    /// <summary>
-    /// Amount already paid through ledger credit applications
-    /// </summary>
-    public decimal LedgerCreditsApplied { get; set; }
-
-    /// <summary>
-    /// Amount added from outstanding ledger debits
-    /// </summary>
-    public decimal LedgerDebitsApplied { get; set; }
-
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Draft;
     public DateTime? PaidAt { get; set; }
     public string? PaymentMethod { get; set; }
@@ -66,5 +55,38 @@ public class Invoice : BaseEntity
     public virtual Enrollment? Enrollment { get; set; }
     public virtual ICollection<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-    public virtual ICollection<StudentLedgerApplication> LedgerApplications { get; set; } = new List<StudentLedgerApplication>();
+
+    public void UnInvoiceAndClearLines()
+    {
+        foreach (var line in Lines)
+        {
+            if(line.Lesson != null)
+            {
+                line.Lesson!.IsInvoiced = false;
+            }
+        }
+        Lines.Clear();
+    }
+
+    public void CancelInvoice()
+    {
+        if(Status != InvoiceStatus.Draft)
+        {
+            throw new InvalidOperationException("Invoice can only be cancelled in status Draft");
+        }
+
+        Status = InvoiceStatus.Cancelled;
+        Subtotal = 0;
+        VatAmount = 0;
+        Total = 0;
+    }
+
+    public void CalculateInvoiceTotals()
+    {
+        //subtotal of all lesson lines
+        Subtotal = Lines.Sum(l => l.LineTotal);
+        //add the correction amount
+        VatAmount = Lines.Sum(l => l.VatAmount);
+        Total = Subtotal + VatAmount;
+    }
 }

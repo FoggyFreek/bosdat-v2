@@ -41,13 +41,13 @@ Music school management system. **Core:** Course blueprints → automated lesson
 - `GetWeekParity(date)` → Odd/Even
 - `MatchesWeekParity(date, parity)` → bool
 
-### 3. Student Ledger vs Invoices
+### 3. Student Transactions & Invoices
 
 **Two systems:**
-- **Invoices:** Normal billing (lessons → lines)
-- **Ledger:** Out-of-cycle corrections (refunds, credits, adjustments)
+- **Invoices:** Normal billing (lessons → invoice lines)
+- **Transactions:** Out-of-cycle financial records (refunds, credits, adjustments)
 
-**Service:** `BosDAT.Infrastructure/Services/StudentLedgerService.cs`
+**Services:** `BosDAT.Infrastructure/Services/InvoiceService.cs`, `StudentTransactionService.cs`
 
 ### 4. Pricing Versioning
 
@@ -55,74 +55,31 @@ Music school management system. **Core:** Course blueprints → automated lesson
 
 **Service:** `BosDAT.Infrastructure/Services/CourseTypePricingService.cs`
 
-## Key Patterns
+## Frontend Patterns
 
-### Backend
-
-**Repository + UoW:**
-```csharp
-public class Controller(IUnitOfWork uow) : ControllerBase
-{
-    var entity = await uow.Repository.GetByIdAsync(id);
-    await uow.SaveChangesAsync(); // Single transaction
-}
-```
-
-**Primary Constructors:**
-```csharp
-public class Service(IDep dep) : IService { }
-```
-
-**Naming:** snake_case (DB), PascalCase (C#). Config in `ApplicationDbContext.OnModelCreating()`.
-
-**Gotchas:**
-- `.AsNoTracking()` for read-only queries
-- Audit/timestamps auto via `SaveChanges()` override
-
-### Frontend
-
-**Code Splitting:**
-```ts
-// ❌ Barrel: single chunk
-lazy(() => import('./pages').then(m => ({ default: m.Page })))
-
-// ✅ Direct: separate chunk
-lazy(() => import('./pages/StudentsPage').then(m => ({ default: m.StudentsPage })))
-```
-
-**Query Keys:**
+**Query Keys (domain convention):**
 ```ts
 ['students']              // List
 ['students', id]          // Detail
-['students', id, 'ledger'] // Related
-```
-
-**Context Memoization (REQUIRED):**
-```ts
-const value = useMemo(() => ({ user, login }), [user, login])
-```
-
-**Immutability (ES2023):**
-```ts
-arr.toSorted() // ✅ New array
-arr.sort()     // ❌ Mutation
+['students', id, 'transactions'] // Related
 ```
 
 **Gotchas:**
 - Fresh `QueryClient` per test (`test/utils.tsx`)
-- Route-level lazy only, never barrels
 - `queryClient.invalidateQueries(['key'])` after mutations
 
-**i18n (react-i18next):**
+### i18n (react-i18next)
+
 ```ts
-// Usage in components
 import { useTranslation } from 'react-i18next'
 
 const { t } = useTranslation()
-<button>{t('common.actions.save')}</button>  // "Opslaan" (nl) / "Save" (en)
-<h1>{t('common.entities.students')}</h1>  // "Leerlingen" (nl) / "Students" (en)
+<button>{t('common.actions.save')}</button>
+<h1>{t('common.entities.students')}</h1>
+```
 
-//declaration for Typescript Types
+**Translation map pattern (for enums/status types):**
+```ts
 export type CourseStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled'
 export const courseStatusTranslations = {
     'Active': 'courses.status.active',
@@ -130,64 +87,28 @@ export const courseStatusTranslations = {
     'Completed': 'courses.status.completed',
     'Cancelled': 'courses.status.cancelled',
   } as const satisfies Record<CourseStatus, string>;
-//usage of Typescript Types
- {t(courseStatusTranslations[course.status])}
 
-//declaration for Enums
-export type DayOfWeek = keyof typeof DAY_NAME_TO_NUMBER
-export const dayOfWeekTranslations = {
-    'Sunday': 'common.time.days.sunday',
-    'Monday': 'common.time.days.monday',
-    'Tuesday': 'common.time.days.tuesday',
-    'Wednesday': 'common.time.days.wednesday',
-    'Thursday': 'common.time.days.thursday',
-    'Friday': 'common.time.days.friday',
-    'Saturday': 'common.time.days.saturday',
-  } as const satisfies Record<DayOfWeek, string>;
-// usage of Enums
-{t(dayOfWeekTranslations[course.dayOfWeek])}
-
-// With interpolation
-<p>{t('dashboard.stats.totalStudents', { count: 25 })}</p>  // "25 totaal leerlingen"
+// Usage
+{t(courseStatusTranslations[course.status])}
 ```
 
 **Structure:**
 - Config: `src/i18n/config.ts` (auto-imported in `main.tsx`)
 - Translations: `src/i18n/locales/{nl,en}.json` (namespace-based)
-- Switcher: `<LanguageSwitcher />` in Layout top bar
 - Default: Dutch (nl), fallback: Dutch, persisted in localStorage
 - Docs: `src/i18n/README.md` (complete namespace documentation)
 
-**Namespaces:**
-- `common.*` - Shared library (actions, entities, status, states, form, time)
-  - Use for terms used in 3+ places
-  - `common.actions.*` - save, cancel, edit, delete, etc.
-  - `common.entities.*` - student, teacher, course, lesson, etc.
-  - `common.status.*` - active, inactive, trial, etc.
-- `dashboard.*` - Dashboard page
-- `students.*` - Student management
-- `teachers.*` - Teacher management
-- `courses.*` - Course management
-- `lessons.*` - Lesson management
-- `enrollments.*` - Enrollment process
-- `invoices.*` - Invoice management
-- `settings.*` - Settings page
-- `auth.*` - Authentication
-- `navigation.*` - Navigation items
+**Namespaces:** `common.*` for shared terms (3+ places), then feature-specific: `students.*`, `teachers.*`, `courses.*`, `lessons.*`, `enrollments.*`, `invoices.*`, `dashboard.*`, `settings.*`, `auth.*`, `navigation.*`
 
 **Adding translations:**
 1. Choose namespace: common (shared) vs feature-specific
 2. Add to both `locales/nl.json` AND `locales/en.json`
 3. Use hierarchical keys: `students.form.firstName` not `student_first_name`
-4. Run `npm run check:i18n` to verify consistency
-5. See `src/i18n/README.md` for complete guide
 
 **Testing:**
-- Global mock in `src/test/setup.ts` handles `react-i18next` for all tests
-- Mock returns translation keys as-is: `t('common.actions.save')` → `'common.actions.save'`
+- Global mock in `src/test/setup.ts` — translation keys returned as-is
 - **CRITICAL:** Do NOT import `@/i18n/config` in `src/test/utils.tsx` (breaks mock hoisting)
 - For `TFunction` type: `import type { TFunction } from 'i18next'`
-- Tests use mocked `useTranslation` - no actual i18n initialization needed
 
 ## Tech Stack
 
@@ -227,9 +148,12 @@ docker-compose up -d
 **Swagger:** http://localhost:5000/swagger
 **Seeding:** `/api/admin/seeder/*` (admin-only)
 
-## Rules
+## Reference
 
-See `.claude/rules/`:
-- `backend.md` - C# patterns
-- `frontend.md` - React patterns
-- `workflow.md` - TDD, security, git
+**Rules** (auto-loaded constraints): `.claude/rules/backend.md`, `frontend.md`, `workflow.md`
+
+**Skills** (detailed templates, loaded on demand):
+- `backend-patterns` — Controller, Service, Repository, UoW full templates
+- `efcore` — Query patterns, migrations, model configuration
+- `testing-backend` — xUnit + Moq mock wiring and test structure
+- `dependency-injection` — Service registration, lifetimes, captive dependency prevention

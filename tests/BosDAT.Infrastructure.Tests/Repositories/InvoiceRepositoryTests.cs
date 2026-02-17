@@ -341,7 +341,6 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         Assert.Equal(periodEnd, result.PeriodEnd);
         Assert.NotNull(result.Lines);
         Assert.NotNull(result.Payments);
-        Assert.NotNull(result.LedgerApplications);
     }
 
     [Fact]
@@ -382,7 +381,6 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         });
         Assert.NotNull(result.First().Lines);
         Assert.NotNull(result.First().Payments);
-        Assert.NotNull(result.First().LedgerApplications);
     }
 
     [Fact]

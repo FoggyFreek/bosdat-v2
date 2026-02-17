@@ -64,8 +64,6 @@ describe('InvoicesSection', () => {
     vatAmount: 21,
     total: 121,
     discountAmount: 0,
-    ledgerCreditsApplied: 0,
-    ledgerDebitsApplied: 0,
     status: 'Draft',
     amountPaid: 0,
     balance: 121,
@@ -129,7 +127,6 @@ describe('InvoicesSection', () => {
       },
     ],
     payments: [],
-    ledgerApplications: [],
   }
 
   const mockSchoolBillingInfo: SchoolBillingInfo = {
@@ -310,43 +307,6 @@ describe('InvoicesSection', () => {
       expect(screen.getByText('students.invoices.subtotal')).toBeInTheDocument()
       expect(screen.getAllByText('students.invoices.vat').length).toBeGreaterThan(0)
       expect(screen.getAllByText('students.invoices.total').length).toBeGreaterThan(0)
-    })
-  })
-
-  it('displays ledger applications when present', async () => {
-    const invoiceWithApplications: Invoice = {
-      ...mockInvoice,
-      ledgerCreditsApplied: 20,
-      ledgerApplications: [
-        {
-          id: 'app-1',
-          ledgerEntryId: 'entry-1',
-          correctionRefName: 'COR-001',
-          description: 'Lesson cancellation refund',
-          appliedAmount: 20,
-          appliedAt: '2026-01-20T10:00:00Z',
-          entryType: 'Credit',
-        },
-      ],
-    }
-    vi.mocked(invoicesApi.getById).mockResolvedValue(invoiceWithApplications)
-
-    const user = userEvent.setup()
-    render(<InvoicesSection studentId={mockStudentId} />)
-
-    await waitFor(() => {
-      expect(screen.getByText('202601')).toBeInTheDocument()
-    })
-
-    // Expand the invoice to load details
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
-    if (invoiceRow) {
-      await user.click(invoiceRow)
-    }
-
-    // Verify the getById was called to load invoice details
-    await waitFor(() => {
-      expect(invoicesApi.getById).toHaveBeenCalledWith('invoice-1')
     })
   })
 

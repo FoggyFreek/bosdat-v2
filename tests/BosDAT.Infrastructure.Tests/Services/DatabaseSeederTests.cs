@@ -363,27 +363,6 @@ public class DatabaseSeederTests : IDisposable
     }
 
     [Fact]
-    public async Task SeedAsync_CreatesOpenLedgerEntries()
-    {
-        // Arrange
-
-        // Act
-        await _seeder.SeedAsync();
-
-        // Assert
-        var ledgerEntries = await _context.StudentLedgerEntries.ToListAsync();
-        Assert.NotEmpty(ledgerEntries);
-
-        // Should have some open entries
-        var openEntries = ledgerEntries.Count(le => le.Status == LedgerEntryStatus.Open);
-        Assert.NotEqual(0, openEntries);
-
-        // Should have credits and debits
-        var credits = ledgerEntries.Count(le => le.EntryType == LedgerEntryType.Credit);
-        Assert.NotEqual(0, credits);
-    }
-
-    [Fact]
     public async Task SeedAsync_CreatesHolidays()
     {
         // Arrange

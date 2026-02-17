@@ -238,27 +238,6 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                     {formatCurrency(selectedInvoice.subtotal)}
                                   </td>
                                 </tr>
-
-                                {selectedInvoice.ledgerCreditsApplied > 0 && (
-                                  <tr>
-                                    <td colSpan={4} className="text-right p-2 font-medium text-green-600">
-                                      {t('students.invoices.creditsApplied')}
-                                    </td>
-                                    <td className="text-right p-2 text-green-600">
-                                      -{formatCurrency(selectedInvoice.ledgerCreditsApplied)}
-                                    </td>
-                                  </tr>
-                                )}
-                                {selectedInvoice.ledgerDebitsApplied > 0 && (
-                                  <tr>
-                                    <td colSpan={4} className="text-right p-2 font-medium text-red-600">
-                                      {t('students.invoices.debitsApplied')}
-                                    </td>
-                                    <td className="text-right p-2 text-red-600">
-                                      +{formatCurrency(selectedInvoice.ledgerDebitsApplied)}
-                                    </td>
-                                  </tr>
-                                )}
                                 <tr>
                                   <td colSpan={4} className="text-right p-2 font-medium">
                                     {t('students.invoices.vat')}
@@ -279,32 +258,6 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                               </tfoot>
                             </table>
                           </div>
-
-                          {selectedInvoice.ledgerApplications.length > 0 && (
-                            <div>
-                              <h4 className="font-medium mb-2">{t('students.invoices.appliedCorrections')}</h4>
-                              <div className="space-y-1 text-sm">
-                                {selectedInvoice.ledgerApplications.map((app) => (
-                                  <div
-                                    key={app.id}
-                                    className="flex justify-between items-center p-2 bg-muted/30 rounded"
-                                  >
-                                    <span>
-                                      {app.correctionRefName}: {app.description}
-                                    </span>
-                                    <span
-                                      className={
-                                        app.entryType === 'Credit' ? 'text-green-600' : 'text-red-600'
-                                      }
-                                    >
-                                      {app.entryType === 'Credit' ? '-' : '+'}
-                                      {formatCurrency(app.appliedAmount)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
 
                           <div className="flex justify-end gap-2">
                             {canRecordPayment(selectedInvoice) && (
@@ -511,36 +464,11 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
           </div>
         </div>
         
-        {invoice.ledgerApplications.length > 0 && (
-          <div>
-            <h4 className="font-medium mb-2">{t('students.invoices.appliedCorrections')}</h4>
-            <div className="space-y-1 text-sm">
-              {invoice.ledgerApplications.map((app) => (
-                <div
-                  key={app.id}
-                  className="flex justify-between items-center p-2 bg-muted/30 rounded"
-                >
-                  <span>
-                    {app.correctionRefName}: {app.description}
-                  </span>
-                  <span
-                    className={
-                      app.entryType === 'Credit' ? 'text-green-600' : 'text-red-600'
-                    }
-                  >
-                    {app.entryType === 'Credit' ? '-' : '+'}
-                    {formatCurrency(app.appliedAmount)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         <div className="flex justify-end">
           <div className="w-64 space-y-2 text-sm">
             <div className="flex justify-between">
               <span>{t('students.invoices.total')}</span>
-              <span>{formatCurrency(invoice.subtotal + (invoice.ledgerDebitsApplied - invoice.ledgerCreditsApplied))}</span>
+              <span>{formatCurrency(invoice.subtotal)}</span>
             </div>
             <div className="flex justify-between">
               <span>{t('students.invoices.vat')} ({schoolInfo?.vatRate || 21}%)</span>

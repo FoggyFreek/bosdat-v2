@@ -39,7 +39,6 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         var invoices = await context.Invoices
             .Include(i => i.Student)
             .Include(i => i.Payments)
-            .Include(i => i.LedgerApplications)
             .Where(i => i.StudentId == studentId)
             .OrderByDescending(i => i.IssueDate)
             .AsNoTracking()
@@ -53,7 +52,6 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         var invoices = await context.Invoices
             .Include(i => i.Student)
             .Include(i => i.Payments)
-            .Include(i => i.LedgerApplications)
             .Where(i => i.Status == status)
             .OrderByDescending(i => i.IssueDate)
             .AsNoTracking()
@@ -155,8 +153,6 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             VatAmount = invoice.VatAmount,
             Total = invoice.Total,
             DiscountAmount = invoice.DiscountAmount,
-            LedgerCreditsApplied = invoice.LedgerCreditsApplied,
-            LedgerDebitsApplied = invoice.LedgerDebitsApplied,
             Status = invoice.Status,
             PaidAt = invoice.PaidAt,
             PaymentMethod = invoice.PaymentMethod,
@@ -184,16 +180,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
                 Reference = p.Reference,
                 Notes = p.Notes
             }).ToList(),
-            LedgerApplications = invoice.LedgerApplications.Select(la => new InvoiceLedgerApplicationDto
-            {
-                Id = la.Id,
-                LedgerEntryId = la.LedgerEntryId,
-                CorrectionRefName = la.LedgerEntry?.CorrectionRefName,
-                Description = la.LedgerEntry?.Description,
-                AppliedAmount = la.AppliedAmount,
-                AppliedAt = la.CreatedAt,
-                EntryType = la.LedgerEntry?.EntryType ?? LedgerEntryType.Credit
-            }).ToList(),
+           
             AmountPaid = amountPaid,
             Balance = balance,
             CreatedAt = invoice.CreatedAt,
@@ -232,8 +219,6 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
                     .ThenInclude(le => le!.Course)
                         .ThenInclude(c => c.CourseType)
             .Include(i => i.Payments)
-            .Include(i => i.LedgerApplications)
-                .ThenInclude(la => la.LedgerEntry)
             .AsNoTracking();
     }
 

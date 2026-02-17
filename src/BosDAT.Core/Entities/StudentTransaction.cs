@@ -20,6 +20,5 @@ public class StudentTransaction : BaseEntity
     public virtual Student Student { get; set; } = null!;
     public virtual Invoice? Invoice { get; set; }
     public virtual Payment? Payment { get; set; }
-    public virtual StudentLedgerEntry? LedgerEntry { get; set; }
     public virtual ApplicationUser CreatedBy { get; set; } = null!;
 }

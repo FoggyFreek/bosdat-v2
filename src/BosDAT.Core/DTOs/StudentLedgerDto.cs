@@ -12,8 +12,6 @@ public record StudentLedgerEntryDto
     public Guid? CourseId { get; init; }
     public string? CourseName { get; init; }
     public decimal Amount { get; init; }
-    public LedgerEntryType EntryType { get; init; }
-    public LedgerEntryStatus Status { get; init; }
     public decimal AppliedAmount { get; init; }
     public decimal RemainingAmount { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -27,7 +25,6 @@ public record CreateStudentLedgerEntryDto
     public required Guid StudentId { get; init; }
     public Guid? CourseId { get; init; }
     public required decimal Amount { get; init; }
-    public required LedgerEntryType EntryType { get; init; }
 }
 
 public record LedgerApplicationDto
@@ -48,19 +45,6 @@ public record StudentLedgerSummaryDto
     public decimal TotalDebits { get; init; }
     public decimal AvailableCredit { get; init; }
     public int OpenEntryCount { get; init; }
-}
-
-public record StudentLedgerListDto
-{
-    public Guid Id { get; init; }
-    public required string CorrectionRefName { get; init; }
-    public required string Description { get; init; }
-    public string StudentName { get; init; } = string.Empty;
-    public decimal Amount { get; init; }
-    public LedgerEntryType EntryType { get; init; }
-    public LedgerEntryStatus Status { get; init; }
-    public decimal RemainingAmount { get; init; }
-    public DateTime CreatedAt { get; init; }
 }
 
 public record ReverseLedgerEntryDto
@@ -89,7 +73,6 @@ public record DecoupleApplicationResultDto
     public Guid InvoiceId { get; init; }
     public string InvoiceNumber { get; init; } = string.Empty;
     public decimal DecoupledAmount { get; init; }
-    public LedgerEntryStatus NewEntryStatus { get; init; }
     public InvoiceStatus NewInvoiceStatus { get; init; }
     public DateTime DecoupledAt { get; init; }
     public string DecoupledByName { get; init; } = string.Empty;

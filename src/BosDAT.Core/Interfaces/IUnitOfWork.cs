@@ -8,7 +8,6 @@ public interface IUnitOfWork : IDisposable
     IEnrollmentRepository Enrollments { get; }
     ILessonRepository Lessons { get; }
     IInvoiceRepository Invoices { get; }
-    IStudentLedgerRepository StudentLedgerEntries { get; }
     IStudentTransactionRepository StudentTransactions { get; }
     IRepository<T> Repository<T>() where T : class;
 
