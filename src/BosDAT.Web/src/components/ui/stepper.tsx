@@ -30,7 +30,7 @@ export const Stepper = memo(function Stepper({ steps, currentStep, onStepChange 
 
           return (
             <li key={step.title} className="relative flex-1">
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col min-w-[128px] items-center">
                 <button
                   type="button"
                   onClick={() => handleStepClick(index)}
@@ -62,7 +62,7 @@ export const Stepper = memo(function Stepper({ steps, currentStep, onStepChange 
                   {step.description && (
                     <p
                       className={cn(
-                        'text-xs mt-0.5 max-w-[120px]',
+                        'text-xs mt-0.5 min-h-[40px] max-w-[120px]',
                         (isCompleted || isCurrent) && 'text-muted-foreground',
                         isPending && 'text-muted-foreground/60'
                       )}

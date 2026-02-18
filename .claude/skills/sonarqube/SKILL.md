@@ -1,11 +1,12 @@
 ---
-name: mcp-sonarqube
+name: sonarqube
 description: "SonarQube code quality workflows: finding and triaging issues, checking quality gates, analyzing code snippets, reviewing metrics. Use when investigating code quality, and fixing SonarQube issues."
 ---
 
-# SonarQube MCP
+# SonarQube API and MCP
 
 The SonarQube MCP server is already connected. All tools are available as `mcp__sonarqube__*`.
+The SonarQube API is used to fetch issues
 
 ## Project context
 
@@ -15,6 +16,10 @@ The SonarQube MCP server is already connected. All tools are available as `mcp__
 - **File key prefix:** `FoggyFreek_bosdat-v2:` + path from repo root
 
 Use this context directly — do not call `search_my_sonarqube_projects` to discover the key.
+
+## Supporting files
+
+- [`scripts/fetch-open-issues.py`](scripts/fetch-open-issues.py) — Python script to fetch OPEN issues as compact JSON. Auto-loads `SONARQUBE_TOKEN` from the repo-root `.env` file. No external dependencies (stdlib only). Run this outside Claude and paste the output into the conversation to avoid filling context with resolved/historical issues.
 
 ---
 
@@ -61,29 +66,12 @@ Use this context directly — do not call `search_my_sonarqube_projects` to disc
 **`list_rule_repositories`** — list rule sets by language
 - `language`: e.g. `java`, `ts`, `cs`, `py`
 
-### Triaging Issues
-
-**`change_sonar_issue_status`** — change status of a specific issue
-- `key`: the issue key (from search results)
-- `status`: `accept`, `falsepositive`, or `reopen`
-
 ### Code Analysis
 
 **`analyze_code_snippet`** — analyze code without a full project scan
 - `codeSnippet`: the code to analyze
 - `language`: optional, improves accuracy
 - `projectKey`: optional, applies project-specific rules
-
-### Source & SCM
-
-**`get_raw_source`** — read the source file as stored in SonarQube
-- `key`: file key in format `project_key:src/path/to/File.cs`
-- `branch` / `pullRequest`: optional
-
-**`get_scm_info`** — get blame/commit info per line
-- `key`: file key (same format as above)
-- `from` / `to`: line range
-- `commits_by_line`: `true` for per-line detail, `false` to group by commit
 
 ---
 
@@ -92,10 +80,9 @@ Use this context directly — do not call `search_my_sonarqube_projects` to disc
 ### Investigate and triage issues
 
 ```
-1. search_sonar_issues_in_projects(projects: ["FoggyFreek_bosdat-v2"], severities: ["MEDIUM", "HIGH", "BLOCKER"], ps: 30, p: 1)
-2. Filter to status === "OPEN" only — discard CLOSED/RESOLVED
-3. show_rule(key) — understand what the rule is about
-4. Fix most common issues 
+1. fetch issues with support script: python scripts/fetch-open-issues.py
+2. show_rule(key) — understand what the rule is about
+3. Fix most common issues 
 
 ```
 

@@ -49,6 +49,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<TeacherAvailability> TeacherAvailabilities => Set<TeacherAvailability>();
     public DbSet<ScheduleRun> ScheduleRuns => Set<ScheduleRun>();
     public DbSet<InvoiceRun> InvoiceRuns => Set<InvoiceRun>();
+    public DbSet<CourseTask> CourseTasks => Set<CourseTask>();
+    public DbSet<LessonNote> LessonNotes => Set<LessonNote>();
+    public DbSet<NoteAttachment> NoteAttachments => Set<NoteAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +80,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<TeacherAvailability>().ToTable("teacher_availability");
         modelBuilder.Entity<ScheduleRun>().ToTable("schedule_runs");
         modelBuilder.Entity<InvoiceRun>().ToTable("invoice_runs");
+        modelBuilder.Entity<CourseTask>().ToTable("course_tasks");
+        modelBuilder.Entity<LessonNote>().ToTable("lesson_notes");
+        modelBuilder.Entity<NoteAttachment>().ToTable("note_attachments");
 
         // Student configuration
         modelBuilder.Entity<Student>(entity =>
@@ -497,6 +503,50 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => new { e.StudentId, e.TransactionDate });
+        });
+
+        // CourseTask configuration
+        modelBuilder.Entity<CourseTask>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(500);
+
+            entity.HasOne(e => e.Course)
+                .WithMany(c => c.Tasks)
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.CourseId);
+        });
+
+        // LessonNote configuration
+        modelBuilder.Entity<LessonNote>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Content).IsRequired();
+
+            entity.HasOne(e => e.Lesson)
+                .WithMany(l => l.LessonNotes)
+                .HasForeignKey(e => e.LessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.LessonId);
+        });
+
+        // NoteAttachment configuration
+        modelBuilder.Entity<NoteAttachment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.StoredFileName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+
+            entity.HasOne(e => e.Note)
+                .WithMany(n => n.Attachments)
+                .HasForeignKey(e => e.NoteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.NoteId);
         });
 
         // Seed initial data

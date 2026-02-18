@@ -692,6 +692,37 @@
       "moveErrorDescription": "Les verplaatsen mislukt.",
       "addError": "Fout",
       "addErrorDescription": "Les toevoegen mislukt."
+    },
+    "tasks": {
+      "title": "Taken",
+      "empty": "Geen taken voor deze cursus",
+      "placeholder": "Nieuwe taak...",
+      "markDone": "Markeer als voltooid"
+    },
+    "notes": {
+      "title": "Notities",
+      "empty": "Geen notities voor deze cursus",
+      "addNote": "Notitie toevoegen",
+      "editNote": "Notitie bewerken",
+      "deleteNote": "Notitie verwijderen",
+      "deleteConfirm": "Weet u zeker dat u deze notitie wilt verwijderen?",
+      "savePlaceholder": "Schrijf een notitie...",
+      "attachments": "Bijlagen",
+      "addAttachment": "Bijlage toevoegen",
+      "deleteAttachment": "Bijlage verwijderen",
+      "uploadHint": "Sleep bestanden hierheen of klik om te uploaden (afbeeldingen, PDF)",
+      "viewGrid": "Rasterweergave",
+      "viewList": "Lijstweergave",
+      "lessonDate": "Les van {{date}}",
+      "noContent": "Geen inhoud"
+    },
+    "detail": {
+      "title": "Lesdetails",
+      "openFull": "Openen in volledig scherm",
+      "participants": "Deelnemers",
+      "room": "Ruimte",
+      "time": "Tijd",
+      "course": "Cursus"
     }
   },
   "enrollments": {
@@ -699,8 +730,8 @@
     "noStudents": "Nog geen leerlingen",
     "enrolledAt": "Ingeschreven op",
     "discount": "Korting",
-    "addEnrollment": "Inschrijving Toevoegen",
-    "newEnrollment": "Nieuwe Inschrijving",
+    "addEnrollment": "Inschrijving toevoegen",
+    "newEnrollment": "Nieuwe inschrijving",
     "status": {
       "trail": "Proefles",
       "active": "Actief",

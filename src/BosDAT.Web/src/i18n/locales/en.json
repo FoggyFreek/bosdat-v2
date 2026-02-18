@@ -692,6 +692,37 @@
       "moveErrorDescription": "Failed to move the lesson.",
       "addError": "Error",
       "addErrorDescription": "Failed to add the lesson."
+    },
+    "tasks": {
+      "title": "Tasks",
+      "empty": "No tasks for this course",
+      "placeholder": "New task...",
+      "markDone": "Mark as done"
+    },
+    "notes": {
+      "title": "Notes",
+      "empty": "No notes for this course",
+      "addNote": "Add note",
+      "editNote": "Edit note",
+      "deleteNote": "Delete note",
+      "deleteConfirm": "Are you sure you want to delete this note?",
+      "savePlaceholder": "Write a note...",
+      "attachments": "Attachments",
+      "addAttachment": "Add attachment",
+      "deleteAttachment": "Delete attachment",
+      "uploadHint": "Drop files here or click to upload (images, PDF)",
+      "viewGrid": "Grid view",
+      "viewList": "List view",
+      "lessonDate": "Lesson of {{date}}",
+      "noContent": "No content"
+    },
+    "detail": {
+      "title": "Lesson details",
+      "openFull": "Open in full screen",
+      "participants": "Participants",
+      "room": "Room",
+      "time": "Time",
+      "course": "Course"
     }
   },
   "enrollments": {

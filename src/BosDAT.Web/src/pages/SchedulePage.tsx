@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +21,8 @@ import type { Holiday, WeekCalendar } from '@/features/schedule/types'
 import { groupLessonsByCourseAndDate, type GroupedLesson } from '@/features/schedule/utils/groupLessons'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
-import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString } from '@/lib/datetime-helpers'
+import { getWeekStart, getWeekDays, formatDateForApi, combineDateAndTime, getHoursFromTimeString, getDateFromDateTime } from '@/lib/datetime-helpers'
+import { LessonDetailPanel } from '@/features/lessons/components/LessonDetailPanel'
 
 // --- Constants ---
 
@@ -151,6 +152,7 @@ export const SchedulePage = () => {
   const [filterTeacher, setFilterTeacher] = useState<string>('all')
   const [filterRoom, setFilterRoom] = useState<string>('all')
   const [currentView, setCurrentView] = useState<CalendarView>('week')
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
 
   // Handlers for SchedulerHeader callbacks
   const handleDateChange = (date: Date) => {
@@ -171,7 +173,19 @@ export const SchedulePage = () => {
 
   const handleViewChange = (view: CalendarView) => {
     setCurrentView(view)
+    if (view !== 'day') setSelectedLessonId(null)
   }
+
+  // A single-lesson event has a plain UUID id (no colon separator)
+  const handleEventClick = useCallback((event: CalendarEvent) => {
+    if (event.eventType === 'holiday' || event.id.includes(':')) return
+
+    const eventDate = getDateFromDateTime(event.startDateTime)
+    setSelectedDate(eventDate)
+    setCurrentDate(getWeekStart(eventDate))
+    setCurrentView('day')
+    setSelectedLessonId(event.id)
+  }, [])
 
   // Queries
   const { data: calendarData, isLoading, isFetching, refetch } = useQuery<WeekCalendar>({
@@ -268,20 +282,33 @@ export const SchedulePage = () => {
       )}
 
       {!showLoading && (
-        <CalendarComponent
-          events={events}
-          dates={weekDays}
-          initialDate={currentView === 'week' ? currentDate : selectedDate}
-          initialView={currentView}
-          selectedDate={currentView === 'week' ? undefined : selectedDate}
-          colorScheme={statusColorScheme}
-          onDateChange={handleDateChange}
-          onViewChange={handleViewChange}
-          availability={availability}
-          dayStartTime={8}
-          dayEndTime={21}
-          hourHeight={100}
-        />
+        <div className={selectedLessonId && currentView === 'day' ? 'flex gap-0 rounded-lg border overflow-hidden h-[calc(100vh-280px)]' : ''}>
+          <div className={selectedLessonId && currentView === 'day' ? 'flex-[3] min-w-0 overflow-hidden' : ''}>
+            <CalendarComponent
+              events={events}
+              dates={weekDays}
+              initialDate={currentView === 'week' ? currentDate : selectedDate}
+              initialView={currentView}
+              selectedDate={currentView === 'week' ? undefined : selectedDate}
+              colorScheme={statusColorScheme}
+              onDateChange={handleDateChange}
+              onViewChange={handleViewChange}
+              availability={availability}
+              dayStartTime={8}
+              dayEndTime={21}
+              hourHeight={50}
+              onEventClick={handleEventClick}
+            />
+          </div>
+          {selectedLessonId && currentView === 'day' && (
+            <div className="flex-[2] min-w-0 overflow-hidden">
+              <LessonDetailPanel
+                lessonId={selectedLessonId}
+                onClose={() => setSelectedLessonId(null)}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       {/* Legend */}

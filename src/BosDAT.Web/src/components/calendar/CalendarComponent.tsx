@@ -34,6 +34,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
   selectedDate,
   onEventAction,
   initialDate,
+  onEventClick,
 }) => {
   const { t } = useTranslation();
 
@@ -96,6 +97,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
                 onTimeslotClick={onTimeslotClick}
                 highlightedDate={highlightedDate}
                 dates={dates}
+                onEventClick={onEventClick}
               />
             </div>
           </div>
@@ -131,6 +133,7 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
                 colorScheme={colorScheme}
                 onTimeslotClick={onTimeslotClick}
                 selectedDate={activeDayDate}
+                onEventClick={onEventClick}
               />
             </div>
           </div>

@@ -17,6 +17,7 @@ type DayEventsGridProps = {
   onTimeslotClick?: (timeslot: TimeSlot) => void;
   selectedDate: Date;
   availability?: DayAvailability[];
+  onEventClick?: (event: CalendarEvent) => void;
 };
 
 const MINUTES_PER_HOUR = 60;
@@ -35,6 +36,7 @@ const DayEventsGridComponent: React.FC<DayEventsGridProps> = ({
   onTimeslotClick,
   selectedDate,
   availability,
+  onEventClick,
 }) => {
   const totalHeight = useMemo(() => hours.length * hourHeight, [hours.length, hourHeight]);
   const [hoveredSlot, setHoveredSlot] = useState<{ hour: number; minute: number } | null>(null);
@@ -256,6 +258,7 @@ const DayEventsGridComponent: React.FC<DayEventsGridProps> = ({
             minHour={minHour}
             colorScheme={colorScheme}
             layout={layout}
+            onEventClick={onEventClick}
           />
         );
       })}

@@ -1,4 +1,4 @@
-import { describe, it, expect, } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/utils';
 import { EventsGrid } from '../EventsGrid';
 import type { CalendarEvent } from '../types';
@@ -217,5 +217,29 @@ describe('EventsGrid', () => {
     expect(mondayEvent1.style.width).toContain('7.14');
     expect(mondayEvent2.style.width).toContain('7.14');
     expect(tuesdayEvent.style.width).toContain('14.28');
+  });
+
+  it('calls onEventClick when an event button is clicked', async () => {
+    const { userEvent: userEventLib } = await import('@testing-library/user-event');
+    const user = userEventLib.setup();
+    const onEventClick = vi.fn();
+    const event: CalendarEvent = {
+      id: 'click-event',
+      startDateTime: '2024-01-15T09:00:00',
+      endDateTime: '2024-01-15T10:00:00',
+      title: 'Clickable Event',
+      frequency: 'once',
+      eventType: 'course',
+      attendees: [],
+      status: 'Scheduled',
+    };
+
+    render(<EventsGrid {...defaultProps} events={[event]} onEventClick={onEventClick} />);
+
+    const eventButton = screen.getByText('Clickable Event').closest('button')!;
+    await user.click(eventButton);
+
+    expect(onEventClick).toHaveBeenCalledOnce();
+    expect(onEventClick).toHaveBeenCalledWith(event);
   });
 });

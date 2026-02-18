@@ -235,7 +235,7 @@ const EnrollmentStepperContent = () => {
     <Card className="w-full h-full flex flex-col">
       {renderHeader()}
       <CardContent className="flex-1 flex flex-col gap-8 overflow-hidden">
-        <div className="max-w-4xl mx-auto shrink-0">
+        <div className="max-w-xl mx-auto shrink-0">
           {renderStepper()}
         </div>
         {renderStepContainer()}

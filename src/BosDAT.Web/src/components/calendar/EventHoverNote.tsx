@@ -95,6 +95,12 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
         >
           {event.frequency}
         </span>
+        <span
+            className="inline-block px-2 py-1 rounded text-[10px] font-medium"
+            style={{ backgroundColor: colors.textBackground, color: colors.border  }}
+          >
+            {event.status}
+          </span>
       </div>
     </div>
   );

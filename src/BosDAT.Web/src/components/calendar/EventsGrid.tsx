@@ -18,6 +18,7 @@ type EventsGridProps = {
   highlightedDate?: Date;
   dates: Date[];
   availability?: DayAvailability[];
+  onEventClick?: (event: CalendarEvent) => void;
 };
 
 // Named constants
@@ -44,6 +45,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
   highlightedDate,
   dates,
   availability,
+  onEventClick,
 }) => {
   const totalHeight = useMemo(() => hours.length * hourHeight, [hours.length, hourHeight]);
 
@@ -349,6 +351,7 @@ const EventsGridComponent: React.FC<EventsGridProps> = ({
             minHour={minHour}
             colorScheme={colorScheme}
             layout={layout}
+            onEventClick={onEventClick}
           />
         );
       })}

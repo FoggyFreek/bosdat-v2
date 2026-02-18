@@ -127,6 +127,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISchedulingService, SchedulingService>();
         services.AddScoped<ISettingsService, SettingsService>();
         services.AddScoped<IDatabaseSeeder, DatabaseSeeder>();
+        services.AddScoped<ICourseTaskService, CourseTaskService>();
+        services.AddScoped<ILessonNoteService, LessonNoteService>();
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         return services;
     }

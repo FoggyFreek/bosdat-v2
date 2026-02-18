@@ -33,4 +33,5 @@ public class Lesson : BaseEntity
     public virtual Teacher Teacher { get; set; } = null!;
     public virtual Room? Room { get; set; }
     public virtual ICollection<InvoiceLine> InvoiceLines { get; set; } = new List<InvoiceLine>();
+    public virtual ICollection<LessonNote> LessonNotes { get; set; } = [];
 }

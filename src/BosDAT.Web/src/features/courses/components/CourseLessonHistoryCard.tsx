@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { formatDate, formatTime } from '@/lib/datetime-helpers'
@@ -135,7 +135,14 @@ export function CourseLessonHistoryCard({
             <tbody className="divide-y">
               {lessons.map((lesson) => (
                 <tr key={lesson.id}>
-                  <td className="py-2">{formatDate(lesson.scheduledDate)}</td>
+                  <td className="py-2">
+                    <Link
+                      to={`/lessons/${lesson.id}`}
+                      className="hover:underline text-primary"
+                    >
+                      {formatDate(lesson.scheduledDate)}
+                    </Link>
+                  </td>
                   <td className="py-2">
                     {formatTime(lesson.startTime)} – {formatTime(lesson.endTime)}
                   </td>

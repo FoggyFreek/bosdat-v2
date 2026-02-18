@@ -177,4 +177,22 @@ describe('EventItem', () => {
       expect(button?.className).toContain('z-9999');
     });
   });
+
+  it('calls onEventClick with the event when button is clicked', async () => {
+    const user = userEvent.setup();
+    const onEventClick = vi.fn();
+    render(<EventItem {...defaultProps} onEventClick={onEventClick} />);
+
+    await user.click(screen.getByRole('button'));
+
+    expect(onEventClick).toHaveBeenCalledOnce();
+    expect(onEventClick).toHaveBeenCalledWith(defaultEvent);
+  });
+
+  it('does not throw when onEventClick is not provided', async () => {
+    const user = userEvent.setup();
+    render(<EventItem {...defaultProps} />);
+    // Should not throw
+    await user.click(screen.getByRole('button'));
+  });
 });

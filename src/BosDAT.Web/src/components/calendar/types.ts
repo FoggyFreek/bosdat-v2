@@ -82,4 +82,5 @@ export type SchedulerProps = {
   showViewSelector?: boolean;
   selectedDate?: Date;
   onEventAction?: (event: CalendarEvent, action: CalendarListAction) => void;
+  onEventClick?: (event: CalendarEvent) => void;
 };

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@/test/utils'
 import { DayEventsGrid } from '../DayEventsGrid'
 import type { CalendarEvent, EventFrequency, EventType } from '../types'
@@ -181,6 +181,37 @@ describe('DayEventsGrid', () => {
     const grid = screen.getByRole('grid')
     // 15 hours * 100px = 1500px
     expect(grid.style.height).toBe('1500px')
+  })
+
+  it('calls onEventClick when an event is clicked', async () => {
+    const userEventLib = (await import('@testing-library/user-event')).default
+    const user = userEventLib.setup()
+    const onEventClick = vi.fn()
+    const event = createMockEvent({
+      id: 'click-test',
+      title: 'Clickable Lesson',
+      startDateTime: '2024-01-15T09:00:00',
+      endDateTime: '2024-01-15T10:00:00',
+    })
+
+    render(
+      <DayEventsGrid
+        hours={HOURS}
+        events={[event]}
+        hourHeight={100}
+        minHour={MIN_HOUR}
+        maxHour={MAX_HOUR}
+        dayStartTime={9}
+        dayEndTime={21}
+        selectedDate={selectedDate}
+        onEventClick={onEventClick}
+      />
+    )
+
+    const button = screen.getByText('Clickable Lesson').closest('button')!
+    await user.click(button)
+    expect(onEventClick).toHaveBeenCalledOnce()
+    expect(onEventClick).toHaveBeenCalledWith(expect.objectContaining({ id: 'click-test' }))
   })
 
   it('renders overlapping events side by side', () => {

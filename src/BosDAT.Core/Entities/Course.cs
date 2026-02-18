@@ -44,4 +44,5 @@ public class Course : BaseEntity
     public virtual Room? Room { get; set; }
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
+    public virtual ICollection<CourseTask> Tasks { get; set; } = [];
 }

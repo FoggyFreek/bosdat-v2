@@ -272,6 +272,33 @@ namespace BosDAT.Infrastructure.Migrations
                     b.ToTable("courses", (string)null);
                 });
 
+            modelBuilder.Entity("BosDAT.Core.Entities.CourseTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("course_tasks", (string)null);
+                });
+
             modelBuilder.Entity("BosDAT.Core.Entities.CourseType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -782,6 +809,72 @@ namespace BosDAT.Infrastructure.Migrations
                     b.HasIndex("TeacherId", "ScheduledDate");
 
                     b.ToTable("lessons", (string)null);
+                });
+
+            modelBuilder.Entity("BosDAT.Core.Entities.LessonNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("lesson_notes", (string)null);
+                });
+
+            modelBuilder.Entity("BosDAT.Core.Entities.NoteAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("NoteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NoteId");
+
+                    b.ToTable("note_attachments", (string)null);
                 });
 
             modelBuilder.Entity("BosDAT.Core.Entities.Payment", b =>
@@ -1724,6 +1817,17 @@ namespace BosDAT.Infrastructure.Migrations
                     b.Navigation("Teacher");
                 });
 
+            modelBuilder.Entity("BosDAT.Core.Entities.CourseTask", b =>
+                {
+                    b.HasOne("BosDAT.Core.Entities.Course", "Course")
+                        .WithMany("Tasks")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
             modelBuilder.Entity("BosDAT.Core.Entities.CourseType", b =>
                 {
                     b.HasOne("BosDAT.Core.Entities.Instrument", "Instrument")
@@ -1839,6 +1943,28 @@ namespace BosDAT.Infrastructure.Migrations
                     b.Navigation("Student");
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("BosDAT.Core.Entities.LessonNote", b =>
+                {
+                    b.HasOne("BosDAT.Core.Entities.Lesson", "Lesson")
+                        .WithMany("LessonNotes")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("BosDAT.Core.Entities.NoteAttachment", b =>
+                {
+                    b.HasOne("BosDAT.Core.Entities.LessonNote", "Note")
+                        .WithMany("Attachments")
+                        .HasForeignKey("NoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Note");
                 });
 
             modelBuilder.Entity("BosDAT.Core.Entities.Payment", b =>
@@ -2012,6 +2138,8 @@ namespace BosDAT.Infrastructure.Migrations
                     b.Navigation("Enrollments");
 
                     b.Navigation("Lessons");
+
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("BosDAT.Core.Entities.CourseType", b =>
@@ -2045,6 +2173,13 @@ namespace BosDAT.Infrastructure.Migrations
             modelBuilder.Entity("BosDAT.Core.Entities.Lesson", b =>
                 {
                     b.Navigation("InvoiceLines");
+
+                    b.Navigation("LessonNotes");
+                });
+
+            modelBuilder.Entity("BosDAT.Core.Entities.LessonNote", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("BosDAT.Core.Entities.Room", b =>

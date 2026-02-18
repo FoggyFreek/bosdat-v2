@@ -13,6 +13,7 @@ type EventItemProps = {
   readonly minHour: number;
   readonly colorScheme?: ColorScheme;
   readonly layout?: EventLayout;
+  readonly onEventClick?: (event: CalendarEvent) => void;
 };
 
 // Named constants for magic numbers
@@ -41,6 +42,7 @@ const EventItemComponent: React.FC<EventItemProps> = ({
   minHour,
   colorScheme,
   layout,
+  onEventClick,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -126,8 +128,8 @@ const EventItemComponent: React.FC<EventItemProps> = ({
     <button
       type="button"
       className={cn(
-        'absolute mx-1 p-2 rounded-md border-l-4 text-left overflow-visible',
-        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+        'absolute mx-1 p-1 rounded-sm border-l-3 text-left overflow-visible',
+        'focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 flex flex-wrap items-center gap-x-2',
         isHovered ? 'z-9999' : 'z-5'
       )}
       style={{
@@ -138,32 +140,16 @@ const EventItemComponent: React.FC<EventItemProps> = ({
         backgroundColor: colors.background,
         borderLeftColor: colors.border,
       }}
+      onClick={(e) => { e.stopPropagation(); onEventClick?.(event) }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onKeyDown={handleKeyDown}
       aria-label={`${event.title}, ${event.eventType}, ${event.frequency}`}
       aria-expanded={isHovered}
     >
-      <h3 className="text-xs text-left  font-bold text-slate-800 truncate">
+      <h3 className="text-xs text-left font-semibold text-slate-800 truncate">
         {event.title} 
       </h3>
-
-      {duration > 0.5 && (
-        <div className="text-[10px] text-slate-600 mt-1">
-          <span
-            className="inline-block px-2 py-0.5 rounded mr-2"
-            style={{ backgroundColor: colors.textBackground }}
-          >
-            {event.eventType}/{event.status}
-          </span>
-          <span
-            className="inline-block px-2 py-0.5 rounded"
-            style={{ backgroundColor: colors.textBackground }}
-          >
-            {event.frequency}
-          </span>
-        </div>
-      )}
 
       {/* Hover Note */}
       {isHovered && (
