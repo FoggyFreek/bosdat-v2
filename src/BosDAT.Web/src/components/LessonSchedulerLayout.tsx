@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -59,9 +60,9 @@ export function LessonSchedulerLayout({
           <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
             <h3 className="font-medium text-sm">Filters</h3>
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Teacher</label>
+              <Label htmlFor="filter-teacher" className="text-xs text-muted-foreground">Teacher</Label>
               <Select value={calendar.filterTeacher} onValueChange={calendar.setFilterTeacher}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="filter-teacher" className="w-full">
                   <SelectValue placeholder="All teachers" />
                 </SelectTrigger>
                 <SelectContent>
@@ -75,9 +76,9 @@ export function LessonSchedulerLayout({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">Room</label>
+              <Label htmlFor="filter-room" className="text-xs text-muted-foreground">Room</Label>
               <Select value={calendar.filterRoom} onValueChange={calendar.setFilterRoom}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="filter-room" className="w-full">
                   <SelectValue placeholder="All rooms" />
                 </SelectTrigger>
                 <SelectContent>

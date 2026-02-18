@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test/utils'
 import userEvent from '@testing-library/user-event'
 import { CalendarListView } from '../CalendarListView'
-import type { CalendarEvent, EventFrequency, EventType, ColorScheme, CalendarListAction } from '../types'
+import type { CalendarEvent, EventFrequency, EventType } from '../types'
 
 const createMockEvent = (overrides?: Partial<CalendarEvent>): CalendarEvent => ({
   id: `mock-event-${Math.random().toString(36).substr(2, 9)}`,

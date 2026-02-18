@@ -12,12 +12,6 @@ description: "xUnit + Moq testing patterns: IUnitOfWork mock wiring, repository 
 | `tests/BosDAT.API.Tests/` | Controllers, Services (unit tests with mocks) |
 | `tests/BosDAT.Infrastructure.Tests/` | Repositories, Seeder (integration tests with in-memory DB) |
 
-```bash
-dotnet test                                              # all tests
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov  # with coverage
-dotnet test tests/BosDAT.API.Tests                       # specific project
-```
-
 ---
 
 ## Test Naming Convention

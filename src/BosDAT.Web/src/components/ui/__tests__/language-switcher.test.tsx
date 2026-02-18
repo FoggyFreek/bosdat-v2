@@ -16,9 +16,9 @@ describe('LanguageSwitcher', () => {
       i18n: {
         language: 'nl',
         changeLanguage: mockChangeLanguage,
-      } as any,
+      },
       ready: true,
-    })
+    } as unknown as ReturnType<typeof i18next.useTranslation>)
   })
 
   it('renders language flag buttons', () => {

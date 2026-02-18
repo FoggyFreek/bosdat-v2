@@ -70,7 +70,7 @@ public class RegistrationFeeService(
         };
     }
 
-    public async Task<decimal> GetFeeAmountAsync(CancellationToken ct)
+    public async Task<decimal> GetFeeAmountAsync(CancellationToken ct = default)
     {
         var setting = await context.Settings
             .FirstOrDefaultAsync(s => s.Key == "registration_fee", ct);
@@ -83,7 +83,7 @@ public class RegistrationFeeService(
         return amount;
     }
 
-    public async Task<string> GetFeeDescriptionAsync(CancellationToken ct)
+    public async Task<string> GetFeeDescriptionAsync(CancellationToken ct = default)
     {
         var setting = await context.Settings
             .FirstOrDefaultAsync(s => s.Key == "registration_fee_description", ct);

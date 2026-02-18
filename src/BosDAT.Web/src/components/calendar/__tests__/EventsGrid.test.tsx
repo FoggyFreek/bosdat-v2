@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, } from 'vitest';
 import { render, screen } from '@/test/utils';
 import { EventsGrid } from '../EventsGrid';
 import type { CalendarEvent } from '../types';
@@ -35,6 +35,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'course',
         attendees: [],
+        status: 'Scheduled',
       },
       {
         id: 'event-2',
@@ -44,6 +45,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'workshop',
         attendees: [],
+        status: 'Scheduled',
       },
     ];
 
@@ -79,6 +81,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'course',
         attendees: [],
+        status: 'Scheduled',
       },
       {
         id: 'event-2',
@@ -88,6 +91,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'workshop',
         attendees: [],
+        status: 'Scheduled',
       },
       {
         id: 'event-3',
@@ -97,6 +101,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'trial',
         attendees: [],
+        status: 'Scheduled',
       },
     ];
 
@@ -128,6 +133,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'course',
         attendees: [],
+        status: 'Scheduled',
       },
       {
         id: 'event-2',
@@ -137,6 +143,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'workshop',
         attendees: [],
+        status: 'Scheduled',
       },
     ];
 
@@ -167,6 +174,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'course',
         attendees: [],
+        status: 'Scheduled',
       },
       {
         id: 'mon-event-2',
@@ -176,6 +184,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'workshop',
         attendees: [],
+        status: 'Scheduled',
       },
       {
         id: 'tue-event-1',
@@ -185,6 +194,7 @@ describe('EventsGrid', () => {
         frequency: 'once',
         eventType: 'trial',
         attendees: [],
+        status: 'Scheduled',
       },
     ];
 

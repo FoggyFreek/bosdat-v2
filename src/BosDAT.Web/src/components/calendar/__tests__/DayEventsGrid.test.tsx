@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@/test/utils'
-import userEvent from '@testing-library/user-event'
 import { DayEventsGrid } from '../DayEventsGrid'
-import type { CalendarEvent, EventFrequency, EventType, ColorScheme } from '../types'
+import type { CalendarEvent, EventFrequency, EventType } from '../types'
 
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
 const MIN_HOUR = 8

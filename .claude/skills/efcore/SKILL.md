@@ -117,35 +117,6 @@ protected override void OnModelCreating(ModelBuilder builder)
 
 ## Migrations
 
-### Commands (run from repo root)
-
-```bash
-# Add a new migration
-dotnet ef migrations add [MigrationName] \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
-
-# Apply pending migrations
-dotnet ef database update \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
-
-# Roll back to a specific migration
-dotnet ef database update [PreviousMigrationName] \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
-
-# Remove the last unapplied migration
-dotnet ef migrations remove \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
-
-# List all migrations
-dotnet ef migrations list \
-  --project src/BosDAT.Infrastructure \
-  --startup-project src/BosDAT.API
-```
-
 ### Naming Convention
 
 PascalCase descriptive names: `AddStudentTable`, `AddInvoiceStatusColumn`, `RemoveDeprecatedLedger`
