@@ -35,6 +35,7 @@
       "Bash(npm audit:*)",
       "Bash(npm ls:*)",
       "Bash(npm view:*)",
+      "Bash(gh pr view*)",
       "WebSearch",
       "Bash(npx eslint:*)",
       "Bash(timeout 10 npm run dev:*)",
@@ -50,7 +51,8 @@
       "Bash(cmd /c \"dir F:\\\\devprojects\\\\bosDATv2\\\\bosdat-v2\\\\.claude\\\\skills\")",
       "mcp__sonarqube__search_my_sonarqube_projects",
       "Bash({ npx tsc --noEmit)",
-      "Bash(})"
+      "Bash(})",
+      "Bash(gh pr list:*)"
     ]
   }
 }

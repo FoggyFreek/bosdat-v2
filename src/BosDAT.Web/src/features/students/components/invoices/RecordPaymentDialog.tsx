@@ -43,7 +43,7 @@ export function RecordPaymentDialog({
   invoiceNumber,
   remainingBalance,
   studentId,
-}: RecordPaymentDialogProps) {
+}: Readonly<RecordPaymentDialogProps>) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
@@ -66,7 +66,7 @@ export function RecordPaymentDialog({
   const recordPaymentMutation = useMutation({
     mutationFn: () =>
       invoicesApi.recordPayment(invoiceId, {
-        amount: parseFloat(amount),
+        amount: Number.parseFloat(amount),
         paymentDate,
         method,
         reference: reference || undefined,
@@ -83,9 +83,9 @@ export function RecordPaymentDialog({
     },
   })
 
-  const parsedAmount = parseFloat(amount)
+  const parsedAmount = Number.parseFloat(amount)
   const isValidAmount =
-    !isNaN(parsedAmount) && parsedAmount > 0 && parsedAmount <= remainingBalance
+    !Number.isNaN(parsedAmount) && parsedAmount > 0 && parsedAmount <= remainingBalance
   const canSubmit = isValidAmount && paymentDate && method
 
   return (

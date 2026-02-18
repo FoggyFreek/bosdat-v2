@@ -45,7 +45,7 @@ describe('enrollmentsApi', () => {
   })
 
   it('create posts enrollment data', async () => {
-    const newEnrollment = { studentId: 's-1', courseId: 'c-1', discountPercent: 10, notes: 'Test' }
+    const newEnrollment = { studentId: 's-1', courseId: 'c-1', discountPercent: 10, invoicingPreference: 'Monthly' as const, notes: 'Test' }
     const created = { id: '1', ...newEnrollment }
     mock.onPost('/enrollments').reply(200, created)
 

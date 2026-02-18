@@ -54,11 +54,12 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
     return `${t(`calendar.days.${dayKey}`)} ${activeDayDate.getDate()}`;
   }, [activeDayDate, t]);
 
-  const ariaLabel = initialView === 'week'
-    ? 'Weekly calendar scheduler'
-    : initialView === 'day'
-      ? 'Daily calendar scheduler'
-      : 'Calendar list view';
+  const ariaLabelMap: Record<string, string> = {
+    week: 'Weekly calendar scheduler',
+    day: 'Daily calendar scheduler',
+    list: 'Calendar list view',
+  };
+  const ariaLabel = ariaLabelMap[initialView] ?? 'Calendar list view';
 
   return (
     <div

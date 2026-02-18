@@ -161,7 +161,7 @@ function ResultGroup({
   activeIndex,
   onSelect,
   setActiveIndex,
-}: ResultGroupProps) {
+}: Readonly<ResultGroupProps>) {
   return (
     <div>
       <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b bg-gray-50">

@@ -58,8 +58,6 @@ public class RegistrationFeeService(
             };
         }
 
-        var feeDescription = await GetFeeDescriptionAsync(ct);
-
         //todo
         return new RegistrationFeeStatusDto
         {

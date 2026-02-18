@@ -273,7 +273,7 @@ export const SchedulePage = () => {
           dates={weekDays}
           initialDate={currentView === 'week' ? currentDate : selectedDate}
           initialView={currentView}
-          selectedDate={currentView !== 'week' ? selectedDate : undefined}
+          selectedDate={currentView === 'week' ? undefined : selectedDate}
           colorScheme={statusColorScheme}
           onDateChange={handleDateChange}
           onViewChange={handleViewChange}

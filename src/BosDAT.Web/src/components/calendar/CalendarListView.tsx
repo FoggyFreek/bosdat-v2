@@ -36,24 +36,24 @@ const CalendarListViewComponent: React.FC<CalendarListViewProps> = ({
 
   if (dayEvents.length === 0) {
     return (
-      <div className="flex items-center justify-center py-16 text-slate-500" role="status">
+      <output className="flex items-center justify-center py-16 text-slate-500">
         <p>{t('calendar.list.noEvents')}</p>
-      </div>
+      </output>
     );
   }
 
   return (
-    <div className="space-y-3 p-4" role="list" aria-label={t('calendar.list.label')}>
+    <ul className="space-y-3 p-4" aria-label={t('calendar.list.label')}>
       {dayEvents.map((event) => (
-        <div key={event.id} role="listitem">
+        <li key={event.id}>
           <CalendarListItem
             event={event}
             colorScheme={colorScheme}
             onAction={onEventAction}
           />
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };
 

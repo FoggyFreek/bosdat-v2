@@ -66,7 +66,7 @@ const ACTION_CONFIGS: Record<SeederAction, ActionConfig> = {
 }
 
 // Sub-components to reduce cognitive complexity
-function StatusLoadingState({ t }: { t: TFunction }) {
+function StatusLoadingState({ t }: Readonly<{ t: TFunction }>) {
   return (
     <div className="flex items-center gap-2 text-muted-foreground">
       <Loader2 className="h-4 w-4 animate-spin" />
@@ -75,7 +75,7 @@ function StatusLoadingState({ t }: { t: TFunction }) {
   )
 }
 
-function StatusDisplay({ status, t }: { status: SeederStatusResponse; t: TFunction }) {
+function StatusDisplay({ status, t }: Readonly<{ status: SeederStatusResponse; t: TFunction }>) {
   const statusColor = status.isSeeded ? 'text-green-600' : 'text-gray-500'
   const StatusIcon = status.isSeeded ? CheckCircle2 : Database
   const statusText = status.isSeeded ? t('settings.seeding.statusDisplay.seeded') : t('settings.seeding.statusDisplay.notSeeded')
@@ -97,7 +97,7 @@ function StatusDisplay({ status, t }: { status: SeederStatusResponse; t: TFuncti
   )
 }
 
-function ResultAlert({ result, t }: { result: SeederActionResponse; t: TFunction }) {
+function ResultAlert({ result, t }: Readonly<{ result: SeederActionResponse; t: TFunction }>) {
   const alertVariant = result.success ? 'default' : 'destructive'
   const alertClassName = result.success ? 'border-green-200 bg-green-50 text-green-800' : ''
   const Icon = result.success ? CheckCircle2 : XCircle
@@ -121,7 +121,7 @@ interface ActionButtonProps {
   t: TFunction
 }
 
-function ActionButton({ action, config, isPending, isDisabled, onClick, t }: ActionButtonProps) {
+function ActionButton({ action, config, isPending, isDisabled, onClick, t }: Readonly<ActionButtonProps>) {
   const containerClass = config.isDestructive
     ? 'flex items-start justify-between gap-4 p-4 rounded-lg border border-red-200 bg-red-50/30'
     : 'flex items-start justify-between gap-4 p-4 rounded-lg border'
@@ -153,7 +153,7 @@ function ActionButton({ action, config, isPending, isDisabled, onClick, t }: Act
   )
 }
 
-function ErrorState({ t }: { t: TFunction }) {
+function ErrorState({ t }: Readonly<{ t: TFunction }>) {
   return (
     <Card>
       <CardHeader>

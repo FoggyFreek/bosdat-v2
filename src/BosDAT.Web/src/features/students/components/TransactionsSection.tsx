@@ -20,7 +20,7 @@ const typeVariant: Record<TransactionType, string> = {
   InvoiceAdjustment: 'bg-yellow-100 text-yellow-800',
 }
 
-function TransactionRow({ transaction }: { transaction: StudentTransaction }) {
+function TransactionRow({ transaction }: Readonly<{ transaction: StudentTransaction }>) {
   const { t } = useTranslation()
 
   return (
@@ -63,7 +63,7 @@ function TransactionRow({ transaction }: { transaction: StudentTransaction }) {
   )
 }
 
-export function TransactionsSection({ studentId }: TransactionsSectionProps) {
+export function TransactionsSection({ studentId }: Readonly<TransactionsSectionProps>) {
   const { t } = useTranslation()
 
   const { data: transactions = [], isLoading } = useQuery<StudentTransaction[]>({

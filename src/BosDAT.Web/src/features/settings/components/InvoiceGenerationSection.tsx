@@ -127,7 +127,7 @@ function RunItem({ run }: { run: InvoiceRun }) {
   )
 }
 
-function RunHistory({ runs, isLoading, t }: { runs: InvoiceRun[]; isLoading: boolean; t: TFunction }) {
+function RunHistory({ runs, isLoading, t }: Readonly<{ runs: InvoiceRun[]; isLoading: boolean; t: TFunction }>) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
       <h3 className="font-medium">{t('settings.invoiceGeneration.runHistory.title')}</h3>
@@ -277,7 +277,7 @@ function GenerateArea({
   )
 }
 
-function ErrorState({ t }: { t: TFunction }) {
+function ErrorState({ t }: Readonly<{ t: TFunction }>) {
   return (
     <Card>
       <CardHeader>

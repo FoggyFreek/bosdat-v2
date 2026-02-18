@@ -125,7 +125,7 @@ export const Step1LessonDetails = ({ courseTypes }: Step1LessonDetailsProps) => 
             onValueChange={handleTeacherChange}
             disabled={!step1.courseTypeId}>
             <SelectTrigger id="teacher" aria-label={t('enrollments.step1.teacher')}>
-              <SelectValue placeholder={!step1.courseTypeId ? t('enrollments.step1.selectCourseTypeFirst') : t('enrollments.step1.selectTeacher')} />
+              <SelectValue placeholder={step1.courseTypeId ? t('enrollments.step1.selectTeacher') : t('enrollments.step1.selectCourseTypeFirst')} />
             </SelectTrigger>
             <SelectContent>
               {filteredTeachers.map((b) => (

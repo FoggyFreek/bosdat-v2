@@ -22,7 +22,7 @@ import {
 import { schedulingApi } from '@/features/settings/api'
 import type { SchedulingStatus, ScheduleRun, ScheduleRunsResponse, ManualRunResult } from '@/features/settings/types'
 
-function StatusCard({ status, t }: { status: SchedulingStatus; t: TFunction }) {
+function StatusCard({ status, t }: Readonly<{ status: SchedulingStatus; t: TFunction }>) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
       <h3 className="font-medium flex items-center gap-2">
@@ -183,7 +183,7 @@ function AdminArea({
   )
 }
 
-function ErrorState({ t }: { t: TFunction }) {
+function ErrorState({ t }: Readonly<{ t: TFunction }>) {
   return (
     <Card>
       <CardHeader>

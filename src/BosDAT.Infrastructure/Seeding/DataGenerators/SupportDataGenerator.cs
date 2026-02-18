@@ -13,26 +13,6 @@ public class SupportDataGenerator
     private readonly ApplicationDbContext _context;
     private readonly SeederContext _seederContext;
 
-    // Credit descriptions for ledger entries
-    private static readonly string[] CreditDescriptions =
-    {
-        "Overpayment refund",
-        "Lesson cancellation credit",
-        "Promotional credit",
-        "Teacher absence compensation",
-        "Early payment discount"
-    };
-
-    // Debit descriptions for ledger entries
-    private static readonly string[] DebitDescriptions =
-    {
-        "Late payment fee",
-        "Material costs",
-        "Exam fee",
-        "Book rental",
-        "Additional practice room usage"
-    };
-
     public SupportDataGenerator(ApplicationDbContext context, SeederContext seederContext)
     {
         _context = context;

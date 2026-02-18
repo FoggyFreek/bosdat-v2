@@ -17,6 +17,8 @@ const createLesson = (overrides: Partial<CalendarLesson> = {}): CalendarLesson =
   endTime: '10:30',
   studentName: 'Student1 Test',
   teacherName: 'Teacher Test',
+  isTrial: false,
+  isWorkshop: false,
   roomName: 'Room 1',
   instrumentName: 'Piano',
   status: 'Scheduled',

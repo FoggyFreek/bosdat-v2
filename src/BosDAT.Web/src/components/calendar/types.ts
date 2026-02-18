@@ -56,6 +56,12 @@ export type DayAvailability = {
 
 export type CalendarView = 'week' | 'day' | 'list';
 
+export const calendarViewTranslations = {
+  week: 'calendar.views.week',
+  day: 'calendar.views.day',
+  list: 'calendar.views.list',
+} as const satisfies Record<CalendarView, string>;
+
 export type CalendarListAction = 'cancel' | 'move';
 
 export type SchedulerProps = {

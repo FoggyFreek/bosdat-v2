@@ -186,8 +186,8 @@ describe('CoursesPage', () => {
       render(<CoursesPage />)
 
       await waitFor(() => {
-        const enrolledElements = screen.getAllByText((content, element) => {
-          return element?.textContent?.includes('courses.list.enrolled')
+        const enrolledElements = screen.getAllByText((_content, element) => {
+          return !!element?.textContent?.includes('courses.list.enrolled')
         })
         expect(enrolledElements.length).toBeGreaterThanOrEqual(2)
 

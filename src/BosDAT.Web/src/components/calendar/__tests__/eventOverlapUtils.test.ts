@@ -15,6 +15,7 @@ const makeEvent = (
   frequency: 'once',
   eventType: 'course',
   attendees: [],
+  status: 'Scheduled',
   ...overrides,
 });
 

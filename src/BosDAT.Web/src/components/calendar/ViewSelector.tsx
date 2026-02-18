@@ -3,16 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { CalendarDays, Clock, List } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CalendarView } from './types';
+import { calendarViewTranslations } from './types';
 
 type ViewSelectorProps = {
   view: CalendarView;
   onViewChange: (view: CalendarView) => void;
 };
 
-const VIEW_OPTIONS: { value: CalendarView; icon: typeof CalendarDays; labelKey: string }[] = [
-  { value: 'week', icon: CalendarDays, labelKey: 'calendar.views.week' },
-  { value: 'day', icon: Clock, labelKey: 'calendar.views.day' },
-  { value: 'list', icon: List, labelKey: 'calendar.views.list' },
+const VIEW_OPTIONS: { value: CalendarView; icon: typeof CalendarDays }[] = [
+  { value: 'week', icon: CalendarDays },
+  { value: 'day', icon: Clock },
+  { value: 'list', icon: List },
 ];
 
 const ViewSelectorComponent: React.FC<ViewSelectorProps> = ({ view, onViewChange }) => {
@@ -24,7 +25,7 @@ const ViewSelectorComponent: React.FC<ViewSelectorProps> = ({ view, onViewChange
       role="tablist"
       aria-label={t('calendar.views.label')}
     >
-      {VIEW_OPTIONS.map(({ value, icon: Icon, labelKey }) => (
+      {VIEW_OPTIONS.map(({ value, icon: Icon }) => (
         <button
           key={value}
           type="button"
@@ -40,7 +41,7 @@ const ViewSelectorComponent: React.FC<ViewSelectorProps> = ({ view, onViewChange
           onClick={() => onViewChange(value)}
         >
           <Icon className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{t(labelKey)}</span>
+          <span>{t(calendarViewTranslations[value])}</span>
         </button>
       ))}
     </div>

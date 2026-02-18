@@ -33,16 +33,15 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const positionClass = isDayView
+    ? 'bottom-full mb-2 left-0 w-max max-w-[300px]'
+    : cn('top-0 min-w-[200px]', isLastColumn ? 'right-full mr-2' : 'left-full ml-2');
+
   return (
     <div
       className={cn(
         'absolute z-9999 bg-white rounded-lg shadow-lg border border-slate-200 p-3',
-        isDayView
-          ? 'bottom-full mb-2 left-0 w-max max-w-[300px]'
-          : cn(
-              'top-0 min-w-[200px]',
-              isLastColumn ? 'right-full mr-2' : 'left-full ml-2'
-            )
+        positionClass
       )}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

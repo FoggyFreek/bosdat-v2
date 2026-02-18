@@ -38,12 +38,12 @@ public class InvoiceService(
         var invoice = await unitOfWork.Invoices.GetWithLinesAsync(invoiceId, ct);
         if (invoice == null)
         {
-            throw new ApplicationException("Invoice not found.");
+            throw new InvalidOperationException("Invoice not found.");
         }
 
         if (invoice.Status == InvoiceStatus.Cancelled)
         {
-            throw new ApplicationException("Cannot record payment for a cancelled invoice.");
+            throw new InvalidOperationException("Cannot record payment for a cancelled invoice.");
         }
 
         var existingPayments = invoice.Payments?.Sum(p => p.Amount) ?? 0;
@@ -51,7 +51,7 @@ public class InvoiceService(
 
         if (dto.Amount > remainingBalance)
         {
-            throw new ApplicationException($"Payment amount exceeds remaining balance of {remainingBalance:F2}.");
+            throw new InvalidOperationException($"Payment amount exceeds remaining balance of {remainingBalance:F2}.");
         }
 
         try
@@ -110,7 +110,7 @@ public class InvoiceService(
         var invoice = await unitOfWork.Invoices.GetWithLinesAsync(invoiceId, ct);
         if (invoice == null)
         {
-            throw new ApplicationException("Invoice not found.");
+            throw new InvalidOperationException("Invoice not found.");
         }
 
         var payments = invoice.Payments ?? [];

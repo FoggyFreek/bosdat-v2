@@ -178,6 +178,7 @@ describe('Step4Summary', () => {
       addStudent: vi.fn(),
       removeStudent: vi.fn(),
       updateStudent: vi.fn(),
+      syncStartDate: vi.fn(),
       setCurrentStep: vi.fn(),
       resetForm: vi.fn(),
       isStep1Valid: vi.fn(() => true),

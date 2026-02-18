@@ -11,7 +11,7 @@ The SonarQube MCP server is already connected. All tools are available as `mcp__
 
 - **Project key:** `FoggyFreek_bosdat-v2`
 - **Current branch:** !`git branch --show-current`
-- **Open PR (if any):** !`gh pr view --json number -q .number 2>/dev/null || echo "none"`
+- **Open PR (if any):** use `gh pr view --json number --jq .number` to find the PR number if needed
 - **File key prefix:** `FoggyFreek_bosdat-v2:` + path from repo root
 
 Use this context directly — do not call `search_my_sonarqube_projects` to discover the key.
@@ -89,41 +89,15 @@ Use this context directly — do not call `search_my_sonarqube_projects` to disc
 
 ## Common Workflows
 
-### Check if a PR passes quality gates
-
-```
-1. get_project_quality_gate_status("FoggyFreek_bosdat-v2", pullRequest: "<PR number from context>")
-2. If ERROR → search_sonar_issues_in_projects(projects: ["FoggyFreek_bosdat-v2"], pullRequestId: "<PR number>")
-3. get_component_measures("FoggyFreek_bosdat-v2", metricKeys: ["coverage", "violations"], pullRequest: "<PR number>")
-```
-
 ### Investigate and triage issues
 
 ```
-1. search_sonar_issues_in_projects(projects: ["FoggyFreek_bosdat-v2"], severities: ["HIGH", "BLOCKER"])
+1. search_sonar_issues_in_projects(projects: ["FoggyFreek_bosdat-v2"], severities: ["MEDIUM", "HIGH", "BLOCKER"], ps: 30, p: 1)
 2. Filter to status === "OPEN" only — discard CLOSED/RESOLVED
 3. show_rule(key) — understand what the rule is about
-4. get_raw_source(key: "FoggyFreek_bosdat-v2:src/path/to/File.cs") — see the code in context
-5. change_sonar_issue_status(key, status: "accept" | "falsepositive") — confirm with user first
-```
-
-### Review overall project health
+4. Fix most common issues 
 
 ```
-1. get_project_quality_gate_status("FoggyFreek_bosdat-v2", branch: "<branch from context>")
-2. get_component_measures("FoggyFreek_bosdat-v2", metricKeys: ["coverage", "duplicated_lines_density", "violations", "complexity", "ncloc", "sqale_debt_ratio"])
-3. search_sonar_issues_in_projects(projects: ["FoggyFreek_bosdat-v2"], severities: ["BLOCKER", "HIGH"])
-4. Filter to status === "OPEN" only before reporting
-```
-
-### Analyze a code snippet before committing
-
-```
-1. analyze_code_snippet(codeSnippet, language, projectKey)
-2. For any issues: show_rule(key) to understand the finding
-```
-
----
 
 ## Key Metric Keys
 

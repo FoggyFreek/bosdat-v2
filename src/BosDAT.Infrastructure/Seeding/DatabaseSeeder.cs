@@ -44,7 +44,7 @@ public class DatabaseSeeder : IDatabaseSeeder
             var seederContext = new SeederContext();
 
             // Validate prerequisites
-            var adminUser = await ValidatePrerequisitesAsync(seederContext, cancellationToken);
+            await ValidatePrerequisitesAsync(seederContext, cancellationToken);
 
             // Create data generators
             var teacherGenerator = new TeacherDataGenerator(_context, seederContext);
