@@ -46,11 +46,12 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<T> Repository<T>() where T : class
     {
         var type = typeof(T);
-        if (!_repositories.ContainsKey(type))
+        if (!_repositories.TryGetValue(type, out var repository))
         {
-            _repositories[type] = new Repository<T>(_context);
+            repository = new Repository<T>(_context);
+            _repositories[type] = repository;
         }
-        return (IRepository<T>)_repositories[type];
+        return (IRepository<T>)repository;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

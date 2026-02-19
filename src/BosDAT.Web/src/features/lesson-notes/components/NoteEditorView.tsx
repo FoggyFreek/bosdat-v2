@@ -14,11 +14,11 @@ function AttachmentItem({
   attachment,
   onDelete,
   isDeleting,
-}: {
+}: Readonly<{
   attachment: NoteAttachment
   onDelete: () => void
   isDeleting: boolean
-}) {
+}>) {
   const isImage = attachment.contentType.startsWith('image/')
   return (
     <div className="flex items-center gap-2 rounded border px-2 py-1.5 text-sm bg-muted/30">
@@ -64,7 +64,7 @@ export function NoteEditorView({
   lessonDate,
   queryKey,
   onBack,
-}: NoteEditorViewProps) {
+}: Readonly<NoteEditorViewProps>) {
   const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -210,21 +210,19 @@ export function NoteEditorView({
             </div>
           )}
 
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             aria-label={t('lessons.notes.uploadHint')}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click() }}
             onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded p-4 text-center text-xs text-muted-foreground cursor-pointer transition-colors ${
+            className={`w-full border-2 border-dashed rounded p-4 text-center text-xs text-muted-foreground cursor-pointer transition-colors ${
               isDragging ? 'border-primary bg-primary/5' : 'hover:border-muted-foreground/50'
             }`}
           >
             {t('lessons.notes.uploadHint')}
-          </div>
+          </button>
 
           <input
             ref={fileInputRef}

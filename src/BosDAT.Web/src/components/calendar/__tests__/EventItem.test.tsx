@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@/test/utils';
 import { EventItem } from '../EventItem';
 import type { CalendarEvent } from '../types';
@@ -194,5 +194,6 @@ describe('EventItem', () => {
     render(<EventItem {...defaultProps} />);
     // Should not throw
     await user.click(screen.getByRole('button'));
+    expect(screen.getByText('Test Event')).toBeInTheDocument();
   });
 });

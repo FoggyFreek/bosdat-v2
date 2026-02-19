@@ -135,16 +135,10 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                   key={invoice.id}
                   className="border rounded-lg overflow-hidden"
                 >
-                  <div
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50"
+                  <button
+                    type="button"
+                    className="flex items-center justify-between p-4 w-full text-left cursor-pointer hover:bg-muted/50"
                     onClick={() => handleToggleExpand(invoice.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        handleToggleExpand(invoice.id)
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
                   >
                     <div className="flex items-center gap-4">
                       <FileText className="h-5 w-5 text-muted-foreground" />
@@ -171,7 +165,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                         <ChevronDown className="h-5 w-5" />
                       )}
                     </div>
-                  </div>
+                  </button>
 
                   {expandedInvoiceId === invoice.id && selectedInvoice && (
                     <div className="border-t p-4 bg-muted/30">

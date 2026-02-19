@@ -100,7 +100,7 @@ public class StudentsController(
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var (success, notFound) = await _studentService.DeleteAsync(id, cancellationToken);
+        var (_, notFound) = await _studentService.DeleteAsync(id, cancellationToken);
 
         if (notFound)
         {

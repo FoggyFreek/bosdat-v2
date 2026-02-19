@@ -131,7 +131,9 @@ const getCourseDate = (weekStart: Date, dayOfWeek: number): Date => {
  * Determines the event type based on workshop flag
  */
 const determineEventType = (course: Course): EventType => {
-  return course.isWorkshop ? 'workshop' : course.isTrial ? 'trial' : 'course'
+  if (course.isWorkshop) return 'workshop'
+  if (course.isTrial) return 'trial'
+  return 'course'
 }
 
 /**
@@ -159,7 +161,7 @@ const isValidTime = (time: string | null | undefined): boolean => {
   if (parts.length < 2) return false
 
   const [hours, minutes] = parts.map(Number)
-  if (isNaN(hours) || isNaN(minutes)) return false
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return false
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return false
 
   return true
@@ -179,7 +181,7 @@ const combineDateAndTime = (date: Date, time: string): Date | null => {
   const result = new Date(date)
   result.setHours(hours, minutes, 0, 0)
 
-  if (isNaN(result.getTime())) {
+  if (Number.isNaN(result.getTime())) {
     return null
   }
 

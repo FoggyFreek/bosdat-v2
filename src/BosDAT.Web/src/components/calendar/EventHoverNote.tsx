@@ -33,9 +33,10 @@ const EventHoverNoteComponent: React.FC<EventHoverNoteProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const weekViewSideClass = isLastColumn ? 'right-full mr-2' : 'left-full ml-2'
   const positionClass = isDayView
     ? 'bottom-full mb-2 left-0 w-max max-w-[300px]'
-    : cn('top-0 min-w-[200px]', isLastColumn ? 'right-full mr-2' : 'left-full ml-2');
+    : cn('top-0 min-w-[200px]', weekViewSideClass);
 
   return (
     <div

@@ -14,19 +14,37 @@ public class FilesController(IConfiguration configuration) : ControllerBase
     [HttpGet("{storedFileName}")]
     public IActionResult GetFile(string storedFileName)
     {
-        if (string.IsNullOrWhiteSpace(storedFileName) || storedFileName.Contains(".."))
+        if (string.IsNullOrWhiteSpace(storedFileName))
         {
             return BadRequest();
         }
 
-        var filePath = Path.Combine(_basePath, "attachments", storedFileName);
+        // Strip any directory components supplied by the caller to prevent path traversal.
+        var safeFileName = Path.GetFileName(storedFileName);
+
+        // Reject if the sanitized name is empty, contains a path separator, or is an absolute path.
+        if (string.IsNullOrEmpty(safeFileName) || safeFileName != storedFileName || Path.IsPathRooted(storedFileName))
+        {
+            return BadRequest();
+        }
+
+        var attachmentsDir = Path.GetFullPath(Path.Combine(_basePath, "attachments"));
+        var filePath = Path.GetFullPath(Path.Combine(attachmentsDir, safeFileName));
+
+        // Confirm the resolved path is strictly inside the expected directory.
+        if (!filePath.StartsWith(attachmentsDir + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            && !filePath.Equals(attachmentsDir, StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest();
+        }
+
         if (!System.IO.File.Exists(filePath))
         {
             return NotFound();
         }
 
-        var contentType = GetContentType(storedFileName);
-        return PhysicalFile(Path.GetFullPath(filePath), contentType);
+        var contentType = GetContentType(safeFileName);
+        return PhysicalFile(filePath, contentType);
     }
 
     private static string GetContentType(string fileName)

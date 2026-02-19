@@ -122,13 +122,16 @@ const convertGroupedLessonToEvent = (group: GroupedLesson): CalendarEvent => {
     ? `${group.courseId}:${group.date}`
     : group.lessons[0]?.id ?? `${group.courseId}:${group.date}`
 
+  const workshopOrCourse = group.isWorkshop ? 'workshop' : 'course'
+  const eventType = group.isTrial ? 'trial' : workshopOrCourse
+
   return {
     id: eventId,
     startDateTime: combineDateAndTime(new Date(group.date), group.startTime),
     endDateTime: combineDateAndTime(new Date(group.date), group.endTime),
     title: group.title + (group.isTrial ? ' (Trail)' : ''),
     frequency: group.frequency,
-    eventType: group.isTrial? 'trial' : group.isWorkshop? 'workshop' : 'course',
+    eventType,
     status: group.status,
     attendees,
     room: group.roomName,

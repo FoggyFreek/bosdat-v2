@@ -67,7 +67,7 @@ export function CourseDetailPage() {
 
       <CourseLessonHistoryCard
         lessons={lessons}
-        courseId={id!}
+        courseId={id ?? ''}
         filters={lessonFilters}
         onFiltersChange={setLessonFilters}
         onCancelLesson={setCancelLesson}
@@ -75,7 +75,7 @@ export function CourseDetailPage() {
 
       <CancelLessonDialog
         lesson={cancelLesson}
-        courseId={id!}
+        courseId={id ?? ''}
         onClose={() => setCancelLesson(null)}
       />
     </div>

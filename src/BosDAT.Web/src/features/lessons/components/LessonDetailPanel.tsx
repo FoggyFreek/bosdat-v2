@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<string, string> = {
   NoShow: 'bg-amber-100 text-amber-800',
 }
 
-function AvatarInitials({ name }: { name: string }) {
+function AvatarInitials({ name }: Readonly<{ name: string }>) {
   const initials = name
     .split(' ')
     .filter(Boolean)
@@ -39,7 +39,7 @@ interface LessonDetailPanelProps {
   onClose: () => void
 }
 
-export function LessonDetailPanel({ lessonId, onClose }: LessonDetailPanelProps) {
+export function LessonDetailPanel({ lessonId, onClose }: Readonly<LessonDetailPanelProps>) {
   const { t } = useTranslation()
 
   const { data: lesson, isLoading, isError } = useQuery<Lesson>({

@@ -10,7 +10,7 @@ interface CourseTasksSectionProps {
   courseId: string
 }
 
-export function CourseTasksSection({ courseId }: CourseTasksSectionProps) {
+export function CourseTasksSection({ courseId }: Readonly<CourseTasksSectionProps>) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [newTitle, setNewTitle] = useState('')

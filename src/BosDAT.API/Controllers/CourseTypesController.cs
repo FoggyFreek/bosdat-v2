@@ -72,7 +72,7 @@ public class CourseTypesController(
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        var (success, error, notFound) = await courseTypeService.DeleteAsync(id, cancellationToken);
+        var (_, error, notFound) = await courseTypeService.DeleteAsync(id, cancellationToken);
 
         if (notFound)
         {

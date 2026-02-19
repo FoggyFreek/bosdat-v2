@@ -87,7 +87,7 @@ public class InvoiceGenerationService(
 
             if(isEligibleForFee)
             {
-                AddLineForRegistrationFeeAsync(enrollment.Student, invoice, feeAmount, feeDescription, vatRate, ct);
+                AddLineForRegistrationFeeAsync(enrollment.Student, invoice, feeAmount, feeDescription, vatRate);
             }
 
             //calculate subtotal of all lesson lines
@@ -151,8 +151,8 @@ public class InvoiceGenerationService(
 
     public async Task<InvoiceDto> RecalculateInvoiceAsync(Guid invoiceId, Guid userId, CancellationToken ct = default)
     {
-        var invoice = await unitOfWork.Invoices.GetWithLinesAndEnrollmentsAsync(invoiceId, ct) 
-            ?? throw new InvalidOperationException($"Invoice with ID {invoiceId} not found.");;
+        var invoice = await unitOfWork.Invoices.GetWithLinesAndEnrollmentsAsync(invoiceId, ct)
+            ?? throw new InvalidOperationException($"Invoice with ID {invoiceId} not found.");
 
         if (invoice.Status != InvoiceStatus.Draft)
         {
@@ -262,8 +262,8 @@ public class InvoiceGenerationService(
         }
     }
 
-     private static void AddLineForRegistrationFeeAsync(Student student, Invoice invoice, decimal feeAmount, string feeDescription, 
-     decimal vatRate, CancellationToken ct = default)
+     private static void AddLineForRegistrationFeeAsync(Student student, Invoice invoice, decimal feeAmount, string feeDescription,
+     decimal vatRate)
     {
         if (student == null)
         {

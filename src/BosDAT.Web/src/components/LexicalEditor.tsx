@@ -120,7 +120,7 @@ export function LexicalEditor({
   placeholder = '',
   readOnly = false,
   minHeight = '120px',
-}: LexicalEditorProps) {
+}: Readonly<LexicalEditorProps>) {
   const initialConfig = {
     namespace: 'BosDAT-Note',
     theme,

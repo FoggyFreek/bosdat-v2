@@ -117,7 +117,7 @@ public class DatabaseSeeder : IDatabaseSeeder
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during database seeding");
-            throw;
+            throw new InvalidOperationException("Database seeding failed. See inner exception for details.", ex);
         }
     }
 
@@ -138,7 +138,7 @@ public class DatabaseSeeder : IDatabaseSeeder
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during database reset");
-            throw;
+            throw new InvalidOperationException("Database reset failed. See inner exception for details.", ex);
         }
     }
 

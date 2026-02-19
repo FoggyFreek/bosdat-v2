@@ -32,7 +32,7 @@ interface NoteCardProps {
   onClick: () => void
 }
 
-export function NoteCard({ note, isSelected, onClick }: NoteCardProps) {
+export function NoteCard({ note, isSelected, onClick }: Readonly<NoteCardProps>) {
   const { t, i18n } = useTranslation()
 
   const formattedDate = new Intl.DateTimeFormat(i18n.language, {

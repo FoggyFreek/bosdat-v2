@@ -87,28 +87,28 @@ export function GlobalSearch() {
       </div>
 
       {showDropdown && (
-        <div
+        <ul
           id="global-search-results"
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg z-50 max-h-[400px] overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg z-50 max-h-[400px] overflow-y-auto list-none p-0 m-0"
         >
           {term.length < 2 && (
-            <div className="px-4 py-3 text-sm text-muted-foreground">
+            <li className="px-4 py-3 text-sm text-muted-foreground">
               {t('search.minCharacters')}
-            </div>
+            </li>
           )}
 
           {isLoading && term.length >= 2 && (
-            <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               {t('common.states.loading')}
-            </div>
+            </li>
           )}
 
           {!isLoading && shouldSearch && results.length === 0 && (
-            <div className="px-4 py-3 text-sm text-muted-foreground">
+            <li className="px-4 py-3 text-sm text-muted-foreground">
               {t('search.noResults')}
-            </div>
+            </li>
           )}
 
           {!isLoading && results.length > 0 && (
@@ -137,7 +137,7 @@ export function GlobalSearch() {
               )}
             </>
           )}
-        </div>
+        </ul>
       )}
     </div>
   )
@@ -163,32 +163,35 @@ function ResultGroup({
   setActiveIndex,
 }: Readonly<ResultGroupProps>) {
   return (
-    <div>
+    <li>
       <div className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider border-b bg-gray-50">
         {icon}
         {label}
       </div>
-      {results.map((result, i) => {
-        const globalIndex = startIndex + i
-        return (
-          <button
-            key={result.id}
-            id={`search-result-${globalIndex}`}
-            role="option"
-            aria-selected={activeIndex === globalIndex}
-            className={cn(
-              'w-full text-left px-4 py-2 flex flex-col hover:bg-accent transition-colors',
-              activeIndex === globalIndex && 'bg-accent'
-            )}
-            onClick={() => onSelect(result)}
-            onMouseEnter={() => setActiveIndex(globalIndex)}
-            type="button"
-          >
-            <span className="text-sm font-medium">{result.name}</span>
-            <span className="text-xs text-muted-foreground">{result.subtitle}</span>
-          </button>
-        )
-      })}
-    </div>
+      <ul className="list-none p-0 m-0">
+        {results.map((result, i) => {
+          const globalIndex = startIndex + i
+          return (
+            <li key={result.id}>
+              <button
+                id={`search-result-${globalIndex}`}
+                role="option"
+                aria-selected={activeIndex === globalIndex}
+                className={cn(
+                  'w-full text-left px-4 py-2 flex flex-col hover:bg-accent transition-colors',
+                  activeIndex === globalIndex && 'bg-accent'
+                )}
+                onClick={() => onSelect(result)}
+                onMouseEnter={() => setActiveIndex(globalIndex)}
+                type="button"
+              >
+                <span className="text-sm font-medium">{result.name}</span>
+                <span className="text-xs text-muted-foreground">{result.subtitle}</span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </li>
   )
 }

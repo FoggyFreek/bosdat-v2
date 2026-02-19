@@ -51,7 +51,7 @@ logger.LogInformation("Lesson Generation Job Enabled: {Enabled}, Days Ahead: {Da
 logger.LogInformation("Lesson Status Update Job Enabled: {Enabled}",
     workerSettings.LessonStatusUpdateJob.Enabled);
 
-host.Run();
+await host.RunAsync();
 
 static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(int retryCount)
 {

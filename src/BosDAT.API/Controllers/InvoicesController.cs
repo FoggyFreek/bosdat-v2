@@ -201,15 +201,8 @@ public class InvoicesController(
             return BadRequest(new { message = "Payment amount must be greater than zero." });
         }
 
-        try
-        {
-            var payment = await invoiceService.RecordPaymentandLedgerTransaction(invoiceId, userId.Value, dto, ct);
-            return CreatedAtAction(nameof(GetPayments), new { invoiceId }, payment);
-        }
-        catch
-        {
-            throw;
-        }
+        var payment = await invoiceService.RecordPaymentandLedgerTransaction(invoiceId, userId.Value, dto, ct);
+        return CreatedAtAction(nameof(GetPayments), new { invoiceId }, payment);
     }
 
     /// <summary>

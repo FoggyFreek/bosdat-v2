@@ -61,14 +61,13 @@ public class RoomsController(IRoomService roomService) : ControllerBase
     {
         var (success, errorMessage) = await roomService.DeleteAsync(id, cancellationToken);
 
-        if (!success && errorMessage == null)
+        if (!success)
         {
+            if (errorMessage != null)
+            {
+                return BadRequest(new { message = errorMessage });
+            }
             return NotFound();
-        }
-
-        if (!success && errorMessage != null)
-        {
-            return BadRequest(new { message = errorMessage });
         }
 
         return NoContent();
@@ -80,14 +79,13 @@ public class RoomsController(IRoomService roomService) : ControllerBase
     {
         var (success, errorMessage, room) = await roomService.ArchiveAsync(id, cancellationToken);
 
-        if (!success && errorMessage == null)
+        if (!success)
         {
+            if (errorMessage != null)
+            {
+                return BadRequest(new { message = errorMessage });
+            }
             return NotFound();
-        }
-
-        if (!success && errorMessage != null)
-        {
-            return BadRequest(new { message = errorMessage });
         }
 
         return Ok(room);

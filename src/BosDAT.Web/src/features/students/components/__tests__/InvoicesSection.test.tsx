@@ -186,7 +186,7 @@ describe('InvoicesSection', () => {
     })
 
     // Click on the invoice row to expand
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -206,7 +206,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the draft invoice
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -233,7 +233,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the paid invoice
-    const invoiceRow = screen.getByText('202602').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202602').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -252,7 +252,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the invoice
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -278,7 +278,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the invoice
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -297,7 +297,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the invoice
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -319,7 +319,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the invoice
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }
@@ -369,7 +369,7 @@ describe('InvoicesSection', () => {
     })
 
     // Expand the invoice
-    const invoiceRow = screen.getByText('202601').closest('[role="button"]')
+    const invoiceRow = screen.getByText('202601').closest('button')
     if (invoiceRow) {
       await user.click(invoiceRow)
     }

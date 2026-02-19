@@ -18,11 +18,10 @@ public class StudentService(
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.ToLower();
             query = query.Where(s =>
-                s.FirstName.ToLower().Contains(term) ||
-                s.LastName.ToLower().Contains(term) ||
-                s.Email.ToLower().Contains(term));
+                s.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                s.LastName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                s.Email.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
         if (status.HasValue)

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,11 +15,11 @@ public class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
             throw new JsonException("TimeOnly value cannot be null or empty");
 
         // Try parsing with seconds first (HH:mm:ss)
-        if (TimeOnly.TryParseExact(value, TimeFormat, out var timeWithSeconds))
+        if (TimeOnly.TryParseExact(value, TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var timeWithSeconds))
             return timeWithSeconds;
 
         // Fall back to HH:mm format
-        if (TimeOnly.TryParseExact(value, "HH:mm", out var timeWithoutSeconds))
+        if (TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var timeWithoutSeconds))
             return timeWithoutSeconds;
 
         throw new JsonException($"Unable to convert \"{value}\" to TimeOnly");

@@ -15,8 +15,8 @@
  *   1 - Missing translations found
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Paths to translation files
 const nlPath = path.join(__dirname, '../src/i18n/locales/nl.json');

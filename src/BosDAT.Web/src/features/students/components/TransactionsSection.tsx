@@ -72,7 +72,7 @@ export function TransactionsSection({ studentId }: Readonly<TransactionsSectionP
     enabled: !!studentId,
   })
 
-  const balance = transactions.length > 0 ? transactions[transactions.length - 1].runningBalance : 0
+  const balance = transactions.length > 0 ? transactions.at(-1)!.runningBalance : 0
 
   if (isLoading) {
     return (

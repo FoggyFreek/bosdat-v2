@@ -407,8 +407,8 @@ describe('CalendarComponent', () => {
         />
       )
 
-      expect(screen.getByText('course/Scheduled')).toBeInTheDocument()
-      expect(screen.getByText('weekly')).toBeInTheDocument()
+      // EventItem renders type and frequency in aria-label, not as visible badges
+      expect(screen.getByLabelText('Piano Lesson, course, weekly')).toBeInTheDocument()
     })
   })
 

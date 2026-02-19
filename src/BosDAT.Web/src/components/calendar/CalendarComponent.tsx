@@ -52,7 +52,8 @@ export const CalendarComponent: React.FC<SchedulerProps> = ({
   const dayHeaderLabel = useMemo(() => {
     if (!activeDayDate) return '';
     const dayKey = DAY_LABEL_KEYS[activeDayDate.getDay()];
-    return `${t(`calendar.days.${dayKey}`)} ${activeDayDate.getDate()}`;
+    const dayTranslationKey = `calendar.days.${dayKey}` as const;
+    return `${t(dayTranslationKey as never)} ${activeDayDate.getDate()}`;
   }, [activeDayDate, t]);
 
   const ariaLabelMap: Record<string, string> = {

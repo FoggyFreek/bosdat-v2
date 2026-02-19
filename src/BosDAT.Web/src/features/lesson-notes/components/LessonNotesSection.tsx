@@ -15,7 +15,7 @@ interface LessonNotesSectionProps {
   lessonDate?: string
 }
 
-export function LessonNotesSection({ lessonId, lessonDate }: LessonNotesSectionProps) {
+export function LessonNotesSection({ lessonId, lessonDate }: Readonly<LessonNotesSectionProps>) {
   const { t } = useTranslation()
   const queryKey = ['lesson-notes', lessonId]
 

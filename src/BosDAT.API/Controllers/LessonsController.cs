@@ -225,8 +225,8 @@ public record BulkGenerateLessonsResultDto
 
 public record UpdateGroupLessonStatusDto
 {
-    public Guid CourseId { get; init; }
-    public DateOnly ScheduledDate { get; init; }
+    public required Guid CourseId { get; init; }
+    public required DateOnly ScheduledDate { get; init; }
     public required LessonStatus Status { get; init; }
     public string? CancellationReason { get; init; }
 }

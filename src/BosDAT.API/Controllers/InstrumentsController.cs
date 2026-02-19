@@ -70,7 +70,7 @@ public class InstrumentsController(IInstrumentService instrumentService) : Contr
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        var (success, notFound) = await instrumentService.DeleteAsync(id, cancellationToken);
+        var (_, notFound) = await instrumentService.DeleteAsync(id, cancellationToken);
 
         if (notFound)
         {

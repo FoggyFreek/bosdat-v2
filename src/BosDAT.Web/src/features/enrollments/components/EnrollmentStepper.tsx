@@ -91,8 +91,9 @@ const EnrollmentStepperContent = () => {
 
     setIsSubmitting(true)
     try {
+      const weeklyOrOnce: CourseFrequency = formData.step1.recurrence === 'Weekly' ? 'Weekly' : 'Once'
       const frequency: CourseFrequency =
-        formData.step1.recurrence === 'Biweekly' ? 'Biweekly' : formData.step1.recurrence === 'Weekly' ? 'Weekly' : 'Once'
+        formData.step1.recurrence === 'Biweekly' ? 'Biweekly' : weeklyOrOnce
 
       const weekParity: WeekParity =
         formData.step1.recurrence === 'Biweekly'

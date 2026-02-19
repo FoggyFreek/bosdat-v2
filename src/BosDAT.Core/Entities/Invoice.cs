@@ -58,12 +58,9 @@ public class Invoice : BaseEntity
 
     public void UnInvoiceAndClearLines()
     {
-        foreach (var line in Lines)
+        foreach (var lesson in Lines.Select(line => line.Lesson).Where(lesson => lesson != null))
         {
-            if(line.Lesson != null)
-            {
-                line.Lesson!.IsInvoiced = false;
-            }
+            lesson!.IsInvoiced = false;
         }
         Lines.Clear();
     }
