@@ -18,6 +18,8 @@ obj/
 appsettings.*.json
 !appsettings.json
 !appsettings.Development.json
+uploads/
+attachments/
 
 # Node.js
 node_modules/

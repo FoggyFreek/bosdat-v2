@@ -11,11 +11,11 @@ namespace BosDAT.API.Controllers;
 public class LessonNotesController(ILessonNoteService lessonNoteService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LessonNoteDto>>> GetByCourse(
+    public async Task<ActionResult<IEnumerable<LessonNoteDto>>> GetByLessonCourse(
         Guid lessonId, CancellationToken cancellationToken)
     {
-        var notes = await lessonNoteService.GetByCourseAsync(lessonId, cancellationToken);
-        return Ok(notes);
+        var result = await lessonNoteService.GetByLessonCourseAsync(lessonId, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
     }
 
     [HttpPost]
@@ -23,13 +23,8 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     public async Task<ActionResult<LessonNoteDto>> Create(
         Guid lessonId, [FromBody] CreateLessonNoteDto dto, CancellationToken cancellationToken)
     {
-        var note = await lessonNoteService.CreateAsync(lessonId, dto, cancellationToken);
-        if (note == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(note);
+        var result = await lessonNoteService.CreateAsync(lessonId, dto, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
     }
 
     [HttpPut("{noteId:guid}")]
@@ -37,13 +32,8 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     public async Task<ActionResult<LessonNoteDto>> Update(
         Guid lessonId, Guid noteId, [FromBody] UpdateLessonNoteDto dto, CancellationToken cancellationToken)
     {
-        var note = await lessonNoteService.UpdateAsync(noteId, dto, cancellationToken);
-        if (note == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(note);
+        var result = await lessonNoteService.UpdateAsync(noteId, dto, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
     }
 
     [HttpDelete("{noteId:guid}")]
@@ -51,13 +41,8 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     public async Task<IActionResult> Delete(
         Guid lessonId, Guid noteId, CancellationToken cancellationToken)
     {
-        var success = await lessonNoteService.DeleteAsync(noteId, cancellationToken);
-        if (!success)
-        {
-            return NotFound();
-        }
-
-        return NoContent();
+        var result = await lessonNoteService.DeleteAsync(noteId, cancellationToken);
+        return result.IsSuccess ? NoContent() : NotFound(result.Error);
     }
 
     [HttpPost("{noteId:guid}/attachments")]
@@ -71,15 +56,15 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
         }
 
         await using var stream = file.OpenReadStream();
-        var attachment = await lessonNoteService.AddAttachmentAsync(
+        var result = await lessonNoteService.AddAttachmentAsync(
             noteId, stream, file.FileName, file.ContentType, file.Length, cancellationToken);
 
-        if (attachment == null)
+        if (!result.IsSuccess)
         {
-            return NotFound();
+            return result.Error!.Contains("not found") ? NotFound(result.Error) : BadRequest(result.Error);
         }
 
-        return Ok(attachment);
+        return Ok(result.Value);
     }
 
     [HttpDelete("{noteId:guid}/attachments/{attachmentId:guid}")]
@@ -87,12 +72,7 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     public async Task<IActionResult> DeleteAttachment(
         Guid lessonId, Guid noteId, Guid attachmentId, CancellationToken cancellationToken)
     {
-        var success = await lessonNoteService.DeleteAttachmentAsync(attachmentId, cancellationToken);
-        if (!success)
-        {
-            return NotFound();
-        }
-
-        return NoContent();
+        var result = await lessonNoteService.DeleteAttachmentAsync(attachmentId, cancellationToken);
+        return result.IsSuccess ? NoContent() : NotFound(result.Error);
     }
 }
