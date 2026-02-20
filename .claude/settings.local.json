@@ -52,7 +52,9 @@
       "mcp__sonarqube__search_my_sonarqube_projects",
       "Bash({ npx tsc --noEmit)",
       "Bash(})",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "Bash(python:*)",
+      "Bash(python -c:*)"
     ]
   }
 }

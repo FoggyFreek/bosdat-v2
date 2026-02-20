@@ -1,5 +1,5 @@
 ---
-name: sonarqube
+name: code-quality
 description: "SonarQube code quality workflows: finding and triaging issues, checking quality gates, analyzing code snippets, reviewing metrics. Use when investigating code quality, and fixing SonarQube issues."
 ---
 
