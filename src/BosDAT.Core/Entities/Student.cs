@@ -57,6 +57,7 @@ public class Student : BaseEntity
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     public virtual ICollection<Cancellation> Cancellations { get; set; } = new List<Cancellation>();
     public virtual ICollection<StudentTransaction> Transactions { get; set; } = new List<StudentTransaction>();
+    public virtual ICollection<Absence> Absences { get; set; } = new List<Absence>();
 
     public string FullName => string.IsNullOrEmpty(Prefix)
         ? $"{FirstName} {LastName}"

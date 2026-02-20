@@ -6,6 +6,7 @@ public record WeekCalendarDto
     public DateOnly WeekEnd { get; init; }
     public List<CalendarLessonDto> Lessons { get; init; } = new();
     public List<HolidayDto> Holidays { get; init; } = new();
+    public List<AbsenceDto> TeacherAbsences { get; init; } = new();
 }
 
 public record DayCalendarDto

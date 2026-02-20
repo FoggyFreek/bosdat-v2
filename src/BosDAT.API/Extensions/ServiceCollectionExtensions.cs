@@ -120,6 +120,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILessonService, LessonService>();
         services.AddScoped<ILessonGenerationService, LessonGenerationService>();
         services.AddScoped<IHolidayService, HolidayService>();
+        services.AddScoped<IAbsenceService, AbsenceService>();
         services.AddScoped<IInstrumentService, InstrumentService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IStudentService, StudentService>();

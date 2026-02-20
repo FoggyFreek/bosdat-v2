@@ -17,7 +17,7 @@ import type { CalendarView, DayAvailability } from '@/components/calendar/types'
 import { calendarApi } from '@/features/schedule/api'
 import { teachersApi } from '@/features/teachers/api'
 import { roomsApi } from '@/features/rooms/api'
-import type { Holiday, WeekCalendar } from '@/features/schedule/types'
+import type { Holiday, WeekCalendar, TeacherAbsence } from '@/features/schedule/types'
 import { groupLessonsByCourseAndDate, type GroupedLesson } from '@/features/schedule/utils/groupLessons'
 import type { TeacherAvailability, TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
@@ -138,6 +138,40 @@ const convertGroupedLessonToEvent = (group: GroupedLesson): CalendarEvent => {
   }
 }
 
+const convertTeacherAbsencesToEvents = (absences: TeacherAbsence[]): CalendarEvent[] => {
+  const allEvents: CalendarEvent[] = []
+
+  for (const absence of absences) {
+    const start = new Date(absence.startDate)
+    const end = new Date(absence.endDate)
+    const current = new Date(start)
+
+    while (current <= end) {
+      const dayStart = new Date(current)
+      const dayEnd = new Date(current)
+      dayStart.setHours(8, 0, 0, 0)
+      dayEnd.setHours(22, 0, 0, 0)
+
+      allEvents.push({
+        id: `absence-${absence.id}-${current.toISOString().split('T')[0]}`,
+        startDateTime: dayStart,
+        endDateTime: dayEnd,
+        title: `${absence.personName ?? 'Teacher'} - ${absence.reason}`,
+        frequency: 'once',
+        attendees: absence.personName ? [absence.personName] : [],
+        eventType: 'holiday',
+        status: 'Cancelled',
+        roomId: undefined,
+      })
+
+      current.setDate(current.getDate() + 1)
+      current.setHours(0, 0, 0, 0)
+    }
+  }
+
+  return allEvents
+}
+
 const mapToDayAvailability = (availability: TeacherAvailability[]): DayAvailability[] =>
   availability.map((item) => ({
     dayOfWeek: item.dayOfWeek,
@@ -226,10 +260,11 @@ export const SchedulePage = () => {
   const events = useMemo(() => {
     const lessons = calendarData?.lessons ?? []
     const holidays = convertHolidaysToEvents(calendarData?.holidays ?? [])
+    const teacherAbsenceEvents = convertTeacherAbsencesToEvents(calendarData?.teacherAbsences ?? [])
     const grouped = groupLessonsByCourseAndDate(lessons)
 
-    return [... holidays, ...grouped.map(convertGroupedLessonToEvent)]
-  }, [calendarData?.lessons, calendarData?.holidays])
+    return [... holidays, ...teacherAbsenceEvents, ...grouped.map(convertGroupedLessonToEvent)]
+  }, [calendarData?.lessons, calendarData?.holidays, calendarData?.teacherAbsences])
 
   const availability = useMemo(
     () => mapToDayAvailability(teacherAvailability),
@@ -333,6 +368,10 @@ export const SchedulePage = () => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-orange-100 border border-orange-300" />
               <span>{t('schedule.legend.noShow')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-purple-100 border border-purple-300" />
+              <span>{t('absences.teacherAbsent')}</span>
             </div>
           </div>
         </CardContent>

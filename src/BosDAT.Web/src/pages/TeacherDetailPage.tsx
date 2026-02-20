@@ -10,6 +10,7 @@ import type { Teacher } from '@/features/teachers/types'
 import type { CourseList } from '@/features/courses/types'
 import { formatCurrency } from '@/lib/utils'
 import { TeacherAvailabilitySection } from '@/features/teachers/components/TeacherAvailabilitySection'
+import { TeacherAbsenceSection } from '@/features/teachers/components/TeacherAbsenceSection'
 import { CourseListItem } from '@/features/courses/components/CourseListItem'
 
 const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'
@@ -162,6 +163,8 @@ export function TeacherDetailPage() {
       </div>
 
       <TeacherAvailabilitySection teacherId={id!} />
+
+      <TeacherAbsenceSection teacherId={id!} />
 
       <Card>
         <CardHeader>

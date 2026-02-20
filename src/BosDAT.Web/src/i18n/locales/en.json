@@ -285,7 +285,20 @@
     },
     "absence": {
       "absenceRecords": "Absence Records",
-      "absenceTrackingComingSoon": "Absence tracking will be available in a future update."
+      "noAbsences": "No absences registered",
+      "addAbsence": "Add Absence",
+      "editAbsence": "Edit Absence",
+      "deleteAbsence": "Delete Absence",
+      "deleteConfirm": "Are you sure you want to delete this absence record?",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "reason": "Reason",
+      "notes": "Notes",
+      "invoiceLesson": "Invoice cancelled lessons",
+      "invoiceLessonHelp": "If enabled, cancelled lessons during this absence will still be invoiced.",
+      "created": "Absence registered successfully",
+      "updated": "Absence updated successfully",
+      "deleted": "Absence deleted successfully"
     },
     "preferences": {
       "studentPreferences": "Student Preferences",
@@ -1211,5 +1224,14 @@
     "placeholder": "Search students, teachers...",
     "minCharacters": "Type at least 2 characters to search",
     "noResults": "No results found"
+  },
+  "absences": {
+    "reason": {
+      "holiday": "Holiday",
+      "sick": "Sick",
+      "other": "Other"
+    },
+    "teacherAbsent": "Teacher absent",
+    "period": "Period"
   }
 }

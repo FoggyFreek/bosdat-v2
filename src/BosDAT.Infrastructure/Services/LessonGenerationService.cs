@@ -77,6 +77,8 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
     {
         var holidays = await GetHolidaysAsync(startDate, endDate, skipHolidays, ct);
         var existingLessons = await GetExistingLessonsAsync(course.Id, startDate, endDate, ct);
+        var teacherAbsences = await GetTeacherAbsencesAsync(course.TeacherId, startDate, endDate, ct);
+        var studentAbsences = await GetStudentAbsencesAsync(startDate, endDate, ct);
 
         var lessonsCreated = 0;
         var lessonsSkipped = 0;
@@ -88,9 +90,13 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
             {
                 lessonsSkipped++;
             }
+            else if (IsAbsent(currentDate, teacherAbsences))
+            {
+                lessonsSkipped++;
+            }
             else
             {
-                var (created, skipped) = await CreateLessonsForDate(course, currentDate, existingLessons);
+                var (created, skipped) = await CreateLessonsForDate(course, currentDate, existingLessons, studentAbsences);
                 lessonsCreated += created;
                 lessonsSkipped += skipped;
             }
@@ -141,6 +147,32 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
         return currentDate;
     }
 
+    private async Task<List<Absence>> GetTeacherAbsencesAsync(
+        Guid teacherId, DateOnly startDate, DateOnly endDate, CancellationToken ct)
+    {
+        return await unitOfWork.Repository<Absence>().Query()
+            .Where(a => a.TeacherId == teacherId && a.EndDate >= startDate && a.StartDate <= endDate)
+            .ToListAsync(ct);
+    }
+
+    private async Task<List<Absence>> GetStudentAbsencesAsync(
+        DateOnly startDate, DateOnly endDate, CancellationToken ct)
+    {
+        return await unitOfWork.Repository<Absence>().Query()
+            .Where(a => a.StudentId != null && a.EndDate >= startDate && a.StartDate <= endDate)
+            .ToListAsync(ct);
+    }
+
+    private static bool IsAbsent(DateOnly date, List<Absence> absences)
+    {
+        return absences.Any(a => date >= a.StartDate && date <= a.EndDate);
+    }
+
+    private static bool IsStudentAbsent(Guid studentId, DateOnly date, List<Absence> studentAbsences)
+    {
+        return studentAbsences.Any(a => a.StudentId == studentId && date >= a.StartDate && date <= a.EndDate);
+    }
+
     private static bool IsHoliday(DateOnly date, List<Holiday> holidays)
     {
         return holidays.Any(h => date >= h.StartDate && date <= h.EndDate);
@@ -173,7 +205,7 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
     }
 
     private async Task<(int Created, int Skipped)> CreateLessonsForDate(
-        Course course, DateOnly date, List<Lesson> existingLessons)
+        Course course, DateOnly date, List<Lesson> existingLessons, List<Absence> studentAbsences)
     {
         var created = 0;
         var skipped = 0;
@@ -198,7 +230,11 @@ public class LessonGenerationService(IUnitOfWork unitOfWork) : ILessonGeneration
         {
             foreach (var enrollment in enrolledStudents)
             {
-                if (!HasExistingLesson(date, enrollment.StudentId, existingLessons))
+                if (IsStudentAbsent(enrollment.StudentId, date, studentAbsences))
+                {
+                    skipped++;
+                }
+                else if (!HasExistingLesson(date, enrollment.StudentId, existingLessons))
                 {
                     await CreateLesson(course, date, enrollment.StudentId);
                     created++;

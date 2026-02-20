@@ -6,7 +6,7 @@ using BosDAT.Core.Utilities;
 
 namespace BosDAT.Infrastructure.Services;
 
-public class CalendarService(IUnitOfWork unitOfWork) : ICalendarService
+public class CalendarService(IUnitOfWork unitOfWork, IAbsenceService absenceService) : ICalendarService
 {
     public async Task<List<CalendarLessonDto>> GetLessonsForRangeAsync(
         DateOnly startDate, DateOnly endDate,
@@ -148,13 +148,17 @@ public class CalendarService(IUnitOfWork unitOfWork) : ICalendarService
 
         var lessons = await GetLessonsForRangeAsync(weekStart, weekEnd, teacherId, null, ct);
         var holidays = await GetHolidaysForRangeAsync(weekStart, weekEnd, ct);
+        var teacherAbsences = (await absenceService.GetByTeacherAsync(teacherId, ct))
+            .Where(a => a.EndDate >= weekStart && a.StartDate <= weekEnd)
+            .ToList();
 
         return new WeekCalendarDto
         {
             WeekStart = weekStart,
             WeekEnd = weekEnd,
             Lessons = lessons,
-            Holidays = holidays
+            Holidays = holidays,
+            TeacherAbsences = teacherAbsences
         };
     }
 
@@ -174,13 +178,15 @@ public class CalendarService(IUnitOfWork unitOfWork) : ICalendarService
 
         var lessons = await GetLessonsForRangeAsync(weekStart, weekEnd, null, roomId, ct);
         var holidays = await GetHolidaysForRangeAsync(weekStart, weekEnd, ct);
+        var teacherAbsences = (await absenceService.GetTeacherAbsencesForPeriodAsync(weekStart, weekEnd, ct)).ToList();
 
         return new WeekCalendarDto
         {
             WeekStart = weekStart,
             WeekEnd = weekEnd,
             Lessons = lessons,
-            Holidays = holidays
+            Holidays = holidays,
+            TeacherAbsences = teacherAbsences
         };
     }
 }

@@ -87,7 +87,7 @@ function StudentDetailContent() {
       case 'lessons':
         return <LessonsSection studentId={id} />
       case 'absence':
-        return <AbsenceSection />
+        return <AbsenceSection studentId={id} />
       case 'invoices':
         return <InvoicesSection studentId={id} />
       case 'transactions':
