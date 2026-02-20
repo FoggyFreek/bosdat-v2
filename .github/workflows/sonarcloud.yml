@@ -68,7 +68,8 @@ jobs:
             /d:sonar.exclusions="**/node_modules/**,**/bin/**,**/obj/**,**/dist/**,**/wwwroot/**,**/Migrations/**,**/*.Designer.cs,**/coverage/**,**/lcov-report/**" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/*.Designer.cs,**/Program.cs,**/*Tests.cs,**/*.test.ts,**/*.test.tsx" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
-            /d:sonar.javascript.lcov.reportPaths="src/BosDAT.Web/coverage/lcov.info"
+            /d:sonar.javascript.lcov.reportPaths="src/BosDAT.Web/coverage/lcov.info" \
+            /d:sonar.python.version=3
 
       - name: Build solution
         run: dotnet build BosDAT.sln --no-restore
