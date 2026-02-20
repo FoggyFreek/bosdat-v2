@@ -21,6 +21,10 @@ Use this context directly — do not call `search_my_sonarqube_projects` to disc
 
 - [`scripts/fetch-open-issues.py`](scripts/fetch-open-issues.py) — Python script to fetch OPEN issues as compact JSON. Auto-loads `SONARQUBE_TOKEN` from the repo-root `.env` file. No external dependencies (stdlib only). Run this outside Claude and paste the output into the conversation to avoid filling context with resolved/historical issues.
 
+- [`scripts/fetch-coverage-by-file.py`](scripts/fetch-coverage-by-file.py) — Python script to fetch file-level coverage data sorted by coverage ascending (lowest first). Auto-loads `SONARQUBE_TOKEN` from the repo-root `.env` file. No external dependencies (stdlib only). Use to identify files with lowest coverage.
+  - Options: `--min-lines N` (default: 10), `--top N` (default: 30)
+  - Skips scripts, config, and test infrastructure files automatically
+
 ---
 
 ## Tool Reference
@@ -82,8 +86,15 @@ Use this context directly — do not call `search_my_sonarqube_projects` to disc
 ```
 1. fetch issues with support script: python scripts/fetch-open-issues.py
 2. show_rule(key) — understand what the rule is about
-3. Fix most common issues 
+3. Fix most common issues
+```
 
+### Find files with lowest coverage
+
+```
+1. Run outside Claude: python scripts/fetch-coverage-by-file.py
+2. Paste output into conversation
+3. Prioritize files with 0% coverage and the most uncovered lines
 ```
 
 ## Key Metric Keys
