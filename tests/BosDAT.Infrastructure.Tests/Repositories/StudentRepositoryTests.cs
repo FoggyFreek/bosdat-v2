@@ -209,7 +209,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         // Assert
         Assert.NotEmpty(result);
-        Assert.Contains(result, s => s.FirstName.ToLower().Contains(searchTerm));
+        Assert.Contains(result, s => s.FirstName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         // Assert
         Assert.NotEmpty(result);
-        Assert.Contains(result, s => s.LastName.ToLower().Contains(searchTerm));
+        Assert.Contains(result, s => s.LastName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class StudentRepositoryTests : RepositoryTestBase
 
         // Assert
         Assert.NotEmpty(result);
-        Assert.Contains(result, s => s.Email.ToLower().Contains(searchTerm));
+        Assert.Contains(result, s => s.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -99,7 +99,7 @@ public class LessonRepositoryTests : RepositoryTestBase
 
         // Assert
         Assert.NotEmpty(result);
-        var lesson = result.First();
+        var lesson = result[0];
         Assert.NotNull(lesson.Course);
         Assert.NotNull(lesson.Course.CourseType);
         Assert.NotNull(lesson.Course.CourseType.Instrument);
@@ -191,8 +191,8 @@ public class LessonRepositoryTests : RepositoryTestBase
             Assert.True(l.ScheduledDate >= startDate);
             Assert.True(l.ScheduledDate <= endDate);
         });
-        Assert.NotNull(result.First().Course);
-        Assert.NotNull(result.First().Student);
+        Assert.NotNull(result[0].Course);
+        Assert.NotNull(result[0].Student);
     }
 
     [Fact]
@@ -207,11 +207,12 @@ public class LessonRepositoryTests : RepositoryTestBase
         // Assert
         Assert.NotEmpty(result);
         Assert.All(result, l => Assert.Equal(student.Id, l.StudentId));
-        Assert.NotNull(result.First().Course);
-        Assert.NotNull(result.First().Course.CourseType);
-        Assert.NotNull(result.First().Course.CourseType.Instrument);
-        Assert.NotNull(result.First().Teacher);
-        Assert.NotNull(result.First().Room);
+        var firstLesson = result[0];
+        Assert.NotNull(firstLesson.Course);
+        Assert.NotNull(firstLesson.Course.CourseType);
+        Assert.NotNull(firstLesson.Course.CourseType.Instrument);
+        Assert.NotNull(firstLesson.Teacher);
+        Assert.NotNull(firstLesson.Room);
     }
 
     [Fact]
@@ -331,8 +332,8 @@ public class LessonRepositoryTests : RepositoryTestBase
             Assert.Equal(room.Id, l.RoomId);
             Assert.Equal(date, l.ScheduledDate);
         });
-        Assert.NotNull(result.First().Teacher);
-        Assert.NotNull(result.First().Student);
+        Assert.NotNull(result[0].Teacher);
+        Assert.NotNull(result[0].Student);
     }
 
     [Fact]
@@ -380,13 +381,13 @@ public class LessonRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByRoomAndDateAsync(room.Id, date);
 
         // Assert
-        Assert.Equal(2, result.Count());
+        Assert.Equal(2, result.Count);
         var list = result.ToList();
         for (int i = 0; i < list.Count - 1; i++)
         {
             Assert.True(list[i].StartTime <= list[i + 1].StartTime);
         }
-        Assert.Equal(new TimeOnly(10, 0), result.First().StartTime);
+        Assert.Equal(new TimeOnly(10, 0), result[0].StartTime);
     }
 
     [Fact]

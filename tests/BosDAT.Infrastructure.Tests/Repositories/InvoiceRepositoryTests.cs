@@ -142,8 +142,8 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         // Assert
         Assert.NotEmpty(result);
         Assert.All(result, i => Assert.Equal(student.Id, i.StudentId));
-        Assert.NotNull(result.First().Lines);
-        Assert.NotNull(result.First().Payments);
+        Assert.NotNull(result[0].Lines);
+        Assert.NotNull(result[0].Payments);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         // Assert
         Assert.NotEmpty(result);
         Assert.All(result, i => Assert.Equal(status, i.Status));
-        Assert.NotNull(result.First().Student);
+        Assert.NotNull(result[0].Student);
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public class InvoiceRepositoryTests : RepositoryTestBase
             Assert.Equal(InvoiceStatus.Sent, i.Status);
             Assert.True(i.DueDate < today);
         });
-        Assert.NotNull(result.First().Student);
+        Assert.NotNull(result[0].Student);
     }
 
     [Fact]
@@ -299,8 +299,8 @@ public class InvoiceRepositoryTests : RepositoryTestBase
         // Assert
         Assert.NotEmpty(result);
         Assert.All(result, i => Assert.Equal(enrollment.Id, i.EnrollmentId));
-        Assert.NotNull(result.First().Lines);
-        Assert.NotNull(result.First().Payments);
+        Assert.NotNull(result[0].Lines);
+        Assert.NotNull(result[0].Payments);
     }
 
     [Fact]
@@ -379,8 +379,8 @@ public class InvoiceRepositoryTests : RepositoryTestBase
                 InvoiceStatus.Overdue
             });
         });
-        Assert.NotNull(result.First().Lines);
-        Assert.NotNull(result.First().Payments);
+        Assert.NotNull(result[0].Lines);
+        Assert.NotNull(result[0].Payments);
     }
 
     [Fact]

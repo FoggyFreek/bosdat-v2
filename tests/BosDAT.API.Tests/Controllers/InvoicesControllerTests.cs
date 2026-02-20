@@ -505,7 +505,7 @@ public class InvoicesControllerTests
         };
     }
 
-    private InvoiceListDto CreateTestInvoiceListDto(
+    private static InvoiceListDto CreateTestInvoiceListDto(
         string invoiceNumber = "NMI-2026-00001",
         InvoiceStatus status = InvoiceStatus.Draft)
     {

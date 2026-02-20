@@ -42,9 +42,6 @@ export function InstrumentListItem({
 }: InstrumentListItemProps) {
   const { t } = useTranslation()
 
-  const getStatusLabel = (isActive: boolean): string => {
-    return isActive ? t('common.status.active') : t('common.status.inactive')
-  }
   if (isEditing) {
     return (
       <div className="flex items-center py-2">
@@ -68,7 +65,7 @@ export function InstrumentListItem({
       </div>
       <div className="flex items-center gap-2">
         <span className={getStatusBadgeClassName(instrument.isActive)}>
-          {getStatusLabel(instrument.isActive)}
+          {instrument.isActive ? t('common.status.active') : t('common.status.inactive')}
         </span>
         <Button
           size="icon"

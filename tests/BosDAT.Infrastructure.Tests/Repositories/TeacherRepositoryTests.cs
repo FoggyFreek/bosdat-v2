@@ -281,8 +281,8 @@ public class TeacherRepositoryTests : RepositoryTestBase
             Assert.True(t.IsActive);
             Assert.Contains(t.TeacherCourseTypes, tct => tct.CourseTypeId == courseType.Id);
         });
-        Assert.NotNull(result.First().TeacherInstruments);
-        Assert.NotNull(result.First().TeacherCourseTypes.First().CourseType);
+        Assert.NotNull(result[0].TeacherInstruments);
+        Assert.NotNull(result[0].TeacherCourseTypes.First().CourseType);
     }
 
     [Fact]
@@ -348,7 +348,7 @@ public class TeacherRepositoryTests : RepositoryTestBase
         {
             Assert.True(list[i].DayOfWeek <= list[i + 1].DayOfWeek);
         }
-        Assert.Equal(DayOfWeek.Monday, result.First().DayOfWeek);
+        Assert.Equal(DayOfWeek.Monday, result[0].DayOfWeek);
     }
 
     [Fact]

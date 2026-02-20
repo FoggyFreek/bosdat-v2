@@ -184,7 +184,7 @@ public class EdgeCaseTests
             EndTime = new TimeOnly(10, 30),
             Frequency = CourseFrequency.Weekly,
             Status = CourseStatus.Active,
-            CourseType = null,  // No CourseType!
+            CourseType = null!,  // No CourseType!
             Enrollments = new List<Enrollment>()
         };
 

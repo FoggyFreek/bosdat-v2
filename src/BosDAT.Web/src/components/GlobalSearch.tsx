@@ -89,7 +89,6 @@ export function GlobalSearch() {
       {showDropdown && (
         <ul
           id="global-search-results"
-          role="listbox"
           className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-md shadow-lg z-50 max-h-[400px] overflow-y-auto list-none p-0 m-0"
         >
           {term.length < 2 && (
@@ -175,7 +174,6 @@ function ResultGroup({
             <li key={result.id}>
               <button
                 id={`search-result-${globalIndex}`}
-                role="option"
                 aria-selected={activeIndex === globalIndex}
                 className={cn(
                   'w-full text-left px-4 py-2 flex flex-col hover:bg-accent transition-colors',

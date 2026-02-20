@@ -72,13 +72,13 @@ public class LessonDataGenerator
                 }
             }
 
-            currentDate = AdvanceDate(course, currentDate);
+            currentDate = AdvanceDate(currentDate);
         }
 
         return lessons;
     }
 
-    private bool ShouldGenerateLesson(Course course, DateOnly date)
+    private static bool ShouldGenerateLesson(Course course, DateOnly date)
     {
         // Check day of week matches
         if (date.DayOfWeek != course.DayOfWeek)
@@ -100,7 +100,7 @@ public class LessonDataGenerator
         return true;
     }
 
-    private static DateOnly AdvanceDate(Course course, DateOnly currentDate) =>
+    private static DateOnly AdvanceDate(DateOnly currentDate) =>
         currentDate.AddDays(1);
 
     private Lesson CreateLesson(Course course, DateOnly date, Guid? studentId, CourseType? courseType)
@@ -150,9 +150,9 @@ public class LessonDataGenerator
         if (status != LessonStatus.Cancelled)
             return null;
 
-        return type == CourseTypeCategory.Individual
-            ? (_seederContext.NextBool() ? "Student sick" : "Teacher unavailable")
-            : "Low attendance";
+        if (type != CourseTypeCategory.Individual)
+            return "Low attendance";
+        return _seederContext.NextBool() ? "Student sick" : "Teacher unavailable";
     }
 
     private static string? GetLessonNotes(CourseTypeCategory? type) =>

@@ -130,7 +130,7 @@ public class InvoiceDataGenerator
                 ? dueDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).AddDays(_seederContext.NextInt(-5, 10))
                 : null,
             PaymentMethod = status == InvoiceStatus.Paid
-                ? (_seederContext.NextBool() ? "Bank" : "DirectDebit")
+                ? GetPaymentMethod()
                 : null,
             Notes = status == InvoiceStatus.Overdue ? "Payment reminder sent" : null,
             CreatedAt = issueDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc),
@@ -139,6 +139,8 @@ public class InvoiceDataGenerator
 
         return (invoice, lines);
     }
+
+    private string GetPaymentMethod() => _seederContext.NextBool() ? "Bank" : "DirectDebit";
 
     private InvoiceLine? CreateLessonLine(
         Guid invoiceId,

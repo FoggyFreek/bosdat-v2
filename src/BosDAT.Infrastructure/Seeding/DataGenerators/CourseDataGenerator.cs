@@ -199,7 +199,7 @@ public class CourseDataGenerator
         return courses;
     }
 
-    private Room? SelectRoom(CourseType courseType, List<Room> rooms) =>
+    private static Room? SelectRoom(CourseType courseType, List<Room> rooms) =>
         courseType.Type switch
         {
             CourseTypeCategory.Individual => rooms.FirstOrDefault(r => r.Capacity <= 2),
@@ -223,9 +223,8 @@ public class CourseDataGenerator
 
         // Properties that don't affect scheduling — generate once.
         var frequency = DetermineFrequency();
-        var weekParity = frequency == CourseFrequency.Biweekly
-            ? (_seederContext.NextBool() ? WeekParity.Odd : WeekParity.Even)
-            : WeekParity.All;
+        var randomParity = _seederContext.NextBool() ? WeekParity.Odd : WeekParity.Even;
+        var weekParity = frequency == CourseFrequency.Biweekly ? randomParity : WeekParity.All;
         var status = DetermineStatus();
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-_seederContext.NextInt(1, 18)));
         var endDate = DetermineEndDate(status);
@@ -271,18 +270,18 @@ public class CourseDataGenerator
     private CourseFrequency DetermineFrequency()
     {
         var roll = _seederContext.NextInt(0, 100);
-        return roll < 70 ? CourseFrequency.Weekly :
-               roll < 90 ? CourseFrequency.Biweekly :
-               CourseFrequency.Once;
+        if (roll < 70) return CourseFrequency.Weekly;
+        if (roll < 90) return CourseFrequency.Biweekly;
+        return CourseFrequency.Once;
     }
 
     private CourseStatus DetermineStatus()
     {
         var roll = _seederContext.NextInt(0, 100);
-        return roll < 75 ? CourseStatus.Active :
-               roll < 85 ? CourseStatus.Completed :
-               roll < 92 ? CourseStatus.Paused :
-               CourseStatus.Cancelled;
+        if (roll < 75) return CourseStatus.Active;
+        if (roll < 85) return CourseStatus.Completed;
+        if (roll < 92) return CourseStatus.Paused;
+        return CourseStatus.Cancelled;
     }
 
     private DateOnly? DetermineEndDate(CourseStatus status) =>
@@ -353,11 +352,13 @@ public class CourseDataGenerator
 
     private Enrollment CreateEnrollment(Student student, Course course, int courseCount)
     {
-        var enrollmentStatus = student.Status == StudentStatus.Trial
-            ? EnrollmentStatus.Trail
-            : course.Status == CourseStatus.Completed
-                ? EnrollmentStatus.Completed
-                : EnrollmentStatus.Active;
+        EnrollmentStatus enrollmentStatus;
+        if (student.Status == StudentStatus.Trial)
+            enrollmentStatus = EnrollmentStatus.Trail;
+        else if (course.Status == CourseStatus.Completed)
+            enrollmentStatus = EnrollmentStatus.Completed;
+        else
+            enrollmentStatus = EnrollmentStatus.Active;
 
         var (discountType, discountPercent) = DetermineDiscount(courseCount);
 

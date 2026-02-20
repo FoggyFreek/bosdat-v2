@@ -61,9 +61,10 @@ public class CourseRepositoryTests : RepositoryTestBase
         // Assert
         Assert.NotEmpty(result);
         Assert.All(result, c => Assert.Equal(teacherId, c.TeacherId));
-        Assert.NotNull(result.First().CourseType);
-        Assert.NotNull(result.First().CourseType.Instrument);
-        Assert.NotNull(result.First().Room);
+        var firstCourse = result[0];
+        Assert.NotNull(firstCourse.CourseType);
+        Assert.NotNull(firstCourse.CourseType.Instrument);
+        Assert.NotNull(firstCourse.Room);
     }
 
     [Fact]
@@ -137,7 +138,7 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetByTeacherAsync(teacherId);
 
         // Assert
-        Assert.True(result.Count() > 1);
+        Assert.True(result.Count > 1);
         var tuesdayCourses = result.Where(c => c.DayOfWeek == DayOfWeek.Tuesday).ToList();
         for (int i = 0; i < tuesdayCourses.Count - 1; i++)
         {
@@ -178,9 +179,10 @@ public class CourseRepositoryTests : RepositoryTestBase
         Assert.NotEmpty(result);
         Assert.All(result, c => Assert.Equal(CourseStatus.Active, c.Status));
         Assert.DoesNotContain(result, c => c.Id == inactiveCourse.Id);
-        Assert.NotNull(result.First().Teacher);
-        Assert.NotNull(result.First().CourseType);
-        Assert.NotNull(result.First().Room);
+        var firstActive = result[0];
+        Assert.NotNull(firstActive.Teacher);
+        Assert.NotNull(firstActive.CourseType);
+        Assert.NotNull(firstActive.Room);
     }
 
     [Fact]
@@ -199,10 +201,11 @@ public class CourseRepositoryTests : RepositoryTestBase
             Assert.Equal(targetDay, c.DayOfWeek);
             Assert.Equal(CourseStatus.Active, c.Status);
         });
-        Assert.NotNull(result.First().Teacher);
-        Assert.NotNull(result.First().CourseType);
-        Assert.NotNull(result.First().Room);
-        Assert.NotNull(result.First().Enrollments);
+        var firstDay = result[0];
+        Assert.NotNull(firstDay.Teacher);
+        Assert.NotNull(firstDay.CourseType);
+        Assert.NotNull(firstDay.Room);
+        Assert.NotNull(firstDay.Enrollments);
     }
 
     [Fact]
@@ -264,13 +267,13 @@ public class CourseRepositoryTests : RepositoryTestBase
         var result = await _repository.GetCoursesByDayAsync(targetDay);
 
         // Assert
-        Assert.Equal(2, result.Count());
+        Assert.Equal(2, result.Count);
         var list = result.ToList();
         for (int i = 0; i < list.Count - 1; i++)
         {
             Assert.True(list[i].StartTime <= list[i + 1].StartTime);
         }
-        Assert.Equal(new TimeOnly(10, 0), result.First().StartTime);
+        Assert.Equal(new TimeOnly(10, 0), result[0].StartTime);
     }
 
     [Fact]

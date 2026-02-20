@@ -10,7 +10,7 @@ namespace BosDAT.API.Tests.Services;
 public class ScheduleConflictServiceTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly IScheduleConflictService _service;
+    private readonly ScheduleConflictService _service;
 
     public ScheduleConflictServiceTests()
     {

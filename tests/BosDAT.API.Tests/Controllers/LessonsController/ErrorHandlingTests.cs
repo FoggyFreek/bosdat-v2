@@ -528,7 +528,7 @@ public class ErrorHandlingTests
             Frequency = CourseFrequency.Weekly,
             WeekParity = WeekParity.All,
             Status = CourseStatus.Active,
-            CourseType = null,  // Null CourseType
+            CourseType = null!,  // Null CourseType
             Enrollments = new List<Enrollment>()
         };
 
