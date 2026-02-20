@@ -29,8 +29,19 @@ public class LessonsController(
         [FromQuery] int? top,
         CancellationToken cancellationToken)
     {
-        var lessons = await lessonService.GetAllAsync(
-            startDate, endDate, teacherId, studentId, courseId, roomId, status, top, cancellationToken);
+        var criteria = new LessonFilterCriteria
+        {
+            StartDate = startDate,
+            EndDate = endDate,
+            TeacherId = teacherId,
+            StudentId = studentId,
+            CourseId = courseId,
+            RoomId = roomId,
+            Status = status,
+            Top = top
+        };
+
+        var lessons = await lessonService.GetAllAsync(criteria, cancellationToken);
 
         return Ok(lessons);
     }

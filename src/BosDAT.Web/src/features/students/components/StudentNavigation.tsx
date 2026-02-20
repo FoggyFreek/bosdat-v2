@@ -33,8 +33,8 @@ const getNavigationGroups = (t: TFunction): StudentNavGroup[] => [
 ]
 
 interface StudentNavigationProps {
-  selectedSection: StudentSectionKey
-  onNavigate: (key: StudentSectionKey) => void
+  readonly selectedSection: StudentSectionKey
+  readonly onNavigate: (key: StudentSectionKey) => void
 }
 
 export function StudentNavigation({ selectedSection, onNavigate }: StudentNavigationProps) {

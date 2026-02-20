@@ -7,10 +7,10 @@ import type { Course } from '@/features/courses/types'
 import { courseFrequencyTranslations, courseStatusTranslations } from '@/features/courses/types'
 
 interface CourseSummaryCardProps {
-  course: Course
+  readonly course: Course
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({ label, children }: { readonly label: string; readonly children: React.ReactNode }) {
   return (
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>

@@ -30,7 +30,7 @@ import { formatCurrency } from '@/lib/utils'
 import { formatDate } from '@/lib/datetime-helpers'
 
 interface InvoicesSectionProps {
-  studentId: string
+  readonly studentId: string
 }
 
 const statusColors: Record<InvoiceStatus, string> = {
@@ -325,8 +325,8 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
 }
 
 interface InvoicePrintViewProps {
-  invoice: Invoice
-  onPrint: () => void
+  readonly invoice: Invoice
+  readonly onPrint: () => void
 }
 
 function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {

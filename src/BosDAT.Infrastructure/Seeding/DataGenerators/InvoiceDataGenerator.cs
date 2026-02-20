@@ -6,6 +6,33 @@ using BosDAT.Infrastructure.Data;
 namespace BosDAT.Infrastructure.Seeding.DataGenerators;
 
 /// <summary>
+/// Parameters for creating an invoice.
+/// </summary>
+internal record CreateInvoiceParams(
+    Student Student,
+    DateOnly Month,
+    List<Lesson> Lessons,
+    int InvoiceNumber,
+    List<Enrollment> Enrollments,
+    List<Course> Courses,
+    List<CourseType> CourseTypes,
+    List<CourseTypePricingVersion> PricingVersions,
+    List<Invoice> ExistingInvoices);
+
+/// <summary>
+/// Parameters for creating a lesson invoice line.
+/// </summary>
+internal record CreateLessonLineParams(
+    Guid InvoiceId,
+    Lesson Lesson,
+    Student Student,
+    bool IsChild,
+    List<Enrollment> Enrollments,
+    List<Course> Courses,
+    List<CourseType> CourseTypes,
+    List<CourseTypePricingVersion> PricingVersions);
+
+/// <summary>
 /// Generates invoices with line items, including registration fees and lesson charges.
 /// </summary>
 public class InvoiceDataGenerator
@@ -52,9 +79,11 @@ public class InvoiceDataGenerator
             var student = students.FirstOrDefault(s => s.Id == group.Key.StudentId);
             if (student == null) continue;
 
-            var (invoice, lines) = CreateInvoice(
+            var createParams = new CreateInvoiceParams(
                 student, group.Key.Month, group.ToList(), invoiceNumber++,
                 enrollments, courses, courseTypes, pricingVersions, invoices);
+
+            var (invoice, lines) = CreateInvoice(createParams);
 
             invoices.Add(invoice);
             invoiceLines.AddRange(lines);
@@ -68,31 +97,24 @@ public class InvoiceDataGenerator
         return invoices;
     }
 
-    private (Invoice Invoice, List<InvoiceLine> Lines) CreateInvoice(
-        Student student,
-        DateOnly month,
-        List<Lesson> lessons,
-        int invoiceNumber,
-        List<Enrollment> enrollments,
-        List<Course> courses,
-        List<CourseType> courseTypes,
-        List<CourseTypePricingVersion> pricingVersions,
-        List<Invoice> existingInvoices)
+    private (Invoice Invoice, List<InvoiceLine> Lines) CreateInvoice(CreateInvoiceParams p)
     {
         var invoiceId = _seederContext.NextInvoiceId();
-        var issueDate = month.AddMonths(1).AddDays(_seederContext.NextInt(1, 10));
+        var issueDate = p.Month.AddMonths(1).AddDays(_seederContext.NextInt(1, 10));
         var dueDate = issueDate.AddDays(14);
 
-        var isChild = IsChildStudent(student);
+        var isChild = IsChildStudent(p.Student);
         var lines = new List<InvoiceLine>();
         decimal subtotal = 0;
 
         // Create lines for each lesson
-        foreach (var lesson in lessons)
+        foreach (var lesson in p.Lessons)
         {
-            var line = CreateLessonLine(
-                invoiceId, lesson, student, isChild,
-                enrollments, courses, courseTypes, pricingVersions);
+            var lineParams = new CreateLessonLineParams(
+                invoiceId, lesson, p.Student, isChild,
+                p.Enrollments, p.Courses, p.CourseTypes, p.PricingVersions);
+
+            var line = CreateLessonLine(lineParams);
 
             if (line != null)
             {
@@ -102,8 +124,8 @@ public class InvoiceDataGenerator
         }
 
         // Add registration fee for first invoice
-        var hasExistingInvoice = existingInvoices.Exists(i => i.StudentId == student.Id);
-        if (!hasExistingInvoice && student.RegistrationFeePaidAt.HasValue)
+        var hasExistingInvoice = p.ExistingInvoices.Exists(i => i.StudentId == p.Student.Id);
+        if (!hasExistingInvoice && p.Student.RegistrationFeePaidAt.HasValue)
         {
             var regFeeLine = CreateRegistrationFeeLine(invoiceId);
             lines.Add(regFeeLine);
@@ -117,8 +139,8 @@ public class InvoiceDataGenerator
         var invoice = new Invoice
         {
             Id = invoiceId,
-            InvoiceNumber = $"NMI-{issueDate.Year}-{invoiceNumber:D5}",
-            StudentId = student.Id,
+            InvoiceNumber = $"NMI-{issueDate.Year}-{p.InvoiceNumber:D5}",
+            StudentId = p.Student.Id,
             IssueDate = issueDate,
             DueDate = dueDate,
             Subtotal = subtotal,
@@ -142,29 +164,21 @@ public class InvoiceDataGenerator
 
     private string GetPaymentMethod() => _seederContext.NextBool() ? "Bank" : "DirectDebit";
 
-    private InvoiceLine? CreateLessonLine(
-        Guid invoiceId,
-        Lesson lesson,
-        Student student,
-        bool isChild,
-        List<Enrollment> enrollments,
-        List<Course> courses,
-        List<CourseType> courseTypes,
-        List<CourseTypePricingVersion> pricingVersions)
+    private InvoiceLine? CreateLessonLine(CreateLessonLineParams p)
     {
-        var course = courses.FirstOrDefault(c => c.Id == lesson.CourseId);
+        var course = p.Courses.FirstOrDefault(c => c.Id == p.Lesson.CourseId);
         var courseType = course != null
-            ? courseTypes.FirstOrDefault(ct => ct.Id == course.CourseTypeId)
+            ? p.CourseTypes.FirstOrDefault(ct => ct.Id == course.CourseTypeId)
             : null;
-        var enrollment = enrollments.FirstOrDefault(e =>
-            e.StudentId == student.Id && e.CourseId == lesson.CourseId);
+        var enrollment = p.Enrollments.FirstOrDefault(e =>
+            e.StudentId == p.Student.Id && e.CourseId == p.Lesson.CourseId);
 
-        var pricing = pricingVersions
+        var pricing = p.PricingVersions
             .FirstOrDefault(pv => pv.CourseTypeId == course?.CourseTypeId && pv.IsCurrent);
 
         if (pricing == null) return null;
 
-        var unitPrice = isChild ? pricing.PriceChild : pricing.PriceAdult;
+        var unitPrice = p.IsChild ? pricing.PriceChild : pricing.PriceAdult;
 
         // Apply enrollment discount
         if (enrollment?.DiscountPercent > 0)
@@ -175,10 +189,10 @@ public class InvoiceDataGenerator
         return new InvoiceLine
         {
             Id = _seederContext.NextInvoiceLineId(),
-            InvoiceId = invoiceId,
-            LessonId = lesson.Id,
+            InvoiceId = p.InvoiceId,
+            LessonId = p.Lesson.Id,
             PricingVersionId = pricing.Id,
-            Description = $"{courseType?.Name ?? "Lesson"} - {lesson.ScheduledDate:d MMM yyyy}",
+            Description = $"{courseType?.Name ?? "Lesson"} - {p.Lesson.ScheduledDate:d MMM yyyy}",
             Quantity = 1,
             UnitPrice = unitPrice,
             VatRate = SeederConstants.VatRate,

@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 import { formatTime } from '@/lib/datetime-helpers'
 
 interface EnrollmentsSectionProps {
-  studentId: string
+  readonly studentId: string
 }
 
 export function EnrollmentsSection({ studentId }: EnrollmentsSectionProps) {

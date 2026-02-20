@@ -258,7 +258,7 @@ public class LessonsControllerTests
         var lessons = CreateTestLessonDtos();
 
         _mockLessonService.Setup(s => s.GetAllAsync(
-            null, null, null, null, null, null, null, null, It.IsAny<CancellationToken>()))
+            It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
@@ -278,7 +278,7 @@ public class LessonsControllerTests
         var lessons = CreateTestLessonDtos().Where(l => l.ScheduledDate >= startDate).ToList();
 
         _mockLessonService.Setup(s => s.GetAllAsync(
-            startDate, null, null, null, null, null, null, null, It.IsAny<CancellationToken>()))
+            It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
@@ -298,7 +298,7 @@ public class LessonsControllerTests
         var lessons = CreateTestLessonDtos(teacherId);
 
         _mockLessonService.Setup(s => s.GetAllAsync(
-            null, null, teacherId, null, null, null, null, null, It.IsAny<CancellationToken>()))
+            It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
@@ -317,7 +317,7 @@ public class LessonsControllerTests
         var lessons = CreateTestLessonDtos().Where(l => l.Status == LessonStatus.Completed).ToList();
 
         _mockLessonService.Setup(s => s.GetAllAsync(
-            null, null, null, null, null, null, LessonStatus.Completed, null, It.IsAny<CancellationToken>()))
+            It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act

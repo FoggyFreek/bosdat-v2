@@ -4,7 +4,7 @@ import type { CourseList } from '@/features/courses/types'
 import { weekParityTranslations } from '@/features/courses/types'
 
 interface WeekParityBadgeProps {
-  course: CourseList
+  readonly course: CourseList
 }
 
 export function WeekParityBadge({ course }: WeekParityBadgeProps) {

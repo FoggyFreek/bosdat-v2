@@ -73,7 +73,7 @@ export const Step3CalendarSlotSelection = ({
   const { data: teacherAvailability = [], isLoading: isLoadingTeacherAvailability } = useQuery<TeacherAvailability[]>({
     queryKey: ['teacher-availability', step1.teacherId],
     queryFn: () =>
-      step1.teacherId !== null ? teachersApi.getAvailability(step1.teacherId) : Promise.resolve([]),
+      step1.teacherId === null ? Promise.resolve([]) : teachersApi.getAvailability(step1.teacherId),
   })
 
   const availability = useMemo(

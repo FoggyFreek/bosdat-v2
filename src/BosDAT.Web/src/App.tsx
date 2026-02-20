@@ -23,7 +23,7 @@ const MoveLessonPage = lazy(() => import('./pages/MoveLessonPage').then(m => ({ 
 const AddLessonPage = lazy(() => import('./pages/AddLessonPage').then(m => ({ default: m.AddLessonPage })))
 const LessonDetailPage = lazy(() => import('./pages/LessonDetailPage').then(m => ({ default: m.LessonDetailPage })))
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children }: { readonly children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {

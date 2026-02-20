@@ -206,14 +206,7 @@ public class ErrorHandlingTests
         cancellationTokenSource.Cancel();
 
         _mockLessonService.Setup(s => s.GetAllAsync(
-                It.IsAny<DateOnly?>(),
-                It.IsAny<DateOnly?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int?>(),
-                It.IsAny<LessonStatus?>(),
-                It.IsAny<int?>(),
+                It.IsAny<LessonFilterCriteria>(),
                 It.IsAny<CancellationToken>()))
             .ThrowsAsync(new OperationCanceledException());
 

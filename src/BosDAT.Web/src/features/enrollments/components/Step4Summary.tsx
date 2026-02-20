@@ -43,9 +43,9 @@ export function Step4Summary() {
   const selectedTeacher = teachers.find((t) => t.id === step1.teacherId)
   const selectedRoom = rooms.find((r) => r.id === step3.selectedRoomId)
 
-  const dayOfWeek = step3.selectedDayOfWeek !== null
-    ? getDayNameFromNumber(step3.selectedDayOfWeek)
-    : undefined
+  const dayOfWeek = step3.selectedDayOfWeek === null
+    ? undefined
+    : getDayNameFromNumber(step3.selectedDayOfWeek)
 
   const timeDisplay = step3.selectedStartTime && step3.selectedEndTime
     ? formatTime(step3.selectedStartTime)

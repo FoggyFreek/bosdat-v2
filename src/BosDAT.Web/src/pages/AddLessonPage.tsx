@@ -11,7 +11,7 @@ import { formatTime, getDurationMinutes } from '@/lib/datetime-helpers'
 import type { Course } from '@/features/courses/types'
 import { LessonSchedulerLayout } from '@/components/LessonSchedulerLayout'
 
-function CourseSummaryMini({ course }: { course: Course }) {
+function CourseSummaryMini({ course }: { readonly course: Course }) {
   return (
     <div className="rounded-lg border bg-muted/50 p-4">
       <h3 className="font-medium mb-3 text-sm">Course Details</h3>
@@ -137,11 +137,11 @@ export function AddLessonPage() {
     if (!calendar.selectedSlot || !course) return
 
     const teacherId =
-      calendar.filterTeacher !== 'all' ? calendar.filterTeacher : course.teacherId
+      calendar.filterTeacher === 'all' ? course.teacherId : calendar.filterTeacher
     const roomId =
-      calendar.filterRoom !== 'all'
-        ? Number.parseInt(calendar.filterRoom)
-        : course.roomId ?? undefined
+      calendar.filterRoom === 'all'
+        ? course.roomId ?? undefined
+        : Number.parseInt(calendar.filterRoom)
 
     createMutation.mutate({
       scheduledDate: calendar.selectedSlot.date,

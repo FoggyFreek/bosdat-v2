@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Infrastructure.Data;
@@ -13,6 +14,7 @@ public abstract class RepositoryTestBase : IDisposable
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: $"RepositoryTest_{Guid.NewGuid()}")
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
         Context = new ApplicationDbContext(options);

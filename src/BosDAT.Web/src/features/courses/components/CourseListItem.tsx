@@ -7,7 +7,7 @@ import type { CourseList, } from '@/features/courses/types'
 import { courseStatusTranslations } from '@/features/courses/types'
 
 interface CourseListItemProps {
-  course: CourseList
+  readonly course: CourseList
 }
 
 export function CourseListItem({ course }: CourseListItemProps) {

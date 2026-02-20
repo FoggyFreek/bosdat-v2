@@ -50,7 +50,7 @@ def main() -> None:
         print("Error: SONARQUBE_TOKEN not set (checked .env and environment)", file=sys.stderr)
         sys.exit(1)
 
-    severities = os.environ.get("SEVERITIES", "MEDIUM,HIGH,BLOCKER")
+    severities = os.environ.get("SEVERITIES", "LOW,MEDIUM,HIGH,BLOCKER")
     page_size = os.environ.get("PAGE_SIZE", "500")
 
     params = urllib.parse.urlencode({

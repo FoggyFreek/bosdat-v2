@@ -59,6 +59,18 @@ public record GenerateLessonsDto
     public bool SkipHolidays { get; init; } = true;
 }
 
+public record LessonFilterCriteria
+{
+    public DateOnly? StartDate { get; init; }
+    public DateOnly? EndDate { get; init; }
+    public Guid? TeacherId { get; init; }
+    public Guid? StudentId { get; init; }
+    public Guid? CourseId { get; init; }
+    public int? RoomId { get; init; }
+    public LessonStatus? Status { get; init; }
+    public int? Top { get; init; }
+}
+
 public record CalendarLessonDto
 {
     public Guid Id { get; init; }

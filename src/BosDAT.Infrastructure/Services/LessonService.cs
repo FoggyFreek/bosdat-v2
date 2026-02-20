@@ -8,11 +8,7 @@ namespace BosDAT.Infrastructure.Services;
 
 public class LessonService(IUnitOfWork unitOfWork) : ILessonService
 {
-    public async Task<List<LessonDto>> GetAllAsync(
-        DateOnly? startDate, DateOnly? endDate,
-        Guid? teacherId, Guid? studentId, Guid? courseId,
-        int? roomId, LessonStatus? status, int? top,
-        CancellationToken ct = default)
+    public async Task<List<LessonDto>> GetAllAsync(LessonFilterCriteria criteria, CancellationToken ct = default)
     {
         IQueryable<Lesson> query = unitOfWork.Lessons.Query()
             .Include(l => l.Course)
@@ -22,16 +18,16 @@ public class LessonService(IUnitOfWork unitOfWork) : ILessonService
             .Include(l => l.Teacher)
             .Include(l => l.Room);
 
-        query = ApplyFilters(query, startDate, endDate, teacherId, studentId, courseId, roomId, status);
+        query = ApplyFilters(query, criteria);
 
         IQueryable<LessonDto> orderedQuery;
 
-        if (top.HasValue)
+        if (criteria.Top.HasValue)
         {
             orderedQuery = query
                 .OrderByDescending(l => l.ScheduledDate)
                 .ThenByDescending(l => l.StartTime)
-                .Take(top.Value)
+                .Take(criteria.Top.Value)
                 .Select(l => MapToDto(l));
         }
         else
@@ -221,45 +217,41 @@ public class LessonService(IUnitOfWork unitOfWork) : ILessonService
         return (true, null);
     }
 
-    private static IQueryable<Lesson> ApplyFilters(
-        IQueryable<Lesson> query,
-        DateOnly? startDate, DateOnly? endDate,
-        Guid? teacherId, Guid? studentId, Guid? courseId,
-        int? roomId, LessonStatus? status)
+    private static IQueryable<Lesson> ApplyFilters(IQueryable<Lesson> query, LessonFilterCriteria criteria)
     {
-        if (startDate.HasValue)
+        if (criteria.StartDate.HasValue)
         {
-            query = query.Where(l => l.ScheduledDate >= startDate.Value);
+            query = query.Where(l => l.ScheduledDate >= criteria.StartDate.Value);
         }
 
-        if (endDate.HasValue)
+        if (criteria.EndDate.HasValue)
         {
-            query = query.Where(l => l.ScheduledDate <= endDate.Value);
+            query = query.Where(l => l.ScheduledDate <= criteria.EndDate.Value);
         }
 
-        if (teacherId.HasValue)
+        if (criteria.TeacherId.HasValue)
         {
-            query = query.Where(l => l.TeacherId == teacherId.Value);
+            query = query.Where(l => l.TeacherId == criteria.TeacherId.Value);
         }
 
-        if (studentId.HasValue)
+        if (criteria.StudentId.HasValue)
         {
-            query = query.Where(l => l.StudentId == studentId.Value);
+            query = query.Where(l => l.StudentId == criteria.StudentId.Value);
         }
 
-        if (courseId.HasValue)
+        if (criteria.CourseId.HasValue)
         {
-            query = query.Where(l => l.CourseId == courseId.Value);
+            query = query.Where(l => l.CourseId == criteria.CourseId.Value);
         }
 
-        if (roomId.HasValue)
+        if (criteria.RoomId.HasValue)
         {
-            query = query.Where(l => l.RoomId == roomId.Value);
+            query = query.Where(l => l.RoomId == criteria.RoomId.Value);
         }
 
-        if (status.HasValue)
+        if (criteria.Status.HasValue)
         {
-            query = query.Where(l => l.Status == status.Value);
+            query = query.Where(l => l.Status == criteria.Status.Value);
         }
 
         return query;

@@ -16,7 +16,7 @@ const createTestQueryClient = () =>
   })
 
 interface WrapperProps {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 function AllProviders({ children }: WrapperProps) {

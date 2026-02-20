@@ -7,7 +7,7 @@ interface FormDirtyContextType {
 
 const FormDirtyContext = createContext<FormDirtyContextType | undefined>(undefined)
 
-export function FormDirtyProvider({ children }: { children: ReactNode }) {
+export function FormDirtyProvider({ children }: { readonly children: ReactNode }) {
   const [isDirty, setIsDirty] = useState(false)
 
   const value = useMemo(() => ({ isDirty, setIsDirty }), [isDirty])

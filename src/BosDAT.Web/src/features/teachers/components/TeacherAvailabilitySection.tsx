@@ -11,7 +11,7 @@ import type { TeacherAvailability, UpdateTeacherAvailability } from '@/features/
 import { dayNameToNumber } from '@/lib/datetime-helpers'
 
 interface TeacherAvailabilitySectionProps {
-  teacherId: string
+  readonly teacherId: string
 }
 
 const DEFAULT_FROM_TIME = '09:00:00'
@@ -194,7 +194,7 @@ export function TeacherAvailabilitySection({ teacherId }: TeacherAvailabilitySec
               return (
                 <div
                   key={day}
-                  className={`flex items-center gap-4 p-3 rounded-lg border ${!valid ? 'border-destructive bg-destructive/5' : 'border-border'}`}
+                  className={`flex items-center gap-4 p-3 rounded-lg border ${valid ? 'border-border' : 'border-destructive bg-destructive/5'}`}
                 >
                   <span className="w-24 font-medium">{t(`common.time.days.${DAY_TRANSLATION_KEYS[day]}`)}</span>
                   {unavailable ? (

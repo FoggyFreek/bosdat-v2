@@ -8,7 +8,7 @@ import type { Lesson } from '@/features/lessons/types'
 import type { LessonFilters } from '@/features/courses/hooks/useCourseDetailData'
 
 interface LessonsSectionProps {
-  studentId: string
+  readonly studentId: string
 }
 
 export function LessonsSection({ studentId }: LessonsSectionProps) {

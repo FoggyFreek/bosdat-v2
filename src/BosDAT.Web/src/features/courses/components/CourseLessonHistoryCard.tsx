@@ -19,12 +19,12 @@ const LESSON_STATUS_COLORS: Record<LessonStatus, string> = {
 }
 
 interface CourseLessonHistoryCardProps {
-  lessons: Lesson[]
-  courseId?: string
-  filters: LessonFilters
-  onFiltersChange: (filters: LessonFilters) => void
-  onCancelLesson: (lesson: Lesson) => void
-  showCourseName?: boolean
+  readonly lessons: Lesson[]
+  readonly courseId?: string
+  readonly filters: LessonFilters
+  readonly onFiltersChange: (filters: LessonFilters) => void
+  readonly onCancelLesson: (lesson: Lesson) => void
+  readonly showCourseName?: boolean
 }
 
 export function CourseLessonHistoryCard({

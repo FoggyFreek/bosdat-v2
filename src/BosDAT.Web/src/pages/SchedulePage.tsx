@@ -196,8 +196,8 @@ export const SchedulePage = () => {
     queryFn: () =>
       calendarApi.getWeek({
         date: formatDateForApi(currentDate),
-        teacherId: filterTeacher !== 'all' ? filterTeacher : undefined,
-        roomId: filterRoom !== 'all' ? Number.parseInt(filterRoom) : undefined,
+        teacherId: filterTeacher === 'all' ? undefined : filterTeacher,
+        roomId: filterRoom === 'all' ? undefined : Number.parseInt(filterRoom),
       }),
   })
 

@@ -13,7 +13,7 @@ const ENROLLMENT_STATUS_COLORS: Record<string, string> = {
 }
 
 interface CourseEnrollmentsCardProps {
-  enrollments: Enrollment[]
+  readonly enrollments: Enrollment[]
 }
 
 export function CourseEnrollmentsCard({ enrollments }: CourseEnrollmentsCardProps) {

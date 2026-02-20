@@ -239,9 +239,9 @@ export function SeedingSection() {
   }
 
   const currentConfig = confirmAction ? ACTION_CONFIGS[confirmAction] : null
-  const confirmButtonClass = confirmAction !== 'seed'
-    ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-    : ''
+  const confirmButtonClass = confirmAction === 'seed'
+    ? ''
+    : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
 
   return (
     <>

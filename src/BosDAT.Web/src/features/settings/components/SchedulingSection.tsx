@@ -22,7 +22,7 @@ import {
 import { schedulingApi } from '@/features/settings/api'
 import type { SchedulingStatus, ScheduleRun, ScheduleRunsResponse, ManualRunResult } from '@/features/settings/types'
 
-function StatusCard({ status, t }: Readonly<{ status: SchedulingStatus; t: TFunction }>) {
+function StatusCard({ status, t }: Readonly<{ readonly status: SchedulingStatus; readonly t: TFunction }>) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
       <h3 className="font-medium flex items-center gap-2">
@@ -83,11 +83,11 @@ function RunHistory({
   onLoadMore,
   t,
 }: {
-  runs: ScheduleRun[]
-  totalCount: number
-  isLoading: boolean
-  onLoadMore: () => void
-  t: TFunction
+  readonly runs: ScheduleRun[]
+  readonly totalCount: number
+  readonly isLoading: boolean
+  readonly onLoadMore: () => void
+  readonly t: TFunction
 }) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
@@ -119,10 +119,10 @@ function AdminArea({
   lastResult,
   t,
 }: {
-  onRunManual: () => void
-  isPending: boolean
-  lastResult: ManualRunResult | null
-  t: TFunction
+  readonly onRunManual: () => void
+  readonly isPending: boolean
+  readonly lastResult: ManualRunResult | null
+  readonly t: TFunction
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
 

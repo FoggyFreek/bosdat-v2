@@ -17,9 +17,9 @@ import { formatDate, formatTime } from '@/lib/datetime-helpers'
 import type { Lesson, LessonStatus } from '@/features/lessons/types'
 
 interface CancelLessonDialogProps {
-  lesson: Lesson | null
-  courseId: string
-  onClose: () => void
+  readonly lesson: Lesson | null
+  readonly courseId: string
+  readonly onClose: () => void
 }
 
 export function CancelLessonDialog({ lesson, courseId, onClose }: CancelLessonDialogProps) {

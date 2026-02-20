@@ -51,8 +51,8 @@ const getNavigationGroups = (t: TFunction): NavGroup[] => [
 ]
 
 interface SettingsNavigationProps {
-  selectedSetting: SettingKey
-  onNavigate: (key: SettingKey) => void
+  readonly selectedSetting: SettingKey
+  readonly onNavigate: (key: SettingKey) => void
 }
 
 export function SettingsNavigation({ selectedSetting, onNavigate }: SettingsNavigationProps) {

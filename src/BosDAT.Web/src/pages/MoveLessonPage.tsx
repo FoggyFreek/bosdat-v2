@@ -10,7 +10,7 @@ import { formatDate, formatTime, getDurationMinutes } from '@/lib/datetime-helpe
 import type { Lesson } from '@/features/lessons/types'
 import { LessonSchedulerLayout } from '@/components/LessonSchedulerLayout'
 
-function LessonSummaryCard({ lesson }: { lesson: Lesson }) {
+function LessonSummaryCard({ lesson }: { readonly lesson: Lesson }) {
   return (
     <div className="rounded-lg border bg-muted/50 p-4">
       <h3 className="font-medium mb-3 text-sm">Scheduled Event</h3>
@@ -156,11 +156,11 @@ export function MoveLessonPage() {
     if (!calendar.selectedSlot || !lesson) return
 
     const teacherId =
-      calendar.filterTeacher !== 'all' ? calendar.filterTeacher : lesson.teacherId
+      calendar.filterTeacher === 'all' ? lesson.teacherId : calendar.filterTeacher
     const roomId =
-      calendar.filterRoom !== 'all'
-        ? Number.parseInt(calendar.filterRoom)
-        : lesson.roomId ?? undefined
+      calendar.filterRoom === 'all'
+        ? lesson.roomId ?? undefined
+        : Number.parseInt(calendar.filterRoom)
 
     moveMutation.mutate({
       scheduledDate: calendar.selectedSlot.date,

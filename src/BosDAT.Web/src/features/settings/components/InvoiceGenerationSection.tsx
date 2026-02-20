@@ -88,7 +88,7 @@ function getQuarterlyPeriods(): { label: string; start: string; end: string }[] 
   return periods
 }
 
-function RunItem({ run }: { run: InvoiceRun }) {
+function RunItem({ run }: { readonly run: InvoiceRun }) {
   const isSuccess = run.status === 'Success'
   const isPartial = run.status === 'PartialSuccess'
 
@@ -127,7 +127,7 @@ function RunItem({ run }: { run: InvoiceRun }) {
   )
 }
 
-function RunHistory({ runs, isLoading, t }: Readonly<{ runs: InvoiceRun[]; isLoading: boolean; t: TFunction }>) {
+function RunHistory({ runs, isLoading, t }: Readonly<{ readonly runs: InvoiceRun[]; readonly isLoading: boolean; readonly t: TFunction }>) {
   return (
     <div className="rounded-lg border p-4 space-y-3">
       <h3 className="font-medium">{t('settings.invoiceGeneration.runHistory.title')}</h3>
@@ -153,10 +153,10 @@ function GenerateArea({
   lastResult,
   t,
 }: {
-  onRun: (periodType: string, periodStart: string, periodEnd: string) => void
-  isPending: boolean
-  lastResult: InvoiceRunResult | null
-  t: TFunction
+  readonly onRun: (periodType: string, periodStart: string, periodEnd: string) => void
+  readonly isPending: boolean
+  readonly lastResult: InvoiceRunResult | null
+  readonly t: TFunction
 }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [periodType, setPeriodType] = useState<string>('Monthly')

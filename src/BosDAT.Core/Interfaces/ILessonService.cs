@@ -5,11 +5,7 @@ namespace BosDAT.Core.Interfaces;
 
 public interface ILessonService
 {
-    Task<List<LessonDto>> GetAllAsync(
-        DateOnly? startDate, DateOnly? endDate,
-        Guid? teacherId, Guid? studentId, Guid? courseId,
-        int? roomId, LessonStatus? status, int? top,
-        CancellationToken ct = default);
+    Task<List<LessonDto>> GetAllAsync(LessonFilterCriteria criteria, CancellationToken ct = default);
 
     Task<LessonDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
 

@@ -18,16 +18,16 @@ import type { useScheduleCalendarData } from '@/features/lessons/hooks/useSchedu
 type ScheduleCalendar = ReturnType<typeof useScheduleCalendarData>
 
 interface LessonSchedulerLayoutProps {
-  title: string
-  backTo: string
-  summaryCard: ReactNode
-  calendar: ScheduleCalendar
-  allEvents: CalendarEvent[]
-  slotLabel: string
-  submitLabel: string
-  pendingLabel: string
-  isPending: boolean
-  onSubmit: () => void
+  readonly title: string
+  readonly backTo: string
+  readonly summaryCard: ReactNode
+  readonly calendar: ScheduleCalendar
+  readonly allEvents: CalendarEvent[]
+  readonly slotLabel: string
+  readonly submitLabel: string
+  readonly pendingLabel: string
+  readonly isPending: boolean
+  readonly onSubmit: () => void
 }
 
 export function LessonSchedulerLayout({

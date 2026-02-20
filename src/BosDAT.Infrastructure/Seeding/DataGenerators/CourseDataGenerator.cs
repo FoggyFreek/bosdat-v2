@@ -6,6 +6,11 @@ using BosDAT.Infrastructure.Data;
 namespace BosDAT.Infrastructure.Seeding.DataGenerators;
 
 /// <summary>
+/// Represents a time slot for conflict detection comparisons.
+/// </summary>
+internal record TimeSlotComparison(DayOfWeek DayOfWeek, TimeOnly StartTime, TimeOnly EndTime, WeekParity WeekParity);
+
+/// <summary>
 /// Generates course types, pricing versions, courses, and enrollments.
 /// </summary>
 public class CourseDataGenerator
@@ -396,10 +401,13 @@ public class CourseDataGenerator
         TimeOnly startTime, TimeOnly endTime, WeekParity weekParity,
         List<Course> existingCourses)
     {
+        var newSlot = new TimeSlotComparison(dayOfWeek, startTime, endTime, weekParity);
+
         foreach (var existing in existingCourses)
         {
-            if (!HasTimeSlotOverlap(dayOfWeek, startTime, endTime, weekParity,
-                    existing.DayOfWeek, existing.StartTime, existing.EndTime, existing.WeekParity))
+            var existingSlot = new TimeSlotComparison(existing.DayOfWeek, existing.StartTime, existing.EndTime, existing.WeekParity);
+
+            if (!HasTimeSlotOverlap(newSlot, existingSlot))
                 continue;
 
             if (teacherId == existing.TeacherId)
@@ -412,19 +420,21 @@ public class CourseDataGenerator
         return false;
     }
 
-    private static bool HasStudentScheduleConflict(Course target, List<Course> studentCourses) =>
-        studentCourses.Any(existing =>
-            HasTimeSlotOverlap(
-                target.DayOfWeek, target.StartTime, target.EndTime, target.WeekParity,
-                existing.DayOfWeek, existing.StartTime, existing.EndTime, existing.WeekParity));
-
-    private static bool HasTimeSlotOverlap(
-        DayOfWeek dayA, TimeOnly startA, TimeOnly endA, WeekParity parityA,
-        DayOfWeek dayB, TimeOnly startB, TimeOnly endB, WeekParity parityB)
+    private static bool HasStudentScheduleConflict(Course target, List<Course> studentCourses)
     {
-        if (dayA != dayB) return false;
-        if (startA >= endB || endA <= startB) return false;
-        return HasWeekParityConflict(parityA, parityB);
+        var targetSlot = new TimeSlotComparison(target.DayOfWeek, target.StartTime, target.EndTime, target.WeekParity);
+        return studentCourses.Any(existing =>
+        {
+            var existingSlot = new TimeSlotComparison(existing.DayOfWeek, existing.StartTime, existing.EndTime, existing.WeekParity);
+            return HasTimeSlotOverlap(targetSlot, existingSlot);
+        });
+    }
+
+    private static bool HasTimeSlotOverlap(TimeSlotComparison slot1, TimeSlotComparison slot2)
+    {
+        if (slot1.DayOfWeek != slot2.DayOfWeek) return false;
+        if (slot1.StartTime >= slot2.EndTime || slot1.EndTime <= slot2.StartTime) return false;
+        return HasWeekParityConflict(slot1.WeekParity, slot2.WeekParity);
     }
 
     private static bool HasWeekParityConflict(WeekParity a, WeekParity b)

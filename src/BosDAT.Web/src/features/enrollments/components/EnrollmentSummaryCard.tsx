@@ -3,24 +3,24 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 interface EnrollmentSummaryCardProps {
-  title: string
-  courseTypeName?: string
-  courseTypeLabel?: string
-  teacherName?: string
-  startDate?: string
-  dayOfWeek?: string
-  endDate?: string
-  isTrial?: boolean
-  frequency?: string
-  maxStudents?: number
-  startTime?: string
-  endTime?: string
-  roomName?: string
-  className?: string
-  children?: ReactNode
+  readonly title: string
+  readonly courseTypeName?: string
+  readonly courseTypeLabel?: string
+  readonly teacherName?: string
+  readonly startDate?: string
+  readonly dayOfWeek?: string
+  readonly endDate?: string
+  readonly isTrial?: boolean
+  readonly frequency?: string
+  readonly maxStudents?: number
+  readonly startTime?: string
+  readonly endTime?: string
+  readonly roomName?: string
+  readonly className?: string
+  readonly children?: ReactNode
 }
 
-function Row({ label, children }: { label: string; children: ReactNode }) {
+function Row({ label, children }: { readonly label: string; readonly children: ReactNode }) {
   return (
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
