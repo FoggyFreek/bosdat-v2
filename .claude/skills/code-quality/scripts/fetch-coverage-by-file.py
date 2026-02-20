@@ -6,11 +6,12 @@ Auto-loads SONARQUBE_TOKEN from the repo-root .env file.
 No external dependencies (stdlib only).
 
 Usage:
-    python scripts/fetch-coverage-by-file.py [--min-lines N] [--top N]
+    python scripts/fetch-coverage-by-file.py [--min-lines N] [--top N] [--max-coverage PCT]
 
 Options:
-    --min-lines N   Minimum lines to cover threshold (default: 10)
-    --top N         Number of files to show (default: 30)
+    --min-lines N      Minimum lines to cover threshold (default: 10)
+    --top N            Number of files to show (default: 30)
+    --max-coverage PCT Only show files with coverage below this % (default: 70)
 """
 
 import urllib.request
@@ -84,6 +85,8 @@ def main():
                         help="Minimum lines to cover (default: 10)")
     parser.add_argument("--top", type=int, default=30, metavar="N",
                         help="Number of files to show (default: 30)")
+    parser.add_argument("--max-coverage", type=float, default=70.0, metavar="PCT",
+                        help="Only show files with coverage below this percentage (default: 70)")
     args = parser.parse_args()
 
     token = load_token()
@@ -101,6 +104,8 @@ def main():
         if lines < args.min_lines:
             continue
         cov = float(measures.get("coverage") or 0)
+        if cov >= args.max_coverage:
+            continue
         uncovered = int(measures.get("uncovered_lines") or 0)
         results.append((cov, uncovered, lines, path))
 
@@ -112,7 +117,7 @@ def main():
     total_uncovered = sum(r[1] for r in results)
 
     print(f"Project: {PROJECT_KEY} (branch: {BRANCH})")
-    print(f"Files with >={args.min_lines} coverable lines: {total_files}")
+    print(f"Files with >={args.min_lines} coverable lines and <{args.max_coverage}% coverage: {total_files}")
     print(f"Files with 0% coverage: {zero_cov}")
     print(f"Total uncovered lines (in scope): {total_uncovered}")
     print()
