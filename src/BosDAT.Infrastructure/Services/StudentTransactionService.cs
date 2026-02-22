@@ -96,6 +96,26 @@ public class StudentTransactionService(
         await unitOfWork.SaveChangesAsync(ct);
     }
 
+    public async Task RecordCreditInvoiceAsync(Invoice creditInvoice, Invoice originalInvoice, Guid userId, CancellationToken ct = default)
+    {
+        var transaction = new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = creditInvoice.StudentId,
+            TransactionDate = creditInvoice.IssueDate,
+            Type = TransactionType.CreditInvoice,
+            Description = $"Credit invoice {creditInvoice.InvoiceNumber} for invoice {originalInvoice.InvoiceNumber}",
+            ReferenceNumber = creditInvoice.InvoiceNumber,
+            Debit = 0,
+            Credit = creditInvoice.Total,
+            InvoiceId = creditInvoice.Id,
+            CreatedById = userId
+        };
+
+        await transactionRepository.AddAsync(transaction, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
     public async Task<IReadOnlyList<StudentTransactionDto>> GetTransactionsAsync(Guid studentId, CancellationToken ct = default)
     {
         var transactions = await transactionRepository.GetByStudentAsync(studentId, ct);

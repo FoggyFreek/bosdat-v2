@@ -12,6 +12,7 @@ namespace BosDAT.API.Tests.Controllers;
 public class InvoicesControllerTests
 {
     private readonly Mock<IInvoiceService> _mockInvoiceService;
+    private readonly Mock<ICreditInvoiceService> _mockCreditInvoiceService;
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
     private readonly Mock<IStudentTransactionService> _mockStudentTransactionService;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
@@ -24,6 +25,7 @@ public class InvoicesControllerTests
     public InvoicesControllerTests()
     {
         _mockInvoiceService = new Mock<IInvoiceService>();
+        _mockCreditInvoiceService = new Mock<ICreditInvoiceService>();
         _mockCurrentUserService = new Mock<ICurrentUserService>();
         _mockStudentTransactionService = new Mock<IStudentTransactionService>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
@@ -31,6 +33,7 @@ public class InvoicesControllerTests
 
         _controller = new InvoicesController(
             _mockInvoiceService.Object,
+            _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object);
     }
 
@@ -235,6 +238,7 @@ public class InvoicesControllerTests
 
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
+            _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object);
 
         var dto = new GenerateInvoiceDto
@@ -311,6 +315,7 @@ public class InvoicesControllerTests
 
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
+            _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object);
 
         var dto = new GenerateBatchInvoicesDto
@@ -381,6 +386,7 @@ public class InvoicesControllerTests
 
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
+            _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object);
 
         // Act
@@ -476,6 +482,162 @@ public class InvoicesControllerTests
 
     #endregion
 
+    #region CreateCreditInvoice Tests
+
+    [Fact]
+    public async Task CreateCreditInvoice_WithValidData_ReturnsCreatedCreditInvoice()
+    {
+        // Arrange
+        var dto = new CreateCreditInvoiceDto
+        {
+            SelectedLineIds = new List<int> { 1, 2 }
+        };
+        var creditInvoice = CreateTestCreditInvoiceDto();
+
+        _mockCreditInvoiceService
+            .Setup(s => s.CreateCreditInvoiceAsync(_testInvoiceId, dto, _testUserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(creditInvoice);
+
+        // Act
+        var result = await _controller.CreateCreditInvoice(_testInvoiceId, dto, CancellationToken.None);
+
+        // Assert
+        var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+        Assert.Equal(nameof(InvoicesController.GetById), createdResult.ActionName);
+        var returnedInvoice = Assert.IsType<InvoiceDto>(createdResult.Value);
+        Assert.True(returnedInvoice.IsCreditInvoice);
+        Assert.Equal(_testInvoiceId, returnedInvoice.OriginalInvoiceId);
+        Assert.Equal("NMI-2026-00001", returnedInvoice.OriginalInvoiceNumber);
+    }
+
+    [Fact]
+    public async Task CreateCreditInvoice_WithNoAuthenticatedUser_ReturnsUnauthorized()
+    {
+        // Arrange
+        _mockCurrentUserService.Setup(s => s.UserId).Returns((Guid?)null);
+
+        var controller = new InvoicesController(
+            _mockInvoiceService.Object,
+            _mockCreditInvoiceService.Object,
+            _mockCurrentUserService.Object);
+
+        var dto = new CreateCreditInvoiceDto
+        {
+            SelectedLineIds = new List<int> { 1 }
+        };
+
+        // Act
+        var result = await controller.CreateCreditInvoice(_testInvoiceId, dto, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<UnauthorizedResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task CreateCreditInvoice_ForDraftInvoice_ReturnsBadRequest()
+    {
+        // Arrange
+        var dto = new CreateCreditInvoiceDto
+        {
+            SelectedLineIds = new List<int> { 1 }
+        };
+
+        _mockCreditInvoiceService
+            .Setup(s => s.CreateCreditInvoiceAsync(_testInvoiceId, dto, _testUserId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Cannot create a credit invoice for a draft invoice."));
+
+        // Act
+        var result = await _controller.CreateCreditInvoice(_testInvoiceId, dto, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task CreateCreditInvoice_WithEmptyLineIds_ReturnsBadRequest()
+    {
+        // Arrange
+        var dto = new CreateCreditInvoiceDto
+        {
+            SelectedLineIds = new List<int>()
+        };
+
+        _mockCreditInvoiceService
+            .Setup(s => s.CreateCreditInvoiceAsync(_testInvoiceId, dto, _testUserId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("At least one invoice line must be selected for crediting."));
+
+        // Act
+        var result = await _controller.CreateCreditInvoice(_testInvoiceId, dto, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
+    #endregion
+
+    #region ConfirmCreditInvoice Tests
+
+    [Fact]
+    public async Task ConfirmCreditInvoice_WithValidId_ReturnsConfirmedCreditInvoice()
+    {
+        // Arrange
+        var creditInvoiceId = Guid.NewGuid();
+        var confirmedInvoice = CreateTestCreditInvoiceDto(InvoiceStatus.Sent);
+
+        _mockCreditInvoiceService
+            .Setup(s => s.ConfirmCreditInvoiceAsync(creditInvoiceId, _testUserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(confirmedInvoice);
+
+        // Act
+        var result = await _controller.ConfirmCreditInvoice(creditInvoiceId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedInvoice = Assert.IsType<InvoiceDto>(okResult.Value);
+        Assert.True(returnedInvoice.IsCreditInvoice);
+        Assert.Equal(InvoiceStatus.Sent, returnedInvoice.Status);
+    }
+
+    [Fact]
+    public async Task ConfirmCreditInvoice_WithNoAuthenticatedUser_ReturnsUnauthorized()
+    {
+        // Arrange
+        _mockCurrentUserService.Setup(s => s.UserId).Returns((Guid?)null);
+
+        var controller = new InvoicesController(
+            _mockInvoiceService.Object,
+            _mockCreditInvoiceService.Object,
+            _mockCurrentUserService.Object);
+
+        // Act
+        var result = await controller.ConfirmCreditInvoice(Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        Assert.IsType<UnauthorizedResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task ConfirmCreditInvoice_ForNonCreditInvoice_ReturnsBadRequest()
+    {
+        // Arrange
+        var invoiceId = Guid.NewGuid();
+
+        _mockCreditInvoiceService
+            .Setup(s => s.ConfirmCreditInvoiceAsync(invoiceId, _testUserId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("This invoice is not a credit invoice."));
+
+        // Act
+        var result = await _controller.ConfirmCreditInvoice(invoiceId, CancellationToken.None);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.NotNull(badRequestResult.Value);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private InvoiceDto CreateTestInvoiceDto()
@@ -522,6 +684,37 @@ public class InvoicesControllerTests
             Total = 121m,
             Status = status,
             Balance = 121m
+        };
+    }
+
+    private InvoiceDto CreateTestCreditInvoiceDto(InvoiceStatus status = InvoiceStatus.Draft)
+    {
+        return new InvoiceDto
+        {
+            Id = Guid.NewGuid(),
+            InvoiceNumber = "C-202601",
+            StudentId = _testStudentId,
+            EnrollmentId = _testEnrollmentId,
+            StudentName = "Test Student",
+            StudentEmail = "test@example.com",
+            IssueDate = new DateOnly(2026, 1, 20),
+            DueDate = new DateOnly(2026, 1, 20),
+            Description = "Credit NMI-2026-00001",
+            PeriodStart = new DateOnly(2026, 1, 1),
+            PeriodEnd = new DateOnly(2026, 1, 31),
+            PeriodType = InvoicingPreference.Monthly,
+            Subtotal = 100m,
+            VatAmount = 21m,
+            Total = 121m,
+            Status = status,
+            IsCreditInvoice = true,
+            OriginalInvoiceId = _testInvoiceId,
+            OriginalInvoiceNumber = "NMI-2026-00001",
+            Notes = "Creditfactuur voor factuur NMI-2026-00001",
+            Lines = new List<InvoiceLineDto>(),
+            Payments = new List<PaymentDto>(),
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
     }
 

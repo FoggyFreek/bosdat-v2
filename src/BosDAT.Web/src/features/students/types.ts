@@ -204,6 +204,9 @@ export interface Invoice {
   balance: number
   createdAt: string
   updatedAt: string
+  isCreditInvoice: boolean
+  originalInvoiceId?: string
+  originalInvoiceNumber?: string
   billingContact?: BillingContact
 }
 
@@ -219,6 +222,14 @@ export interface InvoiceListItem {
   total: number
   status: InvoiceStatus
   balance: number
+  isCreditInvoice: boolean
+  originalInvoiceId?: string
+  originalInvoiceNumber?: string
+}
+
+export interface CreateCreditInvoice {
+  selectedLineIds: number[]
+  notes?: string
 }
 
 export interface GenerateInvoice {
@@ -256,6 +267,7 @@ export type TransactionType =
   | 'Payment'
   | 'InvoiceCancellation'
   | 'InvoiceAdjustment'
+  | 'CreditInvoice'
 
 export interface StudentTransaction {
   id: string
@@ -278,6 +290,7 @@ export const transactionTypeTranslations = {
   Payment: 'students.transactions.type.payment',
   InvoiceCancellation: 'students.transactions.type.invoiceCancellation',
   InvoiceAdjustment: 'students.transactions.type.invoiceAdjustment',
+  CreditInvoice: 'students.transactions.type.creditInvoice',
 } as const satisfies Record<TransactionType, string>
 
 export interface RecordPayment {

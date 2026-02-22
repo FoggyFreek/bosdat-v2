@@ -39,6 +39,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         var invoices = await context.Invoices
             .Include(i => i.Student)
             .Include(i => i.Payments)
+            .Include(i => i.OriginalInvoice)
             .Where(i => i.StudentId == studentId)
             .OrderByDescending(i => i.IssueDate)
             .AsNoTracking()
@@ -52,6 +53,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         var invoices = await context.Invoices
             .Include(i => i.Student)
             .Include(i => i.Payments)
+            .Include(i => i.OriginalInvoice)
             .Where(i => i.Status == status)
             .OrderByDescending(i => i.IssueDate)
             .AsNoTracking()
@@ -185,6 +187,9 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             Balance = balance,
             CreatedAt = invoice.CreatedAt,
             UpdatedAt = invoice.UpdatedAt,
+            IsCreditInvoice = invoice.IsCreditInvoice,
+            OriginalInvoiceId = invoice.OriginalInvoiceId,
+            OriginalInvoiceNumber = invoice.OriginalInvoice?.InvoiceNumber,
             BillingContact = billingContact
         };
     }
@@ -206,7 +211,10 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             PeriodEnd = invoice.PeriodEnd,
             Total = totalOwed,
             Status = invoice.Status,
-            Balance = totalOwed - amountPaid
+            Balance = totalOwed - amountPaid,
+            IsCreditInvoice = invoice.IsCreditInvoice,
+            OriginalInvoiceId = invoice.OriginalInvoiceId,
+            OriginalInvoiceNumber = invoice.OriginalInvoice?.InvoiceNumber
         };
     }
 
@@ -219,6 +227,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
                     .ThenInclude(le => le!.Course)
                         .ThenInclude(c => c.CourseType)
             .Include(i => i.Payments)
+            .Include(i => i.OriginalInvoice)
             .AsNoTracking();
     }
 

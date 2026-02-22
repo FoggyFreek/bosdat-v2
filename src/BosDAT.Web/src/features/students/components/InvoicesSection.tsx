@@ -11,6 +11,8 @@ import {
   ExternalLink,
   Download,
   CreditCard,
+  MinusCircle,
+  Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,6 +26,7 @@ import {
 } from '@/components/ui/dialog'
 import { invoicesApi } from '@/features/students/api'
 import { RecordPaymentDialog } from '@/features/students/components/invoices/RecordPaymentDialog'
+import { CreditInvoiceDialog } from '@/features/students/components/invoices/CreditInvoiceDialog'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
 import { invoiceStatusTranslations } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
@@ -48,6 +51,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
   const [expandedInvoiceId, setExpandedInvoiceId] = useState<string | null>(null)
   const [showPrintDialog, setShowPrintDialog] = useState(false)
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
+  const [showCreditDialog, setShowCreditDialog] = useState(false)
 
   const { data: invoices = [], isLoading } = useQuery<InvoiceListItem[]>({
     queryKey: ['invoices', 'student', studentId],
@@ -68,6 +72,19 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
       queryClient.invalidateQueries({ queryKey: ['invoice', selectedInvoiceId] })
     },
   })
+
+  const confirmCreditMutation = useMutation({
+    mutationFn: (creditInvoiceId: string) => invoicesApi.confirmCreditInvoice(creditInvoiceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices', 'student', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['invoice', selectedInvoiceId] })
+      queryClient.invalidateQueries({ queryKey: ['student-transactions', studentId] })
+    },
+  })
+
+  const canCreateCreditInvoice = (invoice: InvoiceListItem) => {
+    return invoice.status !== 'Draft' && invoice.status !== 'Cancelled' && !invoice.isCreditInvoice
+  }
 
   const handleViewInvoice = (invoiceId: string) => {
     setSelectedInvoiceId(invoiceId)
@@ -143,9 +160,18 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                     <div className="flex items-center gap-4">
                       <FileText className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <div className="font-medium">{invoice.invoiceNumber}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{invoice.invoiceNumber}</span>
+                          {invoice.isCreditInvoice && (
+                            <Badge className="bg-orange-100 text-orange-800 text-xs">
+                              {t('students.creditInvoice.badge')}
+                            </Badge>
+                          )}
+                        </div>
                         <div className="text-sm text-muted-foreground">
-                          {invoice.description || formatDate(invoice.issueDate)}
+                          {invoice.isCreditInvoice && invoice.originalInvoiceNumber
+                            ? t('students.creditInvoice.forInvoice', { invoiceNumber: invoice.originalInvoiceNumber })
+                            : (invoice.description || formatDate(invoice.issueDate))}
                         </div>
                       </div>
                     </div>
@@ -253,7 +279,26 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                             </table>
                           </div>
 
+                          {selectedInvoice.isCreditInvoice && selectedInvoice.originalInvoiceNumber && (
+                            <div className="rounded-md bg-orange-50 border border-orange-200 p-3 text-sm">
+                              <span className="font-medium">{t('students.creditInvoice.referencesInvoice')}: </span>
+                              <span>{selectedInvoice.originalInvoiceNumber}</span>
+                            </div>
+                          )}
+
                           <div className="flex justify-end gap-2">
+                            {selectedInvoice.isCreditInvoice && selectedInvoice.status === 'Draft' && (
+                              <Button
+                                size="sm"
+                                onClick={() => confirmCreditMutation.mutate(selectedInvoice.id)}
+                                disabled={confirmCreditMutation.isPending}
+                              >
+                                <Check className="h-4 w-4 mr-2" />
+                                {confirmCreditMutation.isPending
+                                  ? t('students.actions.saving')
+                                  : t('students.creditInvoice.confirm')}
+                              </Button>
+                            )}
                             {canRecordPayment(selectedInvoice) && (
                               <Button
                                 size="sm"
@@ -261,6 +306,16 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                               >
                                 <CreditCard className="h-4 w-4 mr-2" />
                                 {t('students.payments.recordPayment')}
+                              </Button>
+                            )}
+                            {canCreateCreditInvoice(invoice) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowCreditDialog(true)}
+                              >
+                                <MinusCircle className="h-4 w-4 mr-2" />
+                                {t('students.creditInvoice.create')}
                               </Button>
                             )}
                             {canRecalculate(selectedInvoice.status) && (
@@ -320,6 +375,15 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
           studentId={studentId}
         />
       )}
+
+      {selectedInvoice && !selectedInvoice.isCreditInvoice && (
+        <CreditInvoiceDialog
+          open={showCreditDialog}
+          onOpenChange={setShowCreditDialog}
+          invoice={selectedInvoice}
+          studentId={studentId}
+        />
+      )}
     </div>
   )
 }
@@ -375,11 +439,20 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
             )}
           </div>
           <div className="text-right">
-            <h2 className="text-xl font-bold">{t('students.invoices.invoice')}</h2>
+            <h2 className="text-xl font-bold">
+              {invoice.isCreditInvoice
+                ? t('students.creditInvoice.creditInvoice')
+                : t('students.invoices.invoice')}
+            </h2>
             <div className="text-sm mt-1">
               <div className="font-medium">#{invoice.invoiceNumber}</div>
               {invoice.description && (
                 <div className="text-muted-foreground">{invoice.description}</div>
+              )}
+              {invoice.isCreditInvoice && invoice.originalInvoiceNumber && (
+                <div className="text-muted-foreground mt-1">
+                  {t('students.creditInvoice.referencesInvoice')}: {invoice.originalInvoiceNumber}
+                </div>
               )}
             </div>
           </div>

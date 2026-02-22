@@ -337,8 +337,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasForeignKey(e => e.EnrollmentId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            entity.HasOne(e => e.OriginalInvoice)
+                .WithMany(i => i.CreditInvoices)
+                .HasForeignKey(e => e.OriginalInvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasIndex(e => new { e.StudentId, e.PeriodStart, e.PeriodEnd });
             entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.OriginalInvoiceId);
         });
 
         // InvoiceLine configuration
@@ -364,6 +370,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .WithMany(pv => pv.InvoiceLines)
                 .HasForeignKey(e => e.PricingVersionId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.OriginalInvoiceLineId);
         });
 
         // Payment configuration

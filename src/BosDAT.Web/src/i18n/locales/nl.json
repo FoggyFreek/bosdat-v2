@@ -340,7 +340,8 @@
         "reversal": "Terugboeking",
         "invoiceCancellation": "Annulering",
         "invoiceAdjustment": "Aanpassing",
-        "correctionApplied": "Correctie toegepast"
+        "correctionApplied": "Correctie toegepast",
+        "creditInvoice": "Creditfactuur"
       },
       "table": {
         "date": "Datum",
@@ -451,8 +452,24 @@
         "invoiceCharge": "Factuur",
         "payment": "Betaling",
         "invoiceCancellation": "Annulering",
-        "invoiceAdjustment": "Aanpassing"
+        "invoiceAdjustment": "Aanpassing",
+        "creditInvoice": "Creditfactuur"
       }
+    },
+    "creditInvoice": {
+      "title": "Creditfactuur aanmaken",
+      "description": "Selecteer de regels van factuur {{invoiceNumber}} die gecrediteerd moeten worden.",
+      "badge": "Credit",
+      "creditInvoice": "Creditfactuur",
+      "selectAll": "Alles selecteren",
+      "creditTotal": "Credit totaal",
+      "notes": "Reden / toelichting",
+      "notesPlaceholder": "Optionele toelichting voor de creditfactuur",
+      "draftNotice": "De creditfactuur wordt als concept aangemaakt. Na controle kunt u deze bevestigen om het saldo aan te passen.",
+      "create": "Creditfactuur aanmaken",
+      "confirm": "Creditfactuur bevestigen",
+      "forInvoice": "Credit voor factuur {{invoiceNumber}}",
+      "referencesInvoice": "Betreft factuur"
     },
     "actions": {
       "creating": "Aanmaken...",

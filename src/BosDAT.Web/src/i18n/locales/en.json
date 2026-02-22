@@ -340,7 +340,8 @@
         "reversal": "Reversal",
         "invoiceCancellation": "Cancellation",
         "invoiceAdjustment": "Adjustment",
-        "correctionApplied": "Correction Applied"
+        "correctionApplied": "Correction Applied",
+        "creditInvoice": "Credit Invoice"
       },
       "table": {
         "date": "Date",
@@ -451,8 +452,24 @@
         "invoiceCharge": "Invoice",
         "payment": "Payment",
         "invoiceCancellation": "Cancellation",
-        "invoiceAdjustment": "Adjustment"
+        "invoiceAdjustment": "Adjustment",
+        "creditInvoice": "Credit Invoice"
       }
+    },
+    "creditInvoice": {
+      "title": "Create Credit Invoice",
+      "description": "Select the lines from invoice {{invoiceNumber}} to be credited.",
+      "badge": "Credit",
+      "creditInvoice": "Credit Invoice",
+      "selectAll": "Select all",
+      "creditTotal": "Credit total",
+      "notes": "Reason / notes",
+      "notesPlaceholder": "Optional notes for the credit invoice",
+      "draftNotice": "The credit invoice will be created as a draft. After review, you can confirm it to adjust the balance.",
+      "create": "Create Credit Invoice",
+      "confirm": "Confirm Credit Invoice",
+      "forInvoice": "Credit for invoice {{invoiceNumber}}",
+      "referencesInvoice": "References invoice"
     },
     "actions": {
       "creating": "Creating...",

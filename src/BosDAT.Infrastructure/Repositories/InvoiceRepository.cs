@@ -98,6 +98,30 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
         return $"{year}{nextNumber:D2}";
     }
 
+    public async Task<string> GenerateCreditInvoiceNumberAsync(CancellationToken cancellationToken = default)
+    {
+        var year = DateTime.UtcNow.Year;
+        var yearPrefix = $"C-{year}";
+
+        var lastCreditInvoice = await _dbSet
+            .Where(i => i.InvoiceNumber.StartsWith(yearPrefix))
+            .OrderByDescending(i => i.InvoiceNumber)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        int nextNumber = 1;
+        if (lastCreditInvoice != null)
+        {
+            // Credit invoice number format: C-YYYYNN (e.g., C-202601)
+            var numberPart = lastCreditInvoice.InvoiceNumber[(yearPrefix.Length)..];
+            if (int.TryParse(numberPart, out var lastNumber))
+            {
+                nextNumber = lastNumber + 1;
+            }
+        }
+
+        return $"{yearPrefix}{nextNumber:D2}";
+    }
+
     public async Task<IReadOnlyList<Invoice>> GetByEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken = default)
     {
         return await _dbSet

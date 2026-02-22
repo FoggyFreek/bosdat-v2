@@ -13,6 +13,8 @@ vi.mock('@/features/students/api', () => ({
     getSchoolBillingInfo: vi.fn(),
     recordPayment: vi.fn(),
     getPayments: vi.fn(),
+    createCreditInvoice: vi.fn(),
+    confirmCreditInvoice: vi.fn(),
   },
 }))
 
@@ -31,6 +33,7 @@ describe('InvoicesSection', () => {
     total: 121,
     status: 'Draft',
     balance: 121,
+    isCreditInvoice: false,
   }
 
   const mockPaidInvoiceListItem: InvoiceListItem = {
@@ -45,6 +48,7 @@ describe('InvoicesSection', () => {
     total: 121,
     status: 'Paid',
     balance: 0,
+    isCreditInvoice: false,
   }
 
   const mockInvoice: Invoice = {
@@ -69,6 +73,7 @@ describe('InvoicesSection', () => {
     balance: 121,
     createdAt: '2026-01-15T10:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z',
+    isCreditInvoice: false,
     billingContact: {
       name: 'John Doe',
       email: 'john@example.com',
@@ -357,6 +362,130 @@ describe('InvoicesSection', () => {
       expect(screen.getByText('202601')).toBeInTheDocument()
       // Paid invoice should not display balance since it's 0
       expect(screen.getByText('202602')).toBeInTheDocument()
+    })
+  })
+
+  it('shows credit invoice button for sent invoices', async () => {
+    const sentInvoiceListItem: InvoiceListItem = {
+      ...mockPaidInvoiceListItem,
+      id: 'invoice-3',
+      invoiceNumber: '202603',
+      status: 'Sent',
+      balance: 121,
+      isCreditInvoice: false,
+    }
+    const sentInvoice: Invoice = {
+      ...mockInvoice,
+      id: 'invoice-3',
+      invoiceNumber: '202603',
+      status: 'Sent',
+      balance: 121,
+      isCreditInvoice: false,
+    }
+    vi.mocked(invoicesApi.getByStudent).mockResolvedValue([sentInvoiceListItem])
+    vi.mocked(invoicesApi.getById).mockResolvedValue(sentInvoice)
+
+    const user = userEvent.setup()
+    render(<InvoicesSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('202603')).toBeInTheDocument()
+    })
+
+    const invoiceRow = screen.getByText('202603').closest('button')
+    if (invoiceRow) {
+      await user.click(invoiceRow)
+    }
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'students.creditInvoice.create' })).toBeInTheDocument()
+    })
+  })
+
+  it('does not show credit invoice button for draft invoices', async () => {
+    const user = userEvent.setup()
+    render(<InvoicesSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('202601')).toBeInTheDocument()
+    })
+
+    const invoiceRow = screen.getByText('202601').closest('button')
+    if (invoiceRow) {
+      await user.click(invoiceRow)
+    }
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'students.creditInvoice.create' })).not.toBeInTheDocument()
+    })
+  })
+
+  it('displays credit invoice badge for credit invoices', async () => {
+    const creditInvoiceListItem: InvoiceListItem = {
+      id: 'credit-1',
+      invoiceNumber: 'C-202601',
+      studentName: 'John Doe',
+      description: 'Credit 202601',
+      issueDate: '2026-01-20',
+      dueDate: '2026-01-20',
+      total: 121,
+      status: 'Draft',
+      balance: 0,
+      isCreditInvoice: true,
+      originalInvoiceId: 'invoice-1',
+      originalInvoiceNumber: '202601',
+    }
+    vi.mocked(invoicesApi.getByStudent).mockResolvedValue([creditInvoiceListItem])
+
+    render(<InvoicesSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('C-202601')).toBeInTheDocument()
+      expect(screen.getByText('students.creditInvoice.badge')).toBeInTheDocument()
+    })
+  })
+
+  it('shows confirm button for draft credit invoices', async () => {
+    const creditInvoiceListItem: InvoiceListItem = {
+      id: 'credit-1',
+      invoiceNumber: 'C-202601',
+      studentName: 'John Doe',
+      description: 'Credit 202601',
+      issueDate: '2026-01-20',
+      dueDate: '2026-01-20',
+      total: 121,
+      status: 'Draft',
+      balance: 0,
+      isCreditInvoice: true,
+      originalInvoiceId: 'invoice-1',
+      originalInvoiceNumber: '202601',
+    }
+    const creditInvoice: Invoice = {
+      ...mockInvoice,
+      id: 'credit-1',
+      invoiceNumber: 'C-202601',
+      status: 'Draft',
+      isCreditInvoice: true,
+      originalInvoiceId: 'invoice-1',
+      originalInvoiceNumber: '202601',
+    }
+    vi.mocked(invoicesApi.getByStudent).mockResolvedValue([creditInvoiceListItem])
+    vi.mocked(invoicesApi.getById).mockResolvedValue(creditInvoice)
+
+    const user = userEvent.setup()
+    render(<InvoicesSection studentId={mockStudentId} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('C-202601')).toBeInTheDocument()
+    })
+
+    const invoiceRow = screen.getByText('C-202601').closest('button')
+    if (invoiceRow) {
+      await user.click(invoiceRow)
+    }
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'students.creditInvoice.confirm' })).toBeInTheDocument()
     })
   })
 
