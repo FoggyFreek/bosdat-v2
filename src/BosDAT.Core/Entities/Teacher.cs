@@ -33,6 +33,7 @@ public class Teacher : BaseEntity
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
     public virtual ICollection<TeacherPayment> Payments { get; set; } = new List<TeacherPayment>();
     public virtual ICollection<TeacherAvailability> Availability { get; set; } = new List<TeacherAvailability>();
+    public virtual ICollection<Absence> Absences { get; set; } = new List<Absence>();
 
     // Link to Identity user (optional)
     public Guid? UserId { get; set; }

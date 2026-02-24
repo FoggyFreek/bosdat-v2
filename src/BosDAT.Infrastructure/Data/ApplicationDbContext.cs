@@ -52,6 +52,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<CourseTask> CourseTasks => Set<CourseTask>();
     public DbSet<LessonNote> LessonNotes => Set<LessonNote>();
     public DbSet<NoteAttachment> NoteAttachments => Set<NoteAttachment>();
+    public DbSet<Absence> Absences => Set<Absence>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +84,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         modelBuilder.Entity<CourseTask>().ToTable("course_tasks");
         modelBuilder.Entity<LessonNote>().ToTable("lesson_notes");
         modelBuilder.Entity<NoteAttachment>().ToTable("note_attachments");
+        modelBuilder.Entity<Absence>().ToTable("absences");
 
         // Student configuration
         modelBuilder.Entity<Student>(entity =>
@@ -410,6 +412,29 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        });
+
+        // Absence configuration
+        modelBuilder.Entity<Absence>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Reason)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+
+            entity.HasOne(e => e.Student)
+                .WithMany(s => s.Absences)
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Teacher)
+                .WithMany(t => t.Absences)
+                .HasForeignKey(e => e.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.StudentId, e.StartDate, e.EndDate });
+            entity.HasIndex(e => new { e.TeacherId, e.StartDate, e.EndDate });
         });
 
         // Setting configuration

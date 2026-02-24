@@ -285,7 +285,20 @@
     },
     "absence": {
       "absenceRecords": "Afwezigheidsgegevens",
-      "absenceTrackingComingSoon": "Afwezigheidstracking is binnenkort beschikbaar."
+      "noAbsences": "Geen afwezigheden geregistreerd",
+      "addAbsence": "Afwezigheid toevoegen",
+      "editAbsence": "Afwezigheid bewerken",
+      "deleteAbsence": "Afwezigheid verwijderen",
+      "deleteConfirm": "Weet je zeker dat je deze afwezigheid wilt verwijderen?",
+      "startDate": "Startdatum",
+      "endDate": "Einddatum",
+      "reason": "Reden",
+      "notes": "Notities",
+      "invoiceLesson": "Geannuleerde lessen factureren",
+      "invoiceLessonHelp": "Indien ingeschakeld, worden geannuleerde lessen tijdens deze afwezigheid alsnog gefactureerd.",
+      "created": "Afwezigheid succesvol geregistreerd",
+      "updated": "Afwezigheid succesvol bijgewerkt",
+      "deleted": "Afwezigheid succesvol verwijderd"
     },
     "preferences": {
       "studentPreferences": "Leerlingvoorkeuren",
@@ -1212,5 +1225,14 @@
     "placeholder": "Zoek leerlingen, docenten...",
     "minCharacters": "Typ minimaal 2 tekens om te zoeken",
     "noResults": "Geen resultaten gevonden"
+  },
+  "absences": {
+    "reason": {
+      "holiday": "Vakantie",
+      "sick": "Ziek",
+      "other": "Anders"
+    },
+    "teacherAbsent": "Docent afwezig",
+    "period": "Periode"
   }
 }

@@ -27,11 +27,22 @@ export interface Holiday {
   endDate: string
 }
 
+export interface TeacherAbsence {
+  id: string
+  teacherId?: string
+  personName?: string
+  startDate: string
+  endDate: string
+  reason: string
+  notes?: string
+}
+
 export interface WeekCalendar {
   weekStart: string
   weekEnd: string
   lessons: CalendarLesson[]
   holidays: Holiday[]
+  teacherAbsences: TeacherAbsence[]
 }
 
 export interface DayCalendar {

@@ -11,12 +11,14 @@ namespace BosDAT.API.Tests.Services;
 public class CalendarServiceTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<IAbsenceService> _mockAbsenceService;
     private readonly CalendarService _service;
 
     public CalendarServiceTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-        _service = new CalendarService(_mockUnitOfWork.Object);
+        _mockAbsenceService = new Mock<IAbsenceService>();
+        _service = new CalendarService(_mockUnitOfWork.Object, _mockAbsenceService.Object);
     }
 
     [Fact]

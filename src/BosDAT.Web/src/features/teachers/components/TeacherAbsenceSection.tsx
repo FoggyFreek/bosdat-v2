@@ -9,19 +9,19 @@ import { AbsenceDialog } from '@/features/absences/components/AbsenceDialog'
 import { AbsenceList } from '@/features/absences/components/AbsenceList'
 import type { Absence } from '@/features/absences/types'
 
-interface AbsenceSectionProps {
-  readonly studentId: string
+interface TeacherAbsenceSectionProps {
+  readonly teacherId: string
 }
 
-export function AbsenceSection({ studentId }: AbsenceSectionProps) {
+export function TeacherAbsenceSection({ teacherId }: TeacherAbsenceSectionProps) {
   const { t } = useTranslation()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editAbsence, setEditAbsence] = useState<Absence | null>(null)
 
   const { data: absences = [], isLoading } = useQuery<Absence[]>({
-    queryKey: ['absences', 'student', studentId],
-    queryFn: () => absencesApi.getByStudent(studentId),
-    enabled: !!studentId,
+    queryKey: ['absences', 'teacher', teacherId],
+    queryFn: () => absencesApi.getByTeacher(teacherId),
+    enabled: !!teacherId,
   })
 
   const handleEdit = (absence: Absence) => {
@@ -35,44 +35,40 @@ export function AbsenceSection({ studentId }: AbsenceSectionProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('students.sections.absences')}</h2>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          {t('students.absence.addAbsence')}
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CalendarX className="h-5 w-5" />
-            {t('students.absence.absenceRecords')}
+            {t('students.sections.absences')}
           </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          )}
-          {!isLoading && (
-            <AbsenceList
-              absences={absences}
-              studentId={studentId}
-              onEdit={handleEdit}
-            />
-          )}
-        </CardContent>
-      </Card>
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('students.absence.addAbsence')}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+        {!isLoading && (
+          <AbsenceList
+            absences={absences}
+            teacherId={teacherId}
+            onEdit={handleEdit}
+          />
+        )}
+      </CardContent>
 
       <AbsenceDialog
         open={dialogOpen}
         onOpenChange={handleDialogClose}
-        studentId={studentId}
+        teacherId={teacherId}
         absence={editAbsence}
       />
-    </div>
+    </Card>
   )
 }
