@@ -264,6 +264,71 @@ public class StudentTransactionServiceTests
 
     #endregion
 
+    #region RecordCreditInvoiceAsync
+
+    [Fact]
+    public async Task RecordCreditInvoiceAsync_WithNegativeTotal_RecordsCreditWithAbsoluteValue()
+    {
+        // Arrange - credit invoice has negative total (per Dutch convention)
+        var creditInvoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            StudentId = _studentId,
+            InvoiceNumber = "C-202601",
+            IssueDate = new DateOnly(2026, 1, 20),
+            DueDate = new DateOnly(2026, 1, 20),
+            Total = -121m,
+            IsCreditInvoice = true,
+            OriginalInvoiceId = _invoiceId,
+        };
+        var originalInvoice = BuildInvoice(total: 121m, invoiceNumber: "202601");
+
+        // Act
+        await _service.RecordCreditInvoiceAsync(creditInvoice, originalInvoice, _userId);
+
+        // Assert: Credit field should be the absolute value (121m), not -121m
+        _repoMock.Verify(r => r.AddAsync(
+            It.Is<StudentTransaction>(t =>
+                t.Type == TransactionType.CreditInvoice &&
+                t.Debit == 0 &&
+                t.Credit == 121m &&
+                t.InvoiceId == creditInvoice.Id &&
+                t.ReferenceNumber == "C-202601" &&
+                t.Description.Contains("C-202601") &&
+                t.Description.Contains("202601")),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordCreditInvoiceAsync_WithPositiveTotal_RecordsCreditCorrectly()
+    {
+        // Arrange - backward compat: even if total is positive, Math.Abs keeps it positive
+        var creditInvoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            StudentId = _studentId,
+            InvoiceNumber = "C-202602",
+            IssueDate = new DateOnly(2026, 2, 20),
+            DueDate = new DateOnly(2026, 2, 20),
+            Total = 50m,
+            IsCreditInvoice = true,
+            OriginalInvoiceId = _invoiceId,
+        };
+        var originalInvoice = BuildInvoice(total: 50m, invoiceNumber: "202602");
+
+        // Act
+        await _service.RecordCreditInvoiceAsync(creditInvoice, originalInvoice, _userId);
+
+        // Assert
+        _repoMock.Verify(r => r.AddAsync(
+            It.Is<StudentTransaction>(t => t.Credit == 50m),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    #endregion
+
     #region GetTransactionsAsync
 
     [Fact]

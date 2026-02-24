@@ -77,6 +77,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             Phone = settings.GetValueOrDefault("school_phone"),
             Email = settings.GetValueOrDefault("school_email"),
             KvkNumber = settings.GetValueOrDefault("school_kvk"),
+            BtwNumber = settings.GetValueOrDefault("school_btw"),
             Iban = settings.GetValueOrDefault("school_iban"),
             VatRate = decimal.TryParse(settings.GetValueOrDefault("vat_rate", "21"), out var vat) ? vat : 21m
         };

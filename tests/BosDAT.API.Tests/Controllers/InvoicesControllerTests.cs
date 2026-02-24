@@ -729,6 +729,7 @@ public class InvoicesControllerTests
             Phone = "020-1234567",
             Email = "info@testmusicschool.nl",
             KvkNumber = "12345678",
+            BtwNumber = "NL123456789B01",
             Iban = "NL00INGB0001234567",
             VatRate = 21m
         };

@@ -1249,6 +1249,13 @@ namespace BosDAT.Infrastructure.Migrations
                         },
                         new
                         {
+                            Key = "school_btw",
+                            Description = "School BTW-identificatienummer (VAT ID)",
+                            Type = "string",
+                            Value = "NL000000000B00"
+                        },
+                        new
+                        {
                             Key = "school_iban",
                             Description = "School IBAN bank account",
                             Type = "string",

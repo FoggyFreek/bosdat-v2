@@ -66,10 +66,10 @@ public class CreditInvoiceService(
                     OriginalInvoiceLineId = originalLine.Id,
                     Description = originalLine.Description,
                     Quantity = originalLine.Quantity,
-                    UnitPrice = originalLine.UnitPrice,
+                    UnitPrice = -originalLine.UnitPrice,
                     VatRate = originalLine.VatRate,
-                    VatAmount = originalLine.VatAmount,
-                    LineTotal = originalLine.LineTotal
+                    VatAmount = -originalLine.VatAmount,
+                    LineTotal = -originalLine.LineTotal
                 };
                 creditInvoice.Lines.Add(creditLine);
             }

@@ -600,6 +600,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             new Setting { Key = "school_phone", Value = "+31 38 123 4567", Type = "string", Description = "School phone number" },
             new Setting { Key = "school_email", Value = "info@nmi-zwolle.nl", Type = "string", Description = "School email" },
             new Setting { Key = "school_kvk", Value = "12345678", Type = "string", Description = "School KvK (Chamber of Commerce) number" },
+            new Setting { Key = "school_btw", Value = "NL000000000B00", Type = "string", Description = "School BTW-identificatienummer (VAT ID)" },
             new Setting { Key = "school_iban", Value = "NL00 BANK 0000 0000 00", Type = "string", Description = "School IBAN bank account" },
             new Setting { Key = "child_discount_percent", Value = "10", Type = "decimal", Description = "Default percentage discount for child pricing" },
             new Setting { Key = "group_max_students", Value = "6", Type = "int", Description = "Default maximum students for group lessons" },

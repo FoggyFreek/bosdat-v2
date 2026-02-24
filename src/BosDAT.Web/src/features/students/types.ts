@@ -252,6 +252,7 @@ export interface SchoolBillingInfo {
   phone?: string
   email?: string
   kvkNumber?: string
+  btwNumber?: string
   iban?: string
   vatRate: number
 }

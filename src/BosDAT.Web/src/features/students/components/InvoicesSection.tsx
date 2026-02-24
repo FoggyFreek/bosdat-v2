@@ -435,6 +435,7 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
                 {schoolInfo.phone && <div>{t('students.invoices.tel')}: {schoolInfo.phone}</div>}
                 {schoolInfo.email && <div>{t('students.invoices.email')}: {schoolInfo.email}</div>}
                 {schoolInfo.kvkNumber && <div>{t('students.invoices.kvk')}: {schoolInfo.kvkNumber}</div>}
+                {schoolInfo.btwNumber && <div>{t('students.invoices.btw')}: {schoolInfo.btwNumber}</div>}
               </div>
             )}
           </div>
@@ -542,10 +543,14 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
               <span>{formatCurrency(invoice.vatAmount)}</span>
             </div>
             <div className="flex justify-between font-bold text-lg border-t pt-2">
-              <span>{t('students.invoices.totalDue')}</span>
+              <span>
+                {invoice.isCreditInvoice
+                  ? t('students.invoices.totalCredit')
+                  : t('students.invoices.totalDue')}
+              </span>
               <span>{formatCurrency(totalOwed)}</span>
             </div>
-            {invoice.amountPaid > 0 && (
+            {!invoice.isCreditInvoice && invoice.amountPaid > 0 && (
               <>
                 <div className="flex justify-between text-green-600">
                   <span>{t('students.invoices.amountPaid')}</span>
@@ -560,17 +565,28 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
           </div>
         </div>
 
-        {/* Payment Instructions */}
+        {/* Payment Instructions / Credit Note */}
         <div className="border-t pt-4 text-sm">
-          <h4 className="font-medium mb-2">{t('students.invoices.paymentInstructions')}</h4>
-          <p className="text-muted-foreground">
-            {t('students.invoices.paymentInstructionsText', { invoiceNumber: invoice.invoiceNumber })}
-          </p>
-          {schoolInfo?.iban && (
-            <div className="mt-2">
-              <span className="text-muted-foreground">{t('students.invoices.iban')}:</span>{' '}
-              <span className="font-mono">{schoolInfo.iban}</span>
-            </div>
+          {invoice.isCreditInvoice ? (
+            <>
+              <h4 className="font-medium mb-2">{t('students.invoices.creditNote')}</h4>
+              <p className="text-muted-foreground">
+                {t('students.invoices.creditNoteText')}
+              </p>
+            </>
+          ) : (
+            <>
+              <h4 className="font-medium mb-2">{t('students.invoices.paymentInstructions')}</h4>
+              <p className="text-muted-foreground">
+                {t('students.invoices.paymentInstructionsText', { invoiceNumber: invoice.invoiceNumber })}
+              </p>
+              {schoolInfo?.iban && (
+                <div className="mt-2">
+                  <span className="text-muted-foreground">{t('students.invoices.iban')}:</span>{' '}
+                  <span className="font-mono">{schoolInfo.iban}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

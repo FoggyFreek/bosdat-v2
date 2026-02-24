@@ -107,7 +107,7 @@ public class StudentTransactionService(
             Description = $"Credit invoice {creditInvoice.InvoiceNumber} for invoice {originalInvoice.InvoiceNumber}",
             ReferenceNumber = creditInvoice.InvoiceNumber,
             Debit = 0,
-            Credit = creditInvoice.Total,
+            Credit = Math.Abs(creditInvoice.Total),
             InvoiceId = creditInvoice.Id,
             CreatedById = userId
         };

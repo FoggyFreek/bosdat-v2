@@ -71,6 +71,7 @@ public record SchoolBillingInfoDto
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? KvkNumber { get; init; }
+    public string? BtwNumber { get; init; }
     public string? Iban { get; init; }
     public decimal VatRate { get; init; }
 }
