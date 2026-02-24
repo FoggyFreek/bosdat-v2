@@ -81,10 +81,12 @@ public class LessonGenerationTests
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         // Generate lessons for 4 weeks (should create 4 lessons on Mondays)
         var startDate = new DateOnly(2024, 3, 4); // Monday
@@ -156,10 +158,12 @@ public class LessonGenerationTests
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         // Generate lessons for 8 weeks (biweekly = 4 lessons)
         var startDate = new DateOnly(2024, 3, 6); // Wednesday
@@ -241,10 +245,12 @@ public class LessonGenerationTests
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         // Generate lessons for 4 Mondays, one falls on holiday
         var startDate = new DateOnly(2024, 3, 4);  // Monday
@@ -329,10 +335,12 @@ public class LessonGenerationTests
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         var startDate = new DateOnly(2024, 3, 4);  // Monday
         var endDate = new DateOnly(2024, 3, 25);   // Monday (4 weeks)
@@ -456,10 +464,12 @@ public class LessonGenerationTests
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         // Generate for 2 weeks
         var startDate = new DateOnly(2024, 3, 4);  // Monday

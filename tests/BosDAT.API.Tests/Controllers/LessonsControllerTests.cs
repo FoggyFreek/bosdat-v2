@@ -556,9 +556,14 @@ public class LessonsControllerTests
         mockHolidayRepo.Setup(r => r.Query())
             .Returns(new List<Holiday>().AsQueryable().BuildMockDbSet().Object);
 
+        var mockAbsenceRepo = new Mock<IRepository<Absence>>();
+        mockAbsenceRepo.Setup(r => r.Query())
+            .Returns(new List<Absence>().AsQueryable().BuildMockDbSet().Object);
+
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         var dto = new GenerateLessonsDto
         {
@@ -652,9 +657,14 @@ public class LessonsControllerTests
         mockHolidayRepo.Setup(r => r.Query())
             .Returns(new List<Holiday>().AsQueryable().BuildMockDbSet().Object);
 
+        var mockAbsenceRepo = new Mock<IRepository<Absence>>();
+        mockAbsenceRepo.Setup(r => r.Query())
+            .Returns(new List<Absence>().AsQueryable().BuildMockDbSet().Object);
+
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
 
         var dto = new BulkGenerateLessonsDto
         {

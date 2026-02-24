@@ -278,6 +278,34 @@ public class InvoicesController(
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Applies the student's available credit balance to offset the invoice amount.
+    /// Creates a CreditBalance payment and a CorrectionApplied ledger transaction atomically.
+    /// </summary>
+    [HttpPost("{invoiceId:guid}/apply-credit")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<InvoiceDto>> ApplyCreditBalance(
+        Guid invoiceId,
+        [FromBody] ApplyCreditBalanceDto dto,
+        CancellationToken ct)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var result = await creditInvoiceService.ApplyCreditBalanceAsync(invoiceId, dto, userId.Value, ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
 
 /// <summary>

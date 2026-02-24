@@ -1,9 +1,10 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
@@ -157,46 +158,54 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers Swagger/OpenAPI documentation generation with JWT Bearer authentication scheme.
+    /// Registers OpenAPI documentation with JWT Bearer security scheme using Scalar UI.
     /// </summary>
     public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
     {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
+        services.AddOpenApi(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo
+            options.AddDocumentTransformer((doc, ctx, ct) =>
             {
-                Title = "BosDAT API",
-                Version = "v1",
-                Description = "Music School Management System API"
+                doc.Info = new() { Title = "BosDAT API", Version = "v1", Description = "Music School Management System API" };
+                return Task.CompletedTask;
             });
-
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "Enter your JWT token"
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
+            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
         });
-
         return services;
+    }
+}
+
+/// <summary>
+/// Adds a Bearer security scheme to the OpenAPI document.
+/// </summary>
+internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
+{
+    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Enter your JWT token"
+        };
+
+        var securityRequirement = new OpenApiSecurityRequirement
+        {
+            { new OpenApiSecuritySchemeReference("Bearer", document), new List<string>() }
+        };
+
+        foreach (var path in document.Paths.Values)
+        {
+            foreach (var operation in path.Operations!.Values)
+            {
+                operation.Security ??= [];
+                operation.Security.Add(securityRequirement);
+            }
+        }
+
+        return Task.CompletedTask;
     }
 }

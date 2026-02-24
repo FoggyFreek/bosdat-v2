@@ -54,7 +54,10 @@
       "Bash(})",
       "Bash(gh pr list:*)",
       "Bash(python:*)",
-      "Bash(python -c:*)"
+      "Bash(python -c:*)",
+      "Bash(cd /c/devprojects/musicadmin/bosdat-v2 && dotnet ef migrations list --project src/BosDAT.Infrastructure --startup-project src/BosDAT.API 2>&1)",
+      "Bash(cd /c/devprojects/musicadmin/bosdat-v2 && dotnet tool run dotnet-ef migrations list --project src/BosDAT.Infrastructure --startup-project src/BosDAT.API 2>&1)",
+      "Bash(~/.dotnet/tools/dotnet-ef migrations:*)"
     ]
   }
 }

@@ -128,6 +128,70 @@ public class CreditInvoiceService(
         }
     }
 
+    public async Task<InvoiceDto> ApplyCreditBalanceAsync(
+        Guid invoiceId, ApplyCreditBalanceDto dto, Guid userId, CancellationToken ct = default)
+    {
+        var invoice = await unitOfWork.Invoices.GetWithLinesAsync(invoiceId, ct)
+            ?? throw new InvalidOperationException("Invoice not found.");
+
+        if (invoice.Status == InvoiceStatus.Cancelled)
+            throw new InvalidOperationException("Cannot apply credit to a Cancelled invoice.");
+
+        if (invoice.IsCreditInvoice)
+            throw new InvalidOperationException("Cannot apply credit to a credit invoice.");
+
+        var currentBalance = await studentTransactionService.GetStudentBalanceAsync(invoice.StudentId, ct);
+        if (currentBalance >= 0)
+            throw new InvalidOperationException("Student has no credit balance available.");
+
+        var availableCredit = Math.Abs(currentBalance);
+        if (dto.Amount > availableCredit)
+            throw new InvalidOperationException(
+                $"Amount exceeds available credit of {availableCredit:F2}.");
+
+        var existingPayments = invoice.Payments.Sum(p => p.Amount);
+        var remainingInvoiceBalance = invoice.Total - existingPayments;
+        if (dto.Amount > remainingInvoiceBalance)
+            throw new InvalidOperationException(
+                $"Amount exceeds remaining invoice balance of {remainingInvoiceBalance:F2}.");
+
+        try
+        {
+            await unitOfWork.BeginTransactionAsync(ct);
+
+            var payment = new Payment
+            {
+                Id = Guid.NewGuid(),
+                InvoiceId = invoice.Id,
+                Amount = dto.Amount,
+                PaymentDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                Method = PaymentMethod.CreditBalance,
+                Notes = dto.Notes,
+                RecordedById = userId
+            };
+
+            await unitOfWork.Repository<Payment>().AddAsync(payment, ct);
+
+            if (existingPayments + dto.Amount >= invoice.Total)
+            {
+                invoice.Status = InvoiceStatus.Paid;
+                invoice.PaidAt = DateTime.UtcNow;
+            }
+
+            await unitOfWork.SaveChangesAsync(ct);
+            await studentTransactionService.RecordCreditAppliedAsync(invoice, payment, userId, ct);
+            await unitOfWork.CommitTransactionAsync(ct);
+
+            var result = await queryService.GetInvoiceAsync(invoice.Id, ct);
+            return result!;
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync(ct);
+            throw;
+        }
+    }
+
     private static string BuildCreditNotes(string originalInvoiceNumber, string? additionalNotes)
     {
         var note = $"Creditfactuur voor factuur {originalInvoiceNumber}";

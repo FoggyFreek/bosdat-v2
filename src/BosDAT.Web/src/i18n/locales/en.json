@@ -196,7 +196,8 @@
       "bank": "Bank",
       "card": "Card",
       "directDebit": "Direct Debit",
-      "other": "Other"
+      "other": "Other",
+      "creditBalance": "Credit Balance"
     },
     "invoicingPreference": {
       "monthly": "Monthly",
@@ -470,8 +471,23 @@
         "payment": "Payment",
         "invoiceCancellation": "Cancellation",
         "invoiceAdjustment": "Adjustment",
-        "creditInvoice": "Credit Invoice"
+        "creditInvoice": "Credit Invoice",
+        "correctionApplied": "Correction Applied"
       }
+    },
+    "creditBalance": {
+      "applyCredit": "Apply Credit",
+      "title": "Apply Credit Balance to Invoice",
+      "description": "Available credit: {{credit}} | Remaining invoice balance: {{balance}}",
+      "availableCredit": "Available Credit",
+      "invoiceBalance": "Remaining Invoice Balance",
+      "amount": "Amount to Apply",
+      "fullAmount": "Full Amount",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional notes",
+      "apply": "Apply",
+      "exceedsCredit": "Amount exceeds available credit",
+      "exceedsBalance": "Amount exceeds remaining invoice balance"
     },
     "creditInvoice": {
       "title": "Create Credit Invoice",

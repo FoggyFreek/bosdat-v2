@@ -5,6 +5,7 @@ import { SchedulePage } from '../SchedulePage'
 import { calendarApi } from '@/features/schedule/api'
 import { teachersApi } from '@/features/teachers/api'
 import { roomsApi } from '@/features/rooms/api'
+import { TeacherAbsence } from '@/features/schedule/types'
 import type { WeekCalendar, CalendarLesson, Holiday } from '@/features/schedule/types'
 import type { TeacherList } from '@/features/teachers/types'
 import type { Room } from '@/features/rooms/types'
@@ -165,9 +166,20 @@ describe('SchedulePage', () => {
     },
   ]
 
+  const mockTeacherAbsences: TeacherAbsence[] = [
+    {
+      id: 'absence-1',
+      startDate: '2026-01-28',
+      endDate: '2026-01-30',
+      teacherId: 'teacher-1',
+      reason: 'Sick leave',
+    },
+  ]
+
   const mockCalendarData: WeekCalendar = {
     weekStart: '2026-01-26',
     weekEnd: '2026-02-01',
+    teacherAbsences: mockTeacherAbsences,
     lessons: mockLessons,
     holidays: mockHolidays,
   }
@@ -241,6 +253,7 @@ describe('SchedulePage', () => {
       vi.mocked(calendarApi.getWeek).mockResolvedValue({
         ...mockCalendarData,
         holidays: [],
+        teacherAbsences: [],
       })
 
       render(<SchedulePage />)
@@ -256,6 +269,7 @@ describe('SchedulePage', () => {
         ...mockCalendarData,
         lessons: [],
         holidays: [],
+        teacherAbsences: [],
       })
 
       render(<SchedulePage />)

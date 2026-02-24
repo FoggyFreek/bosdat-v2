@@ -6,7 +6,8 @@ public enum PaymentMethod
     Bank,
     Card,
     DirectDebit,
-    Other
+    Other,
+    CreditBalance = 5
 }
 
 public class Payment : BaseEntity

@@ -196,7 +196,8 @@
       "bank": "Bank",
       "card": "Kaart",
       "directDebit": "Automatische Incasso",
-      "other": "Anders"
+      "other": "Anders",
+      "creditBalance": "Creditsaldo"
     },
     "invoicingPreference": {
       "monthly": "Maandelijks",
@@ -470,8 +471,23 @@
         "payment": "Betaling",
         "invoiceCancellation": "Annulering",
         "invoiceAdjustment": "Aanpassing",
-        "creditInvoice": "Creditfactuur"
+        "creditInvoice": "Creditfactuur",
+        "correctionApplied": "Correctie toegepast"
       }
+    },
+    "creditBalance": {
+      "applyCredit": "Creditsaldo toepassen",
+      "title": "Creditsaldo toepassen op factuur",
+      "description": "Beschikbaar tegoed: {{credit}} | Resterend factuurbedrag: {{balance}}",
+      "availableCredit": "Beschikbaar tegoed",
+      "invoiceBalance": "Resterend factuurbedrag",
+      "amount": "Toe te passen bedrag",
+      "fullAmount": "Volledig bedrag",
+      "notes": "Notities",
+      "notesPlaceholder": "Optionele toelichting",
+      "apply": "Toepassen",
+      "exceedsCredit": "Bedrag overschrijdt beschikbaar tegoed",
+      "exceedsBalance": "Bedrag overschrijdt resterend factuurbedrag"
     },
     "creditInvoice": {
       "title": "Creditfactuur aanmaken",

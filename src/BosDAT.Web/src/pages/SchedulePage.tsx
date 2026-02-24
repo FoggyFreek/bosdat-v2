@@ -154,14 +154,13 @@ const convertTeacherAbsencesToEvents = (absences: TeacherAbsence[]): CalendarEve
 
       allEvents.push({
         id: `absence-${absence.id}-${current.toISOString().split('T')[0]}`,
-        startDateTime: dayStart,
-        endDateTime: dayEnd,
+        startDateTime: dayStart.toISOString(),
+        endDateTime: dayEnd.toISOString(),
         title: `${absence.personName ?? 'Teacher'} - ${absence.reason}`,
         frequency: 'once',
         attendees: absence.personName ? [absence.personName] : [],
         eventType: 'holiday',
         status: 'Cancelled',
-        roomId: undefined,
       })
 
       current.setDate(current.getDate() + 1)

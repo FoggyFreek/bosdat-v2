@@ -29,3 +29,9 @@ public record RecordPaymentDto
     public string? Reference { get; init; }
     public string? Notes { get; init; }
 }
+
+public record ApplyCreditBalanceDto
+{
+    public required decimal Amount { get; init; }
+    public string? Notes { get; init; }
+}

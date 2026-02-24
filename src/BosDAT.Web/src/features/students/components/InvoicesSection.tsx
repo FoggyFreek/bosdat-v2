@@ -13,6 +13,7 @@ import {
   CreditCard,
   MinusCircle,
   Check,
+  Wallet,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,9 +25,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { invoicesApi } from '@/features/students/api'
+import { invoicesApi, studentTransactionsApi } from '@/features/students/api'
 import { RecordPaymentDialog } from '@/features/students/components/invoices/RecordPaymentDialog'
 import { CreditInvoiceDialog } from '@/features/students/components/invoices/CreditInvoiceDialog'
+import { ApplyCreditDialog } from '@/features/students/components/invoices/ApplyCreditDialog'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
 import { invoiceStatusTranslations } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
@@ -52,10 +54,17 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
   const [showPrintDialog, setShowPrintDialog] = useState(false)
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
   const [showCreditDialog, setShowCreditDialog] = useState(false)
+  const [showApplyCreditDialog, setShowApplyCreditDialog] = useState(false)
 
   const { data: invoices = [], isLoading } = useQuery<InvoiceListItem[]>({
     queryKey: ['invoices', 'student', studentId],
     queryFn: () => invoicesApi.getByStudent(studentId),
+    enabled: !!studentId,
+  })
+
+  const { data: studentBalance = 0 } = useQuery<number>({
+    queryKey: ['student-balance', studentId],
+    queryFn: () => studentTransactionsApi.getBalance(studentId),
     enabled: !!studentId,
   })
 
@@ -84,6 +93,16 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
 
   const canCreateCreditInvoice = (invoice: InvoiceListItem) => {
     return invoice.status !== 'Draft' && invoice.status !== 'Cancelled' && !invoice.isCreditInvoice
+  }
+
+  const canApplyCredit = (invoice: Invoice) => {
+    return (
+      invoice.status !== 'Cancelled' &&
+      invoice.status !== 'Paid' &&
+      !invoice.isCreditInvoice &&
+      invoice.balance > 0 &&
+      studentBalance < 0
+    )
   }
 
   const handleViewInvoice = (invoiceId: string) => {
@@ -299,6 +318,16 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                   : t('students.creditInvoice.confirm')}
                               </Button>
                             )}
+                            {canApplyCredit(selectedInvoice) && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setShowApplyCreditDialog(true)}
+                              >
+                                <Wallet className="h-4 w-4 mr-2" />
+                                {t('students.creditBalance.applyCredit')}
+                              </Button>
+                            )}
                             {canRecordPayment(selectedInvoice) && (
                               <Button
                                 size="sm"
@@ -382,6 +411,17 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
           onOpenChange={setShowCreditDialog}
           invoice={selectedInvoice}
           studentId={studentId}
+        />
+      )}
+
+      {selectedInvoice && canApplyCredit(selectedInvoice) && (
+        <ApplyCreditDialog
+          open={showApplyCreditDialog}
+          onOpenChange={setShowApplyCreditDialog}
+          invoiceId={selectedInvoice.id}
+          studentId={studentId}
+          availableCredit={Math.abs(studentBalance)}
+          remainingBalance={selectedInvoice.balance}
         />
       )}
     </div>

@@ -6,8 +6,8 @@ Music school management system. **Core:** Course blueprints → automated lesson
 
 ## Architecture
 
-**Backend:** Clean Architecture (.NET 8, C# 12, EF Core 8, PostgreSQL 16)
-- `BosDAT.API` → Controllers, JWT, Swagger
+**Backend:** Clean Architecture (.NET 10, C# 13, EF Core 10, PostgreSQL 16)
+- `BosDAT.API` → Controllers, JWT, Scalar (OpenAPI UI at `/scalar/v1`)
 - `BosDAT.Core` → Entities, Interfaces, DTOs, Enums (zero dependencies)
 - `BosDAT.Infrastructure` → Repositories, Services, Migrations
 
@@ -59,19 +59,19 @@ Music school management system. **Core:** Course blueprints → automated lesson
 
 | Layer | Tech | Version |
 |-------|------|---------|
-| Backend | .NET, C#, EF Core | 8, 12, 8 |
+| Backend | .NET, C#, EF Core | 10, 13, 10 |
 | Frontend | React, TS, Vite | 19, 5, 7 |
 | i18n | react-i18next | Latest |
 | DB | PostgreSQL | 16 |
 | Testing | xUnit, Vitest+RTL | 2.6, 4.0 |
-| Auth | Identity + JWT | 8.0 |
+| Auth | Identity + JWT | 10.0 |
 
 ## Commands
 
 ```bash
 # Backend (from bosdat-v2/)
 dotnet build BosDAT.sln
-dotnet run --project src/BosDAT.API  # :5000 /swagger
+dotnet run --project src/BosDAT.API  # :5000 /scalar/v1
 dotnet test
 
 # EF Migrations
@@ -80,6 +80,8 @@ dotnet ef database update --project src/BosDAT.Infrastructure --startup-project 
 
 # Frontend (from src/BosDAT.Web/)
 npm run dev    # :5173
+npm run build  # tsc + vite build (catches type errors)
+npm run lint
 npm run test
 npm run test:coverage
 
@@ -90,7 +92,8 @@ docker-compose up -d
 ## Defaults
 
 **Credentials:** `admin@bosdat.nl` / `Admin@123456`
-**Swagger:** http://localhost:5000/swagger
+**Scalar UI:** http://localhost:5000/scalar/v1
+**OpenAPI JSON:** http://localhost:5000/openapi/v1.json
 **Seeding:** `/api/admin/seeder/*` (admin-only)
 
 ## Reference

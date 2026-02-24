@@ -14,7 +14,7 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     public async Task<Student?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(s => s.Email.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
+            .FirstOrDefaultAsync(s => EF.Functions.ILike(s.Email, email), cancellationToken);
     }
 
     public async Task<Student?> GetWithEnrollmentsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -50,9 +50,9 @@ public class StudentRepository : Repository<Student>, IStudentRepository
     public async Task<IReadOnlyList<Student>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Where(s => s.FirstName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        s.LastName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        s.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            .Where(s => EF.Functions.ILike(s.FirstName, $"%{searchTerm}%") ||
+                        EF.Functions.ILike(s.LastName, $"%{searchTerm}%") ||
+                        EF.Functions.ILike(s.Email, $"%{searchTerm}%"))
             .OrderBy(s => s.LastName)
             .ThenBy(s => s.FirstName)
             .ToListAsync(cancellationToken);

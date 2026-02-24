@@ -1,7 +1,8 @@
+using System.Net;
 using BosDAT.Worker.Configuration;
 using BosDAT.Worker.Services;
+using Microsoft.Extensions.Http.Resilience;
 using Polly;
-using Polly.Extensions.Http;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -33,7 +34,19 @@ builder.Services.AddHttpClient<IBosApiClient, BosApiClient>(client =>
     client.DefaultRequestHeaders.Add("X-Worker-Identity", "BosDAT.Worker");
 })
 .AddHttpMessageHandler<AuthenticatedHttpClientHandler>()
-.AddPolicyHandler(GetRetryPolicy(workerSettings.Api.RetryCount));
+.AddResilienceHandler("retry", resilienceBuilder =>
+{
+    resilienceBuilder.AddRetry(new HttpRetryStrategyOptions
+    {
+        MaxRetryAttempts = workerSettings.Api.RetryCount,
+        Delay = TimeSpan.FromSeconds(2),
+        BackoffType = DelayBackoffType.Exponential,
+        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+            .Handle<HttpRequestException>()
+            .HandleResult(r => r.StatusCode == HttpStatusCode.TooManyRequests
+                             || (int)r.StatusCode >= 500)
+    });
+});
 
 builder.Services.AddHostedService<InvoiceRunBackgroundService>();
 builder.Services.AddHostedService<LessonGenerationBackgroundService>();
@@ -52,17 +65,3 @@ logger.LogInformation("Lesson Status Update Job Enabled: {Enabled}",
     workerSettings.LessonStatusUpdateJob.Enabled);
 
 await host.RunAsync();
-
-static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(int retryCount)
-{
-    return HttpPolicyExtensions
-        .HandleTransientHttpError()
-        .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-        .WaitAndRetryAsync(
-            retryCount,
-            retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-            onRetry: (outcome, timespan, retryAttempt, context) =>
-            {
-                Console.WriteLine($"Retry {retryAttempt} after {timespan.TotalSeconds}s due to {outcome.Exception?.Message ?? outcome.Result?.StatusCode.ToString()}");
-            });
-}

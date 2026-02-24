@@ -58,7 +58,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
     {
         // Check for duplicate name
         var existing = await unitOfWork.Repository<Instrument>()
-            .FirstOrDefaultAsync(i => string.Equals(i.Name, dto.Name, StringComparison.OrdinalIgnoreCase), ct);
+            .FirstOrDefaultAsync(i => EF.Functions.ILike(i.Name, dto.Name), ct);
 
         if (existing != null)
         {
@@ -98,7 +98,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
 
         // Check for duplicate name (excluding current)
         var existing = await unitOfWork.Repository<Instrument>()
-            .FirstOrDefaultAsync(i => string.Equals(i.Name, dto.Name, StringComparison.OrdinalIgnoreCase) && i.Id != id, ct);
+            .FirstOrDefaultAsync(i => EF.Functions.ILike(i.Name, dto.Name) && i.Id != id, ct);
 
         if (existing != null)
         {

@@ -16,6 +16,11 @@ import type {
   StudentTransaction,
 } from '@/features/students/types'
 
+interface ApplyCreditBalance {
+  amount: number
+  notes?: string
+}
+
 export const studentsApi = {
   getAll: async (params?: { search?: string; status?: string }) => {
     const response = await api.get('/students', { params })
@@ -127,12 +132,22 @@ export const invoicesApi = {
     const response = await api.post<Invoice>(`/invoices/${creditInvoiceId}/confirm-credit`)
     return response.data
   },
+
+  applyCreditBalance: async (invoiceId: string, data: ApplyCreditBalance): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${invoiceId}/apply-credit`, data)
+    return response.data
+  },
 }
 
 export const studentTransactionsApi = {
   getAll: async (studentId: string): Promise<StudentTransaction[]> => {
     const response = await api.get<StudentTransaction[]>(`/students/${studentId}/transactions`)
     return response.data
+  },
+
+  getBalance: async (studentId: string): Promise<number> => {
+    const response = await api.get<{ balance: number }>(`/students/${studentId}/balance`)
+    return response.data.balance
   },
 }
 

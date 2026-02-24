@@ -18,10 +18,11 @@ public class StudentService(
 
         if (!string.IsNullOrWhiteSpace(search))
         {
+            var pattern = $"%{search}%";
             query = query.Where(s =>
-                s.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                s.LastName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                s.Email.Contains(search, StringComparison.OrdinalIgnoreCase));
+                EF.Functions.ILike(s.FirstName, pattern) ||
+                EF.Functions.ILike(s.LastName, pattern) ||
+                EF.Functions.ILike(s.Email, pattern));
         }
 
         if (status.HasValue)

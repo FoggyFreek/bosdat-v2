@@ -141,8 +141,21 @@ public class CurrentUserServiceTests
 
     private static CurrentUserService CreateServiceWithNoContext()
     {
+        var headersMock = new Mock<IHeaderDictionary>();
+        headersMock.Setup(h => h["X-Forwarded-For"])
+            .Returns(Microsoft.Extensions.Primitives.StringValues.Empty);
+
+        var requestMock = new Mock<HttpRequest>();
+        requestMock.Setup(r => r.Headers).Returns(headersMock.Object);
+
+        var connectionMock = new Mock<ConnectionInfo>();
+
+        var contextMock = new Mock<HttpContext>();
+        contextMock.Setup(c => c.Request).Returns(requestMock.Object);
+        contextMock.Setup(c => c.Connection).Returns(connectionMock.Object);
+
         var accessor = new Mock<IHttpContextAccessor>();
-        accessor.Setup(a => a.HttpContext).Returns((HttpContext?)null);
+        accessor.Setup(a => a.HttpContext).Returns(contextMock.Object);
         return new CurrentUserService(accessor.Object);
     }
 
@@ -171,7 +184,8 @@ public class CurrentUserServiceTests
         requestMock.Setup(r => r.Headers).Returns(headersMock.Object);
 
         var connectionMock = new Mock<ConnectionInfo>();
-        connectionMock.Setup(c => c.RemoteIpAddress).Returns(remoteIp);
+        if(remoteIp != null)
+            connectionMock.Setup(c => c.RemoteIpAddress).Returns(remoteIp);
 
         var contextMock = new Mock<HttpContext>();
         contextMock.Setup(c => c.Request).Returns(requestMock.Object);

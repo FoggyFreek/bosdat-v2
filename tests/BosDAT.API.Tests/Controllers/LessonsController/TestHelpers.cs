@@ -383,10 +383,12 @@ public abstract class LessonGenerationTestBase
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         MockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         MockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         MockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        MockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
     }
 
     /// <summary>
@@ -405,9 +407,11 @@ public abstract class LessonGenerationTestBase
             .ReturnsAsync((Lesson l, CancellationToken _) => l);
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         MockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         MockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         MockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        MockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
     }
 }

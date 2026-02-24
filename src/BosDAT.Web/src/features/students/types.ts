@@ -141,7 +141,7 @@ export interface StudentEnrollment {
 // Invoice Types
 export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue' | 'Cancelled'
 export type InvoicingPreference = 'Monthly' | 'Quarterly'
-export type PaymentMethod = 'Cash' | 'Bank' | 'Card' | 'DirectDebit' | 'Other'
+export type PaymentMethod = 'Cash' | 'Bank' | 'Card' | 'DirectDebit' | 'Other' | 'CreditBalance'
 
 export interface BillingContact {
   name: string
@@ -269,6 +269,7 @@ export type TransactionType =
   | 'InvoiceCancellation'
   | 'InvoiceAdjustment'
   | 'CreditInvoice'
+  | 'CorrectionApplied'
 
 export interface StudentTransaction {
   id: string
@@ -292,6 +293,7 @@ export const transactionTypeTranslations = {
   InvoiceCancellation: 'students.transactions.type.invoiceCancellation',
   InvoiceAdjustment: 'students.transactions.type.invoiceAdjustment',
   CreditInvoice: 'students.transactions.type.creditInvoice',
+  CorrectionApplied: 'students.transactions.type.correctionApplied',
 } as const satisfies Record<TransactionType, string>
 
 export interface RecordPayment {
@@ -335,5 +337,6 @@ export const paymentMethodTranslations = {
   Card: 'students.paymentMethod.card',
   DirectDebit: 'students.paymentMethod.directDebit',
   Other: 'students.paymentMethod.other',
+  CreditBalance: 'students.paymentMethod.creditBalance',
 } as const satisfies Record<PaymentMethod, string>
 

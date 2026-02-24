@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
@@ -35,38 +35,25 @@ interface AbsenceDialogProps {
   absence?: Absence | null
 }
 
-export function AbsenceDialog({
-  open,
+interface AbsenceDialogContentProps extends AbsenceDialogProps {
+  isEdit: boolean
+}
+
+function AbsenceDialogContent({
   onOpenChange,
   studentId,
   teacherId,
   absence,
-}: Readonly<AbsenceDialogProps>) {
+  isEdit,
+}: Readonly<AbsenceDialogContentProps>) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const isEdit = !!absence
 
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [reason, setReason] = useState<AbsenceReason>('Sick')
-  const [notes, setNotes] = useState('')
-  const [invoiceLesson, setInvoiceLesson] = useState(false)
-
-  useEffect(() => {
-    if (absence) {
-      setStartDate(absence.startDate)
-      setEndDate(absence.endDate)
-      setReason(absence.reason)
-      setNotes(absence.notes ?? '')
-      setInvoiceLesson(absence.invoiceLesson)
-    } else {
-      setStartDate('')
-      setEndDate('')
-      setReason('Sick')
-      setNotes('')
-      setInvoiceLesson(false)
-    }
-  }, [absence, open])
+  const [startDate, setStartDate] = useState(absence?.startDate ?? '')
+  const [endDate, setEndDate] = useState(absence?.endDate ?? '')
+  const [reason, setReason] = useState<AbsenceReason>(absence?.reason ?? 'Sick')
+  const [notes, setNotes] = useState(absence?.notes ?? '')
+  const [invoiceLesson, setInvoiceLesson] = useState(absence?.invoiceLesson ?? false)
 
   const invalidateKeys = () => {
     if (studentId) {
@@ -122,86 +109,108 @@ export function AbsenceDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? t('students.absence.editAbsence') : t('students.absence.addAbsence')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('students.absence.invoiceLessonHelp')}
-          </DialogDescription>
-        </DialogHeader>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>
+          {isEdit ? t('students.absence.editAbsence') : t('students.absence.addAbsence')}
+        </DialogTitle>
+        <DialogDescription>
+          {t('students.absence.invoiceLessonHelp')}
+        </DialogDescription>
+      </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="absence-start">{t('students.absence.startDate')}</Label>
-              <Input
-                id="absence-start"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="absence-end">{t('students.absence.endDate')}</Label>
-              <Input
-                id="absence-end"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>{t('students.absence.reason')}</Label>
-            <Select value={reason} onValueChange={(val) => setReason(val as AbsenceReason)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ABSENCE_REASONS.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {t(absenceReasonTranslations[r])}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="absence-notes">{t('students.absence.notes')}</Label>
-            <Textarea
-              id="absence-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
+            <Label htmlFor="absence-start">{t('students.absence.startDate')}</Label>
+            <Input
+              id="absence-start"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
           </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="invoice-lesson"
-              checked={invoiceLesson}
-              onCheckedChange={(checked) => setInvoiceLesson(checked === true)}
+          <div className="space-y-2">
+            <Label htmlFor="absence-end">{t('students.absence.endDate')}</Label>
+            <Input
+              id="absence-end"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
             />
-            <Label htmlFor="invoice-lesson" className="text-sm font-normal">
-              {t('students.absence.invoiceLesson')}
-            </Label>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t('common.actions.cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={!canSubmit || isPending}>
-            {isPending ? t('common.actions.save') + '...' : t('common.actions.save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+        <div className="space-y-2">
+          <Label>{t('students.absence.reason')}</Label>
+          <Select value={reason} onValueChange={(val) => setReason(val as AbsenceReason)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ABSENCE_REASONS.map((r) => (
+                <SelectItem key={r} value={r}>
+                  {t(absenceReasonTranslations[r])}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="absence-notes">{t('students.absence.notes')}</Label>
+          <Textarea
+            id="absence-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+          />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="invoice-lesson"
+            checked={invoiceLesson}
+            onCheckedChange={(checked) => setInvoiceLesson(checked === true)}
+          />
+          <Label htmlFor="invoice-lesson" className="text-sm font-normal">
+            {t('students.absence.invoiceLesson')}
+          </Label>
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          {t('common.actions.cancel')}
+        </Button>
+        <Button onClick={handleSubmit} disabled={!canSubmit || isPending}>
+          {isPending ? t('common.actions.save') + '...' : t('common.actions.save')}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  )
+}
+
+export function AbsenceDialog({
+  open,
+  onOpenChange,
+  studentId,
+  teacherId,
+  absence,
+}: Readonly<AbsenceDialogProps>) {
+  const isEdit = !!absence
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <AbsenceDialogContent
+        key={`${absence?.id ?? 'new'}-${String(open)}`}
+        open={open}
+        onOpenChange={onOpenChange}
+        studentId={studentId}
+        teacherId={teacherId}
+        absence={absence}
+        isEdit={isEdit}
+      />
     </Dialog>
   )
 }

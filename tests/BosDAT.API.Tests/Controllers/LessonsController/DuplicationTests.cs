@@ -260,10 +260,12 @@ public class DuplicationTests
             });
 
         var mockHolidayRepo = MockHelpers.CreateMockRepository(holidays);
+        var mockAbsenceRepo = MockHelpers.CreateMockRepository(new List<Absence>());
 
         _mockUnitOfWork.Setup(u => u.Courses).Returns(mockCourseRepo.Object);
         _mockUnitOfWork.Setup(u => u.Lessons).Returns(mockLessonRepo.Object);
         _mockUnitOfWork.Setup(u => u.Repository<Holiday>()).Returns(mockHolidayRepo.Object);
+        _mockUnitOfWork.Setup(u => u.Repository<Absence>()).Returns(mockAbsenceRepo.Object);
     }
 
     /// <summary>

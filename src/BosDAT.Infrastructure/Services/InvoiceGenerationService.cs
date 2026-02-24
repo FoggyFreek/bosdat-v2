@@ -7,7 +7,6 @@ using BosDAT.Core.Utilities;
 using BosDAT.Infrastructure.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.AccessControl;
-using Microsoft.AspNetCore.Http;
 
 namespace BosDAT.Infrastructure.Services;
 

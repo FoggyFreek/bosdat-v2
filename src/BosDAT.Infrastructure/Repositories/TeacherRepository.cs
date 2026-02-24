@@ -14,7 +14,7 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
     public async Task<Teacher?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(t => t.Email.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
+            .FirstOrDefaultAsync(t => EF.Functions.ILike(t.Email, email), cancellationToken);
     }
 
     public async Task<Teacher?> GetWithInstrumentsAsync(Guid id, CancellationToken cancellationToken = default)
