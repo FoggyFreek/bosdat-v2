@@ -11,6 +11,7 @@ namespace BosDAT.API.Controllers;
 [Authorize]
 public class InvoicesController(
     IInvoiceService invoiceService,
+    ICreditInvoiceService creditInvoiceService,
     ICurrentUserService currentUserService
     ) : ControllerBase
 {
@@ -223,6 +224,59 @@ public class InvoicesController(
             return BadRequest(new { message = "Payments for invoice not found" });
         }
         
+    }
+    /// <summary>
+    /// Creates a credit invoice (creditfactuur) for selected lines of an existing invoice.
+    /// Dutch law requires credit invoices to reference the original invoice.
+    /// </summary>
+    [HttpPost("{id:guid}/credit-invoice")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<InvoiceDto>> CreateCreditInvoice(
+        Guid id,
+        [FromBody] CreateCreditInvoiceDto dto,
+        CancellationToken ct)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var creditInvoice = await creditInvoiceService.CreateCreditInvoiceAsync(id, dto, userId.Value, ct);
+            return CreatedAtAction(nameof(GetById), new { id = creditInvoice.Id }, creditInvoice);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Confirms a draft credit invoice, changing its status to Sent and recording the ledger transaction.
+    /// </summary>
+    [HttpPost("{id:guid}/confirm-credit")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<InvoiceDto>> ConfirmCreditInvoice(
+        Guid id,
+        CancellationToken ct)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var creditInvoice = await creditInvoiceService.ConfirmCreditInvoiceAsync(id, userId.Value, ct);
+            return Ok(creditInvoice);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
 

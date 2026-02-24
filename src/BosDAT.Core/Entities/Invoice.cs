@@ -50,9 +50,15 @@ public class Invoice : BaseEntity
 
     public string? Notes { get; set; }
 
+    // Credit invoice fields
+    public bool IsCreditInvoice { get; set; }
+    public Guid? OriginalInvoiceId { get; set; }
+
     // Navigation properties
     public virtual Student Student { get; set; } = null!;
     public virtual Enrollment? Enrollment { get; set; }
+    public virtual Invoice? OriginalInvoice { get; set; }
+    public virtual ICollection<Invoice> CreditInvoices { get; set; } = new List<Invoice>();
     public virtual ICollection<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 

@@ -8,6 +8,7 @@ import type {
   InvoicePayment,
   GenerateInvoice,
   GenerateBatchInvoices,
+  CreateCreditInvoice,
   SchoolBillingInfo,
   InvoicePrintData,
   InvoiceStatus,
@@ -114,6 +115,16 @@ export const invoicesApi = {
 
   getPayments: async (invoiceId: string): Promise<InvoicePayment[]> => {
     const response = await api.get<InvoicePayment[]>(`/invoices/${invoiceId}/payments`)
+    return response.data
+  },
+
+  createCreditInvoice: async (invoiceId: string, data: CreateCreditInvoice): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${invoiceId}/credit-invoice`, data)
+    return response.data
+  },
+
+  confirmCreditInvoice: async (creditInvoiceId: string): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${creditInvoiceId}/confirm-credit`)
     return response.data
   },
 }

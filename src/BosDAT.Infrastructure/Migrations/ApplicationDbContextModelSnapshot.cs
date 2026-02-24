@@ -578,11 +578,17 @@ namespace BosDAT.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<bool>("IsCreditInvoice")
+                        .HasColumnType("boolean");
+
                     b.Property<DateOnly>("IssueDate")
                         .HasColumnType("date");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("OriginalInvoiceId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
@@ -629,6 +635,8 @@ namespace BosDAT.Infrastructure.Migrations
                     b.HasIndex("InvoiceNumber")
                         .IsUnique();
 
+                    b.HasIndex("OriginalInvoiceId");
+
                     b.HasIndex("Status");
 
                     b.HasIndex("StudentId", "PeriodStart", "PeriodEnd");
@@ -659,6 +667,9 @@ namespace BosDAT.Infrastructure.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<int?>("OriginalInvoiceLineId")
+                        .HasColumnType("integer");
+
                     b.Property<Guid?>("PricingVersionId")
                         .HasColumnType("uuid");
 
@@ -681,6 +692,8 @@ namespace BosDAT.Infrastructure.Migrations
                     b.HasIndex("InvoiceId");
 
                     b.HasIndex("LessonId");
+
+                    b.HasIndex("OriginalInvoiceLineId");
 
                     b.HasIndex("PricingVersionId");
 
@@ -1233,6 +1246,13 @@ namespace BosDAT.Infrastructure.Migrations
                             Description = "School KvK (Chamber of Commerce) number",
                             Type = "string",
                             Value = "12345678"
+                        },
+                        new
+                        {
+                            Key = "school_btw",
+                            Description = "School BTW-identificatienummer (VAT ID)",
+                            Type = "string",
+                            Value = "NL000000000B00"
                         },
                         new
                         {
@@ -1876,6 +1896,11 @@ namespace BosDAT.Infrastructure.Migrations
                         .HasForeignKey("EnrollmentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("BosDAT.Core.Entities.Invoice", "OriginalInvoice")
+                        .WithMany("CreditInvoices")
+                        .HasForeignKey("OriginalInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BosDAT.Core.Entities.Student", "Student")
                         .WithMany("Invoices")
                         .HasForeignKey("StudentId")
@@ -1883,6 +1908,8 @@ namespace BosDAT.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Enrollment");
+
+                    b.Navigation("OriginalInvoice");
 
                     b.Navigation("Student");
                 });
@@ -2165,6 +2192,8 @@ namespace BosDAT.Infrastructure.Migrations
 
             modelBuilder.Entity("BosDAT.Core.Entities.Invoice", b =>
                 {
+                    b.Navigation("CreditInvoices");
+
                     b.Navigation("Lines");
 
                     b.Navigation("Payments");

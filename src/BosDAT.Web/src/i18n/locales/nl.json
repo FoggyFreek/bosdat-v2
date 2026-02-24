@@ -353,7 +353,8 @@
         "reversal": "Terugboeking",
         "invoiceCancellation": "Annulering",
         "invoiceAdjustment": "Aanpassing",
-        "correctionApplied": "Correctie toegepast"
+        "correctionApplied": "Correctie toegepast",
+        "creditInvoice": "Creditfactuur"
       },
       "table": {
         "date": "Datum",
@@ -412,12 +413,16 @@
       "tel": "Tel",
       "email": "E-mail",
       "kvk": "KvK",
+      "btw": "BTW-id",
       "billTo": "Factuur naar",
       "outstandingCharges": "Uitstaande kosten",
       "totalDue": "Totaal verschuldigd",
       "amountPaid": "Betaald bedrag",
       "paymentInstructions": "Betalingsinstructies",
       "paymentInstructionsText": "Maak het bedrag over naar de volgende bankrekening, met factuurnummer {{invoiceNumber}} als betalingsreferentie.",
+      "creditNote": "Toelichting",
+      "creditNoteText": "Dit bedrag wordt verrekend met toekomstige facturen.",
+      "totalCredit": "Totaal credit",
       "iban": "IBAN"
     },
     "billingHelp": "Vul deze velden in als iemand anders (bijv. een ouder) de facturen moet ontvangen.",
@@ -464,8 +469,24 @@
         "invoiceCharge": "Factuur",
         "payment": "Betaling",
         "invoiceCancellation": "Annulering",
-        "invoiceAdjustment": "Aanpassing"
+        "invoiceAdjustment": "Aanpassing",
+        "creditInvoice": "Creditfactuur"
       }
+    },
+    "creditInvoice": {
+      "title": "Creditfactuur aanmaken",
+      "description": "Selecteer de regels van factuur {{invoiceNumber}} die gecrediteerd moeten worden.",
+      "badge": "Credit",
+      "creditInvoice": "Creditfactuur",
+      "selectAll": "Alles selecteren",
+      "creditTotal": "Credit totaal",
+      "notes": "Reden / toelichting",
+      "notesPlaceholder": "Optionele toelichting voor de creditfactuur",
+      "draftNotice": "De creditfactuur wordt als concept aangemaakt. Na controle kunt u deze bevestigen om het saldo aan te passen.",
+      "create": "Creditfactuur aanmaken",
+      "confirm": "Creditfactuur bevestigen",
+      "forInvoice": "Credit voor factuur {{invoiceNumber}}",
+      "referencesInvoice": "Betreft factuur"
     },
     "actions": {
       "creating": "Aanmaken...",

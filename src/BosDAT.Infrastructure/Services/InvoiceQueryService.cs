@@ -39,6 +39,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         var invoices = await context.Invoices
             .Include(i => i.Student)
             .Include(i => i.Payments)
+            .Include(i => i.OriginalInvoice)
             .Where(i => i.StudentId == studentId)
             .OrderByDescending(i => i.IssueDate)
             .AsNoTracking()
@@ -52,6 +53,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
         var invoices = await context.Invoices
             .Include(i => i.Student)
             .Include(i => i.Payments)
+            .Include(i => i.OriginalInvoice)
             .Where(i => i.Status == status)
             .OrderByDescending(i => i.IssueDate)
             .AsNoTracking()
@@ -75,6 +77,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             Phone = settings.GetValueOrDefault("school_phone"),
             Email = settings.GetValueOrDefault("school_email"),
             KvkNumber = settings.GetValueOrDefault("school_kvk"),
+            BtwNumber = settings.GetValueOrDefault("school_btw"),
             Iban = settings.GetValueOrDefault("school_iban"),
             VatRate = decimal.TryParse(settings.GetValueOrDefault("vat_rate", "21"), out var vat) ? vat : 21m
         };
@@ -185,6 +188,9 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             Balance = balance,
             CreatedAt = invoice.CreatedAt,
             UpdatedAt = invoice.UpdatedAt,
+            IsCreditInvoice = invoice.IsCreditInvoice,
+            OriginalInvoiceId = invoice.OriginalInvoiceId,
+            OriginalInvoiceNumber = invoice.OriginalInvoice?.InvoiceNumber,
             BillingContact = billingContact
         };
     }
@@ -206,7 +212,10 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
             PeriodEnd = invoice.PeriodEnd,
             Total = totalOwed,
             Status = invoice.Status,
-            Balance = totalOwed - amountPaid
+            Balance = totalOwed - amountPaid,
+            IsCreditInvoice = invoice.IsCreditInvoice,
+            OriginalInvoiceId = invoice.OriginalInvoiceId,
+            OriginalInvoiceNumber = invoice.OriginalInvoice?.InvoiceNumber
         };
     }
 
@@ -219,6 +228,7 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
                     .ThenInclude(le => le!.Course)
                         .ThenInclude(c => c.CourseType)
             .Include(i => i.Payments)
+            .Include(i => i.OriginalInvoice)
             .AsNoTracking();
     }
 

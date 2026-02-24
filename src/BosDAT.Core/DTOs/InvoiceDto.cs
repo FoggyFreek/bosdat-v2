@@ -37,6 +37,11 @@ public record InvoiceDto
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 
+    // Credit invoice fields
+    public bool IsCreditInvoice { get; init; }
+    public Guid? OriginalInvoiceId { get; init; }
+    public string? OriginalInvoiceNumber { get; init; }
+
     // Billing contact info (from student or billing contact)
     public BillingContactDto? BillingContact { get; init; }
 }
@@ -138,6 +143,15 @@ public record InvoiceListDto
     public decimal Total { get; init; }
     public InvoiceStatus Status { get; init; }
     public decimal Balance { get; init; }
+    public bool IsCreditInvoice { get; init; }
+    public Guid? OriginalInvoiceId { get; init; }
+    public string? OriginalInvoiceNumber { get; init; }
+}
+
+public record CreateCreditInvoiceDto
+{
+    public required List<int> SelectedLineIds { get; init; }
+    public string? Notes { get; init; }
 }
 
 public record PaymentDto

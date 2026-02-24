@@ -9,5 +9,6 @@ public enum TransactionType
     Reversal,
     InvoiceCancellation,
     InvoiceAdjustment,
-    CorrectionApplied
+    CorrectionApplied,
+    CreditInvoice
 }
