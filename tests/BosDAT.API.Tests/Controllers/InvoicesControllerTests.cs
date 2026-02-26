@@ -646,6 +646,42 @@ public class InvoicesControllerTests
 
     #endregion
 
+    #region GetAvailableCredit Tests
+
+    [Fact]
+    public async Task GetAvailableCredit_ReturnsAvailableCreditAmount()
+    {
+        // Arrange
+        _mockCreditInvoiceService
+            .Setup(s => s.GetAvailableCreditAsync(_testStudentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(75.50m);
+
+        // Act
+        var result = await _controller.GetAvailableCredit(_testStudentId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(75.50m, okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetAvailableCredit_WhenNoCredit_ReturnsZero()
+    {
+        // Arrange
+        _mockCreditInvoiceService
+            .Setup(s => s.GetAvailableCreditAsync(_testStudentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0m);
+
+        // Act
+        var result = await _controller.GetAvailableCredit(_testStudentId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(0m, okResult.Value);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private InvoiceDto CreateTestInvoiceDto()

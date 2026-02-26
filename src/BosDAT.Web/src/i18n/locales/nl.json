@@ -504,7 +504,9 @@
       "create": "Creditfactuur aanmaken",
       "confirm": "Creditfactuur bevestigen",
       "forInvoice": "Credit voor factuur {{invoiceNumber}}",
-      "referencesInvoice": "Betreft factuur"
+      "referencesInvoice": "Betreft factuur",
+      "applied": "Toegepast",
+      "remaining": "Resterend"
     },
     "actions": {
       "creating": "Aanmaken...",

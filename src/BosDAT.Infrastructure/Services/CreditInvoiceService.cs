@@ -203,6 +203,22 @@ public class CreditInvoiceService(
         }
     }
 
+    public async Task<decimal> GetAvailableCreditAsync(Guid studentId, CancellationToken ct = default)
+    {
+        var creditInvoices = await unitOfWork.Invoices.GetConfirmedCreditInvoicesWithRemainingCreditAsync(studentId, ct);
+        var totalAvailable = 0m;
+
+        foreach (var creditInvoice in creditInvoices)
+        {
+            var applied = await unitOfWork.StudentTransactions.GetAppliedCreditAmountAsync(creditInvoice.Id, ct);
+            var remaining = Math.Abs(creditInvoice.Total) - applied;
+            if (remaining > 0)
+                totalAvailable += remaining;
+        }
+
+        return totalAvailable;
+    }
+
     private static string BuildCreditNotes(string originalInvoiceNumber, string? additionalNotes)
     {
         var note = $"Creditfactuur voor factuur {originalInvoiceNumber}";

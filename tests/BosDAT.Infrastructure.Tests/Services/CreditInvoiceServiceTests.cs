@@ -622,6 +622,240 @@ public class CreditInvoiceServiceTests : IDisposable
 
     #endregion
 
+    #region GetAvailableCreditAsync Tests
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_NoConfirmedCreditInvoices_ReturnsZero()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(student.Id);
+
+        // Assert
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_SingleUnappliedCreditInvoice_ReturnsFullAmount()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(student.Id);
+
+        // Assert
+        Assert.Equal(50m, result);
+    }
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_PartiallyAppliedCreditInvoice_ReturnsRemainder()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+
+        // Simulate €20 already applied
+        _context.StudentTransactions.Add(new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = student.Id,
+            TransactionDate = new DateOnly(2026, 1, 20),
+            Type = TransactionType.CreditOffset,
+            Description = "Credit applied",
+            ReferenceNumber = "C-202601",
+            Debit = 20m,
+            Credit = 0,
+            InvoiceId = creditInvoice.Id,
+            CreatedById = _userId
+        });
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(student.Id);
+
+        // Assert
+        Assert.Equal(30m, result);
+    }
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_FullyAppliedCreditInvoice_ReturnsZero()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+
+        // Fully consumed
+        _context.StudentTransactions.Add(new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = student.Id,
+            TransactionDate = new DateOnly(2026, 1, 20),
+            Type = TransactionType.CreditOffset,
+            Description = "Credit applied",
+            ReferenceNumber = "C-202601",
+            Debit = 50m,
+            Credit = 0,
+            InvoiceId = creditInvoice.Id,
+            CreatedById = _userId
+        });
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(student.Id);
+
+        // Assert
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_MultipleCreditInvoices_SumsRemainingCredit()
+    {
+        // Arrange — CI1: €50 (€10 applied → €40 remaining), CI2: €30 (unapplied → €30 remaining) = €70 total
+        var (_, student) = await SeedInvoiceWithLines();
+        var ci1 = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 30m, invoiceNumber: "C-202602");
+
+        _context.StudentTransactions.Add(new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = student.Id,
+            TransactionDate = new DateOnly(2026, 1, 20),
+            Type = TransactionType.CreditOffset,
+            Description = "Credit applied",
+            ReferenceNumber = "C-202601",
+            Debit = 10m,
+            Credit = 0,
+            InvoiceId = ci1.Id,
+            CreatedById = _userId
+        });
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(student.Id);
+
+        // Assert
+        Assert.Equal(70m, result);
+    }
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_ForDifferentStudent_ReturnsZero()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+        var otherStudentId = Guid.NewGuid();
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(otherStudentId);
+
+        // Assert
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public async Task GetAvailableCreditAsync_DraftCreditInvoice_NotIncluded()
+    {
+        // Arrange — draft credit invoices should not count as available
+        var (_, student) = await SeedInvoiceWithLines();
+        var draftCredit = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            InvoiceNumber = "C-202601",
+            StudentId = student.Id,
+            IssueDate = new DateOnly(2026, 1, 10),
+            DueDate = new DateOnly(2026, 1, 10),
+            Status = InvoiceStatus.Draft,
+            IsCreditInvoice = true,
+            OriginalInvoiceId = Guid.NewGuid(),
+            Subtotal = -50m,
+            VatAmount = 0m,
+            Total = -50m,
+        };
+        _context.Invoices.Add(draftCredit);
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _service.GetAvailableCreditAsync(student.Id);
+
+        // Assert
+        Assert.Equal(0m, result);
+    }
+
+    #endregion
+
+    #region InvoiceQueryService Credit Enrichment Tests
+
+    [Fact]
+    public async Task GetInvoiceAsync_CreditInvoice_IncludesAppliedAndRemainingCredit()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 100m, invoiceNumber: "C-202601");
+
+        // Simulate €40 applied
+        _context.StudentTransactions.Add(new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = student.Id,
+            TransactionDate = new DateOnly(2026, 1, 25),
+            Type = TransactionType.CreditOffset,
+            Description = "Credit applied",
+            ReferenceNumber = "C-202601",
+            Debit = 40m,
+            Credit = 0,
+            InvoiceId = creditInvoice.Id,
+            CreatedById = _userId
+        });
+        await _context.SaveChangesAsync();
+
+        // Act
+        var result = await _queryService.GetInvoiceAsync(creditInvoice.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsCreditInvoice);
+        Assert.Equal(40m, result.AppliedCreditAmount);
+        Assert.Equal(60m, result.RemainingCredit);
+    }
+
+    [Fact]
+    public async Task GetInvoiceAsync_CreditInvoice_NoCreditApplied_ShowsFullRemaining()
+    {
+        // Arrange
+        var (_, student) = await SeedInvoiceWithLines();
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 75m, invoiceNumber: "C-202601");
+
+        // Act
+        var result = await _queryService.GetInvoiceAsync(creditInvoice.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(0m, result.AppliedCreditAmount);
+        Assert.Equal(75m, result.RemainingCredit);
+    }
+
+    [Fact]
+    public async Task GetInvoiceAsync_RegularInvoice_NoAppliedCreditFields()
+    {
+        // Arrange
+        var (invoice, _) = await SeedInvoiceWithLines();
+
+        // Act
+        var result = await _queryService.GetInvoiceAsync(invoice.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.IsCreditInvoice);
+        Assert.Null(result.AppliedCreditAmount);
+        Assert.Null(result.RemainingCredit);
+    }
+
+    #endregion
+
     public void Dispose()
     {
         _context.Database.EnsureDeleted();

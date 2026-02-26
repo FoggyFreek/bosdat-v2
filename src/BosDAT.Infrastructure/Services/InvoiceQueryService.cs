@@ -22,7 +22,22 @@ public class InvoiceQueryService(ApplicationDbContext context) : IInvoiceQuerySe
 
         if (invoice == null) return null;
 
-        return MapToDto(invoice);
+        var dto = MapToDto(invoice);
+
+        if (dto.IsCreditInvoice)
+        {
+            var appliedAmount = await context.StudentTransactions
+                .Where(t => t.InvoiceId == invoiceId && t.Type == TransactionType.CreditOffset)
+                .SumAsync(t => (decimal?)t.Debit, ct) ?? 0m;
+
+            dto = dto with
+            {
+                AppliedCreditAmount = appliedAmount,
+                RemainingCredit = Math.Abs(dto.Total) - appliedAmount
+            };
+        }
+
+        return dto;
     }
 
     public async Task<InvoiceDto?> GetByInvoiceNumberAsync(string invoiceNumber, CancellationToken ct = default)

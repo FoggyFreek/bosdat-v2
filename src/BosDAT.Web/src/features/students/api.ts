@@ -133,6 +133,11 @@ export const invoicesApi = {
     return response.data
   },
 
+  getAvailableCredit: async (studentId: string): Promise<number> => {
+    const response = await api.get<number>(`/invoices/student/${studentId}/available-credit`)
+    return response.data
+  },
+
   downloadPdf: async (id: string, invoiceNumber: string): Promise<void> => {
     const response = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([response.data]))

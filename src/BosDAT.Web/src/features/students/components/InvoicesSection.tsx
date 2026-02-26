@@ -62,6 +62,12 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
     enabled: !!studentId,
   })
 
+  const { data: availableCredit = 0 } = useQuery({
+    queryKey: ['available-credit', studentId],
+    queryFn: () => invoicesApi.getAvailableCredit(studentId),
+    enabled: !!studentId,
+  })
+
   const { data: selectedInvoice, isLoading: isLoadingDetail } = useQuery<Invoice>({
     queryKey: ['invoice', selectedInvoiceId],
     queryFn: () => invoicesApi.getById(selectedInvoiceId!),
@@ -83,6 +89,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
       queryClient.invalidateQueries({ queryKey: ['invoice', selectedInvoiceId] })
       queryClient.invalidateQueries({ queryKey: ['student-transactions', studentId] })
       queryClient.invalidateQueries({ queryKey: ['student-balance', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['available-credit', studentId] })
     },
   })
 
@@ -95,7 +102,8 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
       !invoice.isCreditInvoice &&
       invoice.status !== 'Cancelled' &&
       invoice.status !== 'Paid' &&
-      invoice.balance > 0
+      invoice.balance > 0 &&
+      availableCredit > 0
     )
   }
 
@@ -319,9 +327,23 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                           )}
 
                           {selectedInvoice.isCreditInvoice && selectedInvoice.originalInvoiceNumber && (
-                            <div className="rounded-md bg-orange-50 border border-orange-200 p-3 text-sm">
-                              <span className="font-medium">{t('students.creditInvoice.referencesInvoice')}: </span>
-                              <span>{selectedInvoice.originalInvoiceNumber}</span>
+                            <div className="rounded-md bg-orange-50 border border-orange-200 p-3 text-sm space-y-2">
+                              <div>
+                                <span className="font-medium">{t('students.creditInvoice.referencesInvoice')}: </span>
+                                <span>{selectedInvoice.originalInvoiceNumber}</span>
+                              </div>
+                              {selectedInvoice.appliedCreditAmount != null && (
+                                <div className="flex gap-4">
+                                  <div>
+                                    <span className="text-muted-foreground">{t('students.creditInvoice.applied')}: </span>
+                                    <span className="font-medium">{formatCurrency(selectedInvoice.appliedCreditAmount)}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">{t('students.creditInvoice.remaining')}: </span>
+                                    <span className="font-medium">{formatCurrency(selectedInvoice.remainingCredit ?? 0)}</span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
 

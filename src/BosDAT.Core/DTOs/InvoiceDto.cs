@@ -41,6 +41,8 @@ public record InvoiceDto
     public bool IsCreditInvoice { get; init; }
     public Guid? OriginalInvoiceId { get; init; }
     public string? OriginalInvoiceNumber { get; init; }
+    public decimal? AppliedCreditAmount { get; init; }
+    public decimal? RemainingCredit { get; init; }
 
     // Billing contact info (from student or billing contact)
     public BillingContactDto? BillingContact { get; init; }

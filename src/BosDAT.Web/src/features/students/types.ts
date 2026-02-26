@@ -206,6 +206,8 @@ export interface Invoice {
   isCreditInvoice: boolean
   originalInvoiceId?: string
   originalInvoiceNumber?: string
+  appliedCreditAmount?: number
+  remainingCredit?: number
   billingContact?: BillingContact
 }
 

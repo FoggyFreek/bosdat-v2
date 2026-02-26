@@ -504,7 +504,9 @@
       "create": "Create Credit Invoice",
       "confirm": "Confirm Credit Invoice",
       "forInvoice": "Credit for invoice {{invoiceNumber}}",
-      "referencesInvoice": "References invoice"
+      "referencesInvoice": "References invoice",
+      "applied": "Applied",
+      "remaining": "Remaining"
     },
     "actions": {
       "creating": "Creating...",

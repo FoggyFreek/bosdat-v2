@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -30,6 +30,12 @@ export function ApplyCreditDialog({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
 
+  const { data: availableCredit = 0 } = useQuery({
+    queryKey: ['available-credit', studentId],
+    queryFn: () => invoicesApi.getAvailableCredit(studentId),
+    enabled: open && !!studentId,
+  })
+
   const applyCreditMutation = useMutation({
     mutationFn: () => invoicesApi.applyCreditInvoices(invoiceId),
     onSuccess: () => {
@@ -37,6 +43,7 @@ export function ApplyCreditDialog({
       queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] })
       queryClient.invalidateQueries({ queryKey: ['student-transactions', studentId] })
       queryClient.invalidateQueries({ queryKey: ['student-balance', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['available-credit', studentId] })
       onOpenChange(false)
     },
   })
@@ -48,14 +55,21 @@ export function ApplyCreditDialog({
           <DialogTitle>{t('students.creditBalance.title')}</DialogTitle>
           <DialogDescription>
             {t('students.creditBalance.description', {
+              credit: formatCurrency(availableCredit),
               balance: formatCurrency(remainingBalance),
             })}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-md bg-muted p-3 text-sm">
-          <div className="text-muted-foreground">{t('students.creditBalance.invoiceBalance')}</div>
-          <div className="font-medium">{formatCurrency(remainingBalance)}</div>
+        <div className="space-y-2">
+          <div className="rounded-md bg-muted p-3 text-sm">
+            <div className="text-muted-foreground">{t('students.creditBalance.availableCredit')}</div>
+            <div className="font-medium">{formatCurrency(availableCredit)}</div>
+          </div>
+          <div className="rounded-md bg-muted p-3 text-sm">
+            <div className="text-muted-foreground">{t('students.creditBalance.invoiceBalance')}</div>
+            <div className="font-medium">{formatCurrency(remainingBalance)}</div>
+          </div>
         </div>
 
         <DialogFooter>
@@ -64,7 +78,7 @@ export function ApplyCreditDialog({
           </Button>
           <Button
             onClick={() => applyCreditMutation.mutate()}
-            disabled={applyCreditMutation.isPending}
+            disabled={applyCreditMutation.isPending || availableCredit <= 0}
           >
             {applyCreditMutation.isPending
               ? t('students.actions.saving')

@@ -300,6 +300,17 @@ public class InvoicesController(
     }
 
     /// <summary>
+    /// Gets the total available (unapplied) credit for a student.
+    /// </summary>
+    [HttpGet("student/{studentId:guid}/available-credit")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<decimal>> GetAvailableCredit(Guid studentId, CancellationToken ct)
+    {
+        var availableCredit = await creditInvoiceService.GetAvailableCreditAsync(studentId, ct);
+        return Ok(availableCredit);
+    }
+
+    /// <summary>
     /// Automatically applies confirmed credit invoices (smallest first) to offset the invoice amount.
     /// Tracks remaining credit per credit invoice via the ledger.
     /// </summary>
