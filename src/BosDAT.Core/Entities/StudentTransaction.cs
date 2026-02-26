@@ -13,7 +13,6 @@ public class StudentTransaction : BaseEntity
     public decimal Credit { get; set; }
     public Guid? InvoiceId { get; set; }
     public Guid? PaymentId { get; set; }
-    public Guid? LedgerEntryId { get; set; }
     public required Guid CreatedById { get; set; }
 
     // Navigation properties

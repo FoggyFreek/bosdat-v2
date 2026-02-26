@@ -91,7 +91,6 @@ export interface RegistrationFeeStatus {
   hasPaid: boolean
   paidAt?: string
   amount?: number
-  ledgerEntryId?: string
 }
 
 // Duplicate Detection Types
@@ -269,7 +268,8 @@ export type TransactionType =
   | 'InvoiceCancellation'
   | 'InvoiceAdjustment'
   | 'CreditInvoice'
-  | 'CorrectionApplied'
+  | 'CreditOffset'
+  | 'CreditApplied'
 
 export interface StudentTransaction {
   id: string
@@ -293,7 +293,8 @@ export const transactionTypeTranslations = {
   InvoiceCancellation: 'students.transactions.type.invoiceCancellation',
   InvoiceAdjustment: 'students.transactions.type.invoiceAdjustment',
   CreditInvoice: 'students.transactions.type.creditInvoice',
-  CorrectionApplied: 'students.transactions.type.correctionApplied',
+  CreditOffset: 'students.transactions.type.creditOffset',
+  CreditApplied: 'students.transactions.type.creditApplied',
 } as const satisfies Record<TransactionType, string>
 
 export interface RecordPayment {

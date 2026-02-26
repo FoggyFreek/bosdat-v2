@@ -6,5 +6,5 @@ public interface ICreditInvoiceService
 {
     Task<InvoiceDto> CreateCreditInvoiceAsync(Guid originalInvoiceId, CreateCreditInvoiceDto dto, Guid userId, CancellationToken ct = default);
     Task<InvoiceDto> ConfirmCreditInvoiceAsync(Guid creditInvoiceId, Guid userId, CancellationToken ct = default);
-    Task<InvoiceDto> ApplyCreditBalanceAsync(Guid invoiceId, ApplyCreditBalanceDto dto, Guid userId, CancellationToken ct = default);
+    Task<InvoiceDto> ApplyCreditInvoicesAsync(Guid invoiceId, Guid userId, CancellationToken ct = default);
 }

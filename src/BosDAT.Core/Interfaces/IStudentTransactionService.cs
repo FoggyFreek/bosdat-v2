@@ -10,7 +10,7 @@ public interface IStudentTransactionService
     Task RecordInvoiceAdjustmentAsync(Invoice invoice, decimal oldTotal, Guid userId, CancellationToken ct = default);
     Task RecordInvoiceCancellationAsync(Invoice invoice, decimal originalTotal, Guid userId, CancellationToken ct = default);
     Task RecordCreditInvoiceAsync(Invoice creditInvoice, Invoice originalInvoice, Guid userId, CancellationToken ct = default);
-    Task RecordCreditAppliedAsync(Invoice invoice, Payment payment, Guid userId, CancellationToken ct = default);
+    Task RecordCreditAppliedAsync(Invoice creditInvoice, Invoice targetInvoice, Payment payment, Guid userId, CancellationToken ct = default);
     Task<IReadOnlyList<StudentTransactionDto>> GetTransactionsAsync(Guid studentId, CancellationToken ct = default);
     Task<decimal> GetStudentBalanceAsync(Guid studentId, CancellationToken ct = default);
 }

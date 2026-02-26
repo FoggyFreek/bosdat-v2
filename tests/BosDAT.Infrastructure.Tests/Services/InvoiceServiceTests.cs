@@ -41,14 +41,16 @@ public class InvoiceServiceTests : IDisposable
         var mockStudentTransactionService = new Mock<IStudentTransactionService>();
         var mockStudentRegistrationFeeService = new Mock<IRegistrationFeeService>();
 
+        var mockCreditInvoiceService = new Mock<ICreditInvoiceService>();
+
         // Create generation service with real UnitOfWork for _service
         var generationService = new InvoiceGenerationService(
-            _context, _unitOfWork, _mockPricingService.Object, queryService, mockStudentRegistrationFeeService.Object, mockStudentTransactionService.Object);
+            _context, _unitOfWork, _mockPricingService.Object, queryService, mockStudentRegistrationFeeService.Object, mockStudentTransactionService.Object, mockCreditInvoiceService.Object);
         _service = new InvoiceService(_unitOfWork, mockStudentTransactionService.Object, generationService, queryService);
 
         // Create separate generation service with mocked UnitOfWork for _serviceUoWMock
         var generationServiceWithMock = new InvoiceGenerationService(
-            _context, _mockUnitOfWork.Object, _mockPricingService.Object, queryService, mockStudentRegistrationFeeService.Object, mockStudentTransactionService.Object);
+            _context, _mockUnitOfWork.Object, _mockPricingService.Object, queryService, mockStudentRegistrationFeeService.Object, mockStudentTransactionService.Object, mockCreditInvoiceService.Object);
         _serviceUoWMock = new InvoiceService(_mockUnitOfWork.Object, mockStudentTransactionService.Object, generationServiceWithMock, queryService);
         SeedBaseData();
     }

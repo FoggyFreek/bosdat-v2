@@ -219,7 +219,6 @@ public class RegistrationFeeServiceTests : IDisposable
         Assert.False(result.HasPaid);
         Assert.Null(result.PaidAt);
         Assert.Equal(25m, result.Amount);
-        Assert.Null(result.LedgerEntryId);
     }
 
     [Fact]

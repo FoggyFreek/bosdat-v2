@@ -96,24 +96,40 @@ public class StudentTransactionService(
         await unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task RecordCreditAppliedAsync(Invoice invoice, Payment payment, Guid userId, CancellationToken ct = default)
+    public async Task RecordCreditAppliedAsync(Invoice creditInvoice, Invoice targetInvoice, Payment payment, Guid userId, CancellationToken ct = default)
     {
-        var transaction = new StudentTransaction
+        var consumeTransaction = new StudentTransaction
         {
             Id = Guid.NewGuid(),
-            StudentId = invoice.StudentId,
+            StudentId = creditInvoice.StudentId,
             TransactionDate = payment.PaymentDate,
-            Type = TransactionType.CorrectionApplied,
-            Description = $"Credit applied to invoice {invoice.InvoiceNumber}",
-            ReferenceNumber = invoice.InvoiceNumber,
+            Type = TransactionType.CreditOffset,
+            Description = $"Credit {creditInvoice.InvoiceNumber} applied to invoice {targetInvoice.InvoiceNumber}",
+            ReferenceNumber = creditInvoice.InvoiceNumber,
             Debit = payment.Amount,
             Credit = 0,
-            InvoiceId = invoice.Id,
+            InvoiceId = creditInvoice.Id,
             PaymentId = payment.Id,
             CreatedById = userId
         };
 
-        await transactionRepository.AddAsync(transaction, ct);
+        var applyTransaction = new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = targetInvoice.StudentId,
+            TransactionDate = payment.PaymentDate,
+            Type = TransactionType.CreditApplied,
+            Description = $"Credit from {creditInvoice.InvoiceNumber} applied",
+            ReferenceNumber = targetInvoice.InvoiceNumber,
+            Debit = 0,
+            Credit = payment.Amount,
+            InvoiceId = targetInvoice.Id,
+            PaymentId = payment.Id,
+            CreatedById = userId
+        };
+
+        await transactionRepository.AddAsync(consumeTransaction, ct);
+        await transactionRepository.AddAsync(applyTransaction, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -159,7 +175,6 @@ public class StudentTransactionService(
                 RunningBalance = runningBalance,
                 InvoiceId = t.InvoiceId,
                 PaymentId = t.PaymentId,
-                LedgerEntryId = t.LedgerEntryId,
                 CreatedAt = t.CreatedAt,
                 CreatedByName = ResolveUserName(t.CreatedBy),
             });

@@ -267,7 +267,8 @@
       "invoices": "Invoices",
       "transactions": "Transactions",
       "absences": "Absences",
-      "preferences": "Preferences"
+      "preferences": "Preferences",
+      "payments": "Payments"
     },
     "navigation": {
       "general": "GENERAL",
@@ -354,7 +355,7 @@
         "reversal": "Reversal",
         "invoiceCancellation": "Cancellation",
         "invoiceAdjustment": "Adjustment",
-        "correctionApplied": "Correction Applied",
+        "creditOffset": "Credit Offset",
         "creditInvoice": "Credit Invoice"
       },
       "table": {
@@ -472,7 +473,8 @@
         "invoiceCancellation": "Cancellation",
         "invoiceAdjustment": "Adjustment",
         "creditInvoice": "Credit Invoice",
-        "correctionApplied": "Correction Applied"
+        "creditOffset": "Credit Offset",
+        "creditApplied": "Credit Applied"
       }
     },
     "creditBalance": {

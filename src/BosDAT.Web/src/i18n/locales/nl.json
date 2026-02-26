@@ -267,7 +267,8 @@
       "invoices": "Facturen",
       "transactions": "Transacties",
       "absences": "Afwezigheden",
-      "preferences": "Voorkeuren"
+      "preferences": "Voorkeuren",
+      "payments": "Betalingen"
     },
     "navigation": {
       "general": "ALGEMEEN",
@@ -354,7 +355,7 @@
         "reversal": "Terugboeking",
         "invoiceCancellation": "Annulering",
         "invoiceAdjustment": "Aanpassing",
-        "correctionApplied": "Correctie toegepast",
+        "creditOffset": "Creditverrekening",
         "creditInvoice": "Creditfactuur"
       },
       "table": {
@@ -472,7 +473,8 @@
         "invoiceCancellation": "Annulering",
         "invoiceAdjustment": "Aanpassing",
         "creditInvoice": "Creditfactuur",
-        "correctionApplied": "Correctie toegepast"
+        "creditOffset": "Creditverrekening",
+        "creditApplied": "Tegoed toegepast"
       }
     },
     "creditBalance": {

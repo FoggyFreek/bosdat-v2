@@ -161,11 +161,3 @@ public class SupportDataGenerator
             }
         };
 }
-
-/// <summary>
-/// Parameters for ledger entry generation to reduce method parameter count.
-/// </summary>
-public record LedgerEntryGenerationParams(
-    List<Student> Students,
-    List<Course> Courses,
-    Guid AdminUserId);

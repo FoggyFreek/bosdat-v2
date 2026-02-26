@@ -14,6 +14,7 @@ public class InvoicesControllerTests
     private readonly Mock<IInvoiceService> _mockInvoiceService;
     private readonly Mock<ICreditInvoiceService> _mockCreditInvoiceService;
     private readonly Mock<ICurrentUserService> _mockCurrentUserService;
+    private readonly Mock<IInvoicePdfService> _mockInvoicePdfService;
     private readonly Mock<IStudentTransactionService> _mockStudentTransactionService;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly InvoicesController _controller;
@@ -27,6 +28,7 @@ public class InvoicesControllerTests
         _mockInvoiceService = new Mock<IInvoiceService>();
         _mockCreditInvoiceService = new Mock<ICreditInvoiceService>();
         _mockCurrentUserService = new Mock<ICurrentUserService>();
+        _mockInvoicePdfService = new Mock<IInvoicePdfService>();
         _mockStudentTransactionService = new Mock<IStudentTransactionService>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockCurrentUserService.Setup(s => s.UserId).Returns(_testUserId);
@@ -34,7 +36,8 @@ public class InvoicesControllerTests
         _controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mockInvoicePdfService.Object);
     }
 
     #region GetById Tests
@@ -239,7 +242,8 @@ public class InvoicesControllerTests
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mockInvoicePdfService.Object);
 
         var dto = new GenerateInvoiceDto
         {
@@ -316,7 +320,8 @@ public class InvoicesControllerTests
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mockInvoicePdfService.Object);
 
         var dto = new GenerateBatchInvoicesDto
         {
@@ -387,7 +392,8 @@ public class InvoicesControllerTests
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mockInvoicePdfService.Object);
 
         // Act
         var result = await controller.Recalculate(_testInvoiceId, CancellationToken.None);
@@ -519,7 +525,8 @@ public class InvoicesControllerTests
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mockInvoicePdfService.Object);
 
         var dto = new CreateCreditInvoiceDto
         {
@@ -609,7 +616,8 @@ public class InvoicesControllerTests
         var controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
-            _mockCurrentUserService.Object);
+            _mockCurrentUserService.Object,
+            _mockInvoicePdfService.Object);
 
         // Act
         var result = await controller.ConfirmCreditInvoice(Guid.NewGuid(), CancellationToken.None);

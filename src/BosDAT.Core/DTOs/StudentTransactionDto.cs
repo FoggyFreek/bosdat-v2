@@ -16,7 +16,6 @@ public record StudentTransactionDto
     public decimal RunningBalance { get; init; }
     public Guid? InvoiceId { get; init; }
     public Guid? PaymentId { get; init; }
-    public Guid? LedgerEntryId { get; init; }
     public DateTime CreatedAt { get; init; }
     public string CreatedByName { get; init; } = string.Empty;
 }
@@ -30,8 +29,3 @@ public record RecordPaymentDto
     public string? Notes { get; init; }
 }
 
-public record ApplyCreditBalanceDto
-{
-    public required decimal Amount { get; init; }
-    public string? Notes { get; init; }
-}

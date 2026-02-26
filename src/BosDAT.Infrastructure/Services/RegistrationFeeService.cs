@@ -54,7 +54,6 @@ public class RegistrationFeeService(
                 HasPaid = false,
                 PaidAt = null,
                 Amount = feeAmount,
-                LedgerEntryId = null
             };
         }
 
@@ -63,8 +62,6 @@ public class RegistrationFeeService(
         {
             HasPaid = true,
             PaidAt = student.RegistrationFeePaidAt,
-            //Amount = feeAmount,
-            //LedgerEntryId = ledgerEntry?.Id
         };
     }
 

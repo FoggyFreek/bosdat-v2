@@ -332,115 +332,208 @@ public class CreditInvoiceServiceTests : IDisposable
 
     #endregion
 
-    #region ApplyCreditBalanceAsync Tests
+    #region ApplyCreditInvoicesAsync Tests
 
-    private async Task<(Invoice invoice, Student student)> SeedInvoiceWithCredit(decimal creditAmount)
+    private async Task<Invoice> SeedCreditInvoiceAsync(Guid studentId, decimal absoluteTotal, string? invoiceNumber = null)
     {
-        var (invoice, student) = await SeedInvoiceWithLines();
-
-        // Seed a credit transaction so the student has a negative balance
-        var creditTransaction = new StudentTransaction
+        var creditInvoice = new Invoice
         {
             Id = Guid.NewGuid(),
-            StudentId = student.Id,
-            TransactionDate = new DateOnly(2026, 1, 10),
-            Type = TransactionType.CreditInvoice,
-            Description = "Credit invoice",
-            ReferenceNumber = "CN202601",
-            Debit = 0,
-            Credit = creditAmount,
-            InvoiceId = invoice.Id,
-            CreatedById = _userId
+            InvoiceNumber = invoiceNumber ?? $"C-{Guid.NewGuid():N[..6]}",
+            StudentId = studentId,
+            IssueDate = new DateOnly(2026, 1, 10),
+            DueDate = new DateOnly(2026, 1, 10),
+            Status = InvoiceStatus.Sent,
+            IsCreditInvoice = true,
+            OriginalInvoiceId = Guid.NewGuid(),
+            Subtotal = -absoluteTotal,
+            VatAmount = 0m,
+            Total = -absoluteTotal,
         };
-        // Also seed a charge so balance = charge - credit
-        var chargeTransaction = new StudentTransaction
-        {
-            Id = Guid.NewGuid(),
-            StudentId = student.Id,
-            TransactionDate = new DateOnly(2026, 1, 15),
-            Type = TransactionType.InvoiceCharge,
-            Description = "Invoice charge",
-            ReferenceNumber = invoice.InvoiceNumber,
-            Debit = invoice.Total,
-            Credit = 0,
-            InvoiceId = invoice.Id,
-            CreatedById = _userId
-        };
-        _context.StudentTransactions.AddRange(creditTransaction, chargeTransaction);
+        _context.Invoices.Add(creditInvoice);
         await _context.SaveChangesAsync();
-
-        return (invoice, student);
+        return creditInvoice;
     }
 
     [Fact]
-    public async Task ApplyCreditBalanceAsync_PartialCredit_ReducesInvoiceBalance()
+    public async Task ApplyCreditInvoicesAsync_SingleCreditInvoice_FullyCoverInvoice_MarksInvoicePaid()
     {
-        // Arrange – invoice total = 121, credit available = 50 (net balance = 71 owed)
-        var (invoice, student) = await SeedInvoiceWithCredit(50m);
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(71m - 121m); // net = -50 (credit in favour)
-
-        var dto = new ApplyCreditBalanceDto { Amount = 50m };
+        // Arrange — target invoice: €121, credit invoice: €121
+        var (invoice, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 121m, invoiceNumber: "C-202601");
 
         // Act
-        var result = await _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId);
+        var result = await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
 
-        // Assert – invoice balance = 121 - 50 = 71; status stays Sent
+        // Assert
+        Assert.Equal(InvoiceStatus.Paid, result.Status);
+        Assert.Equal(0m, result.Balance);
+        Assert.Equal(121m, result.AmountPaid);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_CreditLessThanInvoice_PartialApplication_InvoiceRemainsOpen()
+    {
+        // Arrange — target: €121, credit: €50 → remaining €71
+        var (invoice, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+
+        // Act
+        var result = await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
+
+        // Assert
         Assert.Equal(InvoiceStatus.Sent, result.Status);
         Assert.Equal(50m, result.AmountPaid);
         Assert.Equal(71m, result.Balance);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_CreditExceedsInvoice_OnlyInvoiceAmountApplied()
+    {
+        // Arrange — target: €121, credit: €200 → only €121 applied
+        var (invoice, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 200m, invoiceNumber: "C-202601");
+
+        // Act
+        var result = await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
+
+        // Assert — invoice fully covered
+        Assert.Equal(InvoiceStatus.Paid, result.Status);
+        Assert.Equal(0m, result.Balance);
+        Assert.Equal(121m, result.AmountPaid);
+
+        // Verify RecordCreditAppliedAsync called with exactly invoice amount (121m)
         _mockTransactionService.Verify(
             s => s.RecordCreditAppliedAsync(
+                It.IsAny<Invoice>(),
                 It.Is<Invoice>(i => i.Id == invoice.Id),
-                It.Is<Payment>(p => p.Amount == 50m && p.Method == PaymentMethod.CreditBalance),
+                It.Is<Payment>(p => p.Amount == 121m && p.Method == PaymentMethod.CreditBalance && p.Reference != null),
                 _userId,
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
     [Fact]
-    public async Task ApplyCreditBalanceAsync_FullCredit_MarksInvoicePaid()
+    public async Task ApplyCreditInvoicesAsync_MultipleCreditInvoices_AppliesToSmallestFirst()
     {
-        // Arrange – invoice total = 121, credit = 121
-        var (invoice, student) = await SeedInvoiceWithCredit(121m);
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(-121m);
-
-        var dto = new ApplyCreditBalanceDto { Amount = 121m };
+        // Arrange — CI1: €30 (smallest), CI2: €100 (larger)
+        var (invoice, student) = await SeedInvoiceWithLines(); // total = 121
+        var ci1 = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 30m, invoiceNumber: "C-202601");
+        var ci2 = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 100m, invoiceNumber: "C-202602");
 
         // Act
-        var result = await _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId);
+        var result = await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
+
+        // Assert — smallest (CI1=30) applied first, then CI2 fills remainder
+        Assert.Equal(InvoiceStatus.Paid, result.Status);
+
+        // Verify CI1 was applied first (amount = 30)
+        _mockTransactionService.Verify(
+            s => s.RecordCreditAppliedAsync(
+                It.Is<Invoice>(ci => ci.Id == ci1.Id),
+                It.IsAny<Invoice>(),
+                It.Is<Payment>(p => p.Amount == 30m),
+                _userId,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_MultipleCreditInvoices_ChainUntilPaid()
+    {
+        // Arrange — target: €121, CI1: €60, CI2: €80 → CI1 covers 60, CI2 covers 61
+        var (invoice, student) = await SeedInvoiceWithLines(); // total = 121
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 60m, invoiceNumber: "C-202601");
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 80m, invoiceNumber: "C-202602");
+
+        // Act
+        var result = await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
 
         // Assert
         Assert.Equal(InvoiceStatus.Paid, result.Status);
         Assert.Equal(0m, result.Balance);
+        Assert.Equal(121m, result.AmountPaid);
+
+        // Both credit invoices should have been used
+        _mockTransactionService.Verify(
+            s => s.RecordCreditAppliedAsync(
+                It.IsAny<Invoice>(), It.IsAny<Invoice>(), It.IsAny<Payment>(),
+                _userId, It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
     }
 
     [Fact]
-    public async Task ApplyCreditBalanceAsync_CreditExceedsInvoice_PaysInvoiceAndLeavesRemainingCredit()
+    public async Task ApplyCreditInvoicesAsync_NoAvailableCredit_Throws()
     {
-        // Arrange – credit €200, invoice €121 → apply €121, remaining credit = €79
-        var (invoice, student) = await SeedInvoiceWithCredit(200m);
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(-200m);
+        // Arrange — target invoice has no credit invoices
+        var (invoice, _) = await SeedInvoiceWithLines();
 
-        var dto = new ApplyCreditBalanceDto { Amount = 121m }; // exactly the invoice total
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.ApplyCreditInvoicesAsync(invoice.Id, _userId));
+        Assert.Contains("No credit invoices", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_CancelledInvoice_Throws()
+    {
+        // Arrange
+        var (invoice, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+        invoice.Status = InvoiceStatus.Cancelled;
+        await _context.SaveChangesAsync();
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.ApplyCreditInvoicesAsync(invoice.Id, _userId));
+        Assert.Contains("Cancelled", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_CreditInvoiceTarget_Throws()
+    {
+        // Arrange
+        var (invoice, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+        invoice.IsCreditInvoice = true;
+        await _context.SaveChangesAsync();
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.ApplyCreditInvoicesAsync(invoice.Id, _userId));
+        Assert.Contains("credit invoice", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_PaidInvoice_Throws()
+    {
+        // Arrange
+        var (invoice, student) = await SeedInvoiceWithLines();
+        await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+        invoice.Status = InvoiceStatus.Paid;
+        await _context.SaveChangesAsync();
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.ApplyCreditInvoicesAsync(invoice.Id, _userId));
+        Assert.Contains("already paid", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task ApplyCreditInvoicesAsync_VerifiesTwoTransactionsPerApplication()
+    {
+        // Arrange — one credit invoice fully covers one target invoice
+        var (invoice, student) = await SeedInvoiceWithLines(); // total = 121
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 121m, invoiceNumber: "C-202601");
 
         // Act
-        var result = await _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId);
+        await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
 
-        // Assert – invoice fully covered → Paid
-        Assert.Equal(InvoiceStatus.Paid, result.Status);
-        Assert.Equal(0m, result.Balance);
-
-        // CorrectionApplied transaction debits 121; remaining ledger balance = -200 + 121 = -79
-        // (verified via RecordCreditAppliedAsync call with exact amount)
+        // Assert: RecordCreditAppliedAsync called once with (creditInvoice, targetInvoice, payment)
         _mockTransactionService.Verify(
             s => s.RecordCreditAppliedAsync(
-                It.Is<Invoice>(i => i.Id == invoice.Id),
+                It.Is<Invoice>(ci => ci.Id == creditInvoice.Id),
+                It.Is<Invoice>(ti => ti.Id == invoice.Id),
                 It.Is<Payment>(p => p.Amount == 121m && p.Method == PaymentMethod.CreditBalance),
                 _userId,
                 It.IsAny<CancellationToken>()),
@@ -448,94 +541,83 @@ public class CreditInvoiceServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task ApplyCreditBalanceAsync_NoCredit_Throws()
+    public async Task ApplyCreditInvoicesAsync_PartiallyConsumedCreditInvoice_OnlyRemainingCreditApplied()
     {
-        // Arrange – student balance >= 0 (owes money, no credit)
-        var (invoice, student) = await SeedInvoiceWithLines();
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(121m);
+        // Scenario: CI = -€50. Invoice B (€25) was already paid from CI, leaving €25 remaining.
+        // Now Invoice C (total=121) is processed — only €25 (the remainder) should be applied.
+        //
+        // This test verifies that GetConfirmedCreditInvoicesWithRemainingCreditAsync and
+        // GetAppliedCreditAmountAsync together correctly cap the applied amount at the
+        // remaining credit, not the full CI total.
 
-        var dto = new ApplyCreditBalanceDto { Amount = 50m };
+        var (invoice, student) = await SeedInvoiceWithLines(); // total = 121 — acts as "Invoice C"
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
 
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId));
-        Assert.Contains("no credit balance", ex.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task ApplyCreditBalanceAsync_AmountExceedsCredit_Throws()
-    {
-        // Arrange – credit = 30, trying to apply 50
-        var (invoice, student) = await SeedInvoiceWithCredit(30m);
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(-30m);
-
-        var dto = new ApplyCreditBalanceDto { Amount = 50m };
-
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId));
-        Assert.Contains("exceeds available credit", ex.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task ApplyCreditBalanceAsync_AmountExceedsInvoiceBalance_Throws()
-    {
-        // Arrange – invoice total = 121, credit = 200, trying to apply 150 (more than invoice)
-        var (invoice, student) = await SeedInvoiceWithCredit(200m);
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(-200m);
-
-        var dto = new ApplyCreditBalanceDto { Amount = 150m };
-
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId));
-        Assert.Contains("exceeds remaining invoice balance", ex.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task ApplyCreditBalanceAsync_CancelledInvoice_Throws()
-    {
-        // Arrange
-        var (invoice, student) = await SeedInvoiceWithCredit(50m);
-        invoice.Status = InvoiceStatus.Cancelled;
+        // Simulate that €25 of the credit invoice was already consumed (applied to a prior Invoice B)
+        var priorConsumption = new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = student.Id,
+            TransactionDate = new DateOnly(2026, 1, 20),
+            Type = TransactionType.CreditOffset,
+            Description = "Credit C-202601 applied to invoice 202601",
+            ReferenceNumber = "C-202601",
+            Debit = 25m,
+            Credit = 0,
+            InvoiceId = creditInvoice.Id,   // key: linked to the credit invoice, not the target
+            CreatedById = _userId
+        };
+        _context.StudentTransactions.Add(priorConsumption);
         await _context.SaveChangesAsync();
 
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(-50m);
+        // Act
+        var result = await _service.ApplyCreditInvoicesAsync(invoice.Id, _userId);
 
-        var dto = new ApplyCreditBalanceDto { Amount = 50m };
+        // Assert — only the remaining €25 (not the full €50) is applied
+        Assert.Equal(InvoiceStatus.Sent, result.Status);   // 121 - 25 = 96 remaining → not paid
+        Assert.Equal(25m, result.AmountPaid);
+        Assert.Equal(96m, result.Balance);
 
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId));
-        Assert.Contains("Cancelled", ex.Message, StringComparison.OrdinalIgnoreCase);
+        _mockTransactionService.Verify(
+            s => s.RecordCreditAppliedAsync(
+                It.Is<Invoice>(ci => ci.Id == creditInvoice.Id),
+                It.Is<Invoice>(ti => ti.Id == invoice.Id),
+                It.Is<Payment>(p => p.Amount == 25m),
+                _userId,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task ApplyCreditBalanceAsync_CreditInvoiceTarget_Throws()
+    public async Task ApplyCreditInvoicesAsync_FullyConsumedCreditInvoice_IsExcluded_ThrowsNoCredit()
     {
-        // Arrange
-        var (invoice, student) = await SeedInvoiceWithCredit(50m);
-        invoice.IsCreditInvoice = true;
+        // Scenario: CI = -€50, but all €50 was already applied to a prior invoice.
+        // Calling apply-credit on a new invoice should throw "no credit available".
+
+        var (invoice, student) = await SeedInvoiceWithLines(); // total = 121
+        var creditInvoice = await SeedCreditInvoiceAsync(student.Id, absoluteTotal: 50m, invoiceNumber: "C-202601");
+
+        // Consume the full €50
+        var fullConsumption = new StudentTransaction
+        {
+            Id = Guid.NewGuid(),
+            StudentId = student.Id,
+            TransactionDate = new DateOnly(2026, 1, 20),
+            Type = TransactionType.CreditOffset,
+            Description = "Credit C-202601 applied",
+            ReferenceNumber = "C-202601",
+            Debit = 50m,
+            Credit = 0,
+            InvoiceId = creditInvoice.Id,
+            CreatedById = _userId
+        };
+        _context.StudentTransactions.Add(fullConsumption);
         await _context.SaveChangesAsync();
 
-        _mockTransactionService
-            .Setup(s => s.GetStudentBalanceAsync(student.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(-50m);
-
-        var dto = new ApplyCreditBalanceDto { Amount = 50m };
-
-        // Act & Assert
+        // Act & Assert — CI is fully consumed so it is excluded by the repository query
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.ApplyCreditBalanceAsync(invoice.Id, dto, _userId));
-        Assert.Contains("credit invoice", ex.Message, StringComparison.OrdinalIgnoreCase);
+            () => _service.ApplyCreditInvoicesAsync(invoice.Id, _userId));
+        Assert.Contains("No credit invoices", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion

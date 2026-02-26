@@ -12,7 +12,8 @@ namespace BosDAT.API.Controllers;
 public class InvoicesController(
     IInvoiceService invoiceService,
     ICreditInvoiceService creditInvoiceService,
-    ICurrentUserService currentUserService
+    ICurrentUserService currentUserService,
+    IInvoicePdfService invoicePdfService
     ) : ControllerBase
 {
     /// <summary>
@@ -182,6 +183,25 @@ public class InvoicesController(
     }
 
     /// <summary>
+    /// Generates and returns a PDF for the specified invoice.
+    /// </summary>
+    [HttpGet("{id:guid}/pdf")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<IActionResult> GetPdf(Guid id, CancellationToken cancellationToken)
+    {
+        var invoice = await invoiceService.GetInvoiceAsync(id, cancellationToken);
+        if (invoice == null)
+        {
+            return NotFound();
+        }
+
+        var schoolInfo = await invoiceService.GetSchoolBillingInfoAsync(cancellationToken);
+        var pdfBytes = await invoicePdfService.GeneratePdfAsync(invoice, schoolInfo, cancellationToken);
+
+        return File(pdfBytes, "application/pdf", $"{invoice.InvoiceNumber}.pdf");
+    }
+
+    /// <summary>
     /// Records a payment against an invoice and creates a ledger transaction.
     /// </summary>
     [HttpPost("{invoiceId:guid}/payments")]
@@ -280,25 +300,19 @@ public class InvoicesController(
     }
 
     /// <summary>
-    /// Applies the student's available credit balance to offset the invoice amount.
-    /// Creates a CreditBalance payment and a CorrectionApplied ledger transaction atomically.
+    /// Automatically applies confirmed credit invoices (smallest first) to offset the invoice amount.
+    /// Tracks remaining credit per credit invoice via the ledger.
     /// </summary>
     [HttpPost("{invoiceId:guid}/apply-credit")]
     [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<InvoiceDto>> ApplyCreditBalance(
-        Guid invoiceId,
-        [FromBody] ApplyCreditBalanceDto dto,
-        CancellationToken ct)
+    public async Task<ActionResult<InvoiceDto>> ApplyCreditInvoices(Guid invoiceId, CancellationToken ct)
     {
         var userId = currentUserService.UserId;
-        if (userId == null)
-        {
-            return Unauthorized();
-        }
+        if (userId == null) return Unauthorized();
 
         try
         {
-            var result = await creditInvoiceService.ApplyCreditBalanceAsync(invoiceId, dto, userId.Value, ct);
+            var result = await creditInvoiceService.ApplyCreditInvoicesAsync(invoiceId, userId.Value, ct);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -306,15 +320,6 @@ public class InvoicesController(
             return BadRequest(new { message = ex.Message });
         }
     }
-}
-
-/// <summary>
-/// DTO for applying a ledger correction to an invoice.
-/// </summary>
-public record ApplyLedgerCorrectionDto
-{
-    public Guid LedgerEntryId { get; init; }
-    public decimal Amount { get; init; }
 }
 
 /// <summary>

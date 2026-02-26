@@ -5,5 +5,4 @@ public record RegistrationFeeStatusDto
     public bool HasPaid { get; init; }
     public DateTime? PaidAt { get; init; }
     public decimal? Amount { get; init; }
-    public Guid? LedgerEntryId { get; init; }
 }

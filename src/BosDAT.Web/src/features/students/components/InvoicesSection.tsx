@@ -25,12 +25,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { invoicesApi, studentTransactionsApi } from '@/features/students/api'
+import { invoicesApi } from '@/features/students/api'
 import { RecordPaymentDialog } from '@/features/students/components/invoices/RecordPaymentDialog'
 import { CreditInvoiceDialog } from '@/features/students/components/invoices/CreditInvoiceDialog'
 import { ApplyCreditDialog } from '@/features/students/components/invoices/ApplyCreditDialog'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
-import { invoiceStatusTranslations } from '@/features/students/types'
+import { invoiceStatusTranslations, paymentMethodTranslations } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
 import { formatDate } from '@/lib/datetime-helpers'
 
@@ -62,12 +62,6 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
     enabled: !!studentId,
   })
 
-  const { data: studentBalance = 0 } = useQuery<number>({
-    queryKey: ['student-balance', studentId],
-    queryFn: () => studentTransactionsApi.getBalance(studentId),
-    enabled: !!studentId,
-  })
-
   const { data: selectedInvoice, isLoading: isLoadingDetail } = useQuery<Invoice>({
     queryKey: ['invoice', selectedInvoiceId],
     queryFn: () => invoicesApi.getById(selectedInvoiceId!),
@@ -88,6 +82,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
       queryClient.invalidateQueries({ queryKey: ['invoices', 'student', studentId] })
       queryClient.invalidateQueries({ queryKey: ['invoice', selectedInvoiceId] })
       queryClient.invalidateQueries({ queryKey: ['student-transactions', studentId] })
+      queryClient.invalidateQueries({ queryKey: ['student-balance', studentId] })
     },
   })
 
@@ -97,11 +92,10 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
 
   const canApplyCredit = (invoice: Invoice) => {
     return (
+      !invoice.isCreditInvoice &&
       invoice.status !== 'Cancelled' &&
       invoice.status !== 'Paid' &&
-      !invoice.isCreditInvoice &&
-      invoice.balance > 0 &&
-      studentBalance < 0
+      invoice.balance > 0
     )
   }
 
@@ -298,6 +292,32 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                             </table>
                           </div>
 
+                          {selectedInvoice.payments.length > 0 && (
+                            <div>
+                              <div className="text-sm font-medium text-muted-foreground mb-1">
+                                {t('students.sections.payments')}
+                              </div>
+                              <div className="border rounded-md divide-y text-sm">
+                                {selectedInvoice.payments.map((p) => (
+                                  <div key={p.id} className="flex items-center justify-between p-2">
+                                    <div className="flex items-center gap-2">
+                                      <span>{formatDate(p.paymentDate)}</span>
+                                      <span className="text-muted-foreground">
+                                        {t(paymentMethodTranslations[p.method])}
+                                      </span>
+                                      {p.reference && (
+                                        <span className="text-muted-foreground text-xs">({p.reference})</span>
+                                      )}
+                                    </div>
+                                    <span className="font-medium text-green-600">
+                                      -{formatCurrency(p.amount)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           {selectedInvoice.isCreditInvoice && selectedInvoice.originalInvoiceNumber && (
                             <div className="rounded-md bg-orange-50 border border-orange-200 p-3 text-sm">
                               <span className="font-medium">{t('students.creditInvoice.referencesInvoice')}: </span>
@@ -420,7 +440,6 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
           onOpenChange={setShowApplyCreditDialog}
           invoiceId={selectedInvoice.id}
           studentId={studentId}
-          availableCredit={Math.abs(studentBalance)}
           remainingBalance={selectedInvoice.balance}
         />
       )}
@@ -435,10 +454,20 @@ interface InvoicePrintViewProps {
 
 function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
   const { t } = useTranslation()
+  const [isDownloading, setIsDownloading] = useState(false)
   const { data: schoolInfo } = useQuery({
     queryKey: ['school-billing-info'],
     queryFn: () => invoicesApi.getSchoolBillingInfo(),
   })
+
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true)
+    try {
+      await invoicesApi.downloadPdf(invoice.id, invoice.invoiceNumber)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   const totalOwed =
     invoice.total
@@ -452,9 +481,9 @@ function InvoicePrintView({ invoice, onPrint }: InvoicePrintViewProps) {
             <Printer className="h-4 w-4 mr-2" />
             {t('common.actions.download')}
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            {t('students.invoices.downloadPdf')}
+          <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={isDownloading}>
+            <Download className={`h-4 w-4 mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
+            {isDownloading ? t('common.states.loading') : t('students.invoices.downloadPdf')}
           </Button>
         </div>
       </div>

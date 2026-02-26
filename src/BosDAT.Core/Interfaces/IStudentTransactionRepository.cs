@@ -13,4 +13,5 @@ public interface IStudentTransactionRepository : IRepository<StudentTransaction>
         DateOnly? from = null,
         DateOnly? to = null,
         CancellationToken cancellationToken = default);
+    Task<decimal> GetAppliedCreditAmountAsync(Guid creditInvoiceId, CancellationToken cancellationToken = default);
 }

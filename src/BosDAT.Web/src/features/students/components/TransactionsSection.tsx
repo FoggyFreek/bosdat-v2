@@ -19,7 +19,8 @@ const typeVariant: Record<TransactionType, string> = {
   InvoiceCancellation: 'bg-gray-100 text-gray-600',
   InvoiceAdjustment: 'bg-yellow-100 text-yellow-800',
   CreditInvoice: 'bg-orange-100 text-orange-800',
-  CorrectionApplied: 'bg-purple-100 text-purple-800',
+  CreditOffset: 'bg-purple-100 text-purple-800',
+  CreditApplied: 'bg-teal-100 text-teal-800',
 }
 
 function TransactionRow({ transaction }: Readonly<{ transaction: StudentTransaction }>) {

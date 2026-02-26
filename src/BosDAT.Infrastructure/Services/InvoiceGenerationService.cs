@@ -16,7 +16,8 @@ public class InvoiceGenerationService(
     ICourseTypePricingService pricingService,
     IInvoiceQueryService queryService,
     IRegistrationFeeService registrationFeeService,
-    IStudentTransactionService studentTransactionService) : IInvoiceGenerationService
+    IStudentTransactionService studentTransactionService,
+    ICreditInvoiceService creditInvoiceService) : IInvoiceGenerationService
 {
     public async Task<InvoiceDto> GenerateInvoiceAsync(GenerateInvoiceDto dto, Guid userId, CancellationToken ct = default)
     {
@@ -101,6 +102,16 @@ public class InvoiceGenerationService(
 
             await unitOfWork.SaveChangesAsync(ct);
             await unitOfWork.CommitTransactionAsync(ct);
+
+            // Auto-apply available credit invoices (separate transaction, ignore if none available)
+            try
+            {
+                await creditInvoiceService.ApplyCreditInvoicesAsync(invoice.Id, userId, ct);
+            }
+            catch (InvalidOperationException)
+            {
+                // No credit available — generated invoice stands as-is
+            }
 
             return await queryService.GetInvoiceAsync(invoice.Id, ct)
                 ?? throw new InvalidOperationException("Failed to retrieve created invoice.");

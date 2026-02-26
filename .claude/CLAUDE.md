@@ -45,9 +45,20 @@ Music school management system. **Core:** Course blueprints → automated lesson
 
 **Layered systems:**
 - **Invoices:** Normal billing (lessons → invoice lines)
-- **Transactions:** central ledger that contains all financial records (invoices, credit invoices)
+- **Transactions:** Central ledger — every financial event creates one or more `StudentTransaction` rows
 
-**Services:** `BosDAT.Infrastructure/Services/InvoiceService.cs`, `StudentTransactionService.cs`
+**Services:** `BosDAT.Infrastructure/Services/InvoiceService.cs`, `StudentTransactionService.cs`, `CreditInvoiceService.cs`
+
+**Key `TransactionType` values:**
+| Value | Side | Description |
+|-------|------|-------------|
+| `InvoiceCharge` | Debit | New invoice issued to student |
+| `Payment` | Credit | Cash/bank payment received |
+| `CreditInvoice` | Credit | Credit note issued (negative invoice) |
+| `CreditOffset` | Debit on credit invoice | Credit note being consumed — used to track remaining credit |
+| `CreditApplied` | Credit on target invoice | Credit note applied to reduce an outstanding invoice |
+
+**Credit application (double-entry pair):** When a credit invoice is applied to an outstanding invoice, two transactions are created simultaneously — `CreditOffset` (debits the credit invoice, tracking consumption) and `CreditApplied` (credits the target invoice, reducing the balance). Remaining credit is computed dynamically: `Abs(creditInvoice.Total) - SUM(CreditOffset debits for that invoice)`.
 
 ### 4. Pricing Versioning
 

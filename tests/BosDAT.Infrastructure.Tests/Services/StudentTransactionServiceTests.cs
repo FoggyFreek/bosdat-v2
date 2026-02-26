@@ -264,6 +264,111 @@ public class StudentTransactionServiceTests
 
     #endregion
 
+    #region RecordCreditAppliedAsync
+
+    [Fact]
+    public async Task RecordCreditAppliedAsync_CreatesTwoTransactions()
+    {
+        // Arrange
+        var creditInvoiceId = Guid.NewGuid();
+        var targetInvoiceId = Guid.NewGuid();
+        var creditInvoice = new Invoice
+        {
+            Id = creditInvoiceId,
+            StudentId = _studentId,
+            InvoiceNumber = "C-202601",
+            IssueDate = new DateOnly(2026, 1, 10),
+            DueDate = new DateOnly(2026, 1, 10),
+            Total = -60m,
+            IsCreditInvoice = true,
+        };
+        var targetInvoice = new Invoice
+        {
+            Id = targetInvoiceId,
+            StudentId = _studentId,
+            InvoiceNumber = "202602",
+            IssueDate = new DateOnly(2026, 2, 1),
+            DueDate = new DateOnly(2026, 2, 15),
+            Total = 121m,
+        };
+        var payment = BuildPayment(amount: 60m);
+
+        // Act
+        await _service.RecordCreditAppliedAsync(creditInvoice, targetInvoice, payment, _userId);
+
+        // Assert: AddAsync called twice (one per transaction)
+        _repoMock.Verify(r => r.AddAsync(It.IsAny<StudentTransaction>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordCreditAppliedAsync_FirstTransactionConsumesCreditInvoice()
+    {
+        // Arrange
+        var creditInvoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            StudentId = _studentId,
+            InvoiceNumber = "C-202601",
+            IssueDate = new DateOnly(2026, 1, 10),
+            DueDate = new DateOnly(2026, 1, 10),
+            Total = -60m,
+            IsCreditInvoice = true,
+        };
+        var targetInvoice = BuildInvoice(total: 121m, invoiceNumber: "202602");
+        var payment = BuildPayment(amount: 60m);
+
+        // Act
+        await _service.RecordCreditAppliedAsync(creditInvoice, targetInvoice, payment, _userId);
+
+        // Assert: first call is CreditOffset with Debit = 60, InvoiceId = creditInvoice.Id
+        _repoMock.Verify(r => r.AddAsync(
+            It.Is<StudentTransaction>(t =>
+                t.Type == TransactionType.CreditOffset &&
+                t.Debit == 60m &&
+                t.Credit == 0 &&
+                t.InvoiceId == creditInvoice.Id &&
+                t.ReferenceNumber == "C-202601" &&
+                t.Description.Contains("C-202601") &&
+                t.Description.Contains("202602")),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task RecordCreditAppliedAsync_SecondTransactionReducesTargetInvoice()
+    {
+        // Arrange
+        var creditInvoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            StudentId = _studentId,
+            InvoiceNumber = "C-202601",
+            IssueDate = new DateOnly(2026, 1, 10),
+            DueDate = new DateOnly(2026, 1, 10),
+            Total = -60m,
+            IsCreditInvoice = true,
+        };
+        var targetInvoice = BuildInvoice(total: 121m, invoiceNumber: "202602");
+        var payment = BuildPayment(amount: 60m);
+
+        // Act
+        await _service.RecordCreditAppliedAsync(creditInvoice, targetInvoice, payment, _userId);
+
+        // Assert: second call is CreditApplied with Credit = 60, InvoiceId = targetInvoice.Id
+        _repoMock.Verify(r => r.AddAsync(
+            It.Is<StudentTransaction>(t =>
+                t.Type == TransactionType.CreditApplied &&
+                t.Credit == 60m &&
+                t.Debit == 0 &&
+                t.InvoiceId == targetInvoice.Id &&
+                t.ReferenceNumber == "202602"),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    #endregion
+
     #region RecordCreditInvoiceAsync
 
     [Fact]

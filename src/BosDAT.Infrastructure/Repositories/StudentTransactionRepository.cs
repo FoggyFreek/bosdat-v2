@@ -65,4 +65,11 @@ public class StudentTransactionRepository : Repository<StudentTransaction>, IStu
             .ThenBy(t => t.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<decimal> GetAppliedCreditAmountAsync(Guid creditInvoiceId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(t => t.InvoiceId == creditInvoiceId && t.Type == TransactionType.CreditOffset)
+            .SumAsync(t => t.Debit, cancellationToken);
+    }
 }

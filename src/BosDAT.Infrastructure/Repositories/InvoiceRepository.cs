@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
 using BosDAT.Infrastructure.Data;
 
@@ -153,5 +154,24 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
             .Include(i => i.Payments)
             .OrderBy(i => i.IssueDate)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Invoice>> GetConfirmedCreditInvoicesWithRemainingCreditAsync(
+        Guid studentId, CancellationToken ct = default)
+    {
+        return await _dbSet
+            .Where(i => i.StudentId == studentId && i.IsCreditInvoice && i.Status == InvoiceStatus.Sent)
+            .Select(i => new
+            {
+                Invoice = i,
+                Remaining = Math.Abs(i.Total) -
+                    (_context.StudentTransactions
+                        .Where(t => t.InvoiceId == i.Id && t.Type == TransactionType.CreditOffset)
+                        .Sum(t => (decimal?)t.Debit) ?? 0m)
+            })
+            .Where(x => x.Remaining > 0)
+            .OrderBy(x => x.Remaining)
+            .Select(x => x.Invoice)
+            .ToListAsync(ct);
     }
 }

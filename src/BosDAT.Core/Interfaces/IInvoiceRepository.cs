@@ -16,4 +16,5 @@ public interface IInvoiceRepository : IRepository<Invoice>
     Task<IReadOnlyList<Invoice>> GetByEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken = default);
     Task<Invoice?> GetByPeriodAsync(Guid studentId, Guid enrollmentId, DateOnly periodStart, DateOnly periodEnd, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Invoice>> GetUnpaidInvoicesAsync(Guid studentId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Invoice>> GetConfirmedCreditInvoicesWithRemainingCreditAsync(Guid studentId, CancellationToken ct = default);
 }

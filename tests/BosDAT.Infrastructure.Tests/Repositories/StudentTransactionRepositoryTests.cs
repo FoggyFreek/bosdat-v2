@@ -246,6 +246,73 @@ public class StudentTransactionRepositoryTests : RepositoryTestBase
 
     #endregion
 
+    #region GetAppliedCreditAmountAsync
+
+    [Fact]
+    public async Task GetAppliedCreditAmountAsync_NoTransactions_ReturnsZero()
+    {
+        // Arrange
+        var creditInvoiceId = Guid.NewGuid();
+
+        // Act
+        var result = await _repository.GetAppliedCreditAmountAsync(creditInvoiceId);
+
+        // Assert
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public async Task GetAppliedCreditAmountAsync_SumsCreditOffsetDebitsForInvoice()
+    {
+        // Arrange
+        var creditInvoiceId = Guid.NewGuid();
+        var otherInvoiceId = Guid.NewGuid();
+
+        var t1 = BuildTransaction(_studentId, new DateOnly(2026, 1, 5), debit: 30m, credit: 0, TransactionType.CreditOffset);
+        t1.InvoiceId = creditInvoiceId;
+
+        var t2 = BuildTransaction(_studentId, new DateOnly(2026, 1, 10), debit: 20m, credit: 0, TransactionType.CreditOffset);
+        t2.InvoiceId = creditInvoiceId;
+
+        // Different invoice — should not be included
+        var t3 = BuildTransaction(_studentId, new DateOnly(2026, 1, 15), debit: 100m, credit: 0, TransactionType.CreditOffset);
+        t3.InvoiceId = otherInvoiceId;
+
+        Context.StudentTransactions.AddRange(t1, t2, t3);
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.GetAppliedCreditAmountAsync(creditInvoiceId);
+
+        // Assert
+        Assert.Equal(50m, result);
+    }
+
+    [Fact]
+    public async Task GetAppliedCreditAmountAsync_IgnoresNonCreditOffsetTypes()
+    {
+        // Arrange
+        var creditInvoiceId = Guid.NewGuid();
+
+        var creditOffset = BuildTransaction(_studentId, new DateOnly(2026, 1, 5), debit: 40m, credit: 0, TransactionType.CreditOffset);
+        creditOffset.InvoiceId = creditInvoiceId;
+
+        // Payment type with same invoiceId — should NOT be summed
+        var payment = BuildTransaction(_studentId, new DateOnly(2026, 1, 6), debit: 99m, credit: 0, TransactionType.Payment);
+        payment.InvoiceId = creditInvoiceId;
+
+        Context.StudentTransactions.AddRange(creditOffset, payment);
+        await Context.SaveChangesAsync();
+
+        // Act
+        var result = await _repository.GetAppliedCreditAmountAsync(creditInvoiceId);
+
+        // Assert — only the CreditOffset transaction counts
+        Assert.Equal(40m, result);
+    }
+
+    #endregion
+
     #region Helpers
 
     private StudentTransaction BuildTransaction(

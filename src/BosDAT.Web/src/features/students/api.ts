@@ -16,11 +16,6 @@ import type {
   StudentTransaction,
 } from '@/features/students/types'
 
-interface ApplyCreditBalance {
-  amount: number
-  notes?: string
-}
-
 export const studentsApi = {
   getAll: async (params?: { search?: string; status?: string }) => {
     const response = await api.get('/students', { params })
@@ -133,9 +128,21 @@ export const invoicesApi = {
     return response.data
   },
 
-  applyCreditBalance: async (invoiceId: string, data: ApplyCreditBalance): Promise<Invoice> => {
-    const response = await api.post<Invoice>(`/invoices/${invoiceId}/apply-credit`, data)
+  applyCreditInvoices: async (invoiceId: string): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${invoiceId}/apply-credit`)
     return response.data
+  },
+
+  downloadPdf: async (id: string, invoiceNumber: string): Promise<void> => {
+    const response = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${invoiceNumber}.pdf`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
   },
 }
 
@@ -146,7 +153,7 @@ export const studentTransactionsApi = {
   },
 
   getBalance: async (studentId: string): Promise<number> => {
-    const response = await api.get<{ balance: number }>(`/students/${studentId}/balance`)
+    const response = await api.get<{ balance: number }>(`/students/${studentId}/transactions/balance`)
     return response.data.balance
   },
 }

@@ -305,7 +305,6 @@ bosdat-v2/
 │   │   │   ├── Lesson.cs
 │   │   │   ├── Enrollment.cs
 │   │   │   ├── Invoice.cs
-│   │   │   ├── StudentLedgerEntry.cs
 │   │   │   └── ...
 │   │   ├── Interfaces/                # Abstractions
 │   │   │   ├── IRepository.cs         # Generic repository
@@ -336,7 +335,6 @@ bosdat-v2/
 │   │   │   ├── AuthService.cs         # JWT generation, refresh tokens
 │   │   │   ├── DuplicateDetectionService.cs # Fuzzy matching
 │   │   │   ├── EnrollmentPricingService.cs # Dynamic pricing
-│   │   │   ├── StudentLedgerService.cs     # Financial corrections
 │   │   │   └── ...
 │   │   ├── Seeding/                   # Development data generation
 │   │   │   ├── DatabaseSeeder.cs
