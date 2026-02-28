@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Mail, Phone, MapPin, Music } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, MapPin, Music, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +13,7 @@ import { formatCurrency } from '@/lib/utils'
 import { TeacherAvailabilitySection } from '@/features/teachers/components/TeacherAvailabilitySection'
 import { TeacherAbsenceSection } from '@/features/teachers/components/TeacherAbsenceSection'
 import { CourseListItem } from '@/features/courses/components/CourseListItem'
+import { InviteUserDialog } from '@/features/users/components/InviteUserDialog'
 
 const FINANCIAL_ADMIN_ROLE = 'FinancialAdmin'
 
@@ -19,6 +21,7 @@ export function TeacherDetailPage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const [showInviteDialog, setShowInviteDialog] = useState(false)
 
   const canViewHourlyRate = user?.roles.includes(FINANCIAL_ADMIN_ROLE) || user?.roles.includes('Admin')
 
@@ -74,10 +77,26 @@ export function TeacherDetailPage() {
             {teacher.isActive ? t('common.status.active') : t('common.status.inactive')}
           </span>
         </div>
+        {user?.roles.includes('Admin') && (
+          <Button variant="outline" onClick={() => setShowInviteDialog(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {t('users.inviteUser')}
+          </Button>
+        )}
         <Button asChild>
           <Link to={`/teachers/${id}/edit`}>{t('common.actions.edit')} {t('common.entities.teacher')}</Link>
         </Button>
       </div>
+
+      <InviteUserDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
+        lockedRole="Teacher"
+        linkedObjectId={teacher.id}
+        linkedObjectType="Teacher"
+        defaultEmail={teacher.email}
+        defaultDisplayName={teacher.fullName}
+      />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>

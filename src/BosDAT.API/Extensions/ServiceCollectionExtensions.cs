@@ -134,6 +134,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILessonNoteService, LessonNoteService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IInvoicePdfService, InvoicePdfService>();
+        services.AddScoped<IUserManagementService, UserManagementService>();
 
         return services;
     }

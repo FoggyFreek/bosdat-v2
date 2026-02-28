@@ -11,6 +11,7 @@ export type SettingKey =
   | 'invoice-generation'
   | 'system'
   | 'seeding'
+  | 'manage-users'
 
 export interface NavItem {
   key: SettingKey

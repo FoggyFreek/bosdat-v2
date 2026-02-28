@@ -21,7 +21,20 @@
       "refresh": "Refresh",
       "view": "View",
       "download": "Download",
-      "closeSidebar": "Close sidebar"
+      "closeSidebar": "Close sidebar",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email address"
+    },
+    "errors": {
+      "unexpected": "An unexpected error occurred. Please try again."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "showing": "Showing {{from}}–{{to}} of {{total}}"
     },
     "entities": {
       "student": "Student",
@@ -965,7 +978,8 @@
       "holidays": "Holidays",
       "scheduling": "Scheduling",
       "invoiceGeneration": "Invoice Generation",
-      "seeding": "Test Data"
+      "seeding": "Test Data",
+      "manageUsers": "Manage Users"
     },
     "instruments": {
       "title": "Instruments",
@@ -1205,7 +1219,8 @@
       "scheduling": "SCHEDULING",
       "finance": "FINANCE",
       "general": "GENERAL",
-      "dataAndStorage": "DATA AND STORAGE"
+      "dataAndStorage": "DATA AND STORAGE",
+      "administration": "ADMINISTRATION"
     },
     "unsavedChanges": {
       "title": "Unsaved changes",
@@ -1274,5 +1289,67 @@
     },
     "teacherAbsent": "Teacher absent",
     "period": "Period"
+  },
+  "users": {
+    "title": "Manage Users",
+    "subtitle": "Manage user accounts, roles, and invitations",
+    "createUser": "Create User",
+    "inviteUser": "Invite as User",
+    "empty": "No users found",
+    "fields": {
+      "displayName": "Display Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "createdAt": "Member Since"
+    },
+    "status": {
+      "Active": "Active",
+      "PendingFirstLogin": "Pending Login",
+      "Suspended": "Suspended"
+    },
+    "roles": {
+      "Admin": "Admin",
+      "FinancialAdmin": "Financial Admin",
+      "Teacher": "Teacher",
+      "Student": "Student"
+    },
+    "filters": {
+      "allRoles": "All Roles",
+      "allStatuses": "All Statuses",
+      "selectRole": "Select role"
+    },
+    "create": {
+      "title": "Invite User",
+      "description": "Send an invitation to create a new user account",
+      "success": "Invitation Sent!",
+      "expiresIn": "The invitation link expires in 72 hours",
+      "expiresAtLabel": "Expires",
+      "invitationUrl": "Invitation Link",
+      "linkCopied": "Copied!",
+      "selectLinkedObject": "Select...",
+      "linkedObjectRequired": "Please link a teacher or student account"
+    },
+    "detail": {
+      "title": "User Details",
+      "editDisplayName": "Edit name",
+      "resendInvitation": "Resend Invitation",
+      "suspend": "Suspend",
+      "activate": "Activate",
+      "confirmSuspend": "Suspend account?",
+      "confirmActivate": "Activate account?",
+      "confirmSuspendDesc": "This will revoke access. The user will not be able to log in."
+    }
+  },
+  "setPassword": {
+    "title": "Set Your Password",
+    "subtitle": "Create a password to complete your account setup",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "submit": "Set Password & Sign In",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "invalidToken": "Invalid or expired link",
+    "contactAdmin": "Contact your administrator for a new invitation"
   }
 }

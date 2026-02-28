@@ -2,53 +2,67 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
   User, SlidersHorizontal, Music, BookOpen,
-  DoorOpen, CalendarDays, Clock, Settings2, Database, Receipt
+  DoorOpen, CalendarDays, Clock, Settings2, Database, Receipt, Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SettingKey, NavGroup } from '@/features/settings/types'
+import { useAuth } from '@/context/AuthContext'
 
-const getNavigationGroups = (t: TFunction): NavGroup[] => [
-  {
-    label: t('settings.navigation.account'),
-    items: [
-      { key: 'profile', label: t('settings.sections.profile'), icon: <User className="h-4 w-4" /> },
-      { key: 'preferences', label: t('settings.sections.preferences'), icon: <SlidersHorizontal className="h-4 w-4" /> },
-    ],
-  },
-  {
-    label: t('settings.navigation.lessons'),
-    items: [
-      { key: 'instruments', label: t('settings.sections.instruments'), icon: <Music className="h-4 w-4" /> },
-      { key: 'course-types', label: t('settings.sections.courseTypes'), icon: <BookOpen className="h-4 w-4" /> },
-    ],
-  },
-  {
-    label: t('settings.navigation.scheduling'),
-    items: [
-      { key: 'rooms', label: t('settings.sections.rooms'), icon: <DoorOpen className="h-4 w-4" /> },
-      { key: 'holidays', label: t('settings.sections.holidays'), icon: <CalendarDays className="h-4 w-4" /> },
-      { key: 'scheduling', label: t('settings.sections.scheduling'), icon: <Clock className="h-4 w-4" /> },
-    ],
-  },
-  {
-    label: t('settings.navigation.finance'),
-    items: [
-      { key: 'invoice-generation', label: t('settings.sections.invoiceGeneration'), icon: <Receipt className="h-4 w-4" /> },
-    ],
-  },
-  {
-    label: t('settings.navigation.general'),
-    items: [
-      { key: 'system', label: t('settings.sections.system'), icon: <Settings2 className="h-4 w-4" /> },
-    ],
-  },
-  {
-    label: t('settings.navigation.dataAndStorage'),
-    items: [
-      { key: 'seeding', label: t('settings.sections.seeding'), icon: <Database className="h-4 w-4" /> },
-    ],
-  },
-]
+const getNavigationGroups = (t: TFunction, isAdmin: boolean): NavGroup[] => {
+  const groups: NavGroup[] = [
+    {
+      label: t('settings.navigation.account'),
+      items: [
+        { key: 'profile', label: t('settings.sections.profile'), icon: <User className="h-4 w-4" /> },
+        { key: 'preferences', label: t('settings.sections.preferences'), icon: <SlidersHorizontal className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: t('settings.navigation.lessons'),
+      items: [
+        { key: 'instruments', label: t('settings.sections.instruments'), icon: <Music className="h-4 w-4" /> },
+        { key: 'course-types', label: t('settings.sections.courseTypes'), icon: <BookOpen className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: t('settings.navigation.scheduling'),
+      items: [
+        { key: 'rooms', label: t('settings.sections.rooms'), icon: <DoorOpen className="h-4 w-4" /> },
+        { key: 'holidays', label: t('settings.sections.holidays'), icon: <CalendarDays className="h-4 w-4" /> },
+        { key: 'scheduling', label: t('settings.sections.scheduling'), icon: <Clock className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: t('settings.navigation.finance'),
+      items: [
+        { key: 'invoice-generation', label: t('settings.sections.invoiceGeneration'), icon: <Receipt className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: t('settings.navigation.general'),
+      items: [
+        { key: 'system', label: t('settings.sections.system'), icon: <Settings2 className="h-4 w-4" /> },
+      ],
+    },
+    {
+      label: t('settings.navigation.dataAndStorage'),
+      items: [
+        { key: 'seeding', label: t('settings.sections.seeding'), icon: <Database className="h-4 w-4" /> },
+      ],
+    },
+  ]
+
+  if (isAdmin) {
+    groups.push({
+      label: t('settings.navigation.administration'),
+      items: [
+        { key: 'manage-users', label: t('settings.sections.manageUsers'), icon: <Users className="h-4 w-4" /> },
+      ],
+    })
+  }
+
+  return groups
+}
 
 interface SettingsNavigationProps {
   readonly selectedSetting: SettingKey
@@ -57,7 +71,9 @@ interface SettingsNavigationProps {
 
 export function SettingsNavigation({ selectedSetting, onNavigate }: SettingsNavigationProps) {
   const { t } = useTranslation()
-  const navigationGroups = getNavigationGroups(t)
+  const { user } = useAuth()
+  const isAdmin = user?.roles.includes('Admin') ?? false
+  const navigationGroups = getNavigationGroups(t, isAdmin)
 
   return (
     <nav className="w-auto min-w-[200px] border-r bg-muted/30 p-4 overflow-y-auto">
