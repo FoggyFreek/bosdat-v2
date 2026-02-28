@@ -58,7 +58,8 @@ public class UsersController(IUserManagementService userManagementService, IConf
     public async Task<IActionResult> UpdateAccountStatus(
         Guid id, [FromBody] UpdateAccountStatusDto dto, CancellationToken cancellationToken)
     {
-        var actorId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var actorId))
+            return BadRequest(new { message = "Invalid user context." });
         var result = await userManagementService.UpdateAccountStatusAsync(id, dto, actorId, cancellationToken);
         if (!result.IsSuccess) return BadRequest(new { message = result.Error });
 

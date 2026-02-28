@@ -33,7 +33,7 @@ const invalidTokenResponse: ValidateTokenResponse = {
   email: undefined,
 }
 
-const createWrapper = (initialEntries: string[] = ['/set-password?token=abc123']) => {
+const createWrapper = (initialEntries: string[] = ['/set-password']) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -63,10 +63,12 @@ const renderWithProviders = (ui: ReactNode, initialEntries?: string[]) => {
 describe('SetPasswordPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    window.location.hash = '#token=abc123'
   })
 
   describe('no token in URL', () => {
     it('shows invalid token card when no token provided', async () => {
+      window.location.hash = ''
       renderWithProviders(<SetPasswordPage />, ['/set-password'])
 
       await waitFor(() => {
@@ -76,6 +78,7 @@ describe('SetPasswordPage', () => {
     })
 
     it('does not call validateToken when no token', () => {
+      window.location.hash = ''
       renderWithProviders(<SetPasswordPage />, ['/set-password'])
 
       expect(accountApi.validateToken).not.toHaveBeenCalled()

@@ -112,7 +112,7 @@ public class UserManagementService(
 
         var existingUser = await userManager.FindByEmailAsync(dto.Email);
         if (existingUser is not null)
-            return Result<InvitationResponseDto>.Failure("A user with this email address already exists.");
+            return Result<InvitationResponseDto>.Failure("Unable to create the user account.");
 
         if (dto.Role is "Teacher" or "Student")
         {
@@ -225,7 +225,7 @@ public class UserManagementService(
         {
             IsValid = true,
             DisplayName = invitationToken.User.DisplayName,
-            Email = invitationToken.User.Email,
+            Email = MaskEmail(invitationToken.User.Email),
             ExpiresAt = invitationToken.ExpiresAt
         };
     }
@@ -278,7 +278,7 @@ public class UserManagementService(
         context.UserInvitationTokens.Add(token);
         await context.SaveChangesAsync(ct);
 
-        var url = $"{frontendBaseUrl.TrimEnd('/')}/set-password?token={Uri.EscapeDataString(rawToken)}";
+        var url = $"{frontendBaseUrl.TrimEnd('/')}/set-password#token={Uri.EscapeDataString(rawToken)}";
         return (rawToken, new InvitationResponseDto
         {
             InvitationUrl = url,
@@ -351,4 +351,16 @@ public class UserManagementService(
         LinkedObjectId = user.LinkedObjectId,
         LinkedObjectType = user.LinkedObjectType
     };
+
+    private static string? MaskEmail(string? email)
+    {
+        if (string.IsNullOrEmpty(email)) return email;
+        var parts = email.Split('@');
+        if (parts.Length != 2) return email;
+        var local = parts[0];
+        var masked = local.Length <= 2
+            ? new string('*', local.Length)
+            : local[0] + new string('*', local.Length - 2) + local[^1];
+        return $"{masked}@{parts[1]}";
+    }
 }

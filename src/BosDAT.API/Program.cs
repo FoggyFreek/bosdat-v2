@@ -9,7 +9,8 @@ builder.Services
     .AddJwtAuthentication(builder.Configuration)
     .AddApplicationServices()
     .AddCorsPolicy(builder.Configuration)
-    .AddSwaggerDocumentation();
+    .AddSwaggerDocumentation()
+    .AddRateLimiting();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -30,6 +31,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 await app.InitializeDatabaseAsync();

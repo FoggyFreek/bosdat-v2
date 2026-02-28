@@ -28,7 +28,7 @@ public class AccountControllerTests
         {
             IsValid = true,
             DisplayName = "Test User",
-            Email = "test@example.com",
+            Email = "t**t@example.com",
             ExpiresAt = DateTime.UtcNow.AddHours(72)
         };
         _mockService.Setup(s => s.ValidateTokenAsync("validtoken", It.IsAny<CancellationToken>()))

@@ -164,7 +164,7 @@ public class UsersControllerTests
     {
         var dto = new CreateUserDto { Role = "Admin", DisplayName = "Test", Email = "existing@example.com" };
         _mockService.Setup(s => s.CreateUserAsync(dto, It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<InvitationResponseDto>.Failure("A user with this email address already exists."));
+            .ReturnsAsync(Result<InvitationResponseDto>.Failure("Unable to create the user account."));
 
         var result = await _controller.CreateUser(dto, CancellationToken.None);
 
@@ -250,6 +250,21 @@ public class UsersControllerTests
             .ReturnsAsync(Result<bool>.Failure("Cannot suspend the last Admin account."));
 
         var result = await _controller.UpdateAccountStatus(otherAdmin, dto, CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task UpdateAccountStatus_MissingUserClaim_ReturnsBadRequest()
+    {
+        var controller = new UsersController(_mockService.Object, _configuration);
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity()) }
+        };
+        var dto = new UpdateAccountStatusDto { AccountStatus = AccountStatus.Suspended };
+
+        var result = await controller.UpdateAccountStatus(Guid.NewGuid(), dto, CancellationToken.None);
 
         Assert.IsType<BadRequestObjectResult>(result);
     }

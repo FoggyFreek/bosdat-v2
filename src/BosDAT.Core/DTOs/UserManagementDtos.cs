@@ -51,6 +51,9 @@ public class UpdateAccountStatusDto
 {
     [Required]
     public AccountStatus AccountStatus { get; set; }
+
+    [MaxLength(500)]
+    public string? Reason { get; set; }
 }
 
 public class SetPasswordDto
@@ -60,6 +63,8 @@ public class SetPasswordDto
 
     [Required]
     [MinLength(8)]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$",
+        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, and one digit.")]
     public string Password { get; set; } = string.Empty;
 }
 
@@ -83,7 +88,9 @@ public class UserListQueryDto
     public string? Search { get; set; }
     public string? Role { get; set; }
     public AccountStatus? AccountStatus { get; set; }
+    [Range(1, int.MaxValue)]
     public int Page { get; set; } = 1;
+    [Range(1, 100)]
     public int PageSize { get; set; } = 20;
     public string SortBy { get; set; } = "DisplayName";
     public bool SortDesc { get; set; } = false;

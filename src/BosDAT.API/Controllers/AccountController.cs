@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Interfaces;
 
@@ -8,6 +9,7 @@ namespace BosDAT.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
+[EnableRateLimiting("sensitive")]
 public class AccountController(IUserManagementService userManagementService) : ControllerBase
 {
     [HttpGet("validate-token")]

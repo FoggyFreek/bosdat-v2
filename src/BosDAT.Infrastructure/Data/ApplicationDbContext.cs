@@ -479,7 +479,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             entity.Property(e => e.TokenType)
                 .HasConversion<string>()
                 .HasMaxLength(20);
-            entity.HasIndex(e => e.TokenHash);
+            entity.HasIndex(e => e.TokenHash).IsUnique();
 
             entity.HasOne(e => e.User)
                 .WithMany()
