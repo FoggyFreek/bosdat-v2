@@ -7,6 +7,11 @@ import { instrumentsApi } from '@/features/instruments/api'
 import { roomsApi } from '@/features/rooms/api'
 import { holidaysApi, settingsApi } from '@/features/settings/api'
 
+// Mock AuthContext — SettingsNavigation uses useAuth to check for Admin role
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ user: { roles: [] }, isAuthenticated: true, isLoading: false }),
+}))
+
 // Mock all API modules
 vi.mock('@/features/course-types/api', () => ({
   courseTypesApi: {

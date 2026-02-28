@@ -26,6 +26,7 @@ const HolidaysSection = lazy(() => import('@/features/settings/components/Holida
 const SchedulingSection = lazy(() => import('@/features/settings/components/SchedulingSection').then(m => ({ default: m.SchedulingSection })))
 const InvoiceGenerationSection = lazy(() => import('@/features/settings/components/InvoiceGenerationSection').then(m => ({ default: m.InvoiceGenerationSection })))
 const SeedingSection = lazy(() => import('@/features/settings/components/SeedingSection').then(m => ({ default: m.SeedingSection })))
+const ManageUsersSection = lazy(() => import('@/features/users/components/ManageUsersSection').then(m => ({ default: m.ManageUsersSection })))
 
 function SettingsLoadingFallback() {
   return (
@@ -87,6 +88,8 @@ function SettingsContent() {
         return <Suspense fallback={<SettingsLoadingFallback />}><SystemSettingsSection /></Suspense>
       case 'seeding':
         return <Suspense fallback={<SettingsLoadingFallback />}><SeedingSection /></Suspense>
+      case 'manage-users':
+        return <Suspense fallback={<SettingsLoadingFallback />}><ManageUsersSection /></Suspense>
       default:
         return null
     }

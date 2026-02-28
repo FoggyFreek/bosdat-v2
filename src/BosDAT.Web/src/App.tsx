@@ -6,6 +6,7 @@ import { LoadingFallback } from './components/LoadingFallback'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { SetPasswordPage } from './pages/SetPasswordPage'
 
 // Lazy load route components
 const StudentsPage = lazy(() => import('./pages/StudentsPage').then(m => ({ default: m.StudentsPage })))
@@ -45,6 +46,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/set-password" element={<SetPasswordPage />} />
       <Route
         path="/*"
         element={

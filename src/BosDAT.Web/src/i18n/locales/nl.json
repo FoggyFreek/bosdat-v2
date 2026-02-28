@@ -21,7 +21,20 @@
       "refresh": "Vernieuwen",
       "view": "Bekijken",
       "download": "Downloaden",
-      "closeSidebar": "Sluit zijbalk"
+      "closeSidebar": "Sluit zijbalk",
+      "saving": "Opslaan..."
+    },
+    "validation": {
+      "required": "Dit veld is verplicht",
+      "invalidEmail": "Ongeldig e-mailadres"
+    },
+    "errors": {
+      "unexpected": "Er is een onverwachte fout opgetreden. Probeer het opnieuw."
+    },
+    "pagination": {
+      "previous": "Vorige",
+      "next": "Volgende",
+      "showing": "{{from}}–{{to}} van {{total}} weergegeven"
     },
     "entities": {
       "student": "Leerling",
@@ -965,7 +978,8 @@
       "holidays": "Vakanties",
       "scheduling": "Roostering",
       "invoiceGeneration": "Factuur Generatie",
-      "seeding": "Test Data"
+      "seeding": "Test Data",
+      "manageUsers": "Gebruikers beheren"
     },
     "instruments": {
       "title": "Instrumenten",
@@ -1206,7 +1220,8 @@
       "scheduling": "ROOSTERING",
       "finance": "FINANCIËN",
       "general": "ALGEMEEN",
-      "dataAndStorage": "GEGEVENS EN OPSLAG"
+      "dataAndStorage": "GEGEVENS EN OPSLAG",
+      "administration": "BEHEER"
     },
     "unsavedChanges": {
       "title": "Niet opgeslagen wijzigingen",
@@ -1275,5 +1290,67 @@
     },
     "teacherAbsent": "Docent afwezig",
     "period": "Periode"
+  },
+  "users": {
+    "title": "Gebruikers beheren",
+    "subtitle": "Beheer gebruikersaccounts, rollen en uitnodigingen",
+    "createUser": "Gebruiker aanmaken",
+    "inviteUser": "Uitnodigen als gebruiker",
+    "empty": "Geen gebruikers gevonden",
+    "fields": {
+      "displayName": "Weergavenaam",
+      "email": "E-mail",
+      "role": "Rol",
+      "status": "Status",
+      "createdAt": "Lid sinds"
+    },
+    "status": {
+      "Active": "Actief",
+      "PendingFirstLogin": "Wacht op login",
+      "Suspended": "Gesuspendeerd"
+    },
+    "roles": {
+      "Admin": "Beheerder",
+      "FinancialAdmin": "Financieel beheerder",
+      "Teacher": "Docent",
+      "Student": "Leerling"
+    },
+    "filters": {
+      "allRoles": "Alle rollen",
+      "allStatuses": "Alle statussen",
+      "selectRole": "Selecteer rol"
+    },
+    "create": {
+      "title": "Gebruiker uitnodigen",
+      "description": "Stuur een uitnodiging om een nieuw gebruikersaccount aan te maken",
+      "success": "Uitnodiging verzonden!",
+      "expiresIn": "De uitnodigingslink verloopt na 72 uur",
+      "expiresAtLabel": "Verloopt op",
+      "invitationUrl": "Uitnodigingslink",
+      "linkCopied": "Gekopieerd!",
+      "selectLinkedObject": "Selecteer...",
+      "linkedObjectRequired": "Koppel een docent- of leerlingaccount"
+    },
+    "detail": {
+      "title": "Gebruikersdetails",
+      "editDisplayName": "Naam bewerken",
+      "resendInvitation": "Uitnodiging opnieuw sturen",
+      "suspend": "Suspenderen",
+      "activate": "Activeren",
+      "confirmSuspend": "Account suspenderen?",
+      "confirmActivate": "Account activeren?",
+      "confirmSuspendDesc": "Dit trekt de toegang in. De gebruiker kan niet meer inloggen."
+    }
+  },
+  "setPassword": {
+    "title": "Wachtwoord instellen",
+    "subtitle": "Maak een wachtwoord aan om uw account in te richten",
+    "password": "Wachtwoord",
+    "confirmPassword": "Wachtwoord bevestigen",
+    "submit": "Wachtwoord instellen & inloggen",
+    "passwordTooShort": "Wachtwoord moet minimaal 8 tekens bevatten",
+    "passwordMismatch": "Wachtwoorden komen niet overeen",
+    "invalidToken": "Ongeldige of verlopen link",
+    "contactAdmin": "Neem contact op met uw beheerder voor een nieuwe uitnodiging"
   }
 }

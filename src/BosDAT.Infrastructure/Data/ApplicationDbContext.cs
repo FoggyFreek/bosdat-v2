@@ -53,6 +53,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<LessonNote> LessonNotes => Set<LessonNote>();
     public DbSet<NoteAttachment> NoteAttachments => Set<NoteAttachment>();
     public DbSet<Absence> Absences => Set<Absence>();
+    public DbSet<UserInvitationToken> UserInvitationTokens => Set<UserInvitationToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -460,11 +461,30 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.Property(e => e.DisplayName).HasMaxLength(80);
+            entity.Property(e => e.AccountStatus)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.LinkedObjectType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+        });
 
-            entity.HasOne(e => e.Teacher)
-                .WithOne()
-                .HasForeignKey<ApplicationUser>(e => e.TeacherId)
-                .OnDelete(DeleteBehavior.SetNull);
+        // UserInvitationToken configuration
+        modelBuilder.Entity<UserInvitationToken>(entity =>
+        {
+            entity.ToTable("user_invitation_tokens");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TokenHash).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.TokenType)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.HasIndex(e => e.TokenHash).IsUnique();
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // RefreshToken configuration

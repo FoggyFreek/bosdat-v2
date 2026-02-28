@@ -44,7 +44,7 @@ public static class WebApplicationExtensions
     /// </summary>
     private static async Task EnsureRolesAsync(RoleManager<IdentityRole<Guid>> roleManager)
     {
-        var roles = new[] { "Admin", "Teacher", "Staff", "User", "Worker" };
+        var roles = new[] { "Admin", "FinancialAdmin", "Teacher", "Student", "Staff", "User", "Worker" };
 
         foreach (var role in roles)
         {
@@ -78,6 +78,8 @@ public static class WebApplicationExtensions
             Email = adminEmail,
             FirstName = "System",
             LastName = "Administrator",
+            DisplayName = "System Administrator",
+            AccountStatus = BosDAT.Core.Enums.AccountStatus.Active,
             EmailConfirmed = true
         };
 

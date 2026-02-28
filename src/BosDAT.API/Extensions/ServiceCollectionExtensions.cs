@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -134,6 +135,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILessonNoteService, LessonNoteService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IInvoicePdfService, InvoicePdfService>();
+        services.AddScoped<IUserManagementService, UserManagementService>();
 
         return services;
     }
@@ -172,6 +174,26 @@ public static class ServiceCollectionExtensions
             });
             options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
         });
+        return services;
+    }
+
+    /// <summary>
+    /// Configures rate limiting policies for sensitive endpoints.
+    /// </summary>
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddFixedWindowLimiter("sensitive", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 5;
+                limiterOptions.Window = TimeSpan.FromMinutes(1);
+                limiterOptions.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+                limiterOptions.QueueLimit = 0;
+            });
+        });
+
         return services;
     }
 }

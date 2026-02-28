@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -26,12 +26,18 @@ import {
 } from '@/features/students/components'
 import { studentsApi } from '@/features/students/api'
 import type { Student, StudentSectionKey } from '@/features/students/types'
+import { useAuth } from '@/context/AuthContext'
+import { useTranslation } from 'react-i18next'
+import { InviteUserDialog } from '@/features/users/components/InviteUserDialog'
 
 function StudentDetailContent() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
+  const { t } = useTranslation()
   const [selectedSection, setSelectedSection] = useState<StudentSectionKey>('profile')
   const [pendingNavigation, setPendingNavigation] = useState<StudentSectionKey | null>(null)
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+  const [showInviteDialog, setShowInviteDialog] = useState(false)
   const { isDirty, setIsDirty } = useFormDirty()
 
   const { data: student, isLoading } = useQuery<Student>({
@@ -135,10 +141,26 @@ function StudentDetailContent() {
             {student.status}
           </span>
         </div>
+        {user?.roles.includes('Admin') && (
+          <Button variant="outline" onClick={() => setShowInviteDialog(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {t('users.inviteUser')}
+          </Button>
+        )}
         <Button asChild>
           <Link to={`/students/${id}/edit`}>Edit Student</Link>
         </Button>
       </div>
+
+      <InviteUserDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
+        lockedRole="Student"
+        linkedObjectId={student.id}
+        linkedObjectType="Student"
+        defaultEmail={student.email}
+        defaultDisplayName={student.fullName}
+      />
 
       {/* Two-column layout */}
       <div className="flex flex-1 overflow-hidden">
