@@ -1,65 +1,30 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Common;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
-using BosDAT.Infrastructure.Data;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 
 public class UserManagementService(
     UserManager<ApplicationUser> userManager,
-    ApplicationDbContext context) : IUserManagementService
+    IUnitOfWork uow) : IUserManagementService
 {
     private static readonly string[] ManagedRoles = ["Admin", "FinancialAdmin", "Teacher", "Student"];
     private const int InvitationExpiryHours = 72;
 
     public async Task<PagedResult<UserListItemDto>> GetUsersAsync(UserListQueryDto query, CancellationToken ct = default)
     {
-        var usersQuery = userManager.Users.AsNoTracking();
-
-        if (!string.IsNullOrWhiteSpace(query.Search))
-        {
-            var search = query.Search.ToLower();
-            usersQuery = usersQuery.Where(u =>
-                u.DisplayName.ToLower().Contains(search) ||
-                (u.Email != null && u.Email.ToLower().Contains(search)));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Role))
-        {
-            var usersInRole = await userManager.GetUsersInRoleAsync(query.Role);
-            var userIdsInRole = usersInRole.Select(u => u.Id).ToHashSet();
-            usersQuery = usersQuery.Where(u => userIdsInRole.Contains(u.Id));
-        }
-
-        if (query.AccountStatus.HasValue)
-        {
-            usersQuery = usersQuery.Where(u => u.AccountStatus == query.AccountStatus.Value);
-        }
-
-        var totalCount = await usersQuery.CountAsync(ct);
-
-        usersQuery = query.SortBy switch
-        {
-            "Email" => query.SortDesc ? usersQuery.OrderByDescending(u => u.Email) : usersQuery.OrderBy(u => u.Email),
-            "CreatedAt" => query.SortDesc ? usersQuery.OrderByDescending(u => u.CreatedAt) : usersQuery.OrderBy(u => u.CreatedAt),
-            _ => query.SortDesc ? usersQuery.OrderByDescending(u => u.DisplayName) : usersQuery.OrderBy(u => u.DisplayName),
-        };
-
-        var users = await usersQuery
-            .Skip((query.Page - 1) * query.PageSize)
-            .Take(query.PageSize)
-            .ToListAsync(ct);
+        var (users, totalCount) = await uow.Users.GetPagedAsync(query, ct);
 
         var items = new List<UserListItemDto>();
         foreach (var user in users)
         {
-            var roles = await userManager.GetRolesAsync(user);
+            var roles = await uow.Users.GetRolesAsync(user, ct);
             var role = roles.FirstOrDefault(r => ManagedRoles.Contains(r)) ?? roles.FirstOrDefault() ?? string.Empty;
             items.Add(MapToListItem(user, role));
         }
@@ -75,20 +40,13 @@ public class UserManagementService(
 
     public async Task<UserDetailDto?> GetUserByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var user = await userManager.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == id, ct);
-
+        var user = await uow.Users.GetByIdAsync(id, ct);
         if (user is null) return null;
 
-        var roles = await userManager.GetRolesAsync(user);
+        var roles = await uow.Users.GetRolesAsync(user, ct);
         var role = roles.FirstOrDefault(r => ManagedRoles.Contains(r)) ?? roles.FirstOrDefault() ?? string.Empty;
 
-        var pendingToken = await context.UserInvitationTokens
-            .AsNoTracking()
-            .Where(t => t.UserId == id && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow)
-            .OrderByDescending(t => t.CreatedAt)
-            .FirstOrDefaultAsync(ct);
+        var pendingToken = await uow.InvitationTokens.GetLatestPendingForUserAsync(id, ct);
 
         return new UserDetailDto
         {
@@ -145,8 +103,7 @@ public class UserManagementService(
 
         await userManager.AddToRoleAsync(user, dto.Role);
 
-        var (rawToken, response) = await GenerateAndStoreTokenAsync(user.Id, InvitationTokenType.Invitation, frontendBaseUrl, ct);
-
+        var (_, response) = await GenerateAndStoreTokenAsync(user.Id, InvitationTokenType.Invitation, frontendBaseUrl, ct);
         return Result<InvitationResponseDto>.Success(response);
     }
 
@@ -175,7 +132,7 @@ public class UserManagementService(
 
         if (dto.AccountStatus == AccountStatus.Suspended)
         {
-            var roles = await userManager.GetRolesAsync(user);
+            var roles = await uow.Users.GetRolesAsync(user, ct);
             if (roles.Contains("Admin"))
             {
                 var adminCount = (await userManager.GetUsersInRoleAsync("Admin")).Count;
@@ -183,7 +140,8 @@ public class UserManagementService(
                     return Result<bool>.Failure("Cannot suspend the last Admin account.");
             }
 
-            await RevokeAllRefreshTokensAsync(id, ct);
+            await uow.RefreshTokens.RevokeAllActiveForUserAsync(id, ct);
+            await uow.SaveChangesAsync(ct);
         }
 
         user.AccountStatus = dto.AccountStatus;
@@ -204,7 +162,8 @@ public class UserManagementService(
         if (user.AccountStatus != AccountStatus.PendingFirstLogin)
             return Result<InvitationResponseDto>.Failure("Invitations can only be resent for users with Pending First Login status.");
 
-        await InvalidateExistingTokensAsync(id, InvitationTokenType.Invitation, ct);
+        await uow.InvitationTokens.InvalidateAllForUserAsync(id, InvitationTokenType.Invitation, ct);
+        await uow.SaveChangesAsync(ct);
 
         var (_, response) = await GenerateAndStoreTokenAsync(id, InvitationTokenType.Invitation, frontendBaseUrl, ct);
         return Result<InvitationResponseDto>.Success(response);
@@ -213,10 +172,7 @@ public class UserManagementService(
     public async Task<ValidateTokenResponseDto> ValidateTokenAsync(string token, CancellationToken ct = default)
     {
         var hash = HashToken(token);
-        var invitationToken = await context.UserInvitationTokens
-            .AsNoTracking()
-            .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.TokenHash == hash && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow, ct);
+        var invitationToken = await uow.InvitationTokens.GetActiveByHashWithUserAsync(hash, ct);
 
         if (invitationToken is null)
             return new ValidateTokenResponseDto { IsValid = false };
@@ -233,9 +189,7 @@ public class UserManagementService(
     public async Task<Result<bool>> SetPasswordFromTokenAsync(SetPasswordDto dto, CancellationToken ct = default)
     {
         var hash = HashToken(dto.Token);
-        var invitationToken = await context.UserInvitationTokens
-            .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.TokenHash == hash && t.UsedAt == null && t.ExpiresAt > DateTime.UtcNow, ct);
+        var invitationToken = await uow.InvitationTokens.GetActiveByHashWithUserAsync(hash, ct);
 
         if (invitationToken is null)
             return Result<bool>.Failure("This invitation link is invalid or has expired.");
@@ -253,7 +207,7 @@ public class UserManagementService(
         user.AccountStatus = AccountStatus.Active;
         user.IsActive = true;
 
-        await context.SaveChangesAsync(ct);
+        await uow.SaveChangesAsync(ct);
 
         return Result<bool>.Success(true);
     }
@@ -275,8 +229,8 @@ public class UserManagementService(
             CreatedAt = DateTime.UtcNow
         };
 
-        context.UserInvitationTokens.Add(token);
-        await context.SaveChangesAsync(ct);
+        await uow.InvitationTokens.AddAsync(token, ct);
+        await uow.SaveChangesAsync(ct);
 
         var url = $"{frontendBaseUrl.TrimEnd('/')}/set-password#token={Uri.EscapeDataString(rawToken)}";
         return (rawToken, new InvitationResponseDto
@@ -287,39 +241,13 @@ public class UserManagementService(
         });
     }
 
-    private async Task InvalidateExistingTokensAsync(Guid userId, InvitationTokenType tokenType, CancellationToken ct)
-    {
-        var tokens = await context.UserInvitationTokens
-            .Where(t => t.UserId == userId && t.TokenType == tokenType && t.UsedAt == null)
-            .ToListAsync(ct);
-
-        foreach (var token in tokens)
-            token.UsedAt = DateTime.UtcNow;
-
-        if (tokens.Count > 0)
-            await context.SaveChangesAsync(ct);
-    }
-
-    private async Task RevokeAllRefreshTokensAsync(Guid userId, CancellationToken ct)
-    {
-        var refreshTokens = await context.Set<RefreshToken>()
-            .Where(t => t.UserId == userId && t.RevokedAt == null)
-            .ToListAsync(ct);
-
-        foreach (var token in refreshTokens)
-            token.RevokedAt = DateTime.UtcNow;
-
-        if (refreshTokens.Count > 0)
-            await context.SaveChangesAsync(ct);
-    }
-
-    private async Task<bool> LinkedEntityExistsAsync(Guid id, LinkedObjectType type, CancellationToken ct)
+    private Task<bool> LinkedEntityExistsAsync(Guid id, LinkedObjectType type, CancellationToken ct)
     {
         return type switch
         {
-            LinkedObjectType.Teacher => await context.Teachers.AnyAsync(t => t.Id == id, ct),
-            LinkedObjectType.Student => await context.Students.AnyAsync(s => s.Id == id, ct),
-            _ => false
+            LinkedObjectType.Teacher => uow.Teachers.AnyAsync(t => t.Id == id, ct),
+            LinkedObjectType.Student => uow.Students.AnyAsync(s => s.Id == id, ct),
+            _ => Task.FromResult(false)
         };
     }
 

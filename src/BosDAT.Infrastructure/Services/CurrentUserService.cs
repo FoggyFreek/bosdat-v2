@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 

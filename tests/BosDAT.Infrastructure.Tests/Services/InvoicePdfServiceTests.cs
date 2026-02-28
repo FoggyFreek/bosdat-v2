@@ -1,7 +1,9 @@
 using System.Runtime.InteropServices;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Services;
 
 namespace BosDAT.Infrastructure.Tests.Services;

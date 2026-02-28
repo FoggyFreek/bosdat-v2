@@ -5,6 +5,8 @@ using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 
 namespace BosDAT.API.Tests.Controllers;
 

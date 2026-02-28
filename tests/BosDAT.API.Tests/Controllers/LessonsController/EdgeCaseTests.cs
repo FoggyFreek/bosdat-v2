@@ -6,6 +6,8 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
 
@@ -482,20 +484,6 @@ public class EdgeCaseTests
             Type = category,
             DurationMinutes = 30,
             MaxStudents = category == CourseTypeCategory.Individual ? 1 : 10
-        };
-    }
-
-    private static Lesson CreateLesson(Guid courseId, Guid teacherId, DateOnly date)
-    {
-        return new Lesson
-        {
-            Id = Guid.NewGuid(),
-            CourseId = courseId,
-            TeacherId = teacherId,
-            ScheduledDate = date,
-            StartTime = new TimeOnly(10, 0),
-            EndTime = new TimeOnly(10, 30),
-            Status = LessonStatus.Scheduled
         };
     }
 

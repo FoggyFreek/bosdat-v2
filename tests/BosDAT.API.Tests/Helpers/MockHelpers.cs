@@ -4,7 +4,10 @@ using Microsoft.EntityFrameworkCore.Query;
 using Moq;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Repositories;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.API.Tests.Helpers;
 
@@ -53,6 +56,18 @@ public static class MockHelpers
         mock.Setup(r => r.GetWithEnrollmentsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(s => s.Id == id));
 
+        mock.Setup(r => r.GetFilteredAsync(It.IsAny<string?>(), It.IsAny<StudentStatus?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string? search, StudentStatus? status, CancellationToken _) =>
+                (IReadOnlyList<Student>)data
+                    .Where(s => string.IsNullOrWhiteSpace(search) ||
+                                s.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                                s.LastName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                                s.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .Where(s => !status.HasValue || s.Status == status.Value)
+                    .OrderBy(s => s.LastName)
+                    .ThenBy(s => s.FirstName)
+                    .ToList());
+
         mock.Setup(r => r.AddAsync(It.IsAny<Student>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Student entity, CancellationToken _) => entity);
 
@@ -76,6 +91,15 @@ public static class MockHelpers
             .ReturnsAsync((string email, CancellationToken _) =>
                 data.FirstOrDefault(t => t.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
 
+        mock.Setup(r => r.GetFilteredAsync(It.IsAny<bool?>(), It.IsAny<int?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((bool? activeOnly, int? instrumentId, Guid? courseTypeId, CancellationToken _) =>
+                (IReadOnlyList<Teacher>)data
+                    .Where(t => activeOnly != true || t.IsActive)
+                    .Where(t => !instrumentId.HasValue || t.TeacherInstruments.Any(ti => ti.InstrumentId == instrumentId.Value))
+                    .Where(t => !courseTypeId.HasValue || t.TeacherCourseTypes.Any(tct => tct.CourseTypeId == courseTypeId.Value))
+                    .OrderBy(t => t.LastName).ThenBy(t => t.FirstName)
+                    .ToList());
+
         mock.Setup(r => r.GetWithInstrumentsAndCourseTypesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid id, CancellationToken _) => data.FirstOrDefault(t => t.Id == id));
 
@@ -95,6 +119,31 @@ public static class MockHelpers
 
         mock.Setup(r => r.AddAsync(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Teacher entity, CancellationToken _) => entity);
+
+        // Junction table mutations are no-ops in unit tests
+        mock.Setup(r => r.AddInstrument(It.IsAny<TeacherInstrument>()));
+        mock.Setup(r => r.RemoveInstrument(It.IsAny<TeacherInstrument>()));
+        mock.Setup(r => r.AddCourseType(It.IsAny<TeacherCourseType>()));
+        mock.Setup(r => r.RemoveCourseType(It.IsAny<TeacherCourseType>()));
+        mock.Setup(r => r.AddAvailability(It.IsAny<TeacherAvailability>()));
+        mock.Setup(r => r.RemoveAvailability(It.IsAny<TeacherAvailability>()));
+
+        return mock;
+    }
+
+    public static Mock<ICourseTypeRepository> CreateMockCourseTypeRepository(List<CourseType> data)
+    {
+        var mock = new Mock<ICourseTypeRepository>();
+
+        mock.Setup(r => r.GetByIdsAsync(It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((List<Guid> ids, CancellationToken _) =>
+                data.Where(ct => ids.Contains(ct.Id)).ToList());
+
+        mock.Setup(r => r.GetActiveByInstrumentIdsAsync(It.IsAny<List<int>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((List<int> instrumentIds, CancellationToken _) =>
+                data.Where(ct => ct.IsActive && instrumentIds.Contains(ct.InstrumentId))
+                    .OrderBy(ct => ct.Instrument?.Name).ThenBy(ct => ct.Name)
+                    .ToList());
 
         return mock;
     }

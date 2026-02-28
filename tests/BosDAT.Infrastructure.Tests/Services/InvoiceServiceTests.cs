@@ -5,9 +5,12 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Services;
 using BosDAT.Infrastructure.Repositories;
+using BosDAT.Infrastructure.Tests.Helpers;
 
 namespace BosDAT.Infrastructure.Tests.Services;
 
@@ -31,7 +34,7 @@ public class InvoiceServiceTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options);
-        _unitOfWork = new UnitOfWork(_context);
+        _unitOfWork = TestHelpers.CreateUnitOfWork(_context);
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockPricingService = new Mock<ICourseTypePricingService>();
 
@@ -499,7 +502,7 @@ public class InvoiceServiceTests : IDisposable
     public async Task GenerateInvoiceAsync_IndividualCourse_OnlyIncludesStudentLessons()
     {
         // Arrange - creates individual lessons for this student + some for another
-        var (student, enrollment, otherStudent) = await SetupEnrollmentWithMixedLessons();
+        var (_, enrollment, _) = await SetupEnrollmentWithMixedLessons();
 
         var dto = new GenerateInvoiceDto
         {
@@ -825,8 +828,8 @@ public class InvoiceServiceTests : IDisposable
     public async Task GenerateBatchInvoicesAsync_WithMultipleEnrollments_GeneratesMultipleInvoices()
     {
         // Arrange - create two enrollments with lessons
-        var (_, enrollment1) = await SetupEnrollmentWithLessons(lessonCount: 4);
-        var (_, enrollment2) = await SetupEnrollmentWithLessons(lessonCount: 3);
+        _ = await SetupEnrollmentWithLessons(lessonCount: 4);
+        _ = await SetupEnrollmentWithLessons(lessonCount: 3);
 
         var dto = new GenerateBatchInvoicesDto
         {
@@ -846,8 +849,8 @@ public class InvoiceServiceTests : IDisposable
     public async Task GenerateBatchInvoicesAsync_SkipsEnrollmentsWithNoLessons()
     {
         // Arrange - one with lessons, one without
-        var (_, enrollment1) = await SetupEnrollmentWithLessons(lessonCount: 4);
-        var (_, enrollment2) = await SetupEnrollmentWithLessons(lessonCount: 0);
+        _ = await SetupEnrollmentWithLessons(lessonCount: 4);
+        _ = await SetupEnrollmentWithLessons(lessonCount: 0);
 
         var dto = new GenerateBatchInvoicesDto
         {
@@ -867,7 +870,7 @@ public class InvoiceServiceTests : IDisposable
     public async Task GenerateBatchInvoicesAsync_FiltersByPeriodType()
     {
         // Arrange - monthly enrollment has lessons
-        var (_, enrollment) = await SetupEnrollmentWithLessons(lessonCount: 4);
+        _ = await SetupEnrollmentWithLessons(lessonCount: 4);
 
         // Request quarterly batch - monthly enrollment should not match
         var dto = new GenerateBatchInvoicesDto
@@ -1344,21 +1347,6 @@ public class InvoiceServiceTests : IDisposable
             .ReturnsAsync(pricingVersion);
 
         return (student, enrollment, otherStudent);
-    }
-
-    private async Task<(Student student, InvoiceDto invoice)> CreateInvoiceForStudent()
-    {
-        var (student, enrollment) = await SetupEnrollmentWithLessons(lessonCount: 4);
-
-        var dto = new GenerateInvoiceDto
-        {
-            EnrollmentId = enrollment.Id,
-            PeriodStart = new DateOnly(2026, 1, 1),
-            PeriodEnd = new DateOnly(2026, 1, 31),
-        };
-
-        var invoice = await _service.GenerateInvoiceAsync(dto, _userId);
-        return (student, invoice);
     }
     #endregion
 }

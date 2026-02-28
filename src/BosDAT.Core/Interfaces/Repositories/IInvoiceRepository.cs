@@ -1,0 +1,20 @@
+using BosDAT.Core.Entities;
+
+namespace BosDAT.Core.Interfaces.Repositories;
+
+public interface IInvoiceRepository : IRepository<Invoice>
+{
+    Task<Invoice?> GetByInvoiceNumberAsync(string invoiceNumber, CancellationToken cancellationToken = default);
+    Task<Invoice?> GetWithLinesAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Invoice?> GetWithLinesAndEnrollmentsAsync(Guid id, CancellationToken cancellationToken = default);
+        
+    Task<IReadOnlyList<Invoice>> GetByStudentAsync(Guid studentId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Invoice>> GetByStatusAsync(InvoiceStatus status, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Invoice>> GetOverdueInvoicesAsync(CancellationToken cancellationToken = default);
+    Task<string> GenerateInvoiceNumberAsync(CancellationToken cancellationToken = default);
+    Task<string> GenerateCreditInvoiceNumberAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Invoice>> GetByEnrollmentAsync(Guid enrollmentId, CancellationToken cancellationToken = default);
+    Task<Invoice?> GetByPeriodAsync(Guid studentId, Guid enrollmentId, DateOnly periodStart, DateOnly periodEnd, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Invoice>> GetUnpaidInvoicesAsync(Guid studentId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Invoice>> GetConfirmedCreditInvoicesWithRemainingCreditAsync(Guid studentId, CancellationToken ct = default);
+}

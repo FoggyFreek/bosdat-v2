@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 
 namespace BosDAT.Infrastructure.Repositories;
@@ -47,12 +48,24 @@ public class StudentRepository : Repository<Student>, IStudentRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Student>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Student>> GetFilteredAsync(string? search, StudentStatus? status, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
-            .Where(s => EF.Functions.ILike(s.FirstName, $"%{searchTerm}%") ||
-                        EF.Functions.ILike(s.LastName, $"%{searchTerm}%") ||
-                        EF.Functions.ILike(s.Email, $"%{searchTerm}%"))
+        var query = _dbSet.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var pattern = $"%{search}%";
+            query = query.Where(s => EF.Functions.ILike(s.FirstName, pattern) ||
+                                     EF.Functions.ILike(s.LastName, pattern) ||
+                                     EF.Functions.ILike(s.Email, pattern));
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(s => s.Status == status.Value);
+        }
+
+        return await query
             .OrderBy(s => s.LastName)
             .ThenBy(s => s.FirstName)
             .ToListAsync(cancellationToken);

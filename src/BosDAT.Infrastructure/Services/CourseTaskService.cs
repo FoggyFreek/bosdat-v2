@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Repositories;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 

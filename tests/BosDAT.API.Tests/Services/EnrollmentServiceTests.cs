@@ -4,6 +4,7 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
 using static BosDAT.API.Tests.Helpers.TestDataFactory;

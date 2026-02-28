@@ -4,9 +4,12 @@ using Moq;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
+using BosDAT.Infrastructure.Tests.Helpers;
 
 namespace BosDAT.Infrastructure.Tests.Services;
 
@@ -25,7 +28,7 @@ public class SchedulingServiceTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options);
-        _unitOfWork = new UnitOfWork(_context);
+        _unitOfWork = TestHelpers.CreateUnitOfWork(_context);
         _mockGenerationService = new Mock<ILessonGenerationService>();
         _service = new SchedulingService(_unitOfWork, _mockGenerationService.Object);
     }

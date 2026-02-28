@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 
@@ -14,37 +14,17 @@ public class StudentService(
         StudentStatus? status,
         CancellationToken ct = default)
     {
-        var query = unitOfWork.Students.Query();
+        var students = await unitOfWork.Students.GetFilteredAsync(search, status, ct);
 
-        if (!string.IsNullOrWhiteSpace(search))
+        return students.Select(s => new StudentListDto
         {
-            var pattern = $"%{search}%";
-            query = query.Where(s =>
-                EF.Functions.ILike(s.FirstName, pattern) ||
-                EF.Functions.ILike(s.LastName, pattern) ||
-                EF.Functions.ILike(s.Email, pattern));
-        }
-
-        if (status.HasValue)
-        {
-            query = query.Where(s => s.Status == status.Value);
-        }
-
-        var students = await query
-            .OrderBy(s => s.LastName)
-            .ThenBy(s => s.FirstName)
-            .Select(s => new StudentListDto
-            {
-                Id = s.Id,
-                FullName = s.FullName,
-                Email = s.Email,
-                Phone = s.Phone,
-                Status = s.Status,
-                EnrolledAt = s.EnrolledAt
-            })
-            .ToListAsync(ct);
-
-        return students;
+            Id = s.Id,
+            FullName = s.FullName,
+            Email = s.Email,
+            Phone = s.Phone,
+            Status = s.Status,
+            EnrolledAt = s.EnrolledAt
+        }).ToList();
     }
 
     public async Task<StudentDto?> GetByIdAsync(Guid id, CancellationToken ct = default)

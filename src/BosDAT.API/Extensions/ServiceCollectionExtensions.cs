@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Repositories;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
@@ -98,6 +100,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IInvitationTokenRepository, InvitationTokenRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IStudentRepository, StudentRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();

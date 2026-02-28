@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.API.Controllers;
 
@@ -30,7 +30,7 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     [HttpPut("{noteId:guid}")]
     [Authorize(Policy = "TeacherOrAdmin")]
     public async Task<ActionResult<LessonNoteDto>> Update(
-        Guid lessonId, Guid noteId, [FromBody] UpdateLessonNoteDto dto, CancellationToken cancellationToken)
+        Guid _lessonId, Guid noteId, [FromBody] UpdateLessonNoteDto dto, CancellationToken cancellationToken)
     {
         var result = await lessonNoteService.UpdateAsync(noteId, dto, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
@@ -39,7 +39,7 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     [HttpDelete("{noteId:guid}")]
     [Authorize(Policy = "TeacherOrAdmin")]
     public async Task<IActionResult> Delete(
-        Guid lessonId, Guid noteId, CancellationToken cancellationToken)
+        Guid _lessonId, Guid noteId, CancellationToken cancellationToken)
     {
         var result = await lessonNoteService.DeleteAsync(noteId, cancellationToken);
         return result.IsSuccess ? NoContent() : NotFound(result.Error);
@@ -48,7 +48,7 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     [HttpPost("{noteId:guid}/attachments")]
     [Authorize(Policy = "TeacherOrAdmin")]
     public async Task<ActionResult<NoteAttachmentDto>> AddAttachment(
-        Guid lessonId, Guid noteId, IFormFile file, CancellationToken cancellationToken)
+        Guid _lessonId, Guid noteId, IFormFile file, CancellationToken cancellationToken)
     {
         if (file == null || file.Length == 0)
         {
@@ -70,7 +70,7 @@ public class LessonNotesController(ILessonNoteService lessonNoteService) : Contr
     [HttpDelete("{noteId:guid}/attachments/{attachmentId:guid}")]
     [Authorize(Policy = "TeacherOrAdmin")]
     public async Task<IActionResult> DeleteAttachment(
-        Guid lessonId, Guid noteId, Guid attachmentId, CancellationToken cancellationToken)
+        Guid _lessonId, Guid _noteId, Guid attachmentId, CancellationToken cancellationToken)
     {
         var result = await lessonNoteService.DeleteAttachmentAsync(attachmentId, cancellationToken);
         return result.IsSuccess ? NoContent() : NotFound(result.Error);

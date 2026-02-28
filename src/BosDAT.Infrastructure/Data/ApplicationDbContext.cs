@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Audit;
 
 namespace BosDAT.Infrastructure.Data;

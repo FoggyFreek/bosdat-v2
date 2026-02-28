@@ -9,6 +9,8 @@ using BosDAT.Core.Common;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 
 namespace BosDAT.API.Tests.Controllers;
 

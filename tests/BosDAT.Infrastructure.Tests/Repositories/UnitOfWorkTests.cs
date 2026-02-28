@@ -1,6 +1,7 @@
 using BosDAT.Core.Entities;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
+using BosDAT.Infrastructure.Tests.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace BosDAT.Infrastructure.Tests.Repositories;
@@ -11,7 +12,7 @@ public class UnitOfWorkTests : RepositoryTestBase
 
     public UnitOfWorkTests()
     {
-        _unitOfWork = new UnitOfWork(Context);
+        _unitOfWork = TestHelpers.CreateUnitOfWork(Context);
     }
 
     [Fact]
@@ -195,7 +196,7 @@ public class UnitOfWorkTests : RepositoryTestBase
             .UseInMemoryDatabase(databaseName: $"DisposeTest_{Guid.NewGuid()}")
             .Options;
         var disposableContext = new ApplicationDbContext(options);
-        var uow = new UnitOfWork(disposableContext);
+        var uow = TestHelpers.CreateUnitOfWork(disposableContext);
 
         // Act
         uow.Dispose();

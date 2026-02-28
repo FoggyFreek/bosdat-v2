@@ -3,6 +3,8 @@ using Moq;
 using Xunit;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Services;
 

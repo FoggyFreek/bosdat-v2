@@ -1,12 +1,11 @@
-using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
-using BosDAT.Infrastructure.Data;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 
-public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context) : ITeacherService
+public class TeacherService(IUnitOfWork unitOfWork) : ITeacherService
 {
     public async Task<List<TeacherListDto>> GetAllAsync(
         bool? activeOnly,
@@ -14,42 +13,19 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
         Guid? courseTypeId,
         CancellationToken ct = default)
     {
-        IQueryable<Teacher> query = unitOfWork.Teachers.Query()
-            .Include(t => t.TeacherInstruments)
-                .ThenInclude(ti => ti.Instrument)
-            .Include(t => t.TeacherCourseTypes)
-                .ThenInclude(tlt => tlt.CourseType);
+        var teachers = await unitOfWork.Teachers.GetFilteredAsync(activeOnly, instrumentId, courseTypeId, ct);
 
-        if (activeOnly == true)
+        return teachers.Select(t => new TeacherListDto
         {
-            query = query.Where(t => t.IsActive);
-        }
-
-        if (instrumentId.HasValue)
-        {
-            query = query.Where(t => t.TeacherInstruments.Any(ti => ti.InstrumentId == instrumentId.Value));
-        }
-
-        if (courseTypeId.HasValue)
-        {
-            query = query.Where(t => t.TeacherCourseTypes.Any(tlt => tlt.CourseTypeId == courseTypeId.Value));
-        }
-
-        return await query
-            .OrderBy(t => t.LastName)
-            .ThenBy(t => t.FirstName)
-            .Select(t => new TeacherListDto
-            {
-                Id = t.Id,
-                FullName = t.FullName,
-                Email = t.Email,
-                Phone = t.Phone,
-                IsActive = t.IsActive,
-                Role = t.Role,
-                Instruments = t.TeacherInstruments.Select(ti => ti.Instrument.Name).ToList(),
-                CourseTypes = t.TeacherCourseTypes.Select(tlt => tlt.CourseType.Name).ToList()
-            })
-            .ToListAsync(ct);
+            Id = t.Id,
+            FullName = t.FullName,
+            Email = t.Email,
+            Phone = t.Phone,
+            IsActive = t.IsActive,
+            Role = t.Role,
+            Instruments = t.TeacherInstruments.Select(ti => ti.Instrument.Name).ToList(),
+            CourseTypes = t.TeacherCourseTypes.Select(tlt => tlt.CourseType.Name).ToList()
+        }).ToList();
     }
 
     public async Task<TeacherDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -104,27 +80,22 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             throw new InvalidOperationException("A teacher with this email already exists");
         }
 
-        // Validate lesson types
+        // Validate course types
         if (dto.CourseTypeIds.Count > 0)
         {
-            var courseTypes = await context.CourseTypes
-                .Where(lt => dto.CourseTypeIds.Contains(lt.Id))
-                .ToListAsync(ct);
+            var courseTypes = await unitOfWork.CourseTypes.GetByIdsAsync(dto.CourseTypeIds, ct);
 
-            // Check all lesson types exist
             if (courseTypes.Count != dto.CourseTypeIds.Count)
             {
                 throw new InvalidOperationException("One or more lesson types not found");
             }
 
-            // Check all lesson types are active
             var inactiveCourseTypes = courseTypes.Where(lt => !lt.IsActive).ToList();
             if (inactiveCourseTypes.Count > 0)
             {
                 throw new InvalidOperationException($"Cannot assign inactive lesson types: {string.Join(", ", inactiveCourseTypes.Select(lt => lt.Name))}");
             }
 
-            // Check lesson type instruments match teacher's instruments
             var mismatchedCourseTypes = courseTypes
                 .Where(lt => !dto.InstrumentIds.Contains(lt.InstrumentId))
                 .ToList();
@@ -153,20 +124,18 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
 
         await unitOfWork.Teachers.AddAsync(teacher, ct);
 
-        // Add instruments
         foreach (var instrumentId in dto.InstrumentIds)
         {
-            context.TeacherInstruments.Add(new TeacherInstrument
+            unitOfWork.Teachers.AddInstrument(new TeacherInstrument
             {
                 TeacherId = teacher.Id,
                 InstrumentId = instrumentId
             });
         }
 
-        // Add lesson types
         foreach (var courseTypeId in dto.CourseTypeIds)
         {
-            context.TeacherCourseTypes.Add(new TeacherCourseType
+            unitOfWork.Teachers.AddCourseType(new TeacherCourseType
             {
                 TeacherId = teacher.Id,
                 CourseTypeId = courseTypeId
@@ -175,7 +144,6 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
 
         await unitOfWork.SaveChangesAsync(ct);
 
-        // Reload with instruments and lesson types
         var createdTeacher = await unitOfWork.Teachers.GetWithInstrumentsAndCourseTypesAsync(teacher.Id, ct);
 
         return MapToDto(createdTeacher!);
@@ -197,27 +165,22 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             throw new InvalidOperationException("A teacher with this email already exists");
         }
 
-        // Validate new lesson types
+        // Validate new course types
         if (dto.CourseTypeIds.Count > 0)
         {
-            var courseTypes = await context.CourseTypes
-                .Where(lt => dto.CourseTypeIds.Contains(lt.Id))
-                .ToListAsync(ct);
+            var courseTypes = await unitOfWork.CourseTypes.GetByIdsAsync(dto.CourseTypeIds, ct);
 
-            // Check all lesson types exist
             if (courseTypes.Count != dto.CourseTypeIds.Count)
             {
                 throw new InvalidOperationException("One or more lesson types not found");
             }
 
-            // Check all lesson types are active
             var inactiveCourseTypes = courseTypes.Where(lt => !lt.IsActive).ToList();
             if (inactiveCourseTypes.Count > 0)
             {
                 throw new InvalidOperationException($"Cannot assign inactive lesson types: {string.Join(", ", inactiveCourseTypes.Select(lt => lt.Name))}");
             }
 
-            // Check lesson type instruments match teacher's new instruments
             var mismatchedCourseTypes = courseTypes
                 .Where(lt => !dto.InstrumentIds.Contains(lt.InstrumentId))
                 .ToList();
@@ -246,23 +209,13 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
         var instrumentsToAdd = dto.InstrumentIds.Where(iid => !currentInstruments.Any(ti => ti.InstrumentId == iid));
 
         foreach (var ti in instrumentsToRemove)
-        {
-            context.TeacherInstruments.Remove(ti);
-        }
+            unitOfWork.Teachers.RemoveInstrument(ti);
 
         foreach (var instrumentId in instrumentsToAdd)
-        {
-            context.TeacherInstruments.Add(new TeacherInstrument
-            {
-                TeacherId = teacher.Id,
-                InstrumentId = instrumentId
-            });
-        }
+            unitOfWork.Teachers.AddInstrument(new TeacherInstrument { TeacherId = teacher.Id, InstrumentId = instrumentId });
 
-        // Get instrument IDs being removed
+        // Update course types (also cascade-remove any whose instrument was removed)
         var removedInstrumentIds = instrumentsToRemove.Select(ti => ti.InstrumentId).ToHashSet();
-
-        // Update lesson types (also cascade-remove any lesson types whose instrument was removed)
         var currentCourseTypes = teacher.TeacherCourseTypes.ToList();
         var courseTypesToRemove = currentCourseTypes
             .Where(tlt => !dto.CourseTypeIds.Contains(tlt.CourseTypeId) || removedInstrumentIds.Contains(tlt.CourseType.InstrumentId))
@@ -271,22 +224,13 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             .Where(ltid => !currentCourseTypes.Any(tlt => tlt.CourseTypeId == ltid));
 
         foreach (var tlt in courseTypesToRemove)
-        {
-            context.TeacherCourseTypes.Remove(tlt);
-        }
+            unitOfWork.Teachers.RemoveCourseType(tlt);
 
         foreach (var courseTypeId in courseTypesToAdd)
-        {
-            context.TeacherCourseTypes.Add(new TeacherCourseType
-            {
-                TeacherId = teacher.Id,
-                CourseTypeId = courseTypeId
-            });
-        }
+            unitOfWork.Teachers.AddCourseType(new TeacherCourseType { TeacherId = teacher.Id, CourseTypeId = courseTypeId });
 
         await unitOfWork.SaveChangesAsync(ct);
 
-        // Reload with updated instruments and lesson types
         var updatedTeacher = await unitOfWork.Teachers.GetWithInstrumentsAndCourseTypesAsync(id, ct);
 
         return MapToDto(updatedTeacher!);
@@ -301,7 +245,6 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             return false;
         }
 
-        // Instead of deleting, deactivate
         teacher.IsActive = false;
         await unitOfWork.SaveChangesAsync(ct);
 
@@ -340,20 +283,17 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             return null;
         }
 
-        // Validate: max 7 entries
         if (dtos.Count > 7)
         {
             throw new InvalidOperationException("Maximum of 7 availability entries allowed (one per day)");
         }
 
-        // Validate: no duplicate days
         var duplicateDays = dtos.GroupBy(d => d.DayOfWeek).Where(g => g.Count() > 1).Select(g => g.Key);
         if (duplicateDays.Any())
         {
             throw new InvalidOperationException($"Duplicate days are not allowed: {string.Join(", ", duplicateDays)}");
         }
 
-        // Validate: time range (UntilTime >= FromTime + 1 hour, unless both 00:00 for unavailable)
         foreach (var dto in dtos)
         {
             var isUnavailable = dto.FromTime == TimeOnly.MinValue && dto.UntilTime == TimeOnly.MinValue;
@@ -367,14 +307,9 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             }
         }
 
-        // Remove existing availability
-        var existingAvailability = teacher.Availability.ToList();
-        foreach (var existing in existingAvailability)
-        {
-            context.TeacherAvailabilities.Remove(existing);
-        }
+        foreach (var existing in teacher.Availability.ToList())
+            unitOfWork.Teachers.RemoveAvailability(existing);
 
-        // Add new availability
         var newAvailability = new List<TeacherAvailability>();
         foreach (var dto in dtos)
         {
@@ -387,7 +322,7 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
                 UntilTime = dto.UntilTime
             };
             newAvailability.Add(availability);
-            context.TeacherAvailabilities.Add(availability);
+            unitOfWork.Teachers.AddAvailability(availability);
         }
 
         await unitOfWork.SaveChangesAsync(ct);
@@ -415,7 +350,6 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             return null;
         }
 
-        // Parse instrument IDs from query string (comma-separated)
         var instrumentIdList = string.IsNullOrEmpty(instrumentIds)
             ? new List<int>()
             : instrumentIds.Split(',').Select(int.Parse).ToList();
@@ -425,21 +359,17 @@ public class TeacherService(IUnitOfWork unitOfWork, ApplicationDbContext context
             return new List<CourseTypeSimpleDto>();
         }
 
-        return await context.CourseTypes
-            .Include(lt => lt.Instrument)
-            .Where(lt => lt.IsActive && instrumentIdList.Contains(lt.InstrumentId))
-            .OrderBy(lt => lt.Instrument.Name)
-            .ThenBy(lt => lt.Name)
-            .Select(lt => new CourseTypeSimpleDto
-            {
-                Id = lt.Id,
-                Name = lt.Name,
-                InstrumentId = lt.InstrumentId,
-                InstrumentName = lt.Instrument.Name,
-                DurationMinutes = lt.DurationMinutes,
-                Type = lt.Type
-            })
-            .ToListAsync(ct);
+        var courseTypes = await unitOfWork.CourseTypes.GetActiveByInstrumentIdsAsync(instrumentIdList, ct);
+
+        return courseTypes.Select(ct2 => new CourseTypeSimpleDto
+        {
+            Id = ct2.Id,
+            Name = ct2.Name,
+            InstrumentId = ct2.InstrumentId,
+            InstrumentName = ct2.Instrument.Name,
+            DurationMinutes = ct2.DurationMinutes,
+            Type = ct2.Type
+        }).ToList();
     }
 
     private static TeacherDto MapToDto(Teacher teacher)

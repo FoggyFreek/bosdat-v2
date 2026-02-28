@@ -163,7 +163,6 @@ public class CourseDataGenerator
     }
 
     public async Task<List<Course>> GenerateCoursesAsync(
-        List<Teacher> teachers,
         List<CourseType> courseTypes,
         List<Room> rooms,
         CancellationToken cancellationToken)

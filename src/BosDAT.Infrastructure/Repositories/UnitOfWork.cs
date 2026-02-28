@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Storage;
+using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 
 namespace BosDAT.Infrastructure.Repositories;
@@ -7,8 +10,14 @@ namespace BosDAT.Infrastructure.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
     private IDbContextTransaction? _transaction;
     private readonly Dictionary<Type, object> _repositories = new();
+    private IUserRepository? _users;
+    private IInvitationTokenRepository? _invitationTokens;
+    private IRefreshTokenRepository? _refreshTokens;
+    private IInstrumentRepository? _instruments;
+    private ICourseTypeRepository? _courseTypes;
     private IStudentRepository? _students;
     private ITeacherRepository? _teachers;
     private ICourseRepository? _courses;
@@ -17,10 +26,26 @@ public class UnitOfWork : IUnitOfWork
     private IInvoiceRepository? _invoices;
     private IStudentTransactionRepository? _studentTransactions;
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
+
+    public IUserRepository Users =>
+        _users ??= new UserRepository(_context, _userManager);
+
+    public IInvitationTokenRepository InvitationTokens =>
+        _invitationTokens ??= new InvitationTokenRepository(_context);
+
+    public IRefreshTokenRepository RefreshTokens =>
+        _refreshTokens ??= new RefreshTokenRepository(_context);
+
+    public IInstrumentRepository Instruments =>
+        _instruments ??= new InstrumentRepository(_context);
+
+    public ICourseTypeRepository CourseTypes =>
+        _courseTypes ??= new CourseTypeRepository(_context);
 
     public IStudentRepository Students =>
         _students ??= new StudentRepository(_context);

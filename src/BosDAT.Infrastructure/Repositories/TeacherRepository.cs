@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 
 namespace BosDAT.Infrastructure.Repositories;
@@ -48,6 +49,34 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
                 .ThenInclude(c => c.Enrollments)
                     .ThenInclude(e => e.Student)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Teacher>> GetFilteredAsync(
+        bool? activeOnly,
+        int? instrumentId,
+        Guid? courseTypeId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet
+            .Include(t => t.TeacherInstruments)
+                .ThenInclude(ti => ti.Instrument)
+            .Include(t => t.TeacherCourseTypes)
+                .ThenInclude(tlt => tlt.CourseType)
+            .AsQueryable();
+
+        if (activeOnly == true)
+            query = query.Where(t => t.IsActive);
+
+        if (instrumentId.HasValue)
+            query = query.Where(t => t.TeacherInstruments.Any(ti => ti.InstrumentId == instrumentId.Value));
+
+        if (courseTypeId.HasValue)
+            query = query.Where(t => t.TeacherCourseTypes.Any(tlt => tlt.CourseTypeId == courseTypeId.Value));
+
+        return await query
+            .OrderBy(t => t.LastName)
+            .ThenBy(t => t.FirstName)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Teacher>> GetActiveTeachersAsync(CancellationToken cancellationToken = default)
@@ -98,4 +127,22 @@ public class TeacherRepository : Repository<Teacher>, ITeacherRepository
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    public void AddInstrument(TeacherInstrument instrument) =>
+        _context.Set<TeacherInstrument>().Add(instrument);
+
+    public void RemoveInstrument(TeacherInstrument instrument) =>
+        _context.Set<TeacherInstrument>().Remove(instrument);
+
+    public void AddCourseType(TeacherCourseType courseType) =>
+        _context.Set<TeacherCourseType>().Add(courseType);
+
+    public void RemoveCourseType(TeacherCourseType courseType) =>
+        _context.Set<TeacherCourseType>().Remove(courseType);
+
+    public void AddAvailability(TeacherAvailability availability) =>
+        _context.Set<TeacherAvailability>().Add(availability);
+
+    public void RemoveAvailability(TeacherAvailability availability) =>
+        _context.Set<TeacherAvailability>().Remove(availability);
 }

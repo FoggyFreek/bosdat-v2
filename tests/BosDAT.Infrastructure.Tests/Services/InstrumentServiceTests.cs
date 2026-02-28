@@ -1,11 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Moq;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
+using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Core.Interfaces.Repositories;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
+using BosDAT.Infrastructure.Tests.Helpers;
 
 namespace BosDAT.Infrastructure.Tests.Services;
 
@@ -25,7 +30,7 @@ public class InstrumentServiceTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options);
-        _unitOfWork = new UnitOfWork(_context);
+        _unitOfWork = TestHelpers.CreateUnitOfWork(_context);
         _service = new InstrumentService(_unitOfWork);
     }
 
@@ -208,14 +213,15 @@ public class InstrumentServiceTests : IDisposable
     [Fact]
     public async Task CreateAsync_WithDuplicateName_ReturnsError()
     {
-        // Arrange
-        _context.Instruments.Add(CreateInstrument("Piano"));
-        await _context.SaveChangesAsync();
+        // Arrange - use mock to simulate ILike finding a case-insensitive duplicate
+        var (service, mockRepo) = CreateMockedService();
+        mockRepo.Setup(r => r.ExistsByNameAsync("piano", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var dto = new CreateInstrumentDto { Name = "piano", Category = InstrumentCategory.Keyboard };
 
         // Act
-        var (result, error) = await _service.CreateAsync(dto);
+        var (result, error) = await service.CreateAsync(dto);
 
         // Assert
         Assert.Null(result);
@@ -226,14 +232,15 @@ public class InstrumentServiceTests : IDisposable
     [Fact]
     public async Task CreateAsync_WithDuplicateNameDifferentCase_ReturnsError()
     {
-        // Arrange
-        _context.Instruments.Add(CreateInstrument("GUITAR"));
-        await _context.SaveChangesAsync();
+        // Arrange - use mock to simulate ILike finding a case-insensitive duplicate
+        var (service, mockRepo) = CreateMockedService();
+        mockRepo.Setup(r => r.ExistsByNameAsync("guitar", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var dto = new CreateInstrumentDto { Name = "guitar", Category = InstrumentCategory.String };
 
         // Act
-        var (result, error) = await _service.CreateAsync(dto);
+        var (result, error) = await service.CreateAsync(dto);
 
         // Assert
         Assert.Null(result);
@@ -247,10 +254,13 @@ public class InstrumentServiceTests : IDisposable
     [Fact]
     public async Task UpdateAsync_WhenInstrumentExists_UpdatesAndReturnsDto()
     {
-        // Arrange
+        // Arrange - use mock so ILike duplicate check doesn't run against in-memory EF
         var instrument = CreateInstrument("Old Name");
-        _context.Instruments.Add(instrument);
-        await _context.SaveChangesAsync();
+        var (service, mockRepo) = CreateMockedService();
+        mockRepo.Setup(r => r.GetByIdAsync(instrument.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(instrument);
+        mockRepo.Setup(r => r.ExistsByNameAsync("New Name", instrument.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         var dto = new UpdateInstrumentDto
         {
@@ -260,7 +270,7 @@ public class InstrumentServiceTests : IDisposable
         };
 
         // Act
-        var (result, error, notFound) = await _service.UpdateAsync(instrument.Id, dto);
+        var (result, error, notFound) = await service.UpdateAsync(instrument.Id, dto);
 
         // Assert
         Assert.False(notFound);
@@ -289,16 +299,18 @@ public class InstrumentServiceTests : IDisposable
     [Fact]
     public async Task UpdateAsync_WithDuplicateNameFromAnotherInstrument_ReturnsError()
     {
-        // Arrange
-        var existing = CreateInstrument("Cello");
+        // Arrange - use mock to simulate ILike finding a case-insensitive duplicate from another instrument
         var toUpdate = CreateInstrument("Violin");
-        _context.Instruments.AddRange(existing, toUpdate);
-        await _context.SaveChangesAsync();
+        var (service, mockRepo) = CreateMockedService();
+        mockRepo.Setup(r => r.GetByIdAsync(toUpdate.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(toUpdate);
+        mockRepo.Setup(r => r.ExistsByNameAsync("cello", toUpdate.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var dto = new UpdateInstrumentDto { Name = "cello", Category = InstrumentCategory.String, IsActive = true };
 
         // Act
-        var (result, error, notFound) = await _service.UpdateAsync(toUpdate.Id, dto);
+        var (result, error, notFound) = await service.UpdateAsync(toUpdate.Id, dto);
 
         // Assert
         Assert.False(notFound);
@@ -310,15 +322,18 @@ public class InstrumentServiceTests : IDisposable
     [Fact]
     public async Task UpdateAsync_WithSameNameAsSelf_Succeeds()
     {
-        // Arrange - same name, same id → should NOT be treated as duplicate
+        // Arrange - same name, same id → should NOT be treated as duplicate (ILike excludes same id)
         var instrument = CreateInstrument("Piano");
-        _context.Instruments.Add(instrument);
-        await _context.SaveChangesAsync();
+        var (service, mockRepo) = CreateMockedService();
+        mockRepo.Setup(r => r.GetByIdAsync(instrument.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(instrument);
+        mockRepo.Setup(r => r.ExistsByNameAsync("Piano", instrument.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         var dto = new UpdateInstrumentDto { Name = "Piano", Category = InstrumentCategory.Keyboard, IsActive = false };
 
         // Act
-        var (result, error, notFound) = await _service.UpdateAsync(instrument.Id, dto);
+        var (result, error, notFound) = await service.UpdateAsync(instrument.Id, dto);
 
         // Assert
         Assert.False(notFound);
@@ -374,6 +389,19 @@ public class InstrumentServiceTests : IDisposable
         Category = InstrumentCategory.String,
         IsActive = isActive
     };
+
+    /// <summary>
+    /// Creates an InstrumentService backed by a mocked IUnitOfWork for tests that involve
+    /// ILike-based duplicate checks, which cannot run against the in-memory EF provider.
+    /// </summary>
+    private static (InstrumentService service, Mock<IInstrumentRepository> mockRepo) CreateMockedService()
+    {
+        var mockUoW = new Mock<IUnitOfWork>();
+        var mockRepo = new Mock<IInstrumentRepository>();
+        mockUoW.Setup(u => u.Instruments).Returns(mockRepo.Object);
+        mockUoW.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+        return (new InstrumentService(mockUoW.Object), mockRepo);
+    }
 
     #endregion
 }

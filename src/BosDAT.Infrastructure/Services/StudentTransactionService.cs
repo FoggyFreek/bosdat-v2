@@ -2,7 +2,8 @@ using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
 using BosDAT.Core.Interfaces;
-using BosDAT.Infrastructure.Data;
+using BosDAT.Core.Interfaces.Repositories;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 

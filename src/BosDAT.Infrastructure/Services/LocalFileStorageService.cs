@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 

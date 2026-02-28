@@ -196,7 +196,7 @@ public class DataGeneratorTests : IDisposable
         await generator.GenerateAsync(CancellationToken.None);
 
         // Act
-        var teachers = await generator.GenerateAsync(CancellationToken.None);
+        _ = await generator.GenerateAsync(CancellationToken.None);
 
         // Assert
         Assert.Equal(8, await _context.Teachers.CountAsync());
@@ -465,7 +465,7 @@ public class DataGeneratorTests : IDisposable
         await teacherGenerator.GenerateCourseTypeLinksAsync(teachers, courseTypes, CancellationToken.None);
         var students = await studentGenerator.GenerateAsync(CancellationToken.None);
         var courses = await courseGenerator.GenerateCoursesAsync(
-            teachers, courseTypes, _seederContext.Rooms, CancellationToken.None);
+            courseTypes, _seederContext.Rooms, CancellationToken.None);
         await courseGenerator.GenerateEnrollmentsAsync(students, courses, CancellationToken.None);
     }
 

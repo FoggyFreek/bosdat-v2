@@ -134,6 +134,8 @@ return result.IsSuccess ? Ok(result.Value) : BadRequest(result.Error);
 - Never expose entities — always return DTOs or `Result<T>`
 - The service that orchestrates the full operation owns `SaveChangesAsync`; sub-services must not save
 - Use primary constructors (C# 12)
+- **Never inject `ApplicationDbContext`** — all data access goes through `IUnitOfWork` and repository methods
+- **Never compose `IQueryable` or call `.Where()` / `.Include()` / `.Select()` directly** — if combined or parameterized queries are needed, add a named method to the repository (e.g. `GetFilteredAsync`)
 
 ---
 
@@ -169,6 +171,8 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T> where 
 public interface IStudentRepository : IRepository<Student>
 {
     Task<IEnumerable<Student>> GetActiveWithEnrollmentsAsync();
+    // Use GetFilteredAsync for combined/parameterized filter queries:
+    Task<IEnumerable<Student>> GetFilteredAsync(bool? activeOnly, int? instrumentId);
 }
 
 public class StudentRepository(ApplicationDbContext context)
@@ -180,6 +184,15 @@ public class StudentRepository(ApplicationDbContext context)
             .Include(s => s.Enrollments)
             .Where(s => s.IsActive)
             .ToListAsync();
+
+    // Combined filters belong here — never in services
+    public async Task<IEnumerable<Student>> GetFilteredAsync(bool? activeOnly, int? instrumentId)
+    {
+        var query = _set.AsNoTracking().AsQueryable();
+        if (activeOnly == true) query = query.Where(s => s.IsActive);
+        if (instrumentId.HasValue) query = query.Where(s => s.InstrumentId == instrumentId);
+        return await query.OrderBy(s => s.LastName).ToListAsync();
+    }
 }
 ```
 
@@ -188,6 +201,7 @@ public class StudentRepository(ApplicationDbContext context)
 - `GetByIdAsync` (via `FindAsync`) returns a tracked entity — use for update/delete; for read-only by-ID, project with `.AsNoTracking()` in a custom query
 - Never call `SaveChanges` — UoW owns that
 - Keep in `BosDAT.Infrastructure/Repositories/`
+- **All `IQueryable` composition (`.Where()`, `.Include()`, `.Select()`, `EF.Functions.*`) lives here** — services call named methods only
 
 ---
 

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.API.Controllers;
 
@@ -35,7 +35,7 @@ public class CourseTasksController(ICourseTaskService courseTaskService) : Contr
     [HttpDelete("{taskId:guid}")]
     [Authorize(Policy = "TeacherOrAdmin")]
     public async Task<IActionResult> Delete(
-        Guid courseId, Guid taskId, CancellationToken cancellationToken)
+        Guid _courseId, Guid taskId, CancellationToken cancellationToken)
     {
         var success = await courseTaskService.DeleteAsync(taskId, cancellationToken);
         if (!success)

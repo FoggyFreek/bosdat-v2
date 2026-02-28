@@ -1,39 +1,25 @@
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
-using BosDAT.Infrastructure.Data;
+using BosDAT.Core.Interfaces.Repositories;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Services;
 using BosDAT.API.Tests.Helpers;
 using static BosDAT.API.Tests.Helpers.TestDataFactory;
 
 namespace BosDAT.API.Tests.Services;
 
-public class TeacherServiceTests : IDisposable
+public class TeacherServiceTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
-    private readonly ApplicationDbContext _context;
     private readonly TeacherService _service;
 
     public TeacherServiceTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        _context = new ApplicationDbContext(options);
-
-        _service = new TeacherService(_mockUnitOfWork.Object, _context);
-    }
-
-    public void Dispose()
-    {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
-        GC.SuppressFinalize(this);
+        _service = new TeacherService(_mockUnitOfWork.Object);
     }
 
     #region GetByIdAsync Tests
@@ -273,7 +259,6 @@ public class TeacherServiceTests : IDisposable
         var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(new List<Teacher> { teacher });
         _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
 
-        // 00:00-00:00 is valid (marks as unavailable)
         var dtos = new List<UpdateTeacherAvailabilityDto>
         {
             new()
@@ -304,8 +289,6 @@ public class TeacherServiceTests : IDisposable
             UntilTime = new TimeOnly(16, 0)
         };
         teacher.Availability = new List<TeacherAvailability> { existingAvailability };
-        _context.TeacherAvailabilities.Add(existingAvailability);
-        await _context.SaveChangesAsync();
 
         var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(new List<Teacher> { teacher });
         _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
@@ -322,6 +305,8 @@ public class TeacherServiceTests : IDisposable
         Assert.Equal(2, result.Count);
         Assert.Contains(result, r => r.DayOfWeek == DayOfWeek.Tuesday);
         Assert.Contains(result, r => r.DayOfWeek == DayOfWeek.Thursday);
+        mockTeacherRepo.Verify(r => r.RemoveAvailability(existingAvailability), Times.Once);
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     #endregion
@@ -420,14 +405,14 @@ public class TeacherServiceTests : IDisposable
     public async Task GetAvailableCourseTypesAsync_WithValidInstrumentIds_ReturnsCourseTypes()
     {
         var teacher = CreateTeacher();
+        var instrument = CreateInstrument(id: 1);
+        var courseType = CreateCourseType(instrument, "Piano Beginner");
+
         var mockTeacherRepo = MockHelpers.CreateMockTeacherRepository(new List<Teacher> { teacher });
         _mockUnitOfWork.Setup(u => u.Teachers).Returns(mockTeacherRepo.Object);
 
-        var instrument = CreateInstrument(id: 1);
-        _context.Instruments.Add(instrument);
-        var courseType = CreateCourseType(instrument, "Piano Beginner");
-        _context.CourseTypes.Add(courseType);
-        await _context.SaveChangesAsync();
+        var mockCourseTypeRepo = MockHelpers.CreateMockCourseTypeRepository(new List<CourseType> { courseType });
+        _mockUnitOfWork.Setup(u => u.CourseTypes).Returns(mockCourseTypeRepo.Object);
 
         var result = await _service.GetAvailableCourseTypesAsync(teacher.Id, "1");
 

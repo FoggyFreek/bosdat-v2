@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.Infrastructure.Services;
 
@@ -11,32 +11,22 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
         bool? activeOnly,
         CancellationToken ct = default)
     {
-        var query = unitOfWork.Repository<Instrument>().Query();
+        var instruments = await unitOfWork.Instruments.GetFilteredAsync(activeOnly, ct);
 
-        if (activeOnly == true)
+        return instruments.Select(i => new InstrumentDto
         {
-            query = query.Where(i => i.IsActive);
-        }
-
-        var instruments = await query
-            .OrderBy(i => i.Name)
-            .Select(i => new InstrumentDto
-            {
-                Id = i.Id,
-                Name = i.Name,
-                Category = i.Category,
-                IsActive = i.IsActive
-            })
-            .ToListAsync(ct);
-
-        return instruments;
+            Id = i.Id,
+            Name = i.Name,
+            Category = i.Category,
+            IsActive = i.IsActive
+        }).ToList();
     }
 
     public async Task<(InstrumentDto? Instrument, bool NotFound)> GetByIdAsync(
         int id,
         CancellationToken ct = default)
     {
-        var instrument = await unitOfWork.Repository<Instrument>().GetByIdAsync(id, ct);
+        var instrument = await unitOfWork.Instruments.GetByIdAsync(id, ct);
 
         if (instrument == null)
         {
@@ -57,10 +47,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
         CancellationToken ct = default)
     {
         // Check for duplicate name
-        var existing = await unitOfWork.Repository<Instrument>()
-            .FirstOrDefaultAsync(i => EF.Functions.ILike(i.Name, dto.Name), ct);
-
-        if (existing != null)
+        if (await unitOfWork.Instruments.ExistsByNameAsync(dto.Name, cancellationToken: ct))
         {
             return (null, "An instrument with this name already exists");
         }
@@ -72,7 +59,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
             IsActive = true
         };
 
-        await unitOfWork.Repository<Instrument>().AddAsync(instrument, ct);
+        await unitOfWork.Instruments.AddAsync(instrument, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return (new InstrumentDto
@@ -89,7 +76,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
         UpdateInstrumentDto dto,
         CancellationToken ct = default)
     {
-        var instrument = await unitOfWork.Repository<Instrument>().GetByIdAsync(id, ct);
+        var instrument = await unitOfWork.Instruments.GetByIdAsync(id, ct);
 
         if (instrument == null)
         {
@@ -97,10 +84,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
         }
 
         // Check for duplicate name (excluding current)
-        var existing = await unitOfWork.Repository<Instrument>()
-            .FirstOrDefaultAsync(i => EF.Functions.ILike(i.Name, dto.Name) && i.Id != id, ct);
-
-        if (existing != null)
+        if (await unitOfWork.Instruments.ExistsByNameAsync(dto.Name, excludeId: id, cancellationToken: ct))
         {
             return (null, "An instrument with this name already exists", false);
         }
@@ -109,7 +93,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
         instrument.Category = dto.Category;
         instrument.IsActive = dto.IsActive;
 
-        await unitOfWork.Repository<Instrument>().UpdateAsync(instrument, ct);
+        await unitOfWork.Instruments.UpdateAsync(instrument, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return (new InstrumentDto
@@ -125,7 +109,7 @@ public class InstrumentService(IUnitOfWork unitOfWork) : IInstrumentService
         int id,
         CancellationToken ct = default)
     {
-        var instrument = await unitOfWork.Repository<Instrument>().GetByIdAsync(id, ct);
+        var instrument = await unitOfWork.Instruments.GetByIdAsync(id, ct);
 
         if (instrument == null)
         {

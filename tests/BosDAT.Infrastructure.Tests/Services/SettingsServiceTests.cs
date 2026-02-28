@@ -4,6 +4,7 @@ using BosDAT.Core.Entities;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
+using BosDAT.Infrastructure.Tests.Helpers;
 
 namespace BosDAT.Infrastructure.Tests.Services;
 
@@ -21,7 +22,7 @@ public class SettingsServiceTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options);
-        _unitOfWork = new UnitOfWork(_context);
+        _unitOfWork = TestHelpers.CreateUnitOfWork(_context);
         _service = new SettingsService(_unitOfWork);
     }
 

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Core.Utilities;
 using BosDAT.Infrastructure.Data;
 

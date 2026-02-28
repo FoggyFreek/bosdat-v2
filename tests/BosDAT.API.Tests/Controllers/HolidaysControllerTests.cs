@@ -4,6 +4,7 @@ using Xunit;
 using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.API.Tests.Controllers;
 

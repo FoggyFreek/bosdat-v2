@@ -1,5 +1,5 @@
 using BosDAT.Core.DTOs;
-using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;

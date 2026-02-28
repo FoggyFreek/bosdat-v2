@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Seeding.DataGenerators;
 
@@ -85,7 +86,7 @@ public class DatabaseSeeder : IDatabaseSeeder
             // 6. Seed Courses with various recurrences
             _logger.LogInformation("Seeding courses...");
             var courses = await courseGenerator.GenerateCoursesAsync(
-                teachers, courseTypes, seederContext.Rooms, cancellationToken);
+                courseTypes, seederContext.Rooms, cancellationToken);
 
             // 7. Seed Enrollments
             _logger.LogInformation("Seeding enrollments...");

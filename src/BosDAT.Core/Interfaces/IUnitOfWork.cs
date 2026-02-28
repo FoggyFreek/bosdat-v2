@@ -1,7 +1,14 @@
+using BosDAT.Core.Interfaces.Repositories;
+
 namespace BosDAT.Core.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {
+    IUserRepository Users { get; }
+    IInvitationTokenRepository InvitationTokens { get; }
+    IRefreshTokenRepository RefreshTokens { get; }
+    IInstrumentRepository Instruments { get; }
+    ICourseTypeRepository CourseTypes { get; }
     IStudentRepository Students { get; }
     ITeacherRepository Teachers { get; }
     ICourseRepository Courses { get; }
