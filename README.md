@@ -1,6 +1,6 @@
 # BosDAT v2 - Modern Music School Management System
 
-> A comprehensive web-based application for managing music schools, built with .NET 8, React 19, and PostgreSQL 16.
+> A comprehensive web-based application for managing music schools, built with .NET 10, React 19, and PostgreSQL 16.
 
 ## 🎯 Overview
 
@@ -47,7 +47,7 @@ BosDAT v2 is a complete rewrite of the legacy NMI Access database system, modern
 │ BosDAT.API (Presentation Layer)                         │
 │ • RESTful Controllers                                   │
 │ • JWT Authentication Middleware                         │
-│ • Swagger/OpenAPI Documentation                         │
+│ • OpenAPI / Scalar Documentation                        │
 │ • CORS Configuration                                    │
 └─────────────────────────────────────────────────────────┘
                           ↓
@@ -62,9 +62,9 @@ BosDAT v2 is a complete rewrite of the legacy NMI Access database system, modern
                           ↑
 ┌─────────────────────────────────────────────────────────┐
 │ BosDAT.Infrastructure (Data + Services Layer)           │
-│ • EF Core 8 + PostgreSQL 16                             │
+│ • EF Core 10 + PostgreSQL 16                            │
 │ • Repository Pattern + Unit of Work                     │
-│ • Domain Services (Pricing, Scheduling, Ledger)         │
+│ • Domain Services (Pricing, Scheduling, Ledger, Email)  │
 │ • Migrations & Seeding                                  │
 │ • Automatic Audit Logging                               │
 └─────────────────────────────────────────────────────────┘
@@ -72,42 +72,22 @@ BosDAT v2 is a complete rewrite of the legacy NMI Access database system, modern
 
 ### Bulletproof React Frontend
 
-```
-src/
-├── api/              # API client types (ApiError, PaginatedResponse)
-├── components/       # Shared UI components
-│   └── ui/          # shadcn/ui primitives (Button, Card, Dialog, etc.)
-├── features/        # 🎯 Feature-based organization
-│   ├── auth/        # Authentication (login, context, types)
-│   ├── students/    # Student management
-│   ├── teachers/    # Teacher management
-│   ├── courses/     # Course management
-│   ├── lessons/     # Lesson management
-│   ├── enrollments/ # Enrollment management
-│   ├── invoices/    # Invoice management
-│   └── settings/    # Settings management
-├── context/         # App-wide React context providers
-├── pages/           # Route-level page components (lazy-loaded)
-├── services/        # API service layer (axios + interceptors)
-├── hooks/           # Shared custom React hooks
-├── lib/             # Utility functions
-└── test/            # Test setup and utilities
-```
+Feature-based structure under `src/BosDAT.Web/src/`:
 
-**Key Frontend Patterns:**
-- **Server State:** TanStack Query (React Query) with 5-minute cache
-- **Client State:** React Context with memoized values
-- **Code Splitting:** Route-level lazy loading (direct imports, no barrel exports)
-- **Vendor Chunks:** Optimized bundle splitting for long-term caching
-- **Styling:** shadcn/ui + Tailwind CSS exclusively
-- **Testing:** Vitest + React Testing Library
+- **`features/[domain]/`** — components, API calls, types per domain
+- **`components/`** — shared UI (shadcn/ui primitives)
+- **`pages/`** — lazy-loaded route components
+- **`services/`** — Axios client + interceptors
+- **`hooks/`** — shared custom hooks
+
+Server state via TanStack Query, client state via memoized React Context, shadcn/ui + Tailwind for styling.
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology | Version |
 |-------|------------|---------|
-| Backend Framework | .NET / C# | 8.0 / 12.0 |
-| ORM | Entity Framework Core | 8.0 |
+| Backend Framework | .NET / C# | 10.0 / 13.0 |
+| ORM | Entity Framework Core | 10.0 |
 | Database | PostgreSQL | 16 |
 | Frontend Framework | React + TypeScript | 19.2 |
 | Build Tool | Vite | 7.3 |
@@ -115,18 +95,18 @@ src/
 | HTTP Client | Axios | 1.13 |
 | UI Components | shadcn/ui + Tailwind CSS | 4.1 |
 | Forms | React Hook Form + Zod | 7.48 |
-| Authentication | ASP.NET Core Identity + JWT | 8.0 |
-| Backend Testing | xUnit | 2.6 |
+| Authentication | ASP.NET Core Identity + JWT | 10.0 |
+| Backend Testing | xUnit + Moq | 2.6 |
 | Frontend Testing | Vitest + React Testing Library | 4.0 |
 | Containerization | Docker + Docker Compose | - |
-| API Documentation | Swagger / OpenAPI | 3.0 |
+| API Documentation | OpenAPI / Scalar | 3.0 |
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Node.js 18+** - [Download](https://nodejs.org/)
+- **.NET 10 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **Node.js 20+** - [Download](https://nodejs.org/)
 - **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop) (optional, for containerized setup)
 - **PostgreSQL 16** - (or use Docker)
 
@@ -143,7 +123,7 @@ docker-compose up -d
 # Access the application
 # Frontend: http://localhost:3000
 # API: http://localhost:5000
-# Swagger: http://localhost:5000/swagger
+# Scalar UI: http://localhost:5000/scalar/v1
 ```
 
 ### Local Development Setup
@@ -174,7 +154,7 @@ dotnet ef database update --project ../BosDAT.Infrastructure --startup-project .
 dotnet run
 
 # API available at: http://localhost:5000
-# Swagger UI: http://localhost:5000/swagger
+# Scalar UI: http://localhost:5000/scalar/v1
 ```
 
 #### 3. Frontend Setup
@@ -281,125 +261,23 @@ docker-compose down -v
 ```
 bosdat-v2/
 ├── src/
-│   ├── BosDAT.API/                    # ASP.NET Core Web API
-│   │   ├── Controllers/               # REST API endpoints
-│   │   │   ├── AuthController.cs      # Authentication (login, refresh, register)
-│   │   │   ├── StudentsController.cs  # Student CRUD + duplicates + ledger
-│   │   │   ├── TeachersController.cs  # Teacher CRUD
-│   │   │   ├── CoursesController.cs   # Course CRUD + enrollments
-│   │   │   ├── LessonsController.cs   # Lesson CRUD + generation (single/bulk)
-│   │   │   ├── EnrollmentsController.cs # Enrollment + pricing
-│   │   │   ├── InvoicesController.cs  # Invoice generation + PDF
-│   │   │   ├── CalendarController.cs  # Schedule views
-│   │   │   ├── SeederController.cs    # Development seeding
-│   │   │   └── ...
-│   │   ├── Program.cs                 # Application entry point & configuration
-│   │   └── appsettings.json           # Configuration (DB, JWT, CORS)
-│   │
-│   ├── BosDAT.Core/                   # Domain Layer (no dependencies)
-│   │   ├── Entities/                  # Domain models
-│   │   │   ├── BaseEntity.cs          # Base with Id, CreatedAt, UpdatedAt
-│   │   │   ├── Student.cs
-│   │   │   ├── Teacher.cs
-│   │   │   ├── Course.cs
-│   │   │   ├── Lesson.cs
-│   │   │   ├── Enrollment.cs
-│   │   │   ├── Invoice.cs
-│   │   │   └── ...
-│   │   ├── Interfaces/                # Abstractions
-│   │   │   ├── IRepository.cs         # Generic repository
-│   │   │   ├── IUnitOfWork.cs         # Transaction coordinator
-│   │   │   ├── IAuthService.cs
-│   │   │   └── ...
-│   │   ├── DTOs/                      # Data Transfer Objects
-│   │   │   ├── AuthDtos.cs
-│   │   │   ├── StudentDto.cs
-│   │   │   └── ...
-│   │   ├── Enums/                     # Domain enumerations
-│   │   │   ├── WeekParity.cs          # Odd/Even/All (ISO 8601)
-│   │   │   ├── CourseFrequency.cs     # Weekly/Biweekly/Monthly
-│   │   │   ├── StudentStatus.cs
-│   │   │   └── ...
-│   │   └── Utilities/
-│   │       └── IsoWeekHelper.cs       # ISO 8601 week calculations
-│   │
-│   ├── BosDAT.Infrastructure/         # Data Access Layer
-│   │   ├── Data/
-│   │   │   └── ApplicationDbContext.cs # EF Core DbContext + seeding
-│   │   ├── Repositories/              # Repository implementations
-│   │   │   ├── Repository.cs          # Generic implementation
-│   │   │   ├── StudentRepository.cs
-│   │   │   ├── CourseRepository.cs
-│   │   │   └── ...
-│   │   ├── Services/                  # Domain services
-│   │   │   ├── AuthService.cs         # JWT generation, refresh tokens
-│   │   │   ├── DuplicateDetectionService.cs # Fuzzy matching
-│   │   │   ├── EnrollmentPricingService.cs # Dynamic pricing
-│   │   │   └── ...
-│   │   ├── Seeding/                   # Development data generation
-│   │   │   ├── DatabaseSeeder.cs
-│   │   │   ├── StudentDataGenerator.cs
-│   │   │   └── ...
-│   │   ├── Audit/
-│   │   │   └── AuditEntry.cs          # Change tracking helpers
-│   │   └── Migrations/                # EF Core migrations
-│   │
-│   └── BosDAT.Web/                    # React Frontend
-│       ├── src/
-│       │   ├── api/                   # API client types
-│       │   │   └── types.ts
-│       │   ├── components/            # Shared components
-│       │   │   ├── ui/                # shadcn/ui primitives
-│       │   │   ├── Layout.tsx
-│       │   │   └── LoadingFallback.tsx
-│       │   ├── features/              # Feature modules
-│       │   │   ├── auth/
-│       │   │   │   ├── components/    # Login forms
-│       │   │   │   ├── context/       # AuthContext
-│       │   │   │   └── types.ts
-│       │   │   ├── students/
-│       │   │   │   ├── components/    # StudentForm, StudentList, etc.
-│       │   │   │   └── types.ts
-│       │   │   └── ...
-│       │   ├── pages/                 # Route components (lazy-loaded)
-│       │   │   ├── LoginPage.tsx
-│       │   │   ├── DashboardPage.tsx
-│       │   │   ├── StudentsPage.tsx
-│       │   │   └── ...
-│       │   ├── context/               # App-wide providers
-│       │   │   └── FormDirtyContext.tsx
-│       │   ├── services/              # API service layer
-│       │   │   ├── api.ts             # Axios client + interceptors
-│       │   │   ├── studentsApi.ts
-│       │   │   └── ...
-│       │   ├── hooks/                 # Custom hooks
-│       │   ├── lib/                   # Utils (cn, etc.)
-│       │   ├── test/                  # Test utilities
-│       │   │   ├── setup.ts
-│       │   │   └── utils.tsx
-│       │   ├── App.tsx                # Routes + providers
-│       │   └── main.tsx               # Entry point
-│       ├── package.json
-│       ├── vite.config.ts             # Vite configuration
-│       ├── tsconfig.json              # TypeScript configuration
-│       └── tailwind.config.js         # Tailwind CSS configuration
-│
+│   ├── BosDAT.API/            # ASP.NET Core Web API (controllers, JWT, DI)
+│   ├── BosDAT.Core/           # Domain layer — entities, interfaces, DTOs, enums
+│   ├── BosDAT.Infrastructure/ # EF Core, repositories, services, email, migrations
+│   ├── BosDAT.Worker/         # Background worker — email outbox, scheduled jobs
+│   └── BosDAT.Web/            # React 19 frontend
+│       └── src/
+│           ├── features/      # Feature modules (auth, students, courses, …)
+│           ├── components/    # Shared UI components (shadcn/ui)
+│           ├── pages/         # Route-level components (lazy-loaded)
+│           ├── services/      # Axios client + feature API modules
+│           └── hooks/         # Custom React hooks
 ├── tests/
-│   ├── BosDAT.API.Tests/              # API integration tests
-│   │   └── Controllers/
-│   │       ├── LessonsController/     # Lesson generation tests
-│   │       │   ├── TestHelpers.cs     # Shared test utilities
-│   │       │   ├── FrequencyTests.cs
-│   │       │   ├── HolidaySkippingTests.cs
-│   │       │   ├── WeekParityTests.cs
-│   │       │   └── ...
-│   │       └── ...
-│   └── BosDAT.Core.Tests/             # Domain logic tests
-│
-├── docker-compose.yml                  # Container orchestration
-├── BosDAT.sln                          # Solution file
-├── README.md                           # This file
-└── CLAUDE.md                           # AI assistant guidance
+│   ├── BosDAT.API.Tests/      # Controller + service unit tests (xUnit + Moq)
+│   ├── BosDAT.Core.Tests/     # Domain logic tests
+│   └── BosDAT.Infrastructure.Tests/ # Repository integration tests
+├── docker-compose.yml
+└── BosDAT.sln
 ```
 
 ## 🔑 Core Concepts
@@ -472,6 +350,7 @@ PostgreSQL 16 with snake_case naming convention.
 - `invoices`, `invoice_lines`, `payments`, `teacher_payments`
 - `student_ledger_entries`, `student_ledger_applications`
 - `audit_logs` (JSONB columns for change tracking)
+- `email_outbox_messages` (transactional outbox for reliable email delivery)
 - `refresh_tokens` (JWT token rotation)
 - ASP.NET Identity tables (`asp_net_users`, `asp_net_roles`, etc.)
 
@@ -546,35 +425,126 @@ npm run test:coverage
 - Shared test utilities in `src/test/utils.tsx`
 - Fresh `QueryClient` per test (prevents flaky tests)
 
-## 🌍 Environment Configuration
+## 🔑 Configuration & Secrets
 
-### Backend (`appsettings.json`)
+Secrets are **never committed to git**. The two runtime environments each have their own mechanism:
+
+| Runtime | Where secrets live | Loaded by |
+|---------|-------------------|-----------|
+| **Local dev** | `appsettings.Development.json` (gitignored) | .NET config pipeline automatically |
+| **Docker** | `.env` (gitignored) | Docker Compose → environment variables |
+
+---
+
+### Local Development
+
+`appsettings.Development.json` is gitignored in both `src/BosDAT.API/` and `src/BosDAT.Worker/`. These files are created on first run from the defaults already present in `appsettings.json`; you only need to fill in secrets.
+
+**`src/BosDAT.API/appsettings.Development.json`**
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=bosdat;Username=bosdat;Password=your-password"
+    "DefaultConnection": "Host=localhost;Database=bosdat;Username=bosdat;Password=bosdat_dev_password"
   },
   "JwtSettings": {
-    "Secret": "your-minimum-32-character-secret-key-here",
-    "Issuer": "BosDAT.API",
-    "Audience": "BosDAT.Web",
-    "AccessTokenExpirationMinutes": 60,
-    "RefreshTokenExpirationDays": 7
+    "Secret": "YourSuperSecretKeyThatIsAtLeast32CharactersLong!"
   },
-  "Cors": {
-    "AllowedOrigins": ["http://localhost:3000", "http://localhost:5173"]
-  },
-  "AdminSettings": {
-    "DefaultPassword": "Admin@123456"
+  "EmailSettings": {
+    "Provider": "Console",
+    "FromEmail": "noreply@bosdat.nl",
+    "FromName": "BosDAT (dev)",
+    "Brevo": {
+      "ApiKey": ""
+    }
   }
 }
 ```
 
-### Frontend (`.env`)
+**`src/BosDAT.Worker/appsettings.Development.json`**
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=bosdat;Username=bosdat;Password=bosdat_dev_password"
+  },
+  "EmailSettings": {
+    "Provider": "Console",
+    "FromEmail": "noreply@bosdat.nl",
+    "FromName": "BosDAT (dev)",
+    "Brevo": {
+      "ApiKey": ""
+    }
+  },
+  "WorkerSettings": {
+    "Credentials": {
+      "Email": "worker@bosdat.nl",
+      "Password": "Worker@123456"
+    }
+  }
+}
+```
+
+> **Email in local dev:** `Provider` defaults to `"Console"` — emails are logged to stdout instead of sent. Set `Provider` to `"Brevo"` and fill in `ApiKey` to send real emails locally.
+
+---
+
+### Docker Setup
+
+Copy `.env.example` to `.env` and fill in the required values:
 
 ```bash
-# Optional - defaults to empty (proxy handles it in dev)
+cp .env.example .env
+```
+
+**`.env` reference:**
+
+```bash
+# ── Database ──────────────────────────────────────────────────────────────────
+# Npgsql connection string
+DB_CONNECTION_STRING=Host=postgres;Database=bosdat;Username=bosdat;Password=bosdat_dev_password
+
+# ── JWT ───────────────────────────────────────────────────────────────────────
+# Minimum 32 characters. Generate with: openssl rand -base64 32
+JWT_SECRET=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+
+# ── Worker ────────────────────────────────────────────────────────────────────
+# Credentials used by BosDAT.Worker to authenticate against the API
+WORKER_EMAIL=worker@bosdat.nl
+WORKER_PASSWORD=YourWorkerPassword
+
+# ── Email (Brevo) ─────────────────────────────────────────────────────────────
+# "Console" logs emails to stdout (safe default). "Brevo" sends real emails.
+EMAIL_PROVIDER=Console
+EMAIL_FROM_ADDRESS=noreply@bosdat.nl
+EMAIL_FROM_NAME=BosDAT
+
+# Brevo transactional API key — required when EMAIL_PROVIDER=Brevo
+# Get yours at: https://app.brevo.com/settings/keys/api
+BREVO_API_KEY=your-brevo-api-key-here
+```
+
+Docker Compose maps these to .NET configuration automatically using the `__` separator convention (e.g. `EmailSettings__Brevo__ApiKey`). No code changes are needed to switch providers — only the `.env` values change.
+
+---
+
+### Enabling Brevo (real email sending)
+
+1. Create a free account at [brevo.com](https://www.brevo.com)
+2. Go to **Settings → API Keys → Create a new API key** (v3)
+3. Copy the key
+4. Set it in your config:
+   - **Local dev:** add `"ApiKey": "your-key"` under `EmailSettings.Brevo` in `appsettings.Development.json`, and set `"Provider": "Brevo"`
+   - **Docker:** set `BREVO_API_KEY=your-key` and `EMAIL_PROVIDER=Brevo` in `.env`
+
+> **Note:** Brevo's free tier allows 300 emails/day which is sufficient for development and small deployments.
+
+---
+
+### Frontend (`.env.local`)
+
+```bash
+# Optional – Vite dev server proxies /api to localhost:5000 by default
 VITE_API_URL=http://localhost:5000
 ```
 
@@ -591,46 +561,12 @@ Built exclusively with **shadcn/ui** + **Tailwind CSS**.
 
 ## 📚 API Documentation
 
-**Swagger UI available at:** `http://localhost:5000/swagger`
+The API is self-documented via OpenAPI. When running locally:
 
-### Key Endpoints
-
-**Authentication:**
-- `POST /api/auth/login` - User login
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/logout` - Logout (revoke refresh token)
-
-**Students:**
-- `GET /api/students` - List all students (with filters)
-- `POST /api/students` - Create student
-- `GET /api/students/{id}` - Get student details
-- `PUT /api/students/{id}` - Update student
-- `DELETE /api/students/{id}` - Delete student
-- `POST /api/students/check-duplicates` - Duplicate detection
-- `GET /api/students/{id}/ledger` - Student ledger entries
-
-**Courses:**
-- `GET /api/courses` - List courses
-- `POST /api/courses` - Create course
-- `GET /api/courses/{id}` - Get course with enrollments
-- `PUT /api/courses/{id}` - Update course
-- `POST /api/courses/{id}/enroll` - Enroll student
-
-**Lessons:**
-- `GET /api/lessons` - List lessons (with filters)
-- `POST /api/lessons/generate` - Generate lessons for single course
-- `POST /api/lessons/generate-bulk` - Generate for all active courses
-- `PUT /api/lessons/{id}` - Update lesson (status, notes, etc.)
-
-**Calendar:**
-- `GET /api/calendar/week?date=2024-01-15` - Weekly view
-- `GET /api/calendar/teacher/{id}` - Teacher schedule
-- `GET /api/calendar/room/{id}` - Room schedule
-
-**Settings:**
-- `GET /api/settings` - Get all settings
-- `PUT /api/settings/{key}` - Update setting
+| Interface | URL |
+|-----------|-----|
+| Scalar UI | http://localhost:5000/scalar/v1 |
+| OpenAPI JSON | http://localhost:5000/openapi/v1.json |
 
 ## 🚧 Development Seeding
 
@@ -652,39 +588,38 @@ Built exclusively with **shadcn/ui** + **Tailwind CSS**.
 ## 📈 Roadmap
 
 ### ✅ Completed
-- Authentication & authorization
+- Authentication & authorization (JWT, refresh token rotation)
+- Account management & user invitations (email-based onboarding)
 - Student & teacher management
 - Course & enrollment management
 - Automated lesson generation (with ISO 8601 week parity)
 - Calendar views (week/day/month)
-- Settings management
+- Settings management (instruments, rooms, holidays)
 - Audit logging
 - Database seeding
-- Duplicate detection
-- Student ledger system
+- Duplicate detection (Levenshtein distance)
+- Student ledger & transaction system
 - Dynamic pricing with discounts
+- Email infrastructure (outbox pattern, Brevo provider, Razor templates)
 
 ### 🚧 In Progress
 - Invoice generation & PDF export
 - Teacher payment calculations
-- Advanced reporting
 
 ### 📋 Planned
-- Email notifications (lesson reminders, invoice sent)
 - Cancellation workflow
 - Batch operations (bulk enrollment, bulk invoice generation)
 - Data export (CSV, Excel)
 - Dashboard analytics
-- Teacher availability calendar editor
 - Student/parent portal
 
 ## 🤝 Contributing
 
 This is a private project. For development guidelines, see:
-- `.claude/rules/coding.md` - Coding standards
-- `.claude/rules/testing.md` - Testing requirements
-- `.claude/rules/security.md` - Security checklist
-- `CLAUDE.md` - AI assistant guidance
+- `.claude/rules/backend.md` - Backend coding standards
+- `.claude/rules/frontend.md` - Frontend coding standards
+- `.claude/rules/workflow.md` - TDD workflow & security checklist
+- `.claude/CLAUDE.md` - AI assistant guidance
 
 **Development Workflow:**
 1. Create feature branch from `main`
