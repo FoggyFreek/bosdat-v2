@@ -20,11 +20,16 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.4.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageReference Include="QuestPDF" Version="2025.1.2" />
+    <PackageReference Include="RazorEngineCore" Version="2026.1.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BosDAT.Core\BosDAT.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Email\Templates\**\*.cshtml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

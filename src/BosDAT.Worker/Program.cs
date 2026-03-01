@@ -1,6 +1,10 @@
 using System.Net;
+using BosDAT.Core.Interfaces.Services;
+using BosDAT.Infrastructure.Data;
+using BosDAT.Infrastructure.Email;
 using BosDAT.Worker.Configuration;
 using BosDAT.Worker.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
 
@@ -48,9 +52,29 @@ builder.Services.AddHttpClient<IBosApiClient, BosApiClient>(client =>
     });
 });
 
+// Database context for email outbox processing
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Email services for outbox processing
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection(EmailSettings.SectionName));
+builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
+
+var emailProvider = builder.Configuration[$"{EmailSettings.SectionName}:Provider"] ?? "Console";
+if (emailProvider.Equals("Brevo", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+}
+else
+{
+    builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
+}
+
 builder.Services.AddHostedService<InvoiceRunBackgroundService>();
 builder.Services.AddHostedService<LessonGenerationBackgroundService>();
 builder.Services.AddHostedService<LessonStatusUpdateBackgroundService>();
+builder.Services.AddHostedService<EmailOutboxProcessorBackgroundService>();
 
 var host = builder.Build();
 
@@ -63,5 +87,7 @@ logger.LogInformation("Lesson Generation Job Enabled: {Enabled}, Days Ahead: {Da
     workerSettings.LessonGenerationJob.Enabled, workerSettings.LessonGenerationJob.DaysAhead);
 logger.LogInformation("Lesson Status Update Job Enabled: {Enabled}",
     workerSettings.LessonStatusUpdateJob.Enabled);
+logger.LogInformation("Email Outbox Job Enabled: {Enabled}, Polling Interval: {Interval}s",
+    workerSettings.EmailOutboxJob.Enabled, workerSettings.EmailOutboxJob.PollingIntervalSeconds);
 
 await host.RunAsync();

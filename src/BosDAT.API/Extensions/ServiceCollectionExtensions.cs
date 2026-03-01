@@ -13,6 +13,7 @@ using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Repositories;
 using BosDAT.Infrastructure.Services;
+using BosDAT.Infrastructure.Email;
 using BosDAT.Infrastructure.Seeding;
 
 namespace BosDAT.API.Extensions;
@@ -141,6 +142,28 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IInvoicePdfService, InvoicePdfService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers email services including the outbox service and provider-specific sender.
+    /// </summary>
+    public static IServiceCollection AddEmailServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
+
+        var provider = configuration[$"{EmailSettings.SectionName}:Provider"] ?? "Console";
+        if (provider.Equals("Brevo", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<IEmailSender, BrevoEmailSender>();
+        }
+        else
+        {
+            services.AddSingleton<IEmailSender, ConsoleEmailSender>();
+        }
 
         return services;
     }

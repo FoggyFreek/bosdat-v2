@@ -118,3 +118,5 @@ docker-compose up -d
 - `frontend-patterns` — Component, hook, context, page templates + TanStack Query
 - `testing-frontend` — Vitest + RTL patterns, vi.mock, QueryClient, renderHook
 - `i18n` — Translation hooks, enum maps, namespace guide, adding translations
+- `email-sending` — Outbox pattern, IEmailSender (Console/Brevo), background processor, DI, retry logic
+- `email-templates` — RazorEngineCore template authoring, model class, cshtml file, testing

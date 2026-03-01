@@ -43,6 +43,8 @@ export function SetPasswordPage() {
       newErrors.password = t('common.validation.required')
     } else if (password.length < 8) {
       newErrors.password = t('setPassword.passwordTooShort')
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)) {
+      newErrors.password = t('setPassword.passwordRequirementsNotMet')
     }
 
     if (password !== confirmPassword) {

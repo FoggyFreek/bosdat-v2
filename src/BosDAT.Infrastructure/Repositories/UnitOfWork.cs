@@ -25,6 +25,7 @@ public class UnitOfWork : IUnitOfWork
     private ILessonRepository? _lessons;
     private IInvoiceRepository? _invoices;
     private IStudentTransactionRepository? _studentTransactions;
+    private IRepository<EmailOutboxMessage>? _emailOutboxMessages;
 
     public UnitOfWork(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
@@ -67,6 +68,9 @@ public class UnitOfWork : IUnitOfWork
 
     public IStudentTransactionRepository StudentTransactions =>
         _studentTransactions ??= new StudentTransactionRepository(_context);
+
+    public IRepository<EmailOutboxMessage> EmailOutboxMessages =>
+        _emailOutboxMessages ??= new Repository<EmailOutboxMessage>(_context);
 
     public IRepository<T> Repository<T>() where T : class
     {

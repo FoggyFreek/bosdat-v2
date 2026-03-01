@@ -55,6 +55,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<NoteAttachment> NoteAttachments => Set<NoteAttachment>();
     public DbSet<Absence> Absences => Set<Absence>();
     public DbSet<UserInvitationToken> UserInvitationTokens => Set<UserInvitationToken>();
+    public DbSet<EmailOutboxMessage> EmailOutboxMessages => Set<EmailOutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -486,6 +487,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // EmailOutboxMessage configuration
+        modelBuilder.Entity<EmailOutboxMessage>(entity =>
+        {
+            entity.ToTable("email_outbox_messages");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.To).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.TemplateName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.TemplateDataJson).IsRequired().HasColumnType("jsonb");
+            entity.Property(e => e.Status)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.ProviderMessageId).HasMaxLength(255);
+            entity.Property(e => e.LastError).HasMaxLength(2000);
+            entity.Property(e => e.ConcurrencyToken).IsRowVersion();
+
+            entity.HasIndex(e => new { e.Status, e.NextAttemptAtUtc })
+                .HasDatabaseName("ix_email_outbox_status_next_attempt");
         });
 
         // RefreshToken configuration

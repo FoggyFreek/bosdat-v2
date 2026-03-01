@@ -1348,6 +1348,7 @@
     "confirmPassword": "Confirm Password",
     "submit": "Set Password & Sign In",
     "passwordTooShort": "Password must be at least 8 characters",
+    "passwordRequirementsNotMet": "Password must contain at least one uppercase letter, one lowercase letter, and one digit",
     "passwordMismatch": "Passwords do not match",
     "invalidToken": "Invalid or expired link",
     "contactAdmin": "Contact your administrator for a new invitation"

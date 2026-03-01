@@ -27,6 +27,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
       - JwtSettings__Secret=${JWT_SECRET}
+      - EmailSettings__Provider=${EMAIL_PROVIDER:-Console}
+      - EmailSettings__FromEmail=${EMAIL_FROM_ADDRESS:-noreply@bosdat.nl}
+      - EmailSettings__FromName=${EMAIL_FROM_NAME:-BosDAT}
+      - EmailSettings__Brevo__ApiKey=${BREVO_API_KEY}
     ports:
       - "5000:8080"
     depends_on:
@@ -42,6 +46,13 @@ services:
       - .env
     environment:
       - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - WorkerSettings__Credentials__Email=${WORKER_EMAIL:-worker@bosdat.nl}
+      - WorkerSettings__Credentials__Password=${WORKER_PASSWORD}
+      - EmailSettings__Provider=${EMAIL_PROVIDER:-Console}
+      - EmailSettings__FromEmail=${EMAIL_FROM_ADDRESS:-noreply@bosdat.nl}
+      - EmailSettings__FromName=${EMAIL_FROM_NAME:-BosDAT}
+      - EmailSettings__Brevo__ApiKey=${BREVO_API_KEY}
     depends_on:
       - api
 

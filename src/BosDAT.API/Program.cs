@@ -8,6 +8,7 @@ builder.Services
     .AddIdentityConfiguration()
     .AddJwtAuthentication(builder.Configuration)
     .AddApplicationServices()
+    .AddEmailServices(builder.Configuration)
     .AddCorsPolicy(builder.Configuration)
     .AddSwaggerDocumentation()
     .AddRateLimiting();

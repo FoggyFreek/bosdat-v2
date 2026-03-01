@@ -17,7 +17,6 @@ obj/
 .vs/
 appsettings.*.json
 !appsettings.json
-!appsettings.Development.json
 uploads/
 attachments/
 

@@ -1349,6 +1349,7 @@
     "confirmPassword": "Wachtwoord bevestigen",
     "submit": "Wachtwoord instellen & inloggen",
     "passwordTooShort": "Wachtwoord moet minimaal 8 tekens bevatten",
+    "passwordRequirementsNotMet": "Wachtwoord moet minimaal één hoofdletter, één kleine letter en één cijfer bevatten",
     "passwordMismatch": "Wachtwoorden komen niet overeen",
     "invalidToken": "Ongeldige of verlopen link",
     "contactAdmin": "Neem contact op met uw beheerder voor een nieuwe uitnodiging"

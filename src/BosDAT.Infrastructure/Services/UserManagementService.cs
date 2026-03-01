@@ -12,7 +12,8 @@ namespace BosDAT.Infrastructure.Services;
 
 public class UserManagementService(
     UserManager<ApplicationUser> userManager,
-    IUnitOfWork uow) : IUserManagementService
+    IUnitOfWork uow,
+    IEmailService emailService) : IUserManagementService
 {
     private static readonly string[] ManagedRoles = ["Admin", "FinancialAdmin", "Teacher", "Student"];
     private const int InvitationExpiryHours = 72;
@@ -103,7 +104,9 @@ public class UserManagementService(
 
         await userManager.AddToRoleAsync(user, dto.Role);
 
-        var (_, response) = await GenerateAndStoreTokenAsync(user.Id, InvitationTokenType.Invitation, frontendBaseUrl, ct);
+        var (_, response) = await GenerateAndStoreTokenAsync(
+            user.Id, InvitationTokenType.Invitation, frontendBaseUrl,
+            dto.Email, dto.DisplayName, ct);
         return Result<InvitationResponseDto>.Success(response);
     }
 
@@ -165,7 +168,9 @@ public class UserManagementService(
         await uow.InvitationTokens.InvalidateAllForUserAsync(id, InvitationTokenType.Invitation, ct);
         await uow.SaveChangesAsync(ct);
 
-        var (_, response) = await GenerateAndStoreTokenAsync(id, InvitationTokenType.Invitation, frontendBaseUrl, ct);
+        var (_, response) = await GenerateAndStoreTokenAsync(
+            id, InvitationTokenType.Invitation, frontendBaseUrl,
+            user.Email ?? string.Empty, user.DisplayName, ct);
         return Result<InvitationResponseDto>.Success(response);
     }
 
@@ -213,7 +218,8 @@ public class UserManagementService(
     }
 
     private async Task<(string rawToken, InvitationResponseDto response)> GenerateAndStoreTokenAsync(
-        Guid userId, InvitationTokenType tokenType, string frontendBaseUrl, CancellationToken ct)
+        Guid userId, InvitationTokenType tokenType, string frontendBaseUrl,
+        string userEmail, string displayName, CancellationToken ct)
     {
         var rawToken = GenerateRawToken();
         var hash = HashToken(rawToken);
@@ -229,10 +235,17 @@ public class UserManagementService(
             CreatedAt = DateTime.UtcNow
         };
 
+        var url = $"{frontendBaseUrl.TrimEnd('/')}/set-password#token={Uri.EscapeDataString(rawToken)}";
+
         await uow.InvitationTokens.AddAsync(token, ct);
+        await emailService.QueueEmailAsync(
+            userEmail,
+            "BosDAT - Account activeren",
+            "InvitationEmail",
+            new { DisplayName = displayName, InvitationUrl = url, ExpiresAt = expiresAt },
+            ct);
         await uow.SaveChangesAsync(ct);
 
-        var url = $"{frontendBaseUrl.TrimEnd('/')}/set-password#token={Uri.EscapeDataString(rawToken)}";
         return (rawToken, new InvitationResponseDto
         {
             InvitationUrl = url,

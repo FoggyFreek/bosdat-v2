@@ -201,6 +201,24 @@ describe('SetPasswordPage', () => {
       })
     })
 
+    it('shows error when password does not meet complexity requirements', async () => {
+      const user = userEvent.setup()
+      vi.mocked(accountApi.validateToken).mockResolvedValue(validTokenResponse)
+
+      renderWithProviders(<SetPasswordPage />)
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('setPassword.password')).toBeInTheDocument()
+      })
+
+      await user.type(screen.getByLabelText('setPassword.password'), 'alllowercase1')
+      await user.click(screen.getByRole('button', { name: 'setPassword.submit' }))
+
+      await waitFor(() => {
+        expect(screen.getByText('setPassword.passwordRequirementsNotMet')).toBeInTheDocument()
+      })
+    })
+
     it('shows error when passwords do not match', async () => {
       const user = userEvent.setup()
       vi.mocked(accountApi.validateToken).mockResolvedValue(validTokenResponse)
@@ -211,8 +229,8 @@ describe('SetPasswordPage', () => {
         expect(screen.getByLabelText('setPassword.password')).toBeInTheDocument()
       })
 
-      await user.type(screen.getByLabelText('setPassword.password'), 'password123')
-      await user.type(screen.getByLabelText('setPassword.confirmPassword'), 'different456')
+      await user.type(screen.getByLabelText('setPassword.password'), 'Password1')
+      await user.type(screen.getByLabelText('setPassword.confirmPassword'), 'Password2')
       await user.click(screen.getByRole('button', { name: 'setPassword.submit' }))
 
       await waitFor(() => {

@@ -9,6 +9,7 @@ public class WorkerSettings
     public required InvoiceJobSettings InvoiceJob { get; set; }
     public required LessonGenerationJobSettings LessonGenerationJob { get; set; }
     public required LessonStatusUpdateJobSettings LessonStatusUpdateJob { get; set; }
+    public EmailOutboxJobSettings EmailOutboxJob { get; set; } = new();
 }
 
 public class ApiSettings
@@ -43,4 +44,11 @@ public class LessonStatusUpdateJobSettings
 {
     public bool Enabled { get; set; } = true;
     public TimeOnly ExecutionTime { get; set; } = new(0, 0);
+}
+
+public class EmailOutboxJobSettings
+{
+    public bool Enabled { get; set; } = true;
+    public int PollingIntervalSeconds { get; set; } = 10;
+    public int BatchSize { get; set; } = 20;
 }

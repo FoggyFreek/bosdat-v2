@@ -1,3 +1,4 @@
+using BosDAT.Core.Entities;
 using BosDAT.Core.Interfaces.Repositories;
 
 namespace BosDAT.Core.Interfaces;
@@ -16,6 +17,7 @@ public interface IUnitOfWork : IDisposable
     ILessonRepository Lessons { get; }
     IInvoiceRepository Invoices { get; }
     IStudentTransactionRepository StudentTransactions { get; }
+    IRepository<EmailOutboxMessage> EmailOutboxMessages { get; }
     IRepository<T> Repository<T>() where T : class;
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
