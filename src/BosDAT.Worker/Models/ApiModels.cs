@@ -4,7 +4,7 @@ namespace BosDAT.Worker.Models;
 
 public record AuthResponse
 {
-    [JsonPropertyName("accessToken")]
+    [JsonPropertyName("token")]
     public required string AccessToken { get; init; }
 
     [JsonPropertyName("refreshToken")]

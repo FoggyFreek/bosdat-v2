@@ -67,8 +67,7 @@ public class EmailOutboxProcessorBackgroundService(
         if (pendingEmails.Count == 0)
             return;
 
-        var pendingCount = pendingEmails.Count;
-        logger.LogInformation("Processing {Count} pending email(s)", pendingCount);
+        logger.LogInformation("Processing {Count} pending email(s)", pendingEmails.Count);
 
         foreach (var email in pendingEmails)
         {

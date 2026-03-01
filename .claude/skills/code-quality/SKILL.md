@@ -5,14 +5,14 @@ description: "SonarQube code quality workflows: finding and triaging issues, che
 
 # SonarQube API and MCP
 
-The SonarQube MCP server is already connected. All tools are available as `mcp__sonarqube__*`.
 The SonarQube API is used to fetch issues
+The SonarQube MCP server is connected. All tools are available as `mcp__sonarqube__*`.
+
 
 ## Project context
 
 - **Project key:** `FoggyFreek_bosdat-v2`
 - **Current branch:** !`git branch --show-current`
-- **Open PR (if any):** use `gh pr view --json number --jq .number` to find the PR number if needed
 - **File key prefix:** `FoggyFreek_bosdat-v2:` + path from repo root
 
 Use this context directly — do not call `search_my_sonarqube_projects` to discover the key.
@@ -30,21 +30,9 @@ Use this context directly — do not call `search_my_sonarqube_projects` to disc
 ## Tool Reference
 
 ### Finding Issues
-
-**`search_sonar_issues_in_projects`** — primary tool for finding issues
-- `projects`: filter to specific project keys (omit for all)
-- `severities`: `INFO`, `LOW`, `MEDIUM`, `HIGH`, `BLOCKER`
-- `branch`: branch name
-- `pullRequestId`: PR number (string)
-- `p` / `ps`: pagination (default page size 100, max 500)
-
-> **Important:** The API returns all statuses (OPEN, CLOSED, RESOLVED, etc.). Always filter results to `status === "OPEN"` before presenting or acting on issues. Closed/resolved issues are historical — only OPEN issues require attention.
-
-**`search_my_sonarqube_projects`** — discover available project keys
-- Use when you don't know the project key yet
+Use Supporting files scripts/fetch-open-issues.py as the primary tool for finding issues
 
 ### Quality Gates
-
 **`get_project_quality_gate_status`** — pass/fail status for a project
 - Use `projectKey` (most common), or `analysisId`, `projectId`
 - Add `branch` or `pullRequest` for non-main branches

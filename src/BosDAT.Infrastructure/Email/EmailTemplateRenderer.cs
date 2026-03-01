@@ -1,3 +1,5 @@
+using System.Dynamic;
+using System.Text.Json;
 using BosDAT.Core.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using RazorEngineCore;
@@ -16,13 +18,44 @@ public class EmailTemplateRenderer(ILogger<EmailTemplateRenderer> logger) : IEma
         CancellationToken cancellationToken = default)
     {
         var compiled = GetOrCompileTemplate(templateName);
-        // The generic Run(Action<T>) does not wrap anonymous types automatically
-        // (unlike the non-generic Run(object) which does). Use the library's own
-        // AnonymousTypeWrapper to handle nested anonymous types, collections, and dictionaries.
-        var wrappedModel = model.IsAnonymous() ? new AnonymousTypeWrapper(model) : model;
+        // When retrieved from the outbox, the model arrives as Dictionary<string,object> with JsonElement
+        // values. Convert to ExpandoObject so Razor can access properties via @Model.PropertyName.
+        // Anonymous types (passed directly) are wrapped via AnonymousTypeWrapper per RazorEngineCore convention.
+        var wrappedModel = model switch
+        {
+            Dictionary<string, object> dict => DictionaryToExpando(dict),
+            _ when model.IsAnonymous() => (object)new AnonymousTypeWrapper(model),
+            _ => model
+        };
         var result = compiled.Run(instance => instance.Model = wrappedModel);
         return Task.FromResult(result);
     }
+
+    private static ExpandoObject DictionaryToExpando(Dictionary<string, object> dict)
+    {
+        var expando = new ExpandoObject();
+        var expandoDict = (IDictionary<string, object?>)expando;
+        foreach (var kvp in dict)
+        {
+            expandoDict[kvp.Key] = kvp.Value is JsonElement element
+                ? ConvertJsonElement(element)
+                : kvp.Value;
+        }
+        return expando;
+    }
+
+    private static object? ConvertJsonElement(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.String => element.TryGetDateTime(out var dt) ? dt : element.GetString(),
+        JsonValueKind.Number => element.TryGetInt64(out var l) ? l : element.GetDouble(),
+        JsonValueKind.True => true,
+        JsonValueKind.False => false,
+        JsonValueKind.Null => null,
+        JsonValueKind.Object => DictionaryToExpando(
+            JsonSerializer.Deserialize<Dictionary<string, object>>(element.GetRawText())!),
+        JsonValueKind.Array => element.EnumerateArray().Select(ConvertJsonElement).ToArray(),
+        _ => element.GetRawText()
+    };
 
     private IRazorEngineCompiledTemplate<HtmlSafeTemplate> GetOrCompileTemplate(string templateName)
     {

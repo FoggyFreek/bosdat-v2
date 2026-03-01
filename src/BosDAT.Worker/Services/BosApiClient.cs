@@ -35,12 +35,9 @@ public class BosApiClient(
         }
 
         var result = await response.Content.ReadFromJsonAsync<BulkGenerateLessonsResult>(cancellationToken);
-        var coursesProcessed = result?.TotalCoursesProcessed;
-        var lessonsCreated = result?.TotalLessonsCreated;
-        var lessonsSkipped = result?.TotalLessonsSkipped;
         logger.LogInformation(
             "Bulk lesson generation completed: {CoursesProcessed} courses, {LessonsCreated} lessons created, {LessonsSkipped} skipped",
-            coursesProcessed, lessonsCreated, lessonsSkipped);
+            result?.TotalCoursesProcessed, result?.TotalLessonsCreated, result?.TotalLessonsSkipped);
 
         return result;
     }
@@ -73,8 +70,8 @@ public class BosApiClient(
         }
 
         var lessons = await response.Content.ReadFromJsonAsync<List<LessonDto>>(cancellationToken);
-        var lessonCount = lessons?.Count ?? 0;
-        logger.LogDebug("Retrieved {Count} lessons", lessonCount);
+        if (logger.IsEnabled(LogLevel.Debug))
+            logger.LogDebug("Retrieved {Count} lessons", lessons?.Count ?? 0);
 
         return lessons ?? [];
     }
@@ -128,11 +125,9 @@ public class BosApiClient(
         }
 
         var result = await response.Content.ReadFromJsonAsync<InvoiceRunResult>(cancellationToken);
-        var invoicesGenerated = result?.InvoicesGenerated;
-        var totalAmount = result?.TotalAmount;
         logger.LogInformation(
             "Invoice run completed: {InvoicesGenerated} invoices generated, total amount: {TotalAmount}",
-            invoicesGenerated, totalAmount);
+            result?.InvoicesGenerated, result?.TotalAmount);
 
         return result;
     }

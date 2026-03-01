@@ -159,16 +159,15 @@ public class SeederController : ControllerBase
         string successMessage,
         Func<Task> action)
     {
-        var lowerAction = actionName.ToLowerInvariant();
         try
         {
-            _logger.LogInformation("Starting database {Action} via API...", lowerAction);
+            _logger.LogInformation("Starting database {Action} via API...", actionName);
             await action();
             return Ok(SeederActionResponse.Successful(actionName, successMessage));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Database {Action} failed", lowerAction);
+            _logger.LogError(ex, "Database {Action} failed", actionName);
             return BadRequest(SeederActionResponse.Failure(actionName, $"{actionName} failed: {ex.Message}"));
         }
     }

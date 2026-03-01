@@ -9,7 +9,6 @@ public class ConsoleEmailSender(ILogger<ConsoleEmailSender> logger) : IEmailSend
         CancellationToken cancellationToken = default)
     {
         var messageId = $"console-{Guid.NewGuid():N}";
-        var bodyLength = htmlBody.Length;
 
         logger.LogInformation(
             "=== EMAIL (Console Provider) ===\n" +
@@ -18,7 +17,7 @@ public class ConsoleEmailSender(ILogger<ConsoleEmailSender> logger) : IEmailSend
             "MessageId: {MessageId}\n" +
             "Body Length: {BodyLength} chars\n" +
             "================================",
-            to, subject, messageId, bodyLength);
+            to, subject, messageId, htmlBody.Length);
 
         return Task.FromResult(messageId);
     }
@@ -33,7 +32,6 @@ public class ConsoleEmailSender(ILogger<ConsoleEmailSender> logger) : IEmailSend
             var messageId = $"console-{Guid.NewGuid():N}";
             messageIds.Add(messageId);
 
-            var batchBodyLength = message.HtmlBody.Length;
             logger.LogInformation(
                 "=== EMAIL BATCH (Console Provider) ===\n" +
                 "To: {To}\n" +
@@ -41,11 +39,10 @@ public class ConsoleEmailSender(ILogger<ConsoleEmailSender> logger) : IEmailSend
                 "MessageId: {MessageId}\n" +
                 "Body Length: {BodyLength} chars\n" +
                 "======================================",
-                message.To, message.Subject, messageId, batchBodyLength);
+                message.To, message.Subject, messageId, message.HtmlBody.Length);
         }
 
-        var emailCount = messages.Count;
-        logger.LogInformation("Batch complete: {Count} emails logged", emailCount);
+        logger.LogInformation("Batch complete: {Count} emails logged", messages.Count);
         return Task.FromResult<IReadOnlyList<string>>(messageIds);
     }
 }
