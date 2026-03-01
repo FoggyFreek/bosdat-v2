@@ -81,8 +81,9 @@ public class BrevoEmailSender(
         var result = await response.Content.ReadFromJsonAsync<BrevoBatchResponse>(cancellationToken);
         var messageIds = result?.MessageIds ?? [];
 
+        var joinedIds = string.Join(", ", messageIds);
         logger.LogInformation("Batch email sent via Brevo: {Count} messages, messageIds: {MessageIds}",
-            messages.Count, string.Join(", ", messageIds));
+            messages.Count, joinedIds);
 
         return messageIds;
     }

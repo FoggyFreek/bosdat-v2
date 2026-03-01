@@ -17,13 +17,15 @@ public class LessonsControllerTests
     private readonly Mock<ILessonService> _mockLessonService;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly BosDAT.API.Controllers.LessonsController _controller;
+    private readonly BosDAT.API.Controllers.LessonGenerationController _generationController;
 
     public LessonsControllerTests()
     {
         _mockLessonService = new Mock<ILessonService>();
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
         var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockLessonService.Object, lessonGenerationService, _mockUnitOfWork.Object);
+        _controller = new BosDAT.API.Controllers.LessonsController(_mockLessonService.Object);
+        _generationController = new BosDAT.API.Controllers.LessonGenerationController(lessonGenerationService, _mockUnitOfWork.Object);
     }
 
     [Fact]
@@ -259,12 +261,14 @@ public class LessonsControllerTests
         // Arrange
         var lessons = CreateTestLessonDtos();
 
+        var criteria = new LessonFilterCriteria();
+
         _mockLessonService.Setup(s => s.GetAllAsync(
             It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
-        var result = await _controller.GetAll(null, null, null, null, null, null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(criteria, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -279,12 +283,17 @@ public class LessonsControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.Today);
         var lessons = CreateTestLessonDtos().Where(l => l.ScheduledDate >= startDate).ToList();
 
+        var criteria = new LessonFilterCriteria
+        {
+            StartDate = startDate
+        };
+
         _mockLessonService.Setup(s => s.GetAllAsync(
             It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
-        var result = await _controller.GetAll(startDate, null, null, null, null, null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(criteria, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -299,12 +308,17 @@ public class LessonsControllerTests
         var teacherId = Guid.NewGuid();
         var lessons = CreateTestLessonDtos(teacherId);
 
+        var criteria = new LessonFilterCriteria
+        {
+            TeacherId = teacherId
+        };
+
         _mockLessonService.Setup(s => s.GetAllAsync(
             It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
-        var result = await _controller.GetAll(null, null, teacherId, null, null, null, null, null, CancellationToken.None);
+        var result = await _controller.GetAll(criteria, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -318,12 +332,17 @@ public class LessonsControllerTests
         // Arrange
         var lessons = CreateTestLessonDtos().Where(l => l.Status == LessonStatus.Completed).ToList();
 
+        var criteria = new LessonFilterCriteria
+        {
+            Status = LessonStatus.Completed
+        };
+
         _mockLessonService.Setup(s => s.GetAllAsync(
             It.IsAny<LessonFilterCriteria>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(lessons);
 
         // Act
-        var result = await _controller.GetAll(null, null, null, null, null, null, LessonStatus.Completed, null, CancellationToken.None);
+        var result = await _controller.GetAll(criteria, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -576,7 +595,7 @@ public class LessonsControllerTests
         };
 
         // Act
-        var result = await _controller.GenerateLessons(dto, CancellationToken.None);
+        var result = await _generationController.GenerateLessons(dto, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -603,7 +622,7 @@ public class LessonsControllerTests
         };
 
         // Act
-        var result = await _controller.GenerateLessons(dto, CancellationToken.None);
+        var result = await _generationController.GenerateLessons(dto, CancellationToken.None);
 
         // Assert
         Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -676,7 +695,7 @@ public class LessonsControllerTests
         };
 
         // Act
-        var result = await _controller.GenerateLessonsBulk(dto, CancellationToken.None);
+        var result = await _generationController.GenerateLessonsBulk(dto, CancellationToken.None);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);

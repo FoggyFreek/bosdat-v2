@@ -174,7 +174,7 @@ function ResultGroup({
             <li key={result.id}>
               <button
                 id={`search-result-${globalIndex}`}
-                aria-selected={activeIndex === globalIndex}
+                aria-current={activeIndex === globalIndex || undefined}
                 className={cn(
                   'w-full text-left px-4 py-2 flex flex-col hover:bg-accent transition-colors',
                   activeIndex === globalIndex && 'bg-accent'

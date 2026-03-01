@@ -359,14 +359,14 @@ public abstract class LessonGenerationTestBase
 {
     protected readonly Mock<IUnitOfWork> MockUnitOfWork;
     protected readonly Mock<ILessonService> MockLessonService;
-    protected readonly API.Controllers.LessonsController Controller;
+    protected readonly API.Controllers.LessonGenerationController Controller;
 
     protected LessonGenerationTestBase()
     {
         MockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
         MockLessonService = new Mock<ILessonService>();
         var lessonGenerationService = new LessonGenerationService(MockUnitOfWork.Object);
-        Controller = new API.Controllers.LessonsController(MockLessonService.Object, lessonGenerationService, MockUnitOfWork.Object);
+        Controller = new API.Controllers.LessonGenerationController(lessonGenerationService, MockUnitOfWork.Object);
     }
 
     /// <summary>

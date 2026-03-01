@@ -126,15 +126,7 @@ export function CreditInvoiceDialog({
                 <div
                   key={line.id}
                   className="flex items-center px-4 py-2 hover:bg-muted/30 cursor-pointer"
-                  role="button"
-                  tabIndex={0}
                   onClick={() => toggleLine(line.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      toggleLine(line.id)
-                    }
-                  }}
                 >
                   <Checkbox
                     checked={selectedLineIds.includes(line.id)}

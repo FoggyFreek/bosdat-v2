@@ -76,6 +76,42 @@ export function ManageUsersSection() {
     setSelectedUser(user as UserDetail)
   }
 
+  function renderUserTable() {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )
+    }
+    if (users.length === 0) {
+      return <p className="text-muted-foreground text-sm py-4">{t('users.empty')}</p>
+    }
+    return (
+      <div className="rounded-md border">
+        <div className="grid grid-cols-4 gap-4 px-4 py-3 text-sm font-medium text-muted-foreground border-b">
+          <span>{t('users.fields.displayName')}</span>
+          <span>{t('users.fields.email')}</span>
+          <span>{t('users.fields.role')}</span>
+          <span>{t('users.fields.status')}</span>
+        </div>
+        {users.map((user) => (
+          <button
+            key={user.id}
+            onClick={() => handleRowClick(user)}
+            className="grid grid-cols-4 gap-4 px-4 py-3 text-sm w-full text-left hover:bg-muted/50 transition-colors border-b last:border-b-0"
+            type="button"
+          >
+            <span className="font-medium truncate">{user.displayName}</span>
+            <span className="text-muted-foreground truncate">{user.email}</span>
+            <span><UserRoleBadge role={user.role} /></span>
+            <span><UserStatusBadge status={user.accountStatus} /></span>
+          </button>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <>
       <Card>
@@ -130,39 +166,7 @@ export function ManageUsersSection() {
           </div>
 
           {/* Table */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          ) : users.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-4">{t('users.empty')}</p>
-          ) : (
-            <div className="rounded-md border">
-              <div className="grid grid-cols-4 gap-4 px-4 py-3 text-sm font-medium text-muted-foreground border-b">
-                <span>{t('users.fields.displayName')}</span>
-                <span>{t('users.fields.email')}</span>
-                <span>{t('users.fields.role')}</span>
-                <span>{t('users.fields.status')}</span>
-              </div>
-              {users.map((user) => (
-                <button
-                  key={user.id}
-                  onClick={() => handleRowClick(user)}
-                  className="grid grid-cols-4 gap-4 px-4 py-3 text-sm w-full text-left hover:bg-muted/50 transition-colors border-b last:border-b-0"
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') handleRowClick(user)
-                  }}
-                >
-                  <span className="font-medium truncate">{user.displayName}</span>
-                  <span className="text-muted-foreground truncate">{user.email}</span>
-                  <span><UserRoleBadge role={user.role} /></span>
-                  <span><UserStatusBadge status={user.accountStatus} /></span>
-                </button>
-              ))}
-            </div>
-          )}
+          {renderUserTable()}
 
           {/* Pagination */}
           {totalPages > 1 && (

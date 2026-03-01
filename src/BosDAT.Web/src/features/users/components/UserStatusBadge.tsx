@@ -9,11 +9,12 @@ interface UserStatusBadgeProps {
 export function UserStatusBadge({ status }: UserStatusBadgeProps) {
   const { t } = useTranslation()
 
-  const variant = status === 'Active'
-    ? 'default'
-    : status === 'Suspended'
-      ? 'destructive'
-      : 'secondary'
+  const variantMap: Record<string, 'default' | 'destructive' | 'secondary'> = {
+    Active: 'default',
+    Suspended: 'destructive',
+    Inactive: 'secondary',
+  }
+  const variant = variantMap[status] ?? 'secondary'
 
   return (
     <Badge variant={variant}>

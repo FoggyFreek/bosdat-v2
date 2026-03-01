@@ -16,14 +16,14 @@ public class LessonGenerationTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ILessonService> _mockLessonService;
-    private readonly BosDAT.API.Controllers.LessonsController _controller;
+    private readonly BosDAT.API.Controllers.LessonGenerationController _controller;
 
     public LessonGenerationTests()
     {
         _mockUnitOfWork = MockHelpers.CreateMockUnitOfWork();
         _mockLessonService = new Mock<ILessonService>();
         var lessonGenerationService = new LessonGenerationService(_mockUnitOfWork.Object);
-        _controller = new BosDAT.API.Controllers.LessonsController(_mockLessonService.Object, lessonGenerationService, _mockUnitOfWork.Object);
+        _controller = new BosDAT.API.Controllers.LessonGenerationController(lessonGenerationService, _mockUnitOfWork.Object);
     }
 
     [Fact]

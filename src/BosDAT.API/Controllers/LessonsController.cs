@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
-using BosDAT.Core.Interfaces;
 using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.API.Controllers;
@@ -11,36 +9,14 @@ namespace BosDAT.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class LessonsController(
-    ILessonService lessonService,
-    ILessonGenerationService lessonGenerationService,
-    IUnitOfWork unitOfWork) : ControllerBase
+public class LessonsController(ILessonService lessonService) : ControllerBase
 {
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LessonDto>>> GetAll(
-        [FromQuery] DateOnly? startDate,
-        [FromQuery] DateOnly? endDate,
-        [FromQuery] Guid? teacherId,
-        [FromQuery] Guid? studentId,
-        [FromQuery] Guid? courseId,
-        [FromQuery] int? roomId,
-        [FromQuery] LessonStatus? status,
-        [FromQuery] int? top,
+        [FromQuery] LessonFilterCriteria criteria,
         CancellationToken cancellationToken)
     {
-        var criteria = new LessonFilterCriteria
-        {
-            StartDate = startDate,
-            EndDate = endDate,
-            TeacherId = teacherId,
-            StudentId = studentId,
-            CourseId = courseId,
-            RoomId = roomId,
-            Status = status,
-            Top = top
-        };
-
         var lessons = await lessonService.GetAllAsync(criteria, cancellationToken);
 
         return Ok(lessons);
@@ -150,55 +126,6 @@ public class LessonsController(
         return NoContent();
     }
 
-    [HttpPost("generate")]
-    [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<GenerateLessonsResultDto>> GenerateLessons([FromBody] GenerateLessonsDto dto, CancellationToken cancellationToken)
-    {
-        var courseExists = await unitOfWork.Courses.Query()
-            .AnyAsync(c => c.Id == dto.CourseId, cancellationToken);
-
-        if (!courseExists)
-        {
-            return BadRequest(new { message = "Course not found" });
-        }
-
-        var result = await lessonGenerationService.GenerateForCourseAsync(
-            dto.CourseId, dto.StartDate, dto.EndDate, dto.SkipHolidays, cancellationToken);
-
-        return Ok(new GenerateLessonsResultDto
-        {
-            CourseId = dto.CourseId,
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
-            LessonsCreated = result.LessonsCreated,
-            LessonsSkipped = result.LessonsSkipped
-        });
-    }
-
-    [HttpPost("generate-bulk")]
-    [Authorize(Policy = "AdminOnly")]
-    public async Task<ActionResult<BulkGenerateLessonsResultDto>> GenerateLessonsBulk([FromBody] BulkGenerateLessonsDto dto, CancellationToken cancellationToken)
-    {
-        var result = await lessonGenerationService.GenerateBulkAsync(
-            dto.StartDate, dto.EndDate, dto.SkipHolidays, cancellationToken);
-
-        return Ok(new BulkGenerateLessonsResultDto
-        {
-            StartDate = dto.StartDate,
-            EndDate = dto.EndDate,
-            TotalCoursesProcessed = result.TotalCoursesProcessed,
-            TotalLessonsCreated = result.TotalLessonsCreated,
-            TotalLessonsSkipped = result.TotalLessonsSkipped,
-            CourseResults = result.CourseResults.Select(r => new GenerateLessonsResultDto
-            {
-                CourseId = r.CourseId,
-                StartDate = r.StartDate,
-                EndDate = r.EndDate,
-                LessonsCreated = r.LessonsCreated,
-                LessonsSkipped = r.LessonsSkipped
-            }).ToList()
-        });
-    }
 
 }
 

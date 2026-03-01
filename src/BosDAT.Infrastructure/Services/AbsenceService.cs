@@ -174,11 +174,13 @@ public class AbsenceService(IUnitOfWork unitOfWork) : IAbsenceService
 
     private static AbsenceDto MapToDto(Absence a)
     {
-        var personName = a.Student != null
-            ? $"{a.Student.FirstName} {a.Student.LastName}"
-            : a.Teacher != null
-                ? $"{a.Teacher.FirstName} {a.Teacher.LastName}"
-                : null;
+        string? personName;
+        if (a.Student != null)
+            personName = $"{a.Student.FirstName} {a.Student.LastName}";
+        else if (a.Teacher != null)
+            personName = $"{a.Teacher.FirstName} {a.Teacher.LastName}";
+        else
+            personName = null;
 
         return new AbsenceDto
         {
