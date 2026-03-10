@@ -10,7 +10,7 @@ namespace BosDAT.API.Tests.Services;
 public class EmailServiceTests
 {
     private readonly Mock<IUnitOfWork> _uowMock = new();
-    private readonly Mock<IRepository<EmailOutboxMessage>> _outboxRepoMock = new();
+    private readonly Mock<IEmailOutboxRepository> _outboxRepoMock = new();
     private readonly EmailService _service;
 
     public EmailServiceTests()

@@ -14,6 +14,7 @@ import {
   MinusCircle,
   Check,
   Wallet,
+  Mail,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,6 +30,7 @@ import { invoicesApi } from '@/features/students/api'
 import { RecordPaymentDialog } from '@/features/students/components/invoices/RecordPaymentDialog'
 import { CreditInvoiceDialog } from '@/features/students/components/invoices/CreditInvoiceDialog'
 import { ApplyCreditDialog } from '@/features/students/components/invoices/ApplyCreditDialog'
+import { SendEmailDialog } from '@/features/students/components/invoices/SendEmailDialog'
 import type { Invoice, InvoiceListItem, InvoiceStatus } from '@/features/students/types'
 import { invoiceStatusTranslations, paymentMethodTranslations } from '@/features/students/types'
 import { formatCurrency } from '@/lib/utils'
@@ -55,6 +57,7 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
   const [showCreditDialog, setShowCreditDialog] = useState(false)
   const [showApplyCreditDialog, setShowApplyCreditDialog] = useState(false)
+  const [showSendEmailDialog, setShowSendEmailDialog] = useState(false)
 
   const { data: invoices = [], isLoading } = useQuery<InvoiceListItem[]>({
     queryKey: ['invoices', 'student', studentId],
@@ -402,6 +405,15 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
                                 {t('students.invoices.recalculate')}
                               </Button>
                             )}
+                            {selectedInvoice.status === 'Draft' && !selectedInvoice.isCreditInvoice && (
+                              <Button
+                                size="sm"
+                                onClick={() => setShowSendEmailDialog(true)}
+                              >
+                                <Mail className="h-4 w-4 mr-2" />
+                                {t('students.invoices.sendEmail.button')}
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               size="sm"
@@ -463,6 +475,16 @@ export function InvoicesSection({ studentId }: InvoicesSectionProps) {
           invoiceId={selectedInvoice.id}
           studentId={studentId}
           remainingBalance={selectedInvoice.balance}
+        />
+      )}
+
+      {selectedInvoice && !selectedInvoice.isCreditInvoice && (
+        <SendEmailDialog
+          open={showSendEmailDialog}
+          onOpenChange={setShowSendEmailDialog}
+          invoiceId={selectedInvoice.id}
+          invoiceNumber={selectedInvoice.invoiceNumber}
+          studentId={studentId}
         />
       )}
     </div>

@@ -17,7 +17,7 @@ public interface IUnitOfWork : IDisposable
     ILessonRepository Lessons { get; }
     IInvoiceRepository Invoices { get; }
     IStudentTransactionRepository StudentTransactions { get; }
-    IRepository<EmailOutboxMessage> EmailOutboxMessages { get; }
+    IEmailOutboxRepository EmailOutboxMessages { get; }
     IRepository<T> Repository<T>() where T : class;
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

@@ -5,6 +5,7 @@ using BosDAT.API.Controllers;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
 using BosDAT.Core.Enums;
+using BosDAT.Core.Exceptions;
 using BosDAT.Core.Interfaces;
 using BosDAT.Core.Interfaces.Services;
 using BosDAT.Core.Interfaces.Repositories;
@@ -19,6 +20,7 @@ public class InvoicesControllerTests
     private readonly Mock<IInvoicePdfService> _mockInvoicePdfService;
     private readonly Mock<IStudentTransactionService> _mockStudentTransactionService;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<IInvoiceEmailService> _mockInvoiceEmailService;
     private readonly InvoicesController _controller;
     private readonly Guid _testUserId = Guid.NewGuid();
     private readonly Guid _testInvoiceId = Guid.NewGuid();
@@ -33,13 +35,15 @@ public class InvoicesControllerTests
         _mockInvoicePdfService = new Mock<IInvoicePdfService>();
         _mockStudentTransactionService = new Mock<IStudentTransactionService>();
         _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _mockInvoiceEmailService = new Mock<IInvoiceEmailService>();
         _mockCurrentUserService.Setup(s => s.UserId).Returns(_testUserId);
 
         _controller = new InvoicesController(
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object,
-            _mockInvoicePdfService.Object);
+            _mockInvoicePdfService.Object,
+            _mockInvoiceEmailService.Object);
     }
 
     #region GetById Tests
@@ -245,7 +249,8 @@ public class InvoicesControllerTests
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object,
-            _mockInvoicePdfService.Object);
+            _mockInvoicePdfService.Object,
+            _mockInvoiceEmailService.Object);
 
         var dto = new GenerateInvoiceDto
         {
@@ -323,7 +328,8 @@ public class InvoicesControllerTests
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object,
-            _mockInvoicePdfService.Object);
+            _mockInvoicePdfService.Object,
+            _mockInvoiceEmailService.Object);
 
         var dto = new GenerateBatchInvoicesDto
         {
@@ -395,7 +401,8 @@ public class InvoicesControllerTests
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object,
-            _mockInvoicePdfService.Object);
+            _mockInvoicePdfService.Object,
+            _mockInvoiceEmailService.Object);
 
         // Act
         var result = await controller.Recalculate(_testInvoiceId, CancellationToken.None);
@@ -528,7 +535,8 @@ public class InvoicesControllerTests
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object,
-            _mockInvoicePdfService.Object);
+            _mockInvoicePdfService.Object,
+            _mockInvoiceEmailService.Object);
 
         var dto = new CreateCreditInvoiceDto
         {
@@ -619,7 +627,8 @@ public class InvoicesControllerTests
             _mockInvoiceService.Object,
             _mockCreditInvoiceService.Object,
             _mockCurrentUserService.Object,
-            _mockInvoicePdfService.Object);
+            _mockInvoicePdfService.Object,
+            _mockInvoiceEmailService.Object);
 
         // Act
         var result = await controller.ConfirmCreditInvoice(Guid.NewGuid(), CancellationToken.None);
@@ -680,6 +689,111 @@ public class InvoicesControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Equal(0m, okResult.Value);
+    }
+
+    #endregion
+
+    #region EmailPreview Tests
+
+    [Fact]
+    public async Task EmailPreview_WithValidId_ReturnsPreview()
+    {
+        // Arrange
+        var preview = new InvoiceEmailPreviewDto("<p>HTML</p>", "Subject", "test@example.com");
+        _mockInvoiceEmailService
+            .Setup(s => s.PreviewAsync(_testInvoiceId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(preview);
+
+        // Act
+        var result = await _controller.EmailPreview(_testInvoiceId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returned = Assert.IsType<InvoiceEmailPreviewDto>(okResult.Value);
+        Assert.Equal("<p>HTML</p>", returned.HtmlBody);
+        Assert.Equal("test@example.com", returned.ToEmail);
+    }
+
+    [Fact]
+    public async Task EmailPreview_WhenInvoiceNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        _mockInvoiceEmailService
+            .Setup(s => s.PreviewAsync(_testInvoiceId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException("Invoice not found."));
+
+        // Act
+        var result = await _controller.EmailPreview(_testInvoiceId, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task EmailPreview_WhenBusinessRuleViolated_ReturnsBadRequest()
+    {
+        // Arrange
+        _mockInvoiceEmailService
+            .Setup(s => s.PreviewAsync(_testInvoiceId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Student has no email address."));
+
+        // Act
+        var result = await _controller.EmailPreview(_testInvoiceId, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    #endregion
+
+    #region SendEmail Tests
+
+    [Fact]
+    public async Task SendEmail_WithValidId_ReturnsUpdatedInvoice()
+    {
+        // Arrange
+        var invoice = CreateTestInvoiceDto() with { Status = InvoiceStatus.Sent };
+        _mockInvoiceEmailService
+            .Setup(s => s.SendAsync(_testInvoiceId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(invoice);
+
+        // Act
+        var result = await _controller.SendEmail(_testInvoiceId, CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returned = Assert.IsType<InvoiceDto>(okResult.Value);
+        Assert.Equal(InvoiceStatus.Sent, returned.Status);
+    }
+
+    [Fact]
+    public async Task SendEmail_WhenInvoiceNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        _mockInvoiceEmailService
+            .Setup(s => s.SendAsync(_testInvoiceId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new NotFoundException("Invoice not found."));
+
+        // Act
+        var result = await _controller.SendEmail(_testInvoiceId, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task SendEmail_WithCreditInvoice_ReturnsBadRequest()
+    {
+        // Arrange
+        _mockInvoiceEmailService
+            .Setup(s => s.SendAsync(_testInvoiceId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Cannot send email for credit invoices."));
+
+        // Act
+        var result = await _controller.SendEmail(_testInvoiceId, CancellationToken.None);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
     #endregion

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using BosDAT.Core.Interfaces.Services;
 using BosDAT.Core.Enums;
 
 namespace BosDAT.Core.Entities;
@@ -13,6 +14,8 @@ public class EmailOutboxMessage : BaseEntity
     public EmailStatus Status { get; private set; } = EmailStatus.Pending;
     public int RetryCount { get; private set; }
     public DateTime? NextAttemptAtUtc { get; private set; }
+
+    public string? AttachmentsJson { get; private set; }
 
     public string? ProviderMessageId { get; private set; }
     public string? LastError { get; private set; }
@@ -33,6 +36,25 @@ public class EmailOutboxMessage : BaseEntity
             Subject = subject,
             TemplateName = templateName,
             TemplateDataJson = JsonSerializer.Serialize(templateData),
+            Status = EmailStatus.Pending,
+            RetryCount = 0,
+            NextAttemptAtUtc = null
+        };
+    }
+
+    public static EmailOutboxMessage Create(string to, string subject, string templateName,
+        object templateData, IReadOnlyList<EmailAttachment>? attachments)
+    {
+        return new EmailOutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            To = to,
+            Subject = subject,
+            TemplateName = templateName,
+            TemplateDataJson = JsonSerializer.Serialize(templateData),
+            AttachmentsJson = attachments is { Count: > 0 }
+                ? JsonSerializer.Serialize(attachments)
+                : null,
             Status = EmailStatus.Pending,
             RetryCount = 0,
             NextAttemptAtUtc = null

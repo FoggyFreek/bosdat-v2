@@ -142,6 +142,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IInvoicePdfService, InvoicePdfService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
+        services.AddScoped<IInvoiceEmailService, InvoiceEmailService>();
 
         return services;
     }

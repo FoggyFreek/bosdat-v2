@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BosDAT.Core.DTOs;
 using BosDAT.Core.Entities;
+using BosDAT.Core.Exceptions;
 using BosDAT.Core.Interfaces.Services;
 
 namespace BosDAT.API.Controllers;
@@ -13,7 +14,8 @@ public class InvoicesController(
     IInvoiceService invoiceService,
     ICreditInvoiceService creditInvoiceService,
     ICurrentUserService currentUserService,
-    IInvoicePdfService invoicePdfService
+    IInvoicePdfService invoicePdfService,
+    IInvoiceEmailService invoiceEmailService
     ) : ControllerBase
 {
     /// <summary>
@@ -239,9 +241,9 @@ public class InvoicesController(
             var paymentDtos = await invoiceService.GetPaymentsAsync(invoiceId, cancellationToken);
             return Ok(paymentDtos);
         }
-        catch
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Payments for invoice not found" });
+            return BadRequest(new { message = ex.Message });
         }
         
     }
@@ -325,6 +327,50 @@ public class InvoicesController(
         {
             var result = await creditInvoiceService.ApplyCreditInvoicesAsync(invoiceId, userId.Value, ct);
             return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Generates a preview of the invoice email including rendered HTML body, subject, and recipient.
+    /// </summary>
+    [HttpPost("{id:guid}/email-preview")]
+    [Authorize(Policy = "TeacherOrAdmin")]
+    public async Task<ActionResult<InvoiceEmailPreviewDto>> EmailPreview(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var preview = await invoiceEmailService.PreviewAsync(id, ct);
+            return Ok(preview);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Sends the invoice email with PDF attachment. Transitions Draft invoices to Sent.
+    /// </summary>
+    [HttpPost("{id:guid}/send-email")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<InvoiceDto>> SendEmail(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var invoice = await invoiceEmailService.SendAsync(id, ct);
+            return Ok(invoice);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {

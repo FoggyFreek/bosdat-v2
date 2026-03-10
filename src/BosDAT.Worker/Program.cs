@@ -1,9 +1,13 @@
 using System.Net;
+using BosDAT.Core.Entities;
+using BosDAT.Core.Interfaces;
 using BosDAT.Core.Interfaces.Services;
 using BosDAT.Infrastructure.Data;
 using BosDAT.Infrastructure.Email;
+using BosDAT.Infrastructure.Repositories;
 using BosDAT.Worker.Configuration;
 using BosDAT.Worker.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
@@ -55,6 +59,12 @@ builder.Services.AddHttpClient<IBosApiClient, BosApiClient>(client =>
 // Database context for email outbox processing
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentityCore<ApplicationUser>()
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Email services for outbox processing
 builder.Services.Configure<EmailSettings>(

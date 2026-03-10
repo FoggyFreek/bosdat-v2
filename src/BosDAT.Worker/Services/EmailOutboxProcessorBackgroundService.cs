@@ -1,7 +1,8 @@
+using System.Text.Json;
+using BosDAT.Core.Constants;
 using BosDAT.Core.Entities;
-using BosDAT.Core.Enums;
+using BosDAT.Core.Interfaces;
 using BosDAT.Core.Interfaces.Services;
-using BosDAT.Infrastructure.Data;
 using BosDAT.Worker.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -53,16 +54,11 @@ public class EmailOutboxProcessorBackgroundService(
     private async Task ProcessPendingEmailsAsync(CancellationToken ct)
     {
         using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
         var templateRenderer = scope.ServiceProvider.GetRequiredService<IEmailTemplateRenderer>();
 
-        var pendingEmails = await dbContext.EmailOutboxMessages
-            .Where(e => e.Status == EmailStatus.Pending
-                && (e.NextAttemptAtUtc == null || e.NextAttemptAtUtc <= DateTime.UtcNow))
-            .OrderBy(e => e.CreatedAt)
-            .Take(_settings.EmailOutboxJob.BatchSize)
-            .ToListAsync(ct);
+        var pendingEmails = await uow.EmailOutboxMessages.GetPendingBatchAsync(_settings.EmailOutboxJob.BatchSize, ct);
 
         if (pendingEmails.Count == 0)
             return;
@@ -71,13 +67,13 @@ public class EmailOutboxProcessorBackgroundService(
 
         foreach (var email in pendingEmails)
         {
-            await ProcessSingleEmailAsync(email, dbContext, emailSender, templateRenderer, ct);
+            await ProcessSingleEmailAsync(email, uow, emailSender, templateRenderer, ct);
         }
     }
 
     private async Task ProcessSingleEmailAsync(
         EmailOutboxMessage email,
-        ApplicationDbContext dbContext,
+        IUnitOfWork uow,
         IEmailSender emailSender,
         IEmailTemplateRenderer templateRenderer,
         CancellationToken ct)
@@ -85,14 +81,30 @@ public class EmailOutboxProcessorBackgroundService(
         try
         {
             email.MarkProcessing();
-            await dbContext.SaveChangesAsync(ct);
+            await uow.SaveChangesAsync(ct);
 
-            var htmlBody = await templateRenderer.RenderAsync(email.TemplateName,
-                System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(email.TemplateDataJson)!, ct);
-            var providerMessageId = await emailSender.SendAsync(email.To, email.Subject, htmlBody, ct);
+            string htmlBody;
+            if (email.TemplateName == EmailOutboxConstants.RenderedTemplateName)
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(email.TemplateDataJson)!;
+                htmlBody = data["__html__"].ToString()!;
+            }
+            else
+            {
+                htmlBody = await templateRenderer.RenderAsync(email.TemplateName,
+                    JsonSerializer.Deserialize<Dictionary<string, object>>(email.TemplateDataJson)!, ct);
+            }
+
+            var attachments = !string.IsNullOrEmpty(email.AttachmentsJson)
+                ? JsonSerializer.Deserialize<List<EmailAttachment>>(email.AttachmentsJson) ?? []
+                : new List<EmailAttachment>();
+
+            var providerMessageId = attachments.Count > 0
+                ? await emailSender.SendAsync(email.To, email.Subject, htmlBody, attachments, ct)
+                : await emailSender.SendAsync(email.To, email.Subject, htmlBody, ct);
 
             email.MarkSent(providerMessageId);
-            await dbContext.SaveChangesAsync(ct);
+            await uow.SaveChangesAsync(ct);
 
             logger.LogInformation(
                 "Email {EmailId} sent to {To}, provider messageId: {MessageId}",
@@ -109,7 +121,7 @@ public class EmailOutboxProcessorBackgroundService(
             try
             {
                 email.MarkFailed(ex.Message.Length > 2000 ? ex.Message[..2000] : ex.Message);
-                await dbContext.SaveChangesAsync(ct);
+                await uow.SaveChangesAsync(ct);
             }
             catch (Exception saveEx)
             {

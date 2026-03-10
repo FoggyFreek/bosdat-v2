@@ -263,6 +263,12 @@ export interface InvoicePrintData {
   schoolInfo: SchoolBillingInfo
 }
 
+export interface InvoiceEmailPreview {
+  htmlBody: string
+  subject: string
+  toEmail: string
+}
+
 // Student Transaction Types
 export type TransactionType =
   | 'InvoiceCharge'

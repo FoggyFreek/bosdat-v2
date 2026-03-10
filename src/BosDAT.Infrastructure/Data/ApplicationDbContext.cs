@@ -453,7 +453,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
         {
             entity.HasKey(e => e.Key);
             entity.Property(e => e.Key).HasMaxLength(100);
-            entity.Property(e => e.Value).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Value).IsRequired();
             entity.Property(e => e.Type).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(500);
         });
@@ -503,6 +503,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasMaxLength(20);
             entity.Property(e => e.ProviderMessageId).HasMaxLength(255);
             entity.Property(e => e.LastError).HasMaxLength(2000);
+            entity.Property(e => e.AttachmentsJson).HasColumnType("jsonb");
             entity.Property(e => e.ConcurrencyToken).IsRowVersion();
 
             entity.HasIndex(e => new { e.Status, e.NextAttemptAtUtc })
@@ -674,7 +675,64 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             new Setting { Key = "workshop_max_students", Value = "12", Type = "int", Description = "Default maximum students for workshops" },
             new Setting { Key = "registration_fee_description", Value = "Eenmalig inschrijfgeld", Type = "string", Description = "Invoice description for registration fee" },
             new Setting { Key = "course_discount_percent", Value = "10", Type = "decimal", Description = "Discount percentage for students with multiple courses" },
-            new Setting { Key = "family_discount_percent", Value = "10", Type = "decimal", Description = "Discount percentage for family members" }
+            new Setting { Key = "family_discount_percent", Value = "10", Type = "decimal", Description = "Discount percentage for family members" },
+            new Setting { Key = "email_invoice_subject_template", Value = "Factuur {{InvoiceNumber}} - {{SchoolName}}", Type = "string", Description = "Subject template for invoice emails. Placeholders: {{InvoiceNumber}}, {{SchoolName}}, {{StudentFirstName}}, {{StudentLastName}}, {{Total}}, {{DueDate}}, {{IssueDate}}" },
+            new Setting
+            {
+                Key = "email_invoice_body_template",
+                Value = """
+                    <!DOCTYPE html>
+                    <html lang="nl">
+                    <head>
+                        <meta charset="utf-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                        <style>
+                            body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f5; color: #18181b; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+                            .card { background: #ffffff; border-radius: 8px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                            .header { text-align: center; margin-bottom: 24px; }
+                            .header h1 { font-size: 24px; font-weight: 600; margin: 0; color: #18181b; }
+                            .content { line-height: 1.6; color: #3f3f46; }
+                            .content p { margin: 0 0 16px 0; }
+                            .details { background: #f4f4f5; border-radius: 4px; padding: 16px; margin: 16px 0; }
+                            .details table { width: 100%; border-collapse: collapse; }
+                            .details td { padding: 4px 0; }
+                            .details td:last-child { text-align: right; font-weight: 500; }
+                            .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #a1a1aa; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="card">
+                                <div class="header">
+                                    <h1>@Model.SchoolName</h1>
+                                </div>
+                                <div class="content">
+                                    <p>Beste @Model.StudentFirstName,</p>
+                                    <p>Bijgaand vindt u de factuur voor uw muziekles.</p>
+                                    <div class="details">
+                                        <table>
+                                            <tr><td>Factuurnummer</td><td>@Model.InvoiceNumber</td></tr>
+                                            <tr><td>Factuurdatum</td><td>@Model.IssueDate</td></tr>
+                                            <tr><td>Vervaldatum</td><td>@Model.DueDate</td></tr>
+                                            <tr><td><strong>Totaalbedrag</strong></td><td><strong>€ @Model.Total</strong></td></tr>
+                                        </table>
+                                    </div>
+                                    <p>De factuur is als PDF bijgevoegd bij deze e-mail.</p>
+                                    <p>Wij verzoeken u vriendelijk het bedrag voor de vervaldatum over te maken.</p>
+                                    <p>Met vriendelijke groet,<br />@Model.SchoolName</p>
+                                </div>
+                            </div>
+                            <div class="footer">
+                                <p>Dit is een automatisch gegenereerd bericht.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """,
+                Type = "template",
+                Description = "Razor HTML body template for invoice emails. Placeholders: @Model.InvoiceNumber, @Model.SchoolName, @Model.StudentFirstName, @Model.StudentLastName, @Model.Total, @Model.DueDate, @Model.IssueDate"
+            }
         );
     }
 

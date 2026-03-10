@@ -107,6 +107,61 @@ public class EmailTemplateRendererTests
             _renderer.RenderAsync("NonExistentTemplate", new { }));
     }
 
+    #region RenderFromContentAsync Tests
+
+    [Fact]
+    public async Task RenderFromContentAsync_RendersModelProperties()
+    {
+        var html = await _renderer.RenderFromContentAsync(
+            "<p>Hallo @Model.Name</p>",
+            "test_key_1",
+            new { Name = "Alice" });
+
+        Assert.Contains("Hallo Alice", html);
+    }
+
+    [Fact]
+    public async Task RenderFromContentAsync_HtmlEncodesModelValues()
+    {
+        var html = await _renderer.RenderFromContentAsync(
+            "<p>@Model.Name</p>",
+            "test_key_xss",
+            new { Name = "<script>alert('xss')</script>" });
+
+        Assert.Contains("&lt;script&gt;", html);
+        Assert.DoesNotContain("<script>alert", html);
+    }
+
+    [Fact]
+    public async Task RenderFromContentAsync_CachesSameContent()
+    {
+        var html1 = await _renderer.RenderFromContentAsync(
+            "<p>@Model.Value</p>",
+            "test_cache_key",
+            new { Value = "First" });
+
+        var html2 = await _renderer.RenderFromContentAsync(
+            "<p>@Model.Value</p>",
+            "test_cache_key",
+            new { Value = "Second" });
+
+        Assert.Contains("First", html1);
+        Assert.Contains("Second", html2);
+    }
+
+    [Fact]
+    public async Task RenderFromContentAsync_SupportsMultipleModelProperties()
+    {
+        var html = await _renderer.RenderFromContentAsync(
+            "<p>@Model.First @Model.Last owes @Model.Amount</p>",
+            "test_multi_props",
+            new { First = "Jan", Last = "Vries", Amount = "121.00" });
+
+        Assert.Contains("Jan Vries owes 121.00", html);
+    }
+
+    #endregion
+
     private Task<string> RenderInvitationEmail()
     {
         return _renderer.RenderAsync("InvitationEmail", new

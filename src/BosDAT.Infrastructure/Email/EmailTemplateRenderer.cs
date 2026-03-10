@@ -18,18 +18,30 @@ public class EmailTemplateRenderer(ILogger<EmailTemplateRenderer> logger) : IEma
         CancellationToken cancellationToken = default)
     {
         var compiled = GetOrCompileTemplate(templateName);
-        // When retrieved from the outbox, the model arrives as Dictionary<string,object> with JsonElement
-        // values. Convert to ExpandoObject so Razor can access properties via @Model.PropertyName.
-        // Anonymous types (passed directly) are wrapped via AnonymousTypeWrapper per RazorEngineCore convention.
-        var wrappedModel = model switch
-        {
-            Dictionary<string, object> dict => DictionaryToExpando(dict),
-            _ when model.IsAnonymous() => (object)new AnonymousTypeWrapper(model),
-            _ => model
-        };
+        var wrappedModel = WrapModel(model);
         var result = compiled.Run(instance => instance.Model = wrappedModel);
         return Task.FromResult(result);
     }
+
+    public Task<string> RenderFromContentAsync(string templateContent, string cacheKey, object model,
+        CancellationToken cancellationToken = default)
+    {
+        var compiled = GetOrCompileFromContent(templateContent, cacheKey);
+        var wrappedModel = WrapModel(model);
+        var result = compiled.Run(instance => instance.Model = wrappedModel);
+        return Task.FromResult(result);
+    }
+
+    /// <summary>
+    /// Wraps model objects for Razor rendering. Dictionary&lt;string,object&gt; (from JSON deserialization)
+    /// becomes ExpandoObject; anonymous types use AnonymousTypeWrapper per RazorEngineCore convention.
+    /// </summary>
+    private static object WrapModel(object model) => model switch
+    {
+        Dictionary<string, object> dict => DictionaryToExpando(dict),
+        _ when model.IsAnonymous() => new AnonymousTypeWrapper(model),
+        _ => model
+    };
 
     private static ExpandoObject DictionaryToExpando(Dictionary<string, object> dict)
     {
@@ -73,6 +85,21 @@ public class EmailTemplateRenderer(ILogger<EmailTemplateRenderer> logger) : IEma
 
             var compiled = _razorEngine.Compile<HtmlSafeTemplate>(templateContent);
             _compiledTemplates[templateName] = compiled;
+            return compiled;
+        }
+    }
+
+    private IRazorEngineCompiledTemplate<HtmlSafeTemplate> GetOrCompileFromContent(
+        string templateContent, string cacheKey)
+    {
+        lock (_lock)
+        {
+            if (_compiledTemplates.TryGetValue(cacheKey, out var cached))
+                return cached;
+
+            logger.LogInformation("Compiling email template from content, cacheKey: {CacheKey}", cacheKey);
+            var compiled = _razorEngine.Compile<HtmlSafeTemplate>(templateContent);
+            _compiledTemplates[cacheKey] = compiled;
             return compiled;
         }
     }

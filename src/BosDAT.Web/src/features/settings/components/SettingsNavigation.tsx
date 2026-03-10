@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
   User, SlidersHorizontal, Music, BookOpen,
-  DoorOpen, CalendarDays, Clock, Settings2, Database, Receipt, Users
+  DoorOpen, CalendarDays, Clock, Settings2, Database, Receipt, Users, Mail
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { SettingKey, NavGroup } from '@/features/settings/types'
@@ -36,6 +36,7 @@ const getNavigationGroups = (t: TFunction, isAdmin: boolean): NavGroup[] => {
       label: t('settings.navigation.finance'),
       items: [
         { key: 'invoice-generation', label: t('settings.sections.invoiceGeneration'), icon: <Receipt className="h-4 w-4" /> },
+        { key: 'email', label: t('settings.sections.email'), icon: <Mail className="h-4 w-4" /> },
       ],
     },
     {

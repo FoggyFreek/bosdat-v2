@@ -25,6 +25,7 @@ const RoomsSection = lazy(() => import('@/features/settings/components/RoomsSect
 const HolidaysSection = lazy(() => import('@/features/settings/components/HolidaysSection').then(m => ({ default: m.HolidaysSection })))
 const SchedulingSection = lazy(() => import('@/features/settings/components/SchedulingSection').then(m => ({ default: m.SchedulingSection })))
 const InvoiceGenerationSection = lazy(() => import('@/features/settings/components/InvoiceGenerationSection').then(m => ({ default: m.InvoiceGenerationSection })))
+const EmailSettingsSection = lazy(() => import('@/features/settings/components/EmailSettingsSection').then(m => ({ default: m.EmailSettingsSection })))
 const SeedingSection = lazy(() => import('@/features/settings/components/SeedingSection').then(m => ({ default: m.SeedingSection })))
 const ManageUsersSection = lazy(() => import('@/features/users/components/ManageUsersSection').then(m => ({ default: m.ManageUsersSection })))
 
@@ -84,6 +85,8 @@ function SettingsContent() {
         return <Suspense fallback={<SettingsLoadingFallback />}><SchedulingSection /></Suspense>
       case 'invoice-generation':
         return <Suspense fallback={<SettingsLoadingFallback />}><InvoiceGenerationSection /></Suspense>
+      case 'email':
+        return <Suspense fallback={<SettingsLoadingFallback />}><EmailSettingsSection /></Suspense>
       case 'system':
         return <Suspense fallback={<SettingsLoadingFallback />}><SystemSettingsSection /></Suspense>
       case 'seeding':

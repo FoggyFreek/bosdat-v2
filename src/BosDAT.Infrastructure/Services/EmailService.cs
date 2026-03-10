@@ -12,4 +12,12 @@ public class EmailService(IUnitOfWork uow) : IEmailService
         var message = EmailOutboxMessage.Create(to, subject, templateName, templateData);
         await uow.EmailOutboxMessages.AddAsync(message, cancellationToken);
     }
+
+    public async Task QueueEmailAsync(string to, string subject, string templateName,
+        object templateData, IReadOnlyList<EmailAttachment>? attachments,
+        CancellationToken cancellationToken = default)
+    {
+        var message = EmailOutboxMessage.Create(to, subject, templateName, templateData, attachments);
+        await uow.EmailOutboxMessages.AddAsync(message, cancellationToken);
+    }
 }

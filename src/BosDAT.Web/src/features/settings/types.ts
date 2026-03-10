@@ -9,6 +9,7 @@ export type SettingKey =
   | 'holidays'
   | 'scheduling'
   | 'invoice-generation'
+  | 'email'
   | 'system'
   | 'seeding'
   | 'manage-users'

@@ -438,7 +438,22 @@
       "creditNote": "Toelichting",
       "creditNoteText": "Dit bedrag wordt verrekend met toekomstige facturen.",
       "totalCredit": "Totaal credit",
-      "iban": "IBAN"
+      "iban": "IBAN",
+      "sendEmail": {
+        "button": "E-mail versturen",
+        "title": "Factuur e-mail versturen",
+        "description": "Bekijk de e-mail voordat u deze verstuurt naar de leerling.",
+        "to": "Aan",
+        "subject": "Onderwerp",
+        "attachment": "Bijlage",
+        "preview": "E-mail voorbeeld",
+        "send": "Versturen",
+        "sending": "Versturen...",
+        "successTitle": "E-mail verstuurd",
+        "successDescription": "De factuur e-mail is succesvol in de wachtrij geplaatst.",
+        "errorTitle": "Fout bij versturen",
+        "errorDescription": "De factuur e-mail kon niet worden verstuurd. Probeer het opnieuw."
+      }
     },
     "billingHelp": "Vul deze velden in als iemand anders (bijv. een ouder) de facturen moet ontvangen.",
     "gender": {
@@ -979,7 +994,8 @@
       "scheduling": "Roostering",
       "invoiceGeneration": "Factuur Generatie",
       "seeding": "Test Data",
-      "manageUsers": "Gebruikers beheren"
+      "manageUsers": "Gebruikers beheren",
+      "email": "E-mail"
     },
     "instruments": {
       "title": "Instrumenten",
@@ -1208,6 +1224,17 @@
         "confirmButton": "Ja, facturen genereren"
       },
       "errorState": "Factuurafdrukgegevens laden mislukt. Deze functie is mogelijk alleen beschikbaar voor Admin-gebruikers."
+    },
+    "email": {
+      "description": "Configureer e-mailtemplates voor facturen",
+      "invoiceEmail": "Factuur e-mail template",
+      "invoiceEmailDescription": "Pas het onderwerp en de inhoud van de factuur e-mail aan.",
+      "subjectTemplate": "Onderwerp template",
+      "subjectPlaceholders": "Beschikbare placeholders: {{InvoiceNumber}}, {{SchoolName}}, {{StudentFirstName}}, {{StudentLastName}}",
+      "bodyTemplate": "Inhoud template (Razor HTML)",
+      "bodyPlaceholders": "Beschikbare placeholders: @Model.StudentFirstName, @Model.StudentLastName, @Model.InvoiceNumber, @Model.Total, @Model.DueDate, @Model.IssueDate, @Model.SchoolName",
+      "saveSuccess": "E-mailinstellingen opgeslagen",
+      "saveSuccessDescription": "De e-mailtemplates zijn succesvol bijgewerkt."
     },
     "system": {
       "title": "Systeeminstellingen",

@@ -8,16 +8,26 @@ public class ConsoleEmailSender(ILogger<ConsoleEmailSender> logger) : IEmailSend
     public Task<string> SendAsync(string to, string subject, string htmlBody,
         CancellationToken cancellationToken = default)
     {
+        return SendAsync(to, subject, htmlBody, [], cancellationToken);
+    }
+
+    public Task<string> SendAsync(string to, string subject, string htmlBody,
+        IReadOnlyList<EmailAttachment> attachments, CancellationToken cancellationToken = default)
+    {
         var messageId = $"console-{Guid.NewGuid():N}";
+
+        var attachmentInfo = attachments.Count > 0
+            ? $"\nAttachments: {string.Join(", ", attachments.Select(a => a.FileName))}"
+            : "";
 
         logger.LogInformation(
             "=== EMAIL (Console Provider) ===\n" +
             "To: {To}\n" +
             "Subject: {Subject}\n" +
             "MessageId: {MessageId}\n" +
-            "Body Length: {BodyLength} chars\n" +
+            "Body Length: {BodyLength} chars{Attachments}\n" +
             "================================",
-            to, subject, messageId, htmlBody.Length);
+            to, subject, messageId, htmlBody.Length, attachmentInfo);
 
         return Task.FromResult(messageId);
     }

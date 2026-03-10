@@ -438,7 +438,22 @@
       "creditNote": "Note",
       "creditNoteText": "This amount will be offset against future invoices.",
       "totalCredit": "Total credit",
-      "iban": "IBAN"
+      "iban": "IBAN",
+      "sendEmail": {
+        "button": "Send email",
+        "title": "Send invoice email",
+        "description": "Review the email before sending it to the student.",
+        "to": "To",
+        "subject": "Subject",
+        "attachment": "Attachment",
+        "preview": "Email preview",
+        "send": "Send",
+        "sending": "Sending...",
+        "successTitle": "Email sent",
+        "successDescription": "The invoice email has been queued successfully.",
+        "errorTitle": "Send failed",
+        "errorDescription": "The invoice email could not be sent. Please try again."
+      }
     },
     "billingHelp": "Fill in these fields if someone else (e.g., a parent) should receive invoices.",
     "gender": {
@@ -979,7 +994,8 @@
       "scheduling": "Scheduling",
       "invoiceGeneration": "Invoice Generation",
       "seeding": "Test Data",
-      "manageUsers": "Manage Users"
+      "manageUsers": "Manage Users",
+      "email": "Email"
     },
     "instruments": {
       "title": "Instruments",
@@ -1207,6 +1223,17 @@
         "confirmButton": "Yes, generate invoices"
       },
       "errorState": "Failed to load invoice generation data. This feature may only be available for Admin users."
+    },
+    "email": {
+      "description": "Configure email templates for invoices",
+      "invoiceEmail": "Invoice email template",
+      "invoiceEmailDescription": "Customize the subject and content of the invoice email.",
+      "subjectTemplate": "Subject template",
+      "subjectPlaceholders": "Available placeholders: {{InvoiceNumber}}, {{SchoolName}}, {{StudentFirstName}}, {{StudentLastName}}",
+      "bodyTemplate": "Body template (Razor HTML)",
+      "bodyPlaceholders": "Available placeholders: @Model.StudentFirstName, @Model.StudentLastName, @Model.InvoiceNumber, @Model.Total, @Model.DueDate, @Model.IssueDate, @Model.SchoolName",
+      "saveSuccess": "Email settings saved",
+      "saveSuccessDescription": "The email templates have been updated successfully."
     },
     "system": {
       "title": "System Settings",

@@ -6,6 +6,7 @@ import type {
   Invoice,
   InvoiceListItem,
   InvoicePayment,
+  InvoiceEmailPreview,
   GenerateInvoice,
   GenerateBatchInvoices,
   CreateCreditInvoice,
@@ -135,6 +136,16 @@ export const invoicesApi = {
 
   getAvailableCredit: async (studentId: string): Promise<number> => {
     const response = await api.get<number>(`/invoices/student/${studentId}/available-credit`)
+    return response.data
+  },
+
+  previewEmail: async (id: string): Promise<InvoiceEmailPreview> => {
+    const response = await api.post<InvoiceEmailPreview>(`/invoices/${id}/email-preview`)
+    return response.data
+  },
+
+  sendEmail: async (id: string): Promise<Invoice> => {
+    const response = await api.post<Invoice>(`/invoices/${id}/send-email`)
     return response.data
   },
 

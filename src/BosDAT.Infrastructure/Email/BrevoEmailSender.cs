@@ -17,6 +17,12 @@ public class BrevoEmailSender(
     public async Task<string> SendAsync(string to, string subject, string htmlBody,
         CancellationToken cancellationToken = default)
     {
+        return await SendAsync(to, subject, htmlBody, [], cancellationToken);
+    }
+
+    public async Task<string> SendAsync(string to, string subject, string htmlBody,
+        IReadOnlyList<EmailAttachment> attachments, CancellationToken cancellationToken = default)
+    {
         var emailSettings = settings.Value;
 
         var request = new BrevoSendRequest
@@ -24,7 +30,10 @@ public class BrevoEmailSender(
             Sender = new BrevoContact { Email = emailSettings.FromEmail, Name = emailSettings.FromName },
             To = [new BrevoContact { Email = to }],
             Subject = subject,
-            HtmlContent = htmlBody
+            HtmlContent = htmlBody,
+            Attachment = attachments.Count > 0
+                ? attachments.Select(a => new BrevoAttachment { Name = a.FileName, Content = a.ContentBase64 }).ToList()
+                : null
         };
 
         EnsureHeaders(emailSettings);
@@ -111,6 +120,19 @@ internal class BrevoSendRequest
 
     [JsonPropertyName("htmlContent")]
     public required string HtmlContent { get; set; }
+
+    [JsonPropertyName("attachment")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<BrevoAttachment>? Attachment { get; set; }
+}
+
+internal class BrevoAttachment
+{
+    [JsonPropertyName("name")]
+    public required string Name { get; set; }
+
+    [JsonPropertyName("content")]
+    public required string Content { get; set; }
 }
 
 internal class BrevoBatchRequest
